@@ -1,0 +1,45 @@
+version: 1
+type_number: "05"
+
+format:
+  encoding: UTF-8
+  unicode_normalization: NFC
+  line_ending: LF
+  delimiter: comma
+  header: required
+  quote_mode: minimal
+  null_representation: empty
+  decimal_separator: period
+  final_newline: required
+  max_rows: 10000
+  max_file_bytes: 10000000
+  filename_regex: '^NW_MERCHANT_FEES_[0-9]{8}_B[0-9]{15}_SANITIZED\.csv$'
+
+columns:
+  - { position: 1, name: batch_id, type: string, regex: '^B[0-9]{15}$' }
+  - { position: 2, name: source_file, type: string, regex: '^NW_MERCHANT_FEES_[0-9]{8}_B[0-9]{15}\.csv$' }
+  - { position: 3, name: source_record_number, type: integer, minimum: 2, maximum: 10001 }
+  - { position: 4, name: assessment_id, type: string, regex: '^FEE[0-9]{13}$' }
+  - { position: 5, name: merchant_id, type: string, regex: '^MER[0-9]{13}$' }
+  - { position: 6, name: merchant_tax_id_masked, type: string, regex: '^\*{10}[0-9]{4}$' }
+  - { position: 7, name: fee_code, type: string, regex: '^[A-Z][A-Z0-9_]{1,9}$' }
+  - { position: 8, name: description, type: NFC_string, min_codepoints: 1, max_codepoints: 80 }
+  - { position: 9, name: gross_amount_brl, type: canonical_unsigned_decimal, precision: 14, scale: 2, minimum_exclusive: "0.00" }
+  - { position: 10, name: rate_percent, type: canonical_unsigned_decimal, precision: 6, scale: 3, minimum_exclusive: "0.000", maximum: "100.000" }
+  - { position: 11, name: assessed_fee_brl, type: canonical_unsigned_decimal, precision: 14, scale: 2 }
+  - { position: 12, name: calculated_fee_brl, type: canonical_unsigned_decimal, precision: 14, scale: 2 }
+  - { position: 13, name: assessment_date, type: date, format: yyyy-MM-dd }
+  - { position: 14, name: rounding_mode, type: literal, value: HALF_UP }
+
+row_rules:
+  - Output row order equals raw row order.
+  - Source filename date and batch equal the row batch and assessment date.
+  - Assessed and calculated fee are equal after independent HALF_UP calculation.
+  - Complete output is scanned for every raw merchant CNPJ before publication.
+  - Description is emitted only after normalization and safety validation.
+
+database_target:
+  schema: staging
+  table: merchant_fee_assessment
+  natural_batch_key: [batch_id, assessment_id]
+  global_unique_key: assessment_id

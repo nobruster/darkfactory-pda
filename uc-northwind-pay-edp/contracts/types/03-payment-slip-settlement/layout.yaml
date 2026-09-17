@@ -1,0 +1,173 @@
+version: 1
+file_type:
+  number: "03"
+  name: Payment Slip Settlement
+  code: PAYSLIPSET03
+  layout_version: "001"
+  filename_regex: '^NW_PAYMENT_SLIP_[0-9]{8}_B[0-9]{15}\.rem$'
+  encoding: US-ASCII
+  decoding: strict
+  bom: forbidden
+  line_ending: CRLF
+  final_line_ending: required
+  blank_lines: forbidden
+  bare_cr_or_lf: forbidden
+  record_length_bytes: 240
+  transport_record_length_bytes: 242
+  max_lots: 1000
+  max_logical_rows: 10000
+  max_physical_records: 22002
+  max_source_file_bytes: 5324484
+  reserved_character: '~'
+
+record_sequence:
+  grammar: 'H (L (A B)+ T)+ Z'
+  logical_row: adjacent_A_and_B_pair
+  lot_numbers: unique_within_batch
+  segment_sequences: unique_within_lot
+
+records:
+  file_header:
+    discriminator: H
+    fields:
+      - { name: record_type, start: 1, end: 1, type: literal, value: H }
+      - { name: file_date, start: 2, end: 9, type: date, format: yyyyMMdd }
+      - { name: batch_id, start: 10, end: 25, type: string, regex: '^B[0-9]{15}$' }
+      - { name: file_type_code, start: 26, end: 37, type: literal, value: PAYSLIPSET03 }
+      - { name: layout_version, start: 38, end: 40, type: literal, value: "001" }
+      - { name: origin_bank_code, start: 41, end: 48, type: literal, value: NWP00001 }
+      - { name: file_sequence, start: 49, end: 54, type: digits, regex: '^[0-9]{6}$' }
+      - { name: reserved, start: 55, end: 240, type: repeated_literal, value: '~' }
+
+  lot_header:
+    discriminator: L
+    fields:
+      - { name: record_type, start: 1, end: 1, type: literal, value: L }
+      - { name: lot_number, start: 2, end: 7, type: digits, regex: '^(?!000000)[0-9]{6}$' }
+      - { name: service_code, start: 8, end: 19, type: literal, value: SLIPSETTLE01 }
+      - { name: currency, start: 20, end: 22, type: literal, value: BRL }
+      - { name: settlement_date, start: 23, end: 30, type: date, format: yyyyMMdd }
+      - { name: batch_id, start: 31, end: 46, type: string, regex: '^B[0-9]{15}$' }
+      - { name: originator_id, start: 47, end: 62, type: safe_ascii_identifier, regex: '^[A-Z][A-Z0-9]{15}$' }
+      - { name: reserved, start: 63, end: 240, type: repeated_literal, value: '~' }
+
+  financial_segment:
+    discriminator: A
+    fields:
+      - { name: record_type, start: 1, end: 1, type: literal, value: A }
+      - { name: lot_number, start: 2, end: 7, type: digits, regex: '^(?!000000)[0-9]{6}$' }
+      - { name: sequence, start: 8, end: 13, type: digits, regex: '^(?!000000)[0-9]{6}$' }
+      - { name: settlement_id, start: 14, end: 29, type: safe_ascii_identifier, regex: '^[A-Z][A-Z0-9]{15}$' }
+      - { name: payment_reference, start: 30, end: 77, type: digits, regex: '^[0-9]{48}$', privacy: tokenize }
+      - { name: face_amount_brl, start: 78, end: 92, type: implied_decimal, scale: 2, minimum_exclusive: "0.00" }
+      - { name: due_date, start: 93, end: 100, type: date, format: yyyyMMdd }
+      - { name: payment_date, start: 101, end: 108, type: date, format: yyyyMMdd }
+      - { name: discount_brl, start: 109, end: 120, type: implied_decimal, scale: 2, minimum: "0.00" }
+      - { name: fee_brl, start: 121, end: 132, type: implied_decimal, scale: 2, minimum: "0.00" }
+      - { name: status_code, start: 133, end: 134, type: enum, values: ["00"] }
+      - { name: bank_reference, start: 135, end: 154, type: safe_ascii_identifier, regex: '^[A-Z][A-Z0-9]{19}$' }
+      - { name: reserved, start: 155, end: 240, type: repeated_literal, value: '~' }
+
+  beneficiary_segment:
+    discriminator: B
+    fields:
+      - { name: record_type, start: 1, end: 1, type: literal, value: B }
+      - { name: lot_number, start: 2, end: 7, type: digits, regex: '^(?!000000)[0-9]{6}$' }
+      - { name: sequence, start: 8, end: 13, type: digits, regex: '^(?!000000)[0-9]{6}$' }
+      - { name: settlement_id, start: 14, end: 29, type: safe_ascii_identifier, regex: '^[A-Z][A-Z0-9]{15}$' }
+      - { name: tax_id_type, start: 30, end: 30, type: enum, values: ["1", "2"] }
+      - { name: beneficiary_tax_id, start: 31, end: 44, type: digits, validation: tax_type_padding_length_and_mod11, privacy: mask }
+      - { name: beneficiary_name, start: 45, end: 84, type: right_space_padded_uppercase_ascii, regex_after_right_trim: '^[A-Z][A-Z0-9 .&/-]{0,39}$', privacy: tokenize }
+      - { name: bank_code, start: 85, end: 87, type: digits, regex: '^(?!000$)[0-9]{3}$' }
+      - { name: branch_number, start: 88, end: 92, type: digits, regex: '^[0-9]{5}$' }
+      - { name: account_number, start: 93, end: 104, type: digits, regex: '^[0-9]{12}$', privacy: tokenize }
+      - { name: account_check_digit, start: 105, end: 105, type: safe_ascii_identifier, regex: '^[A-Z0-9]$' }
+      - { name: client_reference, start: 106, end: 125, type: safe_ascii_identifier, regex: '^[A-Z][A-Z0-9]{19}$' }
+      - { name: reserved, start: 126, end: 240, type: repeated_literal, value: '~' }
+
+  lot_trailer:
+    discriminator: T
+    fields:
+      - { name: record_type, start: 1, end: 1, type: literal, value: T }
+      - { name: lot_number, start: 2, end: 7, type: digits, regex: '^(?!000000)[0-9]{6}$' }
+      - { name: logical_count, start: 8, end: 13, type: unsigned_integer, minimum: 1, maximum: 10000 }
+      - { name: face_amount_brl, start: 14, end: 28, type: implied_decimal, scale: 2 }
+      - { name: discount_brl, start: 29, end: 43, type: implied_decimal, scale: 2 }
+      - { name: fee_brl, start: 44, end: 58, type: implied_decimal, scale: 2 }
+      - { name: net_amount_brl, start: 59, end: 73, type: implied_decimal, scale: 2 }
+      - { name: batch_id, start: 74, end: 89, type: string, regex: '^B[0-9]{15}$' }
+      - { name: reserved, start: 90, end: 240, type: repeated_literal, value: '~' }
+
+  file_trailer:
+    discriminator: Z
+    fields:
+      - { name: record_type, start: 1, end: 1, type: literal, value: Z }
+      - { name: lot_count, start: 2, end: 7, type: unsigned_integer, minimum: 1, maximum: 1000 }
+      - { name: physical_record_count, start: 8, end: 13, type: unsigned_integer, minimum: 6, maximum: 22002 }
+      - { name: logical_count, start: 14, end: 19, type: unsigned_integer, minimum: 1, maximum: 10000 }
+      - { name: net_amount_brl, start: 20, end: 34, type: implied_decimal, scale: 2 }
+      - { name: batch_id, start: 35, end: 50, type: string, regex: '^B[0-9]{15}$' }
+      - { name: reserved, start: 51, end: 240, type: repeated_literal, value: '~' }
+
+document_rules:
+  tax_id_type_1:
+    transport: '000<11-digit-CPF>'
+    validation: CPF_two_Mod11_check_digits
+    repeated_digit_document: forbidden
+  tax_id_type_2:
+    transport: 14_digit_CNPJ
+    validation: CNPJ_two_Mod11_check_digits
+    repeated_digit_document: forbidden
+
+cross_record_rules:
+  - Every A must be immediately followed by exactly one B.
+  - Paired A and B records must share lot number, sequence, and settlement ID.
+  - Orphan, duplicate, and out-of-order segments are forbidden.
+  - Settlement IDs are unique within the batch and globally unique across accepted batches.
+  - A payment date equals its lot settlement date and cannot be after its due date.
+  - Per-settlement net equals face minus discount plus fee using exact decimal arithmetic.
+  - Discount cannot exceed face amount; every resulting net is nonnegative.
+  - Lot trailer count and face, discount, fee, and net totals equal its A segments.
+  - File trailer lot count, physical count, logical count, and net equal the validated lots and records.
+  - Physical record count includes H, L, A, B, T, and Z.
+  - Header, lots, trailers, filename date, and batch ID agree.
+  - Header file sequence equals the final six digits of the batch ID.
+  - Bank and client references are structured safe identifiers, never free text.
+  - Decimal parsing and aggregation use arbitrary precision; binary floating point is forbidden.
+
+validation_order:
+  - source_size_and_ascii
+  - exact_crlf_transport_and_final_crlf
+  - exact_240_byte_record_lengths
+  - record_grammar
+  - discriminators_literals_dates_and_filler
+  - field_lexical_and_numeric_rules
+  - CPF_CNPJ_Mod11
+  - safe_identifier_rules
+  - segment_pairing
+  - uniqueness_and_business_dates
+  - lot_controls
+  - file_count_controls
+  - file_face_discount_fee_controls
+  - file_net_control
+
+canonical_rejection_codes:
+  source_size: INVALID_SOURCE_SIZE
+  invalid_ascii: INVALID_ASCII
+  invalid_transport: INVALID_TRANSPORT
+  invalid_record_length: INVALID_RECORD_LENGTH
+  invalid_record_sequence: INVALID_RECORD_SEQUENCE
+  invalid_filler: INVALID_FILLER
+  invalid_field: INVALID_FIELD
+  invalid_document: INVALID_DOCUMENT
+  unsafe_identifier: INVALID_IDENTIFIER
+  segment_pair_mismatch: SEGMENT_PAIR_MISMATCH
+  duplicate_identifier: DUPLICATE_IDENTIFIER
+  invalid_business_date: INVALID_BUSINESS_DATE
+  source_control_lot_count_mismatch: SOURCE_CONTROL_LOT_COUNT_MISMATCH
+  source_control_physical_count_mismatch: SOURCE_CONTROL_PHYSICAL_COUNT_MISMATCH
+  source_control_logical_count_mismatch: SOURCE_CONTROL_LOGICAL_COUNT_MISMATCH
+  source_control_face_mismatch: SOURCE_CONTROL_FACE_MISMATCH
+  source_control_discount_mismatch: SOURCE_CONTROL_DISCOUNT_MISMATCH
+  source_control_fee_mismatch: SOURCE_CONTROL_FEE_MISMATCH
+  source_control_net_mismatch: SOURCE_CONTROL_NET_MISMATCH

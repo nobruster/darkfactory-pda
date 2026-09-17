@@ -1,0 +1,15 @@
+-- staging.ted_transfer_movement  dump 2026-06-20
+CREATE TABLE staging.ted_transfer_movement (
+    batch_id             char(16)      NOT NULL,
+    source_record_number int           NOT NULL,
+    movement_kind        varchar(8)    NOT NULL, -- TRANSFER | RETURN
+    status_code          char(2)       NOT NULL,
+    amount_brl           decimal(18,2) NOT NULL,
+    payer_account_token  varchar(40)   NOT NULL,
+    bene_account_token   varchar(40)   NOT NULL,
+    tax_id_masked        varchar(20)   NOT NULL,
+    occurred_ts          datetimeoffset NOT NULL,
+    return_of            varchar(32)   NULL,
+    PRIMARY KEY (batch_id, source_record_number)
+)
+GO

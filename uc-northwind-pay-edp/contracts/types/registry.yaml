@@ -1,0 +1,102 @@
+version: 1
+estate: synthetic
+status: all-five-contracts-approved-for-implementation
+description: >-
+  Five synthetic payment types selected to exercise distinct legacy layouts.
+  Every contract has passed its executable and independent review gates.
+  Implementation proceeds one complete vertical slice at a time.
+
+types:
+  - number: "01"
+    status: approved-for-implementation
+    folder: 01-card-settlement
+    slug: card-settlement
+    name: Card Settlement Detail
+    file_type_code: CRD_SETTLE01
+    extension: .dat
+    layout_style: fixed_width_overpunch
+    purpose: Settle card purchases and refunds by merchant.
+    coverage:
+      - fixed-width header-detail-trailer records
+      - clear-text PAN and CPF in raw input
+      - deterministic tokenization and masking
+      - positive and negative COBOL overpunch
+      - exact BRL reconciliation
+
+  - number: "02"
+    status: approved-for-implementation
+    folder: 02-instant-payment-events
+    slug: instant-payment-events
+    name: Instant Payment Events
+    file_type_code: PIX_EVENTS01
+    extension: .txt
+    layout_style: utf8_pipe_delimited_events
+    purpose: Settle instant-payment credits and returns.
+    coverage:
+      - pipe delimiter and escaped delimiters
+      - CPF and CNPJ document variants
+      - timezone-aware timestamps
+      - conditional return codes
+      - credit, debit, and net reconciliation
+
+  - number: "03"
+    status: approved-for-implementation
+    folder: 03-payment-slip-settlement
+    slug: payment-slip-settlement
+    name: Payment Slip Settlement
+    file_type_code: PAYSLIPSET03
+    extension: .rem
+    layout_style: fixed_240_byte_paired_segments
+    purpose: Settle payment slips from paired financial and beneficiary segments.
+    coverage:
+      - exact 240-byte records and CRLF
+      - file and lot control levels
+      - multi-record logical-row assembly
+      - visible filler validation
+      - face, discount, fee, and net reconciliation
+
+  - number: "04"
+    status: approved-for-implementation
+    folder: 04-ted-transfer-settlement
+    slug: ted-transfer-settlement
+    name: TED Transfer Settlement
+    file_type_code: TED_SETTLE04
+    extension: .dat
+    layout_style: heterogeneous_fixed_width_conditional_records
+    purpose: Settle successful interbank transfers and full returns.
+    coverage:
+      - record-specific fixed lengths
+      - strict CRLF transport bytes
+      - separate amount sign and magnitude
+      - conditional return records
+      - account tokenization and tax-ID masking
+  - number: "05"
+    status: approved-for-implementation
+    folder: 05-merchant-fee-assessment
+    slug: merchant-fee-assessment
+    name: Merchant Fee Assessment
+    file_type_code: MER_FEESET05
+    extension: .csv
+    layout_style: locale_aware_semicolon_delimited
+    purpose: Assess merchant percentage fees with exact rounding.
+    coverage:
+      - semicolon delimiter and quoted fields
+      - decimal comma and localized dates
+      - UTF-8 text and embedded quotes
+      - BigDecimal percentage calculation
+      - HALF_UP rounding reconciliation
+
+  - number: "06"
+    status: approved-for-implementation
+    folder: 06-merchant-chargeback
+    slug: merchant-chargeback
+    name: Merchant Chargeback Adjustment
+    file_type_code: MER_CHGBK06
+    extension: .csv
+    layout_style: locale_aware_semicolon_delimited
+    purpose: Adjust merchant chargebacks with exact HALF_UP rounding.
+    coverage:
+      - semicolon delimiter and quoted fields
+      - decimal comma
+      - HALF_UP chargeback calculation
+      - legacy-plant one-cent miss is classified, never patched

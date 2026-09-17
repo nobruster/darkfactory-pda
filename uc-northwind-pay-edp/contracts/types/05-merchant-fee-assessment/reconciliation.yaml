@@ -1,0 +1,111 @@
+version: 1
+type_number: "05"
+
+grain:
+  keys: [batch_id, currency]
+  currency: BRL
+
+procedure_order:
+  - sequence: 1
+    procedure: legacy.apply_merchant_fee_assessment_batch
+    arguments: [batch_id]
+    transaction: same_business_transaction
+  - sequence: 2
+    procedure: reporting.refresh_merchant_fee_reconciliation
+    arguments: [batch_id]
+    transaction: same_business_transaction
+
+source_controls:
+  row_count: source_manifest.source_controls.row_count
+  gross_amount: source_manifest.source_controls.gross_amount
+  assessed_fee: source_manifest.source_controls.assessed_fee
+  calculated_fee: source_manifest.source_controls.calculated_fee
+  persistence: control.type05_merchant_fee_controls
+
+stage_controls:
+  row_count: 'count(*) from staging.merchant_fee_assessment where batch_id = :batch_id'
+  gross_amount: 'sum(gross_amount_brl) from staging.merchant_fee_assessment where batch_id = :batch_id'
+  assessed_fee: 'sum(assessed_fee_brl) from staging.merchant_fee_assessment where batch_id = :batch_id'
+  calculated_fee: 'sum(calculated_fee_brl) from staging.merchant_fee_assessment where batch_id = :batch_id'
+
+operational_controls:
+  row_count: 'count(*) from legacy.merchant_fee_assessment where batch_id = :batch_id'
+  gross_amount: 'sum(gross_amount_brl) from legacy.merchant_fee_assessment where batch_id = :batch_id'
+  assessed_fee: 'sum(assessed_fee_brl) from legacy.merchant_fee_assessment where batch_id = :batch_id'
+  calculated_fee: 'sum(calculated_fee_brl) from legacy.merchant_fee_assessment where batch_id = :batch_id'
+
+report:
+  relation: reporting.merchant_fee_reconciliation
+  required_columns:
+    - batch_id
+    - currency
+    - source_count
+    - staged_count
+    - applied_count
+    - source_gross_amount
+    - staged_gross_amount
+    - applied_gross_amount
+    - source_assessed_fee
+    - staged_assessed_fee
+    - applied_assessed_fee
+    - source_calculated_fee
+    - staged_calculated_fee
+    - applied_calculated_fee
+    - count_delta
+    - gross_amount_delta
+    - assessed_fee_delta
+    - calculated_fee_delta
+    - assessment_calculation_delta
+    - reject_count
+    - status
+
+tolerances:
+  count_delta: 0
+  gross_amount_delta: "0.00"
+  assessed_fee_delta: "0.00"
+  calculated_fee_delta: "0.00"
+  assessment_calculation_delta: "0.00"
+
+semantics:
+  replay: idempotent_by_batch_id_and_assessment_id
+  immutable_source_identity: same_batch_id_requires_same_raw_and_manifest_hashes
+  global_batch_id: unique_across_all_file_types
+  global_assessment_id: unique_across_accepted_batches
+  operational_apply: insert_missing_rows_without_updating_existing_rows
+  count_delta: applied_count_minus_source_count
+  gross_amount_delta: applied_gross_amount_minus_source_gross_amount
+  assessed_fee_delta: applied_assessed_fee_minus_source_assessed_fee
+  calculated_fee_delta: applied_calculated_fee_minus_source_calculated_fee
+  assessment_calculation_delta: applied_assessed_fee_minus_applied_calculated_fee
+  reject_count: 'count(*) from control.rejects where batch_id = :batch_id'
+  transaction: staging_load_then_both_procedures_and_oracle_commit_or_rollback_together
+
+success:
+  - No rejected records exist.
+  - Source, staged, and applied counts and all money controls are identical.
+  - Assessed fee equals independently calculated fee at row and batch grain.
+  - No duplicate natural batch key or global assessment ID exists.
+  - Every delta is zero and report status is MATCHED.
+
+approved_example:
+  batch_id: B202607230000401
+  currency: BRL
+  source_count: 2
+  staged_count: 2
+  applied_count: 2
+  source_gross_amount: "1001.00"
+  staged_gross_amount: "1001.00"
+  applied_gross_amount: "1001.00"
+  source_assessed_fee: "12.36"
+  staged_assessed_fee: "12.36"
+  applied_assessed_fee: "12.36"
+  source_calculated_fee: "12.36"
+  staged_calculated_fee: "12.36"
+  applied_calculated_fee: "12.36"
+  count_delta: 0
+  gross_amount_delta: "0.00"
+  assessed_fee_delta: "0.00"
+  calculated_fee_delta: "0.00"
+  assessment_calculation_delta: "0.00"
+  reject_count: 0
+  status: MATCHED

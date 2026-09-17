@@ -1,0 +1,91 @@
+version: 1
+type_number: "06"
+
+grain:
+  keys: [batch_id, currency]
+  currency: BRL
+
+procedure_order:
+  - sequence: 1
+    procedure: legacy.apply_merchant_chargeback_batch
+    arguments: [batch_id]
+    transaction: same_business_transaction
+  - sequence: 2
+    procedure: reporting.refresh_merchant_chargeback_reconciliation
+    arguments: [batch_id]
+    transaction: same_business_transaction
+
+source_controls:
+  row_count: source_manifest.source_controls.row_count
+  original_amount: source_manifest.source_controls.original_amount
+  chargeback_amount: source_manifest.source_controls.chargeback_amount
+  calculated_amount: source_manifest.source_controls.calculated_amount
+
+stage_controls:
+  row_count: 'count(*) from staging.merchant_chargeback where batch_id = :batch_id'
+  original_amount: 'sum(original_amount_brl) from staging.merchant_chargeback where batch_id = :batch_id'
+  chargeback_amount: 'sum(chargeback_amount_brl) from staging.merchant_chargeback where batch_id = :batch_id'
+  calculated_amount: 'sum(calculated_amount_brl) from staging.merchant_chargeback where batch_id = :batch_id'
+
+operational_controls:
+  row_count: 'count(*) from legacy.merchant_chargeback where batch_id = :batch_id'
+  original_amount: 'sum(original_amount_brl) from legacy.merchant_chargeback where batch_id = :batch_id'
+  chargeback_amount: 'sum(chargeback_amount_brl) from legacy.merchant_chargeback where batch_id = :batch_id'
+  calculated_amount: 'sum(calculated_amount_brl) from legacy.merchant_chargeback where batch_id = :batch_id'
+
+report:
+  relation: reporting.merchant_chargeback_reconciliation
+  required_columns:
+    - batch_id
+    - currency
+    - source_count
+    - staged_count
+    - applied_count
+    - source_original_amount
+    - staged_original_amount
+    - applied_original_amount
+    - source_chargeback_amount
+    - staged_chargeback_amount
+    - applied_chargeback_amount
+    - source_calculated_amount
+    - staged_calculated_amount
+    - applied_calculated_amount
+    - count_delta
+    - original_amount_delta
+    - chargeback_amount_delta
+    - calculated_amount_delta
+    - reject_count
+    - status
+
+tolerances:
+  count_delta: 0
+  original_amount_delta: "0.00"
+  chargeback_amount_delta: "0.00"
+  calculated_amount_delta: "0.00"
+
+success:
+  - Source, staged, and applied counts and all money controls are identical.
+  - Chargeback amount equals independently calculated HALF_UP amount at row and batch grain.
+  - Every delta is zero and report status is MATCHED.
+
+approved_example:
+  batch_id: B202607230000501
+  currency: BRL
+  source_count: 1
+  staged_count: 1
+  applied_count: 1
+  source_original_amount: "67.00"
+  staged_original_amount: "67.00"
+  applied_original_amount: "67.00"
+  source_chargeback_amount: "1.01"
+  staged_chargeback_amount: "1.01"
+  applied_chargeback_amount: "1.01"
+  source_calculated_amount: "1.01"
+  staged_calculated_amount: "1.01"
+  applied_calculated_amount: "1.01"
+  count_delta: 0
+  original_amount_delta: "0.00"
+  chargeback_amount_delta: "0.00"
+  calculated_amount_delta: "0.00"
+  reject_count: 0
+  status: MATCHED

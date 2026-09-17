@@ -1,0 +1,49 @@
+{
+  "contract": "TaskMeshReleaseEvidence/v1",
+  "version": "3.9.0",
+  "api": "TaskMeshAPI/v1alpha1",
+  "generated_at": "2026-08-17T00:50:44Z",
+  "source": {
+    "branch": "main",
+    "commit_before_evidence_finalization": "5da13778a4af31614e630fedf8338a5b0053e1ea"
+  },
+  "release_status": "released",
+  "repository_visibility": "private",
+  "quality_baseline": {
+    "contract": "TaskSpecQualityScorecard/v1",
+    "release": "3.8.1",
+    "path": "release/3.8.1/scorecard.json",
+    "digest": "sha256:a0c7349db6df8593dccc6be9a72716b6377df9111f63f7fc9b8c73304866f4d9",
+    "score": 97,
+    "regression": false
+  },
+  "gates": {
+    "local_conformance": "pass",
+    "live_local_isolation": "pass",
+    "local_install_matrix": "pass",
+    "cross_cockpit_demo": "pass",
+    "hosted_ubuntu": "pass",
+    "hosted_macos": "pass",
+    "hosted_live_isolation": "pass",
+    "private_remote_install": "pass",
+    "private_provenance": "pass",
+    "publication": "pass"
+  },
+  "artifacts": [
+    {"path": "release/3.9.0/mesh-conformance.json", "digest": "sha256:388fad535efab561108dd51e3c33885d630ec8d993fca0708e82b03771e9d796"},
+    {"path": "release/3.9.0/reviewer-report.json", "digest": "sha256:1127d70bd813adb451b036bae057e7b4051204e42628a6284d92d0bb313c29e8"},
+    {"path": "tests/test-mesh-isolation.sh", "digest": "sha256:c356f09729b43d6ba20a1842d2cb49e100233ed0429cd610dd1ffe01f3b82744"},
+    {"path": "tests/test-mesh-install.sh", "digest": "sha256:1f69e5b77716641cd003c766b685bebfb3646beb8c4b7b8a13c3a55ac3539689"},
+    {"path": "release/3.9.0/hosted-ci.json", "digest": "sha256:bc6dee19018bc3289fa41dcf894d66680c926be81cef9064cb4c1fb3408dab78"},
+    {"path": "release/3.9.0/private-release-evidence.json", "digest": "sha256:8d73a07dc272908be1d5cc7012fc84fb14b4a598e4986b8e8befac680c790b50"},
+    {"path": "release/3.9.0/install-matrix.json", "digest": "sha256:3c1d6de934807ce2b28ee65a3fc91f97e04b7dff26c500b4dc7a24720c77379d"}
+  ],
+  "claims": {
+    "hosted_control_plane": false,
+    "production_reliability": false,
+    "protocol_certification": false,
+    "tier1_from_worktrees": false,
+    "automatic_target_merge": false
+  },
+  "next_gate": "No blocking v3.9.0 release gate remains; downstream Converge synchronization is independently reviewable."
+}

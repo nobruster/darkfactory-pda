@@ -1,0 +1,10 @@
+batch_id: B202607230000003
+scenario: malformed
+expected_stage: java-validation
+expected_status: quarantined
+expected_code: INVALID_OVERPUNCH
+source_record_number: 2
+transaction_id: TXN0000000000004
+csv_produced: false
+postgres_business_mutation: false
+quarantine_scope: batch

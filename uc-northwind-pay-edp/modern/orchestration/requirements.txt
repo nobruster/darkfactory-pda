@@ -1,0 +1,5 @@
+# Dagster runs in its own environment on purpose: it must never perturb
+# modern/.venv, whose pyarrow 25 wrote the landing Parquet. Lineage, not parser.
+dagster==1.13.20
+dagster-webserver
+duckdb

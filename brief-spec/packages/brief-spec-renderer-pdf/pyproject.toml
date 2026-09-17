@@ -1,0 +1,25 @@
+[build-system]
+requires = ["hatchling>=1.27"]
+build-backend = "hatchling.build"
+
+[project]
+name = "brief-spec-renderer-pdf"
+version = "0.5.0"
+description = "Verified Playwright PDF rendering for Brief-Spec deliveries."
+readme = "README.md"
+requires-python = ">=3.11"
+license = "MIT"
+authors = [{ name = "Luan Moreno Maciel" }]
+dependencies = [
+  "brief-spec>=0.5,<0.6",
+  "playwright>=1.54",
+]
+
+[project.entry-points."brief_spec.renderers"]
+pdf = "briefspec_renderer_pdf:PDFRenderer"
+
+[project.entry-points."briefspec.renderers"]
+pdf = "briefspec_renderer_pdf:PDFRenderer"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/briefspec_renderer_pdf"]

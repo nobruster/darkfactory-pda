@@ -1,0 +1,23 @@
+%%{init: {'theme': 'base', 'themeVariables': { 'primaryColor': '#111720', 'primaryTextColor': '#F5F2EA', 'primaryBorderColor': '#A56BFF', 'lineColor': '#29313A', 'secondaryColor': '#070A0F', 'tertiaryColor': '#29313A', 'background': '#070A0F', 'mainBkg': '#111720', 'nodeBorder': '#A56BFF', 'clusterBkg': '#111720', 'titleColor': '#F5F2EA', 'edgeLabelBackground': '#111720'}}}%%
+flowchart LR
+    A["Host task"] --> B["Harness adapter"]
+    B --> C["Local type classification"]
+    C --> D["Type-specific explanation"]
+    D --> E{"Eligible and at a boundary?"}
+    E -->|"Checkpoint"| F["Orient, Teach, or Spoken Brief"]
+    E -->|"Agent stopping"| G["Outcome Brief"]
+    F --> H["Canonical delivery object"]
+    G --> H
+    H --> I["Verified downloads"]
+    J["Repository, command, test, URL, or artifact"] -. "inspectable proof" .-> I
+
+    style A fill:#111720,stroke:#29313A,color:#F5F2EA
+    style B fill:#111720,stroke:#29313A,color:#F5F2EA
+    style C fill:#111720,stroke:#29313A,color:#F5F2EA
+    style D fill:#111720,stroke:#29313A,color:#F5F2EA
+    style E fill:#29313A,stroke:#A56BFF,color:#F5F2EA
+    style F fill:#111720,stroke:#29313A,color:#F5F2EA
+    style G fill:#A56BFF,stroke:#A56BFF,color:#F5F2EA
+    style H fill:#111720,stroke:#A56BFF,color:#F5F2EA
+    style I fill:#111720,stroke:#29313A,color:#F5F2EA
+    style J fill:#111720,stroke:#29313A,color:#F5F2EA

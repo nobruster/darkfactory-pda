@@ -1,0 +1,2 @@
+batch_id,source_file,source_record_number,end_to_end_id,transaction_id,payer_document_token,payer_document_masked,payee_document_token,payee_document_masked,event_timestamp,amount_brl,direction,status,return_code,description
+B202607230000104,NW_INSTANT_PAYMENT_20260723_B202607230000104.txt,2,E2026072300000000000000000000004,PIXTXN0000000004,doc_d2da1132236666eb9138ac3c,*******8909,doc_2f61f44080e6d82123b3d946,**********0195,2026-07-23T12:00:00-03:00,1.23,C,SETTLED,,"Café, invoice | folder \2026"

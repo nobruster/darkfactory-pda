@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://briefspec.dev/schemas/evidence.schema.json",
+  "title": "BriefSpec evidence reference",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["kind", "label", "locator", "basis", "result"],
+  "properties": {
+    "kind": {
+      "enum": ["file", "command", "test", "commit", "url", "pr", "issue", "artifact", "observation"]
+    },
+    "label": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 240
+    },
+    "locator": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 2048
+    },
+    "basis": {
+      "enum": ["direct", "derived", "reported"]
+    },
+    "result": {
+      "enum": ["pass", "fail", "info"]
+    },
+    "revision": {
+      "type": ["string", "null"]
+    },
+    "observed_at": {
+      "type": ["string", "null"],
+      "format": "date-time"
+    }
+  }
+}

@@ -1,0 +1,5 @@
+jsonschema==4.26.0
+paramiko==5.0.0
+psycopg[binary]==3.3.4
+PyYAML==6.0.3
+

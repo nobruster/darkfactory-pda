@@ -1,0 +1,75 @@
+name: northwind-pay-legacy
+
+services:
+  sftp:
+    build:
+      context: ./infra/local/sftp
+    environment:
+      SFTP_LOADER_PASSWORD: ${SFTP_LOADER_PASSWORD:-local-loader}
+      SFTP_OPERATOR_PASSWORD: ${SFTP_OPERATOR_PASSWORD:-local-operator}
+      SFTP_PROCESSOR_PASSWORD: ${SFTP_PROCESSOR_PASSWORD:-local-processor}
+      SFTP_RAW_PUBLISHER_PASSWORD: ${SFTP_RAW_PUBLISHER_PASSWORD:-local-raw-publisher}
+    ports:
+      - "127.0.0.1:${SFTP_PORT:-2222}:22"
+    volumes:
+      - sftp_data:/sftp/shared
+    healthcheck:
+      test: ["CMD-SHELL", "nc -z 127.0.0.1 22"]
+      interval: 2s
+      timeout: 2s
+      retries: 20
+      start_period: 2s
+
+  postgres:
+    image: postgres:16.14-alpine@sha256:57c72fd2a128e416c7fcc499958864df5301e940bca0a56f58fddf30ffc07777
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-northwind_legacy}
+      POSTGRES_PASSWORD: ${POSTGRES_ADMIN_PASSWORD:-local-northwind-admin}
+      POSTGRES_USER: ${POSTGRES_ADMIN_USER:-northwind_admin}
+      POSTGRES_APP_PASSWORD: ${POSTGRES_PASSWORD:-local-northwind-loader}
+      POSTGRES_APP_USER: ${POSTGRES_USER:-northwind_loader}
+    ports:
+      - "127.0.0.1:${POSTGRES_PORT:-54329}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./legacy/postgres/init/000_create_app_role.sh:/docker-entrypoint-initdb.d/000_create_app_role.sh:ro
+      - ./legacy/postgres/migrations/001_schemas_and_tables.sql:/docker-entrypoint-initdb.d/001_schemas_and_tables.sql:ro
+      - ./legacy/postgres/procedures/002_type01_procedures.sql:/docker-entrypoint-initdb.d/002_type01_procedures.sql:ro
+      - ./legacy/postgres/init/003_grants.sh:/docker-entrypoint-initdb.d/003_grants.sh:ro
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U ${POSTGRES_ADMIN_USER:-northwind_admin} -d ${POSTGRES_DB:-northwind_legacy}",
+        ]
+      interval: 2s
+      timeout: 2s
+      retries: 20
+      start_period: 2s
+
+  processor:
+    profiles: ["tools"]
+    build:
+      context: .
+      dockerfile: legacy/processor/Dockerfile
+    environment:
+      NWP_ACCOUNT_TOKEN_KEY: ${NWP_ACCOUNT_TOKEN_KEY:-}
+      NWP_DOCUMENT_TOKEN_KEY: ${NWP_DOCUMENT_TOKEN_KEY:-}
+      NWP_PARTY_TOKEN_KEY: ${NWP_PARTY_TOKEN_KEY:-}
+      NWP_PAYMENT_REFERENCE_KEY: ${NWP_PAYMENT_REFERENCE_KEY:-}
+      NWP_TED_ACCOUNT_TOKEN_KEY: ${NWP_TED_ACCOUNT_TOKEN_KEY:-}
+      NWP_TOKENIZATION_KEY: ${NWP_TOKENIZATION_KEY:-}
+      SFTP_HOST: sftp
+      SFTP_PORT: "22"
+      SFTP_PROCESSOR_PASSWORD: ${SFTP_PROCESSOR_PASSWORD:-local-processor}
+      SFTP_PROCESSOR_USER: ${SFTP_PROCESSOR_USER:-processor}
+      SFTP_KNOWN_HOSTS: /app/known_hosts
+    depends_on:
+      sftp:
+        condition: service_healthy
+    volumes:
+      - ./.runtime/known_hosts:/app/known_hosts:ro
+
+volumes:
+  postgres_data:
+  sftp_data:

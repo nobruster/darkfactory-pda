@@ -1,0 +1,99 @@
+[build-system]
+requires = ["hatchling>=1.27"]
+build-backend = "hatchling.build"
+
+[project]
+name = "brief-spec"
+version = "0.5.0"
+description = "Type-aware, evidence-backed delivery contracts for AI coding harnesses."
+readme = "README.md"
+requires-python = ">=3.11"
+license = { file = "LICENSE" }
+authors = [{ name = "Luan Moreno Maciel" }]
+keywords = [
+  "agents",
+  "brief-spec",
+  "codex",
+  "claude",
+  "copilot",
+  "developer-tools",
+  "productivity",
+]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Environment :: Console",
+  "License :: OSI Approved :: MIT License",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.14",
+  "Topic :: Software Development",
+]
+dependencies = []
+
+[project.urls]
+Homepage = "https://github.com/luanmorenommaciel/brief-spec"
+Repository = "https://github.com/luanmorenommaciel/brief-spec"
+Issues = "https://github.com/luanmorenommaciel/brief-spec/issues"
+
+[project.scripts]
+brief-spec = "brief_spec.cli:main"
+briefspec = "briefspec.cli:main"
+
+[dependency-groups]
+dev = [
+  "build>=1.3",
+  "jsonschema>=4.23",
+  "pytest>=8.4",
+  "pytest-cov>=6.2",
+  "ruff>=0.12",
+  "twine>=6.1",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/brief_spec", "src/briefspec"]
+
+[tool.hatch.build.targets.wheel.force-include]
+"skills" = "briefspec/resources/skills"
+"hooks" = "briefspec/resources/hooks"
+"schemas" = "briefspec/resources/schemas"
+"integrations/copilot" = "briefspec/resources/integrations/copilot"
+"plugin.json" = "briefspec/resources/manifests/plugin.json"
+".codex-plugin/plugin.json" = "briefspec/resources/manifests/codex-plugin.json"
+".claude-plugin/plugin.json" = "briefspec/resources/manifests/claude-plugin.json"
+
+[tool.hatch.build.targets.sdist]
+include = [
+  "/src",
+  "/skills",
+  "/hooks",
+  "/schemas",
+  "/integrations/copilot",
+  "/plugin.json",
+  "/.codex-plugin/plugin.json",
+  "/.claude-plugin/plugin.json",
+  "/CHANGELOG.md",
+  "/LICENSE",
+  "/README.md",
+]
+
+[tool.pytest.ini_options]
+addopts = "-q"
+testpaths = ["tests"]
+
+[tool.coverage.run]
+branch = true
+source = ["briefspec", "brief_spec"]
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = true
+fail_under = 85
+
+[tool.ruff]
+target-version = "py311"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM"]

@@ -1,0 +1,18 @@
+-- staging.payment_slip_settlement  dump 2026-06-20
+CREATE TABLE staging.payment_slip_settlement (
+    batch_id             char(16)      NOT NULL,
+    source_record_number int           NOT NULL,
+    lot_number           int           NOT NULL,
+    payment_ref_token    varchar(40)   NOT NULL,
+    beneficiary_token    varchar(40)   NOT NULL,
+    account_token        varchar(40)   NOT NULL,
+    document_masked      varchar(20)   NOT NULL,
+    face_amount          decimal(18,2) NOT NULL,
+    discount_amount      decimal(18,2) NOT NULL,
+    fee_amount           decimal(18,2) NOT NULL,
+    net_amount           decimal(18,2) NOT NULL,
+    -- "we used to print lot remarks on a courier sheet"
+    lot_remark           varchar(80)   NULL,
+    PRIMARY KEY (batch_id, source_record_number)
+)
+GO

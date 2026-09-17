@@ -1,0 +1,118 @@
+version: 1
+file_type:
+  number: "06"
+  name: Merchant Chargeback Adjustment
+  code: MER_CHGBK06
+  layout_version: "001"
+  filename_regex: '^NW_MERCHANT_CHARGEBACK_[0-9]{8}_B[0-9]{15}\.csv$'
+  encoding: UTF-8
+  decoding: strict
+  bom: forbidden
+  unicode_normalization: NFC_required_on_input
+  line_ending: LF
+  final_line_ending: required
+  blank_lines: forbidden
+  bare_cr: forbidden
+  max_detail_rows: 10000
+  max_physical_record_bytes: 512
+  max_source_file_bytes: 5130138
+
+grammar:
+  style: semicolon_delimited
+  parser: single_pass_quote_aware_lexer
+  delimiter: semicolon
+  quote_character: double_quote
+  escaped_quote: doubled_quote
+  multiline_fields: forbidden
+  whitespace_outside_quotes: forbidden
+  field_count: 10
+  description_must_be_quoted: true
+  non_description_fields_must_be_unquoted: true
+  empty_fields: forbidden
+
+header:
+  exact: 'chargeback_id;batch_id;merchant_id;merchant_tax_id;reason_code;description;original_amount_brl;rate_percent;chargeback_amount_brl;business_date'
+
+columns:
+  - { position: 1, name: chargeback_id, type: safe_ascii_identifier, regex: '^CBK[0-9]{13}$' }
+  - { position: 2, name: batch_id, type: safe_ascii_identifier, regex: '^B[0-9]{15}$' }
+  - { position: 3, name: merchant_id, type: safe_ascii_identifier, regex: '^MER[0-9]{13}$' }
+  - { position: 4, name: merchant_tax_id, type: digits, length: 14, validation: CNPJ_two_Mod11_check_digits, privacy: mask }
+  - { position: 5, name: reason_code, type: safe_ascii_identifier, regex: '^[A-Z][A-Z0-9_]{1,9}$' }
+  - { position: 6, name: description, type: quoted_nfc_string, min_codepoints: 1, max_codepoints: 80, privacy: validated_passthrough }
+  - { position: 7, name: original_amount_brl, type: locale_unsigned_decimal, canonical_regex: '^(0|[1-9][0-9]{0,11}),[0-9]{2}$', scale: 2, minimum_exclusive: "0,00" }
+  - { position: 8, name: rate_percent, type: locale_unsigned_decimal, canonical_regex: '^(0|[1-9][0-9]{0,2}),[0-9]{3}$', scale: 3, minimum_exclusive: "0,000", maximum: "100,000" }
+  - { position: 9, name: chargeback_amount_brl, type: locale_unsigned_decimal, canonical_regex: '^(0|[1-9][0-9]{0,11}),[0-9]{2}$', scale: 2, minimum: "0,00" }
+  - { position: 10, name: business_date, type: date, format: dd/MM/yyyy }
+
+calculation:
+  expression: original_amount_brl * rate_percent / 100
+  intermediate: arbitrary_precision_decimal
+  final_scale: 2
+  rounding_mode: HALF_UP
+  chargeback_amount_must_equal_calculated_amount: true
+  binary_floating_point: forbidden
+
+source_control_manifest:
+  location: source-manifest.json
+  ownership: source_system_of_record
+  raw_csv_contains_no_trailer: true
+  fields:
+    - row_count
+    - original_amount
+    - chargeback_amount
+    - calculated_amount
+  validation:
+    - declared_row_count_equals_parsed_detail_count
+    - declared_original_equals_exact_row_sum
+    - declared_chargeback_equals_exact_row_sum
+    - declared_calculated_equals_independent_HALF_UP_row_sum
+
+cross_record_rules:
+  - Every row batch ID equals the filename batch ID.
+  - Every business date equals the filename date.
+  - Chargeback IDs are unique within the batch.
+  - Every chargeback amount equals its independently calculated HALF_UP amount.
+  - All arithmetic uses arbitrary-precision decimals; binary floating point is forbidden.
+
+validation_order:
+  - source_size
+  - strict_UTF8_without_BOM
+  - NFC_normalization
+  - exact_LF_transport_and_record_byte_bounds
+  - exact_header
+  - CSV_quoting
+  - field_count
+  - field_lexical_and_decimal_rules
+  - CNPJ_Mod11
+  - identifier_and_description_rules
+  - filename_batch_and_business_date_rules
+  - chargeback_id_uniqueness
+  - HALF_UP_chargeback_calculation
+  - source_count_control
+  - source_original_control
+  - source_chargeback_control
+  - source_calculated_control
+  - whole_output_privacy_scan
+
+canonical_rejection_codes:
+  source_size: INVALID_SOURCE_SIZE
+  invalid_utf8: INVALID_UTF8
+  invalid_unicode_normalization: INVALID_UNICODE_NORMALIZATION
+  invalid_transport: INVALID_TRANSPORT
+  invalid_record_length: INVALID_RECORD_LENGTH
+  invalid_header: INVALID_HEADER
+  invalid_csv_quoting: INVALID_CSV_QUOTING
+  invalid_field_count: INVALID_FIELD_COUNT
+  invalid_field: INVALID_FIELD
+  invalid_document: INVALID_DOCUMENT
+  invalid_identifier: INVALID_IDENTIFIER
+  invalid_description: INVALID_DESCRIPTION
+  invalid_business_date: INVALID_BUSINESS_DATE
+  duplicate_identifier: DUPLICATE_IDENTIFIER
+  chargeback_calculation_mismatch: CHARGEBACK_CALCULATION_MISMATCH
+  source_control_count_mismatch: SOURCE_CONTROL_COUNT_MISMATCH
+  source_control_original_mismatch: SOURCE_CONTROL_ORIGINAL_MISMATCH
+  source_control_chargeback_mismatch: SOURCE_CONTROL_CHARGEBACK_MISMATCH
+  source_control_calculated_mismatch: SOURCE_CONTROL_CALCULATED_MISMATCH
+  privacy_output_violation: PRIVACY_OUTPUT_VIOLATION

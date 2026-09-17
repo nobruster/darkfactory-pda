@@ -1,0 +1,13 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "brief-spec",
+  "description": "Type-aware, evidence-backed reading and delivery for AI coding agents.",
+  "version": "0.5.0",
+  "author": {
+    "name": "Luan Moreno Maciel"
+  },
+  "homepage": "https://github.com/luanmorenommaciel/brief-spec",
+  "repository": "https://github.com/luanmorenommaciel/brief-spec",
+  "license": "MIT",
+  "keywords": ["brief", "checkpoint", "evidence", "developer-productivity"]
+}

@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://briefspec.dev/schemas/brief-spec-frame-request.schema.json",
+  "title": "BriefSpecFrameRequest/v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["contract", "work_type", "subject", "producer", "body"],
+  "properties": {
+    "contract": {"const": "BriefSpecFrameRequest/v1"},
+    "work_type": {"enum": ["general", "exploration", "review", "implementation", "debugging", "planning", "research", "operations"]},
+    "subject": {"type": "string", "minLength": 1},
+    "producer": {"type": "string", "pattern": "^[a-z][a-z0-9-]{0,63}$"},
+    "body": {"type": "string", "minLength": 1, "maxLength": 2000000}
+  }
+}

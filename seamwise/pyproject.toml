@@ -1,0 +1,108 @@
+[build-system]
+requires = ["hatchling>=1.27"]
+build-backend = "hatchling.build"
+
+[project]
+name = "seamwise"
+dynamic = ["version"]
+description = "Architecture-aware decomposition compiler with an external Task-Spec boundary"
+readme = "README.md"
+requires-python = ">=3.11"
+license = { file = "LICENSE" }
+authors = [{ name = "Luan Moreno M. Maciel" }]
+keywords = ["agentic-engineering", "architecture", "cli", "task-spec"]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Environment :: Console",
+  "License :: OSI Approved :: MIT License",
+  "Operating System :: MacOS",
+  "Operating System :: POSIX :: Linux",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+]
+dependencies = [
+  "click>=8.1,<9",
+  "jsonschema>=4.23,<5",
+  "PyYAML>=6,<7",
+  "rich>=13,<15",
+]
+
+[project.optional-dependencies]
+dev = [
+  "mypy>=1.15,<2",
+  "pytest>=8.3,<9",
+  "pytest-cov>=6,<7",
+  "ruff>=0.11,<1",
+  "types-jsonschema>=4.23,<5",
+  "types-PyYAML>=6,<7",
+]
+
+[project.scripts]
+seamwise = "seamwise.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/luanmorenommaciel/seamwise"
+Repository = "https://github.com/luanmorenommaciel/seamwise"
+
+[tool.hatch.version]
+path = "VERSION"
+pattern = "(?P<version>\\S+)"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/seamwise"]
+
+[tool.hatch.build.targets.wheel.force-include]
+"schemas" = "seamwise/schemas"
+"skills" = "seamwise/assets/skills"
+".codex-plugin" = "seamwise/assets/.codex-plugin"
+".claude-plugin" = "seamwise/assets/.claude-plugin"
+"VERSION" = "seamwise/assets/VERSION"
+"LICENSE" = "seamwise/assets/LICENSE"
+
+[tool.hatch.build.targets.sdist]
+include = [
+  "/.agents",
+  "/.claude-plugin",
+  "/.codex-plugin",
+  "/assets",
+  "/schemas",
+  "/scripts",
+  "/skills",
+  "/src",
+  "/tests",
+  "/AGENTS.md",
+  "/CHANGELOG.md",
+  "/CLAUDE.md",
+  "/LICENSE",
+  "/Makefile",
+  "/README.md",
+  "/VERSION",
+  "/uv.lock",
+]
+
+[tool.pytest.ini_options]
+addopts = "-ra --strict-config --strict-markers"
+testpaths = ["tests"]
+
+[tool.coverage.run]
+branch = true
+source = ["seamwise"]
+
+[tool.coverage.report]
+fail_under = 78
+show_missing = true
+
+[tool.ruff]
+target-version = "py311"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM", "RUF"]
+ignore = ["E501"]
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+files = ["src/seamwise"]

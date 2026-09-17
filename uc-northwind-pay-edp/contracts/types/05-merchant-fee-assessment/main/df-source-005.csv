@@ -1,0 +1,2 @@
+assessment_id;batch_id;merchant_id;merchant_tax_id;fee_code;description;gross_amount_brl;rate_percent;assessed_fee_brl;assessment_date
+FEE2026072304007;B202607230000405;MER0000000000006;11222333000181;MDR;"Controle da origem";100,00;1,000;1,00;23/07/2026

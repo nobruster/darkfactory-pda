@@ -1,0 +1,3 @@
+batch_id,source_file,source_record_number,end_to_end_id,transaction_id,payer_document_token,payer_document_masked,payee_document_token,payee_document_masked,event_timestamp,amount_brl,direction,status,return_code,description
+B202607230000101,NW_INSTANT_PAYMENT_20260723_B202607230000101.txt,2,E2026072300000000000000000000001,PIXTXN0000000001,doc_d2da1132236666eb9138ac3c,*******8909,doc_2f61f44080e6d82123b3d946,**********0195,2026-07-23T09:00:00-03:00,200.00,C,SETTLED,,Invoice 1001
+B202607230000101,NW_INSTANT_PAYMENT_20260723_B202607230000101.txt,3,E2026072300000000000000000000002,PIXTXN0000000002,doc_41da39396043c0f62be3d488,**********0198,doc_6afd3bc540579d0ad9120a9e,*******7735,2026-07-23T10:00:00-03:00,-26.55,D,RETURNED,AC03,Return|beneficiary

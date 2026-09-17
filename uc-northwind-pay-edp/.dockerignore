@@ -1,0 +1,16 @@
+**
+!contracts/
+!contracts/types/
+!contracts/types/01-card-settlement/
+!contracts/types/01-card-settlement/**
+!contracts/types/02-instant-payment-events/
+!contracts/types/02-instant-payment-events/**
+!contracts/types/03-payment-slip-settlement/
+!contracts/types/03-payment-slip-settlement/**
+!contracts/types/04-ted-transfer-settlement/
+!contracts/types/04-ted-transfer-settlement/**
+!contracts/types/05-merchant-fee-assessment/
+!contracts/types/05-merchant-fee-assessment/**
+!legacy/
+!legacy/processor/
+!legacy/processor/**

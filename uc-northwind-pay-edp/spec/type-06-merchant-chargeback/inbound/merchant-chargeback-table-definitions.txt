@@ -1,0 +1,14 @@
+-- staging.merchant_chargeback  dump 2026-07-18
+CREATE TABLE staging.merchant_chargeback (
+    batch_id             char(16)      NOT NULL,
+    source_record_number int           NOT NULL,
+    chargeback_id        varchar(16)   NOT NULL,
+    merchant_id          varchar(32)   NOT NULL,
+    document_masked      varchar(20)   NOT NULL,
+    original_amount      decimal(18,2) NOT NULL,
+    rate_percent         decimal(9,3)  NOT NULL,
+    chargeback_amount    decimal(18,2) NOT NULL,
+    calculated_amount    decimal(18,2) NOT NULL,
+    PRIMARY KEY (batch_id, chargeback_id)
+)
+GO

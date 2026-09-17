@@ -1,0 +1,60 @@
+version: 2
+
+models:
+  - name: bronze_card_settlement
+    description: "Grain: one privacy-safe Type 01 movement per source detail record."
+    columns:
+      - name: batch_id
+        tests: [not_null]
+      - name: source_record_number
+        tests: [not_null]
+      - name: transaction_id
+        tests: [not_null, unique]
+      - name: amount_brl
+        tests: [not_null]
+      - name: card_token
+        tests: [not_null]
+      - name: movement_code
+        tests:
+          - not_null
+          - accepted_values:
+              values: ["P", "R"]
+
+  - name: bronze_card_settlement_control
+    description: "Grain: one row per batch, carrying declared and computed controls."
+    columns:
+      - name: batch_id
+        tests: [not_null, unique]
+      - name: declared_net_amount
+        tests: [not_null]
+      - name: computed_net_amount
+        tests: [not_null]
+
+  - name: bronze_merchant_chargeback
+    description: "Grain: one privacy-safe Type 06 chargeback per source detail record."
+    columns:
+      - name: batch_id
+        tests: [not_null]
+      - name: source_record_number
+        tests: [not_null]
+      - name: chargeback_id
+        tests: [not_null, unique]
+      - name: chargeback_amount_brl
+        tests: [not_null]
+      - name: calculated_amount_brl
+        tests: [not_null]
+      - name: rounding_mode
+        tests:
+          - not_null
+          - accepted_values:
+              values: ["HALF_UP"]
+
+  - name: bronze_merchant_chargeback_control
+    description: "Grain: one Type 06 control row per batch."
+    columns:
+      - name: batch_id
+        tests: [not_null, unique]
+      - name: declared_chargeback_amount
+        tests: [not_null]
+      - name: computed_chargeback_amount
+        tests: [not_null]

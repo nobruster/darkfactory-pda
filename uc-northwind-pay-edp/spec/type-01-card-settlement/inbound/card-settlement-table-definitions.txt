@@ -1,0 +1,29 @@
+-- SSMS dump 2026-06-18  Rafael Costa
+-- staging.card_settlement  +  legacy.card_settlement
+
+CREATE TABLE staging.card_settlement (
+    batch_id              char(16)       NOT NULL,
+    source_file           varchar(128)   NOT NULL,
+    source_record_number  int            NOT NULL,
+    transaction_id        char(16)       NOT NULL,
+    merchant_id           char(16)       NOT NULL,
+    card_token            varchar(32)    NOT NULL,
+    card_last4            char(4)        NOT NULL,
+    cpf_masked            char(11)       NOT NULL,
+    transaction_ts        datetimeoffset NOT NULL,
+    amount_brl            decimal(18,2)  NOT NULL,
+    movement_code         char(1)        NOT NULL,
+    authorization_code    char(6)        NOT NULL,
+    nsu                   char(12)       NOT NULL,
+    terminal_id           char(16)       NOT NULL,
+    -- leftover from the 2024 chargeback report. proc does not write this.
+    chargeback_flag       char(1)        NULL,
+    CONSTRAINT pk_stg_card PRIMARY KEY (batch_id, source_record_number)
+)
+GO
+
+-- reporting.card_settlement_reconciliation
+-- source_count, staged_count, applied_count
+-- source_net_amount, staged_net_amount, applied_net_amount
+-- count_delta, amount_delta, reject_count, status
+GO

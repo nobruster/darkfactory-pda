@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/luanmorenommaciel/brief-spec/releases/download/v0.5.0/brief-spec-evidence.schema.json",
+  "title": "Brief-Spec evidence reference",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["kind", "label", "locator", "basis", "result"],
+  "properties": {
+    "kind": {
+      "enum": ["file", "command", "test", "commit", "url", "pr", "issue", "artifact", "observation"]
+    },
+    "label": { "type": "string", "minLength": 1, "maxLength": 240 },
+    "locator": { "type": "string", "minLength": 1, "maxLength": 2048 },
+    "basis": { "enum": ["direct", "derived", "reported"] },
+    "result": { "enum": ["pass", "fail", "info"] },
+    "revision": { "type": ["string", "null"] },
+    "observed_at": { "type": ["string", "null"], "format": "date-time" }
+  }
+}

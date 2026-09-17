@@ -1,0 +1,2 @@
+assessment_id;batch_id;merchant_id;merchant_tax_id;fee_code;description;gross_amount_brl;rate_percent;assessed_fee_brl;assessment_date
+FEE2000022904003;B200002290000402;MER9999999999999;99999999999962;MAX_BOUND;"ÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁ";999999999999,99;100,000;999999999999,99;29/02/2000

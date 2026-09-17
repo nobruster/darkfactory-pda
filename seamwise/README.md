@@ -1,0 +1,365 @@
+# SEAMWISE
+
+<p align="center">
+  <img src="assets/lockup-hero.png" alt="SEAMWISE — architecture-aware decomposition compiler" width="100%">
+</p>
+
+<p align="center">
+  <a href="https://github.com/luanmorenommaciel/seamwise/releases"><img src="https://img.shields.io/badge/release-0.2.0-070A0F?labelColor=111720" alt="Release 0.2.0"></a>
+  <img src="https://img.shields.io/badge/python-3.11%2B-2F6BFF?labelColor=111720" alt="Python 3.11+">
+  <img src="https://img.shields.io/badge/TaskPlan-v1-29313A?labelColor=111720" alt="TaskPlan v1">
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-29313A?labelColor=111720" alt="MIT License"></a>
+</p>
+
+> One approved initiative in. One reviewed `TaskPlan/v1` and digest-bound
+> lineage out. No task materialization and no dispatch authority.
+
+SEAMWISE answers one question:
+
+**How should this initiative be sliced along real system seams?**
+
+It maps evidence-backed responsibility boundaries, creates one owning swimlane
+per seam, lowers work into observable capability legs, proves dependency and
+contention ordering, stops for explicit human review, and projects the reviewed
+result into a portable TaskPlan.
+
+SEAMWISE does not import, vendor, invoke, or reimplement Task-Spec. It does not
+write Task-Spec Markdown, authorize dispatch, execute work, or accept delivery.
+
+## Authority boundary
+
+<p align="center">
+  <img src="assets/architecture.png" alt="SEAMWISE authority boundary — from approved initiative through decomposition, review, TaskPlan projection, and external coordination" width="100%">
+</p>
+
+<details>
+<summary>View diagram source</summary>
+
+```mermaid
+%%{init: {'theme': 'base', 'themeVariables': { 'primaryColor': '#111720', 'primaryTextColor': '#F5F2EA', 'primaryBorderColor': '#2F6BFF', 'lineColor': '#29313A', 'secondaryColor': '#070A0F', 'tertiaryColor': '#29313A', 'background': '#070A0F', 'mainBkg': '#111720', 'nodeBorder': '#2F6BFF', 'clusterBkg': '#111720', 'titleColor': '#F5F2EA', 'edgeLabelBackground': '#111720'}}}%%
+flowchart LR
+    I["Approved initiative"] --> S["SEAMWISE decomposition"]
+    S --> R{"Explicit human review"}
+    R --> TP["TaskPlan/v1"]
+    R --> L["SeamwiseTaskPlanLineage/v1"]
+    TP --> C["Converge coordinator"]
+    L --> C
+    C --> T["Task-Spec engine"]
+    T --> M["Materialized tasks"]
+    M --> A["Per-leaf authorization and acceptance"]
+
+    style I fill:#111720,stroke:#2F6BFF,color:#F5F2EA
+    style S fill:#2F6BFF,stroke:#F5F2EA,color:#F5F2EA
+    style R fill:#29313A,stroke:#2F6BFF,color:#F5F2EA
+    style TP fill:#111720,stroke:#2F6BFF,color:#F5F2EA
+    style L fill:#111720,stroke:#2F6BFF,color:#F5F2EA
+    style C fill:#29313A,stroke:#29313A,color:#F5F2EA
+    style T fill:#29313A,stroke:#29313A,color:#F5F2EA
+    style M fill:#29313A,stroke:#29313A,color:#F5F2EA
+    style A fill:#29313A,stroke:#29313A,color:#F5F2EA
+```
+
+</details>
+
+| Product | Owns | Does not own |
+|---|---|---|
+| SEAMWISE | evidence-backed decomposition, seams, swimlanes, capability legs, topology, human plan review, TaskPlan projection | Task-Spec validation, materialization, dispatch, execution, acceptance |
+| Task-Spec | TaskPlan validation, task materialization, per-leaf authorization, handoff, evaluation, acceptance | initiative discovery or decomposition |
+| Converge | engine negotiation, sequencing, runtime binding, settlement, composition receipts | either engine's internal authority |
+
+The invariant is:
+
+> **SEAMWISE decomposes. Task-Spec contracts. Converge coordinates.**
+
+## Install
+
+```bash
+uv tool install "git+https://github.com/luanmorenommaciel/seamwise.git@v0.2.0"
+seamwise --version
+seamwise --json doctor --host core
+```
+
+Core SEAMWISE requires Python 3.11 or newer and Git. Task-Spec is deliberately
+not a SEAMWISE runtime dependency. A composed caller installs and negotiates
+the two engines independently.
+
+Inspect the exact machine boundary:
+
+```bash
+seamwise --json capabilities
+```
+
+The returned `SeamwiseCapabilities/v1` advertises the engine version,
+`TaskPlan/v1`, `SeamwiseTaskPlanLineage/v1`, and the supported coordinator
+commands. It also declares `materializes_tasks: false` and
+`dispatch_authority: false`.
+
+<p align="center">
+  <img src="assets/capabilities.png" alt="SEAMWISE capabilities — one initiative in, seams swimlanes capability legs and topology, human review, TaskPlan/v1 and lineage out. materializes_tasks false, dispatch_authority false" width="100%">
+</p>
+
+<details>
+<summary>View diagram source</summary>
+
+```mermaid
+%%{init: {'theme': 'base', 'themeVariables': { 'primaryColor': '#111720', 'primaryTextColor': '#F5F2EA', 'primaryBorderColor': '#2F6BFF', 'lineColor': '#29313A', 'secondaryColor': '#070A0F', 'tertiaryColor': '#29313A', 'background': '#070A0F', 'mainBkg': '#111720', 'nodeBorder': '#2F6BFF', 'clusterBkg': '#111720', 'titleColor': '#F5F2EA', 'edgeLabelBackground': '#111720'}}}%%
+flowchart LR
+    I["One initiative"] --> S["SEAMWISE"]
+    S --> R{"review"}
+    R --> TP["TaskPlan/v1"]
+    R --> L["lineage/v1"]
+
+    style I fill:#111720,stroke:#2F6BFF,color:#F5F2EA
+    style S fill:#2F6BFF,stroke:#F5F2EA,color:#F5F2EA
+    style R fill:#29313A,stroke:#2F6BFF,color:#F5F2EA
+    style TP fill:#111720,stroke:#2F6BFF,color:#F5F2EA
+    style L fill:#111720,stroke:#2F6BFF,color:#F5F2EA
+```
+
+</details>
+
+## First successful journey
+
+Initialize a repository workspace and inspect the recipe schema:
+
+```bash
+seamwise --workspace "/path/to/project" init
+seamwise --workspace "/path/to/project" recipe schema
+```
+
+Author `seamwise-recipe.yaml`, then run each authority boundary explicitly:
+
+```bash
+seamwise --workspace "/path/to/project" map --source seamwise-recipe.yaml
+seamwise --workspace "/path/to/project" plan
+seamwise --workspace "/path/to/project" review \
+  --accept \
+  --reviewer "human-name" \
+  --reason "The seams, ownership, ordering, and proof boundaries are acceptable."
+seamwise --workspace "/path/to/project" compile
+seamwise --workspace "/path/to/project" status
+```
+
+`plan` stops at `DELIVERY_PLAN=NEEDS_REVIEW`. `compile` refuses to cross that
+boundary without a current review receipt bound to the exact delivery-plan
+digest.
+
+<p align="center">
+  <img src="assets/flow.png" alt="First successful journey — init, map, plan stops at NEEDS_REVIEW, human review, compile refuses without receipt, TaskPlan/v1 and lineage/v1" width="100%">
+</p>
+
+<details>
+<summary>View diagram source</summary>
+
+```mermaid
+%%{init: {'theme': 'base', 'themeVariables': { 'primaryColor': '#111720', 'primaryTextColor': '#F5F2EA', 'primaryBorderColor': '#2F6BFF', 'lineColor': '#29313A', 'secondaryColor': '#070A0F', 'tertiaryColor': '#29313A', 'background': '#070A0F', 'mainBkg': '#111720', 'nodeBorder': '#2F6BFF', 'clusterBkg': '#111720', 'titleColor': '#F5F2EA', 'edgeLabelBackground': '#111720'}}}%%
+flowchart LR
+    I["init"] --> M["map"]
+    M --> P["plan"]
+    P --> R{"HUMAN REVIEW"}
+    R --> C["compile"]
+    C --> TP["TaskPlan/v1"]
+    C --> L["lineage/v1"]
+
+    style I fill:#111720,stroke:#29313A,color:#F5F2EA
+    style M fill:#111720,stroke:#29313A,color:#F5F2EA
+    style P fill:#111720,stroke:#2F6BFF,color:#F5F2EA
+    style R fill:#29313A,stroke:#2F6BFF,color:#F5F2EA
+    style C fill:#2F6BFF,stroke:#F5F2EA,color:#F5F2EA
+    style TP fill:#111720,stroke:#2F6BFF,color:#F5F2EA
+    style L fill:#111720,stroke:#2F6BFF,color:#F5F2EA
+```
+
+</details>
+
+Successful compilation writes exactly two boundary artifacts:
+
+```text
+seamwise/
+├── task-plan.json
+└── task-plan-lineage.json
+```
+
+- `task-plan.json` is the reviewed `TaskPlan/v1` input for Task-Spec.
+- `task-plan-lineage.json` binds the intent, review digest, TaskPlan digest, and
+  every unit ID to its seam, swimlane, capability leg, and source digest.
+
+Compilation is atomic and deterministic. A rerun produces identical bytes.
+Coordinated tampering with both files still fails because status rebuilds the
+expected projections from the reviewed canonical inputs.
+
+To check interoperability manually without materializing tasks:
+
+```bash
+taskspec --json plan --manifest seamwise/task-plan.json
+```
+
+Task-Spec validation remains Task-Spec's authority. A caller invokes
+`taskspec batch` later and must retain `dispatch_authorized: false` until every
+leaf passes `taskspec gate --stamp`.
+
+## Chat interface
+
+Install the five focused SEAMWISE skills for Codex, Claude Code, or both:
+
+```bash
+seamwise install codex --scope project
+seamwise install claude --scope project
+seamwise install all --scope project
+```
+
+Start a new host session after installation. A safe first prompt is:
+
+```text
+Use $seamwise to decompose this approved initiative one confirmed pass at a
+time. Ask one concise unanswered question, show each proposed artifact, and
+wait for my confirmation before running the next SEAMWISE command.
+```
+
+Export a bounded, verified packet for a chat interface with:
+
+```bash
+seamwise --workspace "/path/to/project" --json agent-context --host chat
+```
+
+Chat output remains a proposal. It cannot review a plan, materialize a task,
+or create Task-Spec authority.
+
+<p align="center">
+  <img src="assets/chat.png" alt="Chat interface — install skills, start session, propose map then plan one pass at a time, human review outside chat, compile after receipt. Chat proposes only" width="100%">
+</p>
+
+<details>
+<summary>View diagram source</summary>
+
+```mermaid
+%%{init: {'theme': 'base', 'themeVariables': { 'primaryColor': '#111720', 'primaryTextColor': '#F5F2EA', 'primaryBorderColor': '#2F6BFF', 'lineColor': '#29313A', 'secondaryColor': '#070A0F', 'tertiaryColor': '#29313A', 'background': '#070A0F', 'mainBkg': '#111720', 'nodeBorder': '#2F6BFF', 'clusterBkg': '#111720', 'titleColor': '#F5F2EA', 'edgeLabelBackground': '#111720'}}}%%
+flowchart LR
+    I["install skills"] --> S["start session"]
+    S --> P["propose map then plan"]
+    P --> R{"HUMAN REVIEW<br/>outside chat"}
+    R --> C["compile after receipt"]
+
+    style I fill:#111720,stroke:#29313A,color:#F5F2EA
+    style S fill:#111720,stroke:#29313A,color:#F5F2EA
+    style P fill:#2F6BFF,stroke:#F5F2EA,color:#F5F2EA
+    style R fill:#29313A,stroke:#2F6BFF,color:#F5F2EA
+    style C fill:#111720,stroke:#2F6BFF,color:#F5F2EA
+```
+
+</details>
+
+## CLI
+
+```text
+seamwise init
+seamwise recipe schema
+seamwise capabilities
+seamwise map --source <recipe.yaml>
+seamwise plan
+seamwise review --accept --reviewer <name> --reason <reason>
+seamwise compile
+seamwise prepare --source <recipe.yaml>
+seamwise status
+seamwise next
+seamwise inspect [TASK_ID]
+seamwise graph
+seamwise report --format html|json
+seamwise agent-context --host codex|claude|chat
+seamwise install codex|claude|all --scope project|user
+seamwise uninstall codex|claude|all --scope project|user
+seamwise doctor --host core|codex|claude|all
+```
+
+`prepare` automates only already-authorized transformations and always stops at
+the review boundary. It never reviews or compiles implicitly.
+
+Every command in JSON mode returns exactly one `SeamwiseCLIResult/v1` object:
+
+```json
+{
+  "contract": "SeamwiseCLIResult/v1",
+  "engine_version": "0.2.0",
+  "schema_version": 1,
+  "command": "status",
+  "ok": true,
+  "token": "STATUS=READY",
+  "exit_code": 0,
+  "workspace": "/path/to/project",
+  "artifacts": [],
+  "diagnostics": [],
+  "next": [
+    "Pass seamwise/task-plan.json and seamwise/task-plan-lineage.json to the composition coordinator."
+  ],
+  "data": {
+    "reviewed": true,
+    "task_graph": true,
+    "task_plan": true,
+    "task_plan_lineage": true,
+    "units": 4,
+    "task_specs": 0,
+    "materialization_receipt": false,
+    "dispatch_authorized": false
+  }
+}
+```
+
+| Exit | Meaning |
+|---:|---|
+| 0 | operation succeeded or reached its intended boundary |
+| 2 | evidence, ownership, decision, or review input is required |
+| 3 | command or authored contract is invalid |
+| 4 | integrity, concurrency, or topology conflict |
+| 5 | required host runtime is unavailable |
+| 10 | internal mechanism failure |
+
+## Security and recovery
+
+- Review receipts become stale whenever the delivery plan changes.
+- Compile writes the TaskPlan and lineage in one lock-protected transaction.
+- Status regenerates both expected projections; altered, partial, additional,
+  or stale boundary artifacts fail closed.
+- Repository paths are canonical and checked against traversal, case, glob,
+  collision, and symlink escape.
+- Reports and chat packets explain verified state but create no authority.
+- SEAMWISE never receives Task-Spec credentials or signing keys.
+
+## Development and release proof
+
+```bash
+uv sync --extra dev --locked
+make check
+```
+
+The release gate runs formatting, linting, strict mypy, deterministic and
+adversarial tests under a branch-coverage floor, documentation checks, wheel
+inspection, release-asset assembly, doctor, host-plugin tests, a clean-room
+wheel lifecycle with independent Task-Spec `TaskPlan/v1` validation, and Git
+whitespace checks.
+
+Individual steps are available as `make lint`, `make typecheck`, `make test`,
+`make cov`, and `make check-hosts`.
+
+## Documentation
+
+- [Changelog](CHANGELOG.md)
+- [Agent contract](AGENTS.md)
+- [Claude Code project guide](CLAUDE.md)
+
+Executable code, schemas, tests, built packages, and release evidence define
+current behavior.
+
+## Migration from 0.1
+
+Version `0.2.0` removes the bundled Task Pack, the `task-spec` console
+script, `seamwise tasks ...`, direct Task-Spec skill installation, and
+Task-Spec materialization from `seamwise compile`.
+
+Install Task-Spec separately. Existing SEAMWISE plans can be reviewed and
+recompiled into the two new boundary artifacts. Let Converge or another caller
+invoke Task-Spec; do not copy the removed engine or restore local gate logic.
+
+## License
+
+[MIT](LICENSE). Task-Spec and Converge are separate products with independent
+repositories, releases, and conformance evidence.

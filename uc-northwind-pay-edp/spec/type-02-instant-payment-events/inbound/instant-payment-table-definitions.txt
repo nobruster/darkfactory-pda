@@ -1,0 +1,20 @@
+-- staging.instant_payment_event   dump 2026-06-19
+CREATE TABLE staging.instant_payment_event (
+    batch_id             char(16)       NOT NULL,
+    source_record_number int            NOT NULL,
+    event_id             varchar(32)    NOT NULL,
+    direction            char(1)        NOT NULL,
+    amount_brl           decimal(18,2)  NOT NULL,
+    payer_doc_token      varchar(40)    NOT NULL,
+    payer_doc_masked     varchar(20)    NOT NULL,
+    payee_doc_token      varchar(40)    NOT NULL,
+    payee_doc_masked     varchar(20)    NOT NULL,
+    event_ts             datetimeoffset NOT NULL,
+    status               varchar(16)    NOT NULL,
+    return_code          varchar(16)    NULL,
+    description          nvarchar(80)   NOT NULL,
+    -- requested by ops for a memo report that never shipped
+    event_memo           nvarchar(200)  NULL,
+    PRIMARY KEY (batch_id, source_record_number)
+)
+GO

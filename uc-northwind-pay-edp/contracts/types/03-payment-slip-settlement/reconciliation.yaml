@@ -1,0 +1,134 @@
+version: 1
+type_number: "03"
+
+grain:
+  keys: [batch_id, currency]
+  currency: BRL
+
+procedure_order:
+  - sequence: 1
+    procedure: legacy.apply_payment_slip_settlement_batch
+    arguments: [batch_id]
+    transaction: same_business_transaction
+  - sequence: 2
+    procedure: reporting.refresh_payment_slip_settlement_reconciliation
+    arguments: [batch_id]
+    transaction: same_business_transaction
+
+source_controls:
+  count: file_trailer.logical_count
+  face_amount: sum_validated_lot_trailer_face_amount_brl
+  discount_amount: sum_validated_lot_trailer_discount_brl
+  fee_amount: sum_validated_lot_trailer_fee_brl
+  net_amount: file_trailer.net_amount_brl
+  orphan_segment_count: independently_computed_zero
+  persistence: control.type03_payment_slip_controls
+
+stage_controls:
+  count: 'count(*) from staging.payment_slip_settlement where batch_id = :batch_id'
+  face_amount: 'sum(face_amount_brl) from staging.payment_slip_settlement where batch_id = :batch_id'
+  discount_amount: 'sum(discount_brl) from staging.payment_slip_settlement where batch_id = :batch_id'
+  fee_amount: 'sum(fee_brl) from staging.payment_slip_settlement where batch_id = :batch_id'
+  net_amount: 'sum(net_amount_brl) from staging.payment_slip_settlement where batch_id = :batch_id'
+  orphan_segment_count: 0
+
+operational_controls:
+  count: 'count(*) from legacy.payment_slip_settlement where batch_id = :batch_id'
+  face_amount: 'sum(face_amount_brl) from legacy.payment_slip_settlement where batch_id = :batch_id'
+  discount_amount: 'sum(discount_brl) from legacy.payment_slip_settlement where batch_id = :batch_id'
+  fee_amount: 'sum(fee_brl) from legacy.payment_slip_settlement where batch_id = :batch_id'
+  net_amount: 'sum(net_amount_brl) from legacy.payment_slip_settlement where batch_id = :batch_id'
+  orphan_segment_count: 0
+
+report:
+  relation: reporting.payment_slip_settlement_reconciliation
+  required_columns:
+    - batch_id
+    - currency
+    - source_count
+    - staged_count
+    - applied_count
+    - source_face_amount
+    - staged_face_amount
+    - applied_face_amount
+    - source_discount_amount
+    - staged_discount_amount
+    - applied_discount_amount
+    - source_fee_amount
+    - staged_fee_amount
+    - applied_fee_amount
+    - source_net_amount
+    - staged_net_amount
+    - applied_net_amount
+    - source_orphan_segment_count
+    - staged_orphan_segment_count
+    - applied_orphan_segment_count
+    - count_delta
+    - face_amount_delta
+    - discount_amount_delta
+    - fee_amount_delta
+    - net_amount_delta
+    - orphan_segment_count_delta
+    - reject_count
+    - status
+
+tolerances:
+  count_delta: 0
+  face_amount_delta: "0.00"
+  discount_amount_delta: "0.00"
+  fee_amount_delta: "0.00"
+  net_amount_delta: "0.00"
+  orphan_segment_count_delta: 0
+
+semantics:
+  replay: idempotent_by_batch_id_lot_number_and_sequence
+  immutable_source_identity: same_batch_id_requires_same_raw_and_manifest_hashes
+  global_batch_id: unique_across_all_file_types
+  global_settlement_id: unique_across_accepted_batches
+  operational_apply: insert_missing_rows_without_updating_existing_rows
+  count_delta: applied_count_minus_source_count
+  face_amount_delta: applied_face_amount_minus_source_face_amount
+  discount_amount_delta: applied_discount_amount_minus_source_discount_amount
+  fee_amount_delta: applied_fee_amount_minus_source_fee_amount
+  net_amount_delta: applied_net_amount_minus_source_net_amount
+  orphan_segment_count_delta: applied_orphan_segment_count_minus_source_orphan_segment_count
+  reject_count: 'count(*) from control.rejects where batch_id = :batch_id'
+  transaction: staging_load_then_both_procedures_and_oracle_commit_or_rollback_together
+
+success:
+  - No rejected records or orphan segments exist.
+  - Source, staged, and applied logical counts are identical.
+  - Source, staged, and applied face, discount, fee, and net amounts are identical.
+  - Source, staged, and applied orphan counts are zero.
+  - No duplicate natural batch key or global settlement ID exists.
+  - Every delta is zero and report status is MATCHED.
+
+approved_example:
+  batch_id: B202607230000201
+  currency: BRL
+  source_count: 2
+  staged_count: 2
+  applied_count: 2
+  source_face_amount: "200.00"
+  staged_face_amount: "200.00"
+  applied_face_amount: "200.00"
+  source_discount_amount: "5.00"
+  staged_discount_amount: "5.00"
+  applied_discount_amount: "5.00"
+  source_fee_amount: "3.50"
+  staged_fee_amount: "3.50"
+  applied_fee_amount: "3.50"
+  source_net_amount: "198.50"
+  staged_net_amount: "198.50"
+  applied_net_amount: "198.50"
+  source_orphan_segment_count: 0
+  staged_orphan_segment_count: 0
+  applied_orphan_segment_count: 0
+  count_delta: 0
+  face_amount_delta: "0.00"
+  discount_amount_delta: "0.00"
+  fee_amount_delta: "0.00"
+  net_amount_delta: "0.00"
+  orphan_segment_count_delta: 0
+  reject_count: 0
+  status: MATCHED

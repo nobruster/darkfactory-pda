@@ -1,0 +1,9 @@
+# Type 01 Constructor stack. No FastAPI (ADR 0006 rows 8–9). Dagster is deliberately
+# absent here — it lives in modern/orchestration/requirements.txt so it can never move
+# the pyarrow pin below, which is what encodes the landing Parquet.
+pyarrow==25.0.0
+duckdb==1.5.5
+dlt[duckdb]==1.29.1
+dbt-core==1.12.0
+dbt-duckdb==1.10.1
+PyYAML==6.0.3

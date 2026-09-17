@@ -1,0 +1,106 @@
+version: 1
+file_type:
+  number: "02"
+  name: Instant Payment Events
+  code: PIX_EVENTS01
+  layout_version: "001"
+  filename_regex: '^NW_INSTANT_PAYMENT_[0-9]{8}_B[0-9]{15}\.txt$'
+  encoding: UTF-8
+  utf8_decoding: strict
+  bom: forbidden
+  line_ending: LF
+  final_newline: required
+  blank_lines: forbidden
+  max_record_bytes: 512
+  max_source_file_bytes: 5200000
+
+grammar:
+  style: delimited
+  delimiter: '|'
+  escape_character: '\'
+  parser: single_pass_escape_aware_lexer
+  escaped_sequences:
+    '\|': '|'
+    '\\': '\'
+  escape_decoding: exactly_once
+  unknown_escape: reject_with_INVALID_ESCAPE_SEQUENCE
+  dangling_escape: reject_with_INVALID_ESCAPE_SEQUENCE
+  field_count_evaluation: after_escape_aware_delimiter_scan
+  whitespace_trimming: none
+  empty_field: empty_string
+
+records:
+  header:
+    discriminator: H
+    field_count: 5
+    fields:
+      - { position: 1, name: record_type, type: literal, value: H }
+      - { position: 2, name: file_type_code, type: literal, value: PIX_EVENTS01 }
+      - { position: 3, name: layout_version, type: literal, value: "001" }
+      - { position: 4, name: file_date, type: date, format: yyyyMMdd }
+      - { position: 5, name: batch_id, type: string, regex: '^B[0-9]{15}$' }
+
+  event:
+    discriminator: D
+    field_count: 13
+    fields:
+      - { position: 1, name: record_type, type: literal, value: D }
+      - { position: 2, name: end_to_end_id, type: string, regex: '^E[0-9]{31}$' }
+      - { position: 3, name: transaction_id, type: string, regex: '^(?=.*[A-Z])[A-Z0-9]{16}$' }
+      - { position: 4, name: payer_document_type, type: enum, values: [CPF, CNPJ] }
+      - { position: 5, name: payer_document, type: digits, validation: document_type_length_and_mod11, privacy: tokenize_and_mask }
+      - { position: 6, name: payee_document_type, type: enum, values: [CPF, CNPJ] }
+      - { position: 7, name: payee_document, type: digits, validation: document_type_length_and_mod11, privacy: tokenize_and_mask }
+      - { position: 8, name: event_timestamp, type: offset_datetime, format: 'yyyy-MM-ddTHH:mm:ss(Z|+HH:mm|-HH:mm)', strict: true, preserve_source_lexeme: true }
+      - { position: 9, name: amount_brl, type: unsigned_decimal, canonical_regex: '^(0|[1-9][0-9]{0,15})\.[0-9]{2}$', precision: 18, scale: 2, minimum_exclusive: "0.00" }
+      - { position: 10, name: direction, type: enum, values: [C, D] }
+      - { position: 11, name: status, type: enum, values: [SETTLED, RETURNED] }
+      - { position: 12, name: return_code, type: string, regex: '^[A-Z0-9]{0,4}$' }
+      - { position: 13, name: description, type: escaped_string, unicode_normalization: NFC_required_on_input, min_decoded_code_points: 1, max_decoded_code_points: 80, controls: forbidden, bidi_controls: forbidden, spreadsheet_formula_prefixes: ['=', '+', '-', '@'], digit_runs_11_through_19: forbidden }
+
+  trailer:
+    discriminator: T
+    field_count: 5
+    fields:
+      - { position: 1, name: record_type, type: literal, value: T }
+      - { position: 2, name: event_count, type: unsigned_integer, minimum: 1, maximum: 10000 }
+      - { position: 3, name: credit_total_brl, type: unsigned_decimal, canonical_regex: '^(0|[1-9][0-9]{0,15})\.[0-9]{2}$', precision: 18, scale: 2 }
+      - { position: 4, name: debit_total_brl, type: unsigned_decimal, canonical_regex: '^(0|[1-9][0-9]{0,15})\.[0-9]{2}$', precision: 18, scale: 2 }
+      - { position: 5, name: net_total_brl, type: signed_decimal, canonical_regex: '^-?(0|[1-9][0-9]{0,15})\.[0-9]{2}$', precision: 18, scale: 2, negative_zero: forbidden }
+
+cross_record_rules:
+  - Header date and filename date must match.
+  - Header batch ID and filename batch ID must match.
+  - Trailer event_count must equal the number of event records.
+  - Trailer credit_total_brl must equal the sum of C-direction amounts.
+  - Trailer debit_total_brl must equal the sum of D-direction magnitudes.
+  - Trailer net_total_brl must equal credit total minus debit total.
+  - CPF contains 11 digits and passes its two Mod-11 check digits.
+  - CNPJ contains 14 digits and passes its two Mod-11 check digits.
+  - SETTLED requires an empty return_code.
+  - RETURNED requires a non-empty return_code.
+  - RETURNED is valid with either direction; status does not determine the money sign.
+  - Event timestamps must map to the header file_date in America/Sao_Paulo.
+  - Zero offset must be spelled Z; +00:00 and -00:00 are noncanonical.
+  - The signed CSV amount is derived exactly once; C is positive and D is negative.
+  - end_to_end_id and transaction_id are unique within the batch.
+  - end_to_end_id is globally unique across accepted batches.
+  - A retained identifier or decoded description must not contain either raw document value.
+  - All decimal parsing and aggregation use exact decimal arithmetic; binary floating point is forbidden.
+
+canonical_rejection_codes:
+  invalid_utf8: INVALID_UTF8
+  invalid_transport: INVALID_TRANSPORT
+  invalid_record_sequence: INVALID_RECORD_SEQUENCE
+  invalid_field_count: INVALID_FIELD_COUNT
+  invalid_escape_sequence: INVALID_ESCAPE_SEQUENCE
+  invalid_document: INVALID_DOCUMENT
+  invalid_description: INVALID_DESCRIPTION
+  invalid_timestamp: INVALID_TIMESTAMP
+  invalid_amount: INVALID_AMOUNT
+  invalid_status_return_code: INVALID_STATUS_RETURN_CODE
+  duplicate_identifier: DUPLICATE_IDENTIFIER
+  source_control_count_mismatch: SOURCE_CONTROL_COUNT_MISMATCH
+  source_control_credit_mismatch: SOURCE_CONTROL_CREDIT_MISMATCH
+  source_control_debit_mismatch: SOURCE_CONTROL_DEBIT_MISMATCH
+  source_control_net_mismatch: SOURCE_CONTROL_NET_MISMATCH

@@ -1,0 +1,32 @@
+version: 2
+
+models:
+  - name: silver_card_settlement
+    description: "Grain: one conformed movement per source detail record."
+    columns:
+      - name: batch_id
+        tests: [not_null]
+      - name: source_record_number
+        tests: [not_null]
+      - name: amount_brl
+        tests: [not_null]
+      - name: movement_direction
+        tests:
+          - not_null
+          - accepted_values:
+              values: ["PURCHASE", "REFUND"]
+
+  - name: silver_merchant_chargeback
+    description: "Grain: one Type 06 chargeback per source detail record. Money conserved."
+    columns:
+      - name: batch_id
+        tests: [not_null]
+      - name: source_record_number
+        tests: [not_null]
+      - name: chargeback_amount_brl
+        tests: [not_null]
+      - name: rounding_mode
+        tests:
+          - not_null
+          - accepted_values:
+              values: ["HALF_UP"]

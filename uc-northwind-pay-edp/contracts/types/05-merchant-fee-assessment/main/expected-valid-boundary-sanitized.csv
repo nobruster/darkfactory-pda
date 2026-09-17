@@ -1,0 +1,2 @@
+batch_id,source_file,source_record_number,assessment_id,merchant_id,merchant_tax_id_masked,fee_code,description,gross_amount_brl,rate_percent,assessed_fee_brl,calculated_fee_brl,assessment_date,rounding_mode
+B200002290000402,NW_MERCHANT_FEES_20000229_B200002290000402.csv,2,FEE2000022904003,MER9999999999999,**********9962,MAX_BOUND,ÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁ,999999999999.99,100.000,999999999999.99,999999999999.99,2000-02-29,HALF_UP

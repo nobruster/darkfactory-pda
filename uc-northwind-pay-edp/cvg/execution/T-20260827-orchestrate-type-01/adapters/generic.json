@@ -1,0 +1,13 @@
+{
+  "adapter": "generic",
+  "candidate_guard_command": "python3 skills/task-to-runtime-contract/scripts/check-path-policy.py --profile \"cvg/execution/T-20260827-orchestrate-type-01/execution-profile.yaml\" --candidate \"$CVG_CANDIDATE_PATH\"",
+  "execution_profile": "cvg/execution/T-20260827-orchestrate-type-01/execution-profile.yaml",
+  "native_control": {
+    "prewrite": "runner passes every candidate path to candidate_guard_command",
+    "supports_prewrite_prevention": false
+  },
+  "postflight_command": "python3 skills/task-to-runtime-contract/scripts/check-path-policy.py --profile \"cvg/execution/T-20260827-orchestrate-type-01/execution-profile.yaml\" --base \"$CVG_BASE_REF\"",
+  "schema": "cvg.runtime-adapter.v1",
+  "settlement_policy": "postflight_command is mandatory before PR or success receipt",
+  "tool_input_guard_command": "CVG_EXECUTION_PROFILE=\"cvg/execution/T-20260827-orchestrate-type-01/execution-profile.yaml\" python3 skills/task-to-runtime-contract/scripts/guard-tool-input.py"
+}

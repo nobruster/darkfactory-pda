@@ -1,0 +1,9693 @@
+WEBVTT
+
+1
+00:00:04.546 --> 00:00:06.546
+Ou você aprende, ou você aprende, né?
+
+
+2
+00:00:06.546 --> 00:00:11.546
+Mas enfim, gente, sejam bem vindos ao terceiro dia do nosso Boot Camp.
+
+
+3
+00:00:11.546 --> 00:00:14.546
+Hoje a gente vai falar sobre.
+
+
+4
+00:00:14.546 --> 00:00:22.546
+O prisma de entrada de um engenheiro de dados e de um Analytics Engineer. Dentro do nosso projeto.
+
+
+5
+00:00:22.546 --> 00:00:27.546
+Então, só pra gente relembrar um pouquinho do que a gente está fazendo segunda feira, a gente entendeu qual é O Caso De Uso.
+
+
+6
+00:00:27.546 --> 00:00:34.546
+Que a gente está literalmente atacando aqui. A gente está construindo uma solução de Analytics moderna, de fim a fim.
+
+
+7
+00:00:34.546 --> 00:00:41.546
+O cliente que é o Northwind Pay, um dos problemas que eles têm. A gente está entrando num ambiente já existente.
+
+
+8
+00:00:41.546 --> 00:00:49.546
+é que eles têm uma camada legada, um Legacy Pipeline que basicamente você tem arquivos caindo no Sftp.
+
+
+9
+00:00:49.546 --> 00:00:52.546
+A gente tem uma aplicação de. De uma Thirty Party Application.
+
+
+10
+00:00:52.546 --> 00:00:54.546
+Que é Java.
+
+
+11
+00:00:54.546 --> 00:00:58.546
+Esse Java pega essas informações. Faça uma animação.
+
+
+12
+00:00:58.546 --> 00:01:01.546
+Faz o mascaramento dessas informações. Manda.
+
+
+13
+00:01:01.546 --> 00:01:10.546
+Para um Csv. E daí? Essas informações vão para o Postpress. Elas são carregadas em store procedures. E daí? O Pessoal Trabalha Nisso Né.
+
+
+14
+00:01:10.546 --> 00:01:17.546
+A grande questão que a gente está vendo aqui é como a gente faz a modernização disso. Via sistemas agênticos. Por Isso A Genetic.
+
+
+15
+00:01:17.546 --> 00:01:20.546
+O Ic no final.
+
+
+16
+00:01:20.546 --> 00:01:26.546
+E aí, o que acontece no final do dia.
+
+
+17
+00:01:26.546 --> 00:01:35.546
+Cada dia a gente vê um prisma. No primeiro dia, a gente vê um prisma de um arquiteto de soluções Junto Com O Ai Engineer Para Entender O Problema Como Um Todo E A Gente Se Colocou Na Lente Deles.
+
+
+18
+00:01:35.546 --> 00:01:41.546
+Revisando vários tipos de documento e criando lá os primeiros passos do Converge, que é o nosso Framework.
+
+
+19
+00:01:41.546 --> 00:01:47.546
+No dia dois, a gente olhou com a lente de um engenheiro de software abordando. Como ele vai fazer a escrita.
+
+
+20
+00:01:47.546 --> 00:01:57.546
+The Aplicação Java para a aplicação Python. Ontem, a gente passou exatamente por esse processo. Foi bem legal, porque a Gente Conseguiu Chegar Num Ponto.
+
+
+21
+00:01:57.546 --> 00:02:09.546
+Aonde a gente criou uma Steel thread. O que é um steel thread? é uma thread de aço ali, que Basicamente é A Parte Mais Importante Do Sistema Por Que A Gente Faz Isso é Como Se Fosse Um Mini Mvp.
+
+
+22
+00:02:09.546 --> 00:02:13.546
+Do nosso processo para garantir que a gente consegue.
+
+
+23
+00:02:13.546 --> 00:02:22.546
+Pegar o requisito, cortar ele em swim lanes, quebrar isso numa tarefa atômica, e executar um pedaço dessa tarefa para Ver Se Ela Funciona.
+
+
+24
+00:02:22.546 --> 00:02:28.546
+E a gente fez isso ontem, ou a gente vai fazer exatamente a mesma coisa. A gente ia construir a Steel Thread.
+
+
+25
+00:02:28.546 --> 00:02:32.546
+Para engenharia de Dados.
+
+
+26
+00:02:32.546 --> 00:02:34.546
+E o que é legal aqui, né?
+
+
+27
+00:02:34.546 --> 00:02:41.546
+Na terça e na quarta, a gente vai construir essas dreads na quinta feira. A gente vai deixar o quê? A Gente Vai Começar A Falar De Engenharia De Loop.
+
+
+28
+00:02:41.546 --> 00:02:47.546
+Ou seja, se na terça, na quarta. Hoje, a gente vai criar algumas tarefas iniciais.
+
+
+29
+00:02:47.546 --> 00:02:51.546
+Como esse fluxo vai funcionar quando a gente estiver tracionando ele constantemente.
+
+
+30
+00:02:51.546 --> 00:02:54.546
+Mas chegou um novo arquivo. A gente traduz esse cara.
+
+
+31
+00:02:54.546 --> 00:02:58.546
+Passa ele pelo processo valida ele no final, entrega.
+
+
+32
+00:02:58.546 --> 00:03:04.546
+Então a gente vai ter tudo isso dentro de um loop. Então amanhã vai ser exatamente quando a gente pega Todas Essas Tarefas E A Gente Coloca O Loop Dela.
+
+
+33
+00:03:04.546 --> 00:03:06.546
+Tá.
+
+
+34
+00:03:06.546 --> 00:03:16.546
+Aí. O Samuel está perguntando. Já vou para Python. Com que objetivo? Duzentos. Aqui vamos listar. Vamos listar uns vinte objetivos aqui.
+
+
+35
+00:03:16.546 --> 00:03:24.546
+A primeira coisa é que, normalmente, quando você fala de aplicações modernas que trabalham com dado, dificilmente você vai ver aplicações em Java.
+
+
+36
+00:03:24.546 --> 00:03:29.546
+Por vários motivos. O primeiro motivo é que profissionais modernos não escrevem. Java.
+
+
+37
+00:03:29.546 --> 00:03:36.546
+Principalmente com o cunho de pipeline de dados. Então, quando a gente olha hoje uma aplicação fim a fim.
+
+
+38
+00:03:36.546 --> 00:03:42.546
+Noventa dela vai precisar de um vértice de dados. Então, os profissionais hoje evitam escrever. Java.
+
+
+39
+00:03:42.546 --> 00:03:47.546
+Pela verbosidade, pela complexidade, por ser uma linguagem.
+
+
+40
+00:03:47.546 --> 00:03:50.546
+Muito boa para a engenharia de software.
+
+
+41
+00:03:50.546 --> 00:03:54.546
+Mas não um versátil para você trabalhar com dados e Analytics.
+
+
+42
+00:03:54.546 --> 00:04:00.546
+Segundo ponto, quando a gente olha para cientistas de dados, quando a gente olha para ai, Engineer, por exemplo.
+
+
+43
+00:04:00.546 --> 00:04:05.546
+Quando a gente olha para engenheiros de dados, a língua materna dessas pessoas são as Kelly Python.
+
+
+44
+00:04:05.546 --> 00:04:09.546
+Ou R, até muitas das vezes. E nunca java.
+
+
+45
+00:04:09.546 --> 00:04:21.546
+Terceiro ponto: quando a gente olha para Pipeline de dados como Spark, quando Bin, quando a gente usa outras tecnologias Que São De Processamento De Topo De Big Data.
+
+
+46
+00:04:21.546 --> 00:04:23.546
+A gente não usa Java também.
+
+
+47
+00:04:23.546 --> 00:04:32.546
+Outro ponto, quando a gente quer escalar Java em grande escala em microsserviços, funciona muito bem para conceito de microserviços como um todo.
+
+
+48
+00:04:32.546 --> 00:04:38.546
+Mas não tão flexível quanto a quantidade de pagam que a gente tem por ser. A gente sempre fala que O Python é Um Pato.
+
+
+49
+00:04:38.546 --> 00:04:41.546
+Ele não corre no nada.
+
+
+50
+00:04:41.546 --> 00:04:43.546
+E não voa bem.
+
+
+51
+00:04:43.546 --> 00:04:47.546
+Teoricamente, obviamente que existem algumas ramificações disso.
+
+
+52
+00:04:47.546 --> 00:04:52.546
+Mas a gente resolve sempre quando a gente está falando de modernização pela facilidade. Outro ponto.
+
+
+53
+00:04:52.546 --> 00:04:56.546
+Quando você está fazendo conternização de aplicações em Event Driven, por exemplo.
+
+
+54
+00:04:56.546 --> 00:05:02.546
+Eh: dificilmente você vai ver uma aplicação de Event Driven sendo escrita em Java, porque no final do dia.
+
+
+55
+00:05:02.546 --> 00:05:11.546
+Quem vai fazer manutenção nisso? é time de dados, tá ou time de engenharia de software moderno que evita utilizar Java.
+
+
+56
+00:05:11.546 --> 00:05:20.546
+Outro ponto, geralmente Java é extremamente complexo para você atualizar. Existem várias breaking changes entre versões do Java que quebram a aplicação.
+
+
+57
+00:05:20.546 --> 00:05:27.546
+Muitas dessas aplicações são vendidas por Third Party Applications, que são aplicações que foram, na verdade, construídas por um outro parceiro.
+
+
+58
+00:05:27.546 --> 00:05:34.546
+E geralmente isso custa muito caro para a empresa fazer isso. é um dos grandes motivos que você vê. Sistemas De Migração Sendo Realizados De Um Lado Para O Outro.
+
+
+59
+00:05:34.546 --> 00:05:36.546
+é porque Java se torna.
+
+
+60
+00:05:36.546 --> 00:05:39.546
+Um ponto muito, muito complexo.
+
+
+61
+00:05:39.546 --> 00:05:43.546
+Outro ponto, por ser uma linguagem que é compilada.
+
+
+62
+00:05:43.546 --> 00:05:55.546
+Isso traz também um outro nível de dificuldade no seu processo inteiro de Csd assim por diante. Então, quando a Gente Preza O Ciclo De Vida Hoje A Gente Olha As Empresas Mais Modernas Como.
+
+
+63
+00:05:55.546 --> 00:05:57.546
+Open. Ai.
+
+
+64
+00:05:57.546 --> 00:06:03.546
+Claudia, e assim por diante. Cara, a gente tá falando de Javascript, Python.
+
+
+65
+00:06:03.546 --> 00:06:05.546
+Basicamente é.
+
+
+66
+00:06:05.546 --> 00:06:10.546
+Alguma coisa extensível. Muito boa. Como ses. E mais mais. Talvez.
+
+
+67
+00:06:10.546 --> 00:06:14.546
+Mas dificilmente você vai olhar ambientes novos com linguagem Java, fim a fim.
+
+
+68
+00:06:14.546 --> 00:06:20.546
+Está muito dificilmente se você olhar pegar as aplicações modernas. Qual a porcentagem de escrita.
+
+
+69
+00:06:20.546 --> 00:06:23.546
+Você vai ver que na verdade existe pouco java. Tá.
+
+
+70
+00:06:23.546 --> 00:06:32.546
+Então espero ter respondido para você, Samuel. Então não faz sentido para a gente. Principalmente.
+
+
+71
+00:06:32.546 --> 00:06:37.546
+Então, Samuel, do Spark.
+
+
+72
+00:06:37.546 --> 00:06:41.546
+Ele é Java. Só que ninguém escreve java, né?
+
+
+73
+00:06:41.546 --> 00:06:49.546
+Então, assim uma coisa é você ter uma Engines que escreve em Java. Outra coisa é você escrever em Java são coisas diferentes.
+
+
+74
+00:06:49.546 --> 00:06:54.546
+Então, hoje, por exemplo, se a gente for olhar a Databrics e Spark noventa do código escrito hoje.
+
+
+75
+00:06:54.546 --> 00:06:56.546
+é escrito em Pythons.
+
+
+76
+00:06:56.546 --> 00:07:00.546
+Inclusive se você for escrever em linguagem baixa.
+
+
+77
+00:07:00.546 --> 00:07:03.546
+Eu não sei se todo mundo sabe disso, mas se você for escrever.
+
+
+78
+00:07:03.546 --> 00:07:05.546
+Em linguagem baixa.
+
+
+79
+00:07:05.546 --> 00:07:13.546
+No Spark. O meu Pie Spark vai dar no seu código de Spark cem vezes mais rápido.
+
+
+80
+00:07:13.546 --> 00:07:18.546
+Então, se você for escrever, por exemplo, se você for usar rdd para poder escrever hoje.
+
+
+81
+00:07:18.546 --> 00:07:23.546
+Você nunca vai ganhar. De uma linguagem de alto escalonamento.
+
+
+82
+00:07:23.546 --> 00:07:25.546
+Então impossível você ganhar.
+
+
+83
+00:07:25.546 --> 00:07:33.546
+Então são coisas diferentes. Uma coisa é uma coisa, outra coisa, outra coisa. O Spark hoje, do jeito que ele é construído.
+
+
+84
+00:07:33.546 --> 00:07:39.546
+Literalmente. A compilação dele está dentro de Java. Escala.
+
+
+85
+00:07:39.546 --> 00:07:47.546
+Só que hoje eles meio que não te possibilitam você escrever na Api baixa, porque não? Existem vários níveis de Otimização Que Você Tem.
+
+
+86
+00:07:47.546 --> 00:07:49.546
+E você vem por cima de data frame.
+
+
+87
+00:07:49.546 --> 00:08:00.546
+E aí? Ou deita sets. E esse cara faz abstração. Cria o plano tuxten. Gera todo o plano. Enfim, e é Muito Mais Otimizado Do Que Se Você Gerar Em Java Bike Code.
+
+
+88
+00:08:00.546 --> 00:08:02.546
+Então, assim.
+
+
+89
+00:08:02.546 --> 00:08:09.546
+Poderia ficar aqui nessa discussão. Mas no final das contas, realmente a gente não utiliza Java. Gente evita utilizar Java bastante.
+
+
+90
+00:08:09.546 --> 00:08:21.546
+Beleza. Então a gente vai fazer essa migração, tá? A gente vai sair de Java e a gente vai pra Python E A Gente Vai Entender Algumas Nuances Aqui Do Porquê A Gente Está Fazendo Isso Tá.
+
+
+91
+00:08:21.546 --> 00:08:25.546
+Marcelo perguntou se eu já fiz algum em Rust. Já fiz.
+
+
+92
+00:08:25.546 --> 00:08:28.546
+Russia. é uma.
+
+
+93
+00:08:28.546 --> 00:08:32.546
+Rash. é uma linguagem muito interessante.
+
+
+94
+00:08:32.546 --> 00:08:35.546
+Inclusive se você olhar hoje.
+
+
+95
+00:08:35.546 --> 00:08:42.546
+Para as bibliotecas mais escaláveis de Python. Você vai ver, na verdade, que o transpiler dela por debaixo dos planos é Rust.
+
+
+96
+00:08:42.546 --> 00:08:46.546
+Então eles escrevem Rust compilam isso.
+
+
+97
+00:08:46.546 --> 00:08:53.546
+E daí? Eles deixam essa abertura para você acessar via Python. Então Python tem um interpretador conectado direto para o Rust Que Você Consegue Fazer Isso.
+
+
+98
+00:08:53.546 --> 00:08:55.546
+E funciona muito, muito bem.
+
+
+99
+00:08:55.546 --> 00:09:02.546
+E tem várias outras bibliotecas também, que se comunicam com isso. Tá, então, Rush, é uma linguagem muito interessante. às vezes.
+
+
+100
+00:09:02.546 --> 00:09:07.546
+Não para você usar no primário, mas como backend.
+
+
+101
+00:09:07.546 --> 00:09:11.546
+Muito boa linguagem. Funciona muito bem. Tanto o Rust como o Gol.
+
+
+102
+00:09:11.546 --> 00:09:15.546
+Mas na vida real, a gente ainda tem.
+
+
+103
+00:09:15.546 --> 00:09:18.546
+Indiscutivelmente python, sendo.
+
+
+104
+00:09:18.546 --> 00:09:22.546
+O Go To para a Engenharia de Dados, ciências de Dados e a Engineering.
+
+
+105
+00:09:22.546 --> 00:09:26.546
+Então assim se você for olhar hoje, pô como que eu crio um reggae.
+
+
+106
+00:09:26.546 --> 00:09:29.546
+Pô. Se eu for olhar.
+
+
+107
+00:09:29.546 --> 00:09:36.546
+Como que eu utilizo essas bibliotecas. Você vai ver que cara sempre elas estão disponíveis majoritariamente em Java.
+
+
+108
+00:09:36.546 --> 00:09:41.546
+Type script assim por diante, tá? Mas as linguagens modernas mesmo beleza.
+
+
+109
+00:09:41.546 --> 00:09:46.546
+E a gente vai desempenhar exatamente essa ideia de trabalhar esse processo. Fim em fim, aqui.
+
+
+110
+00:09:46.546 --> 00:09:55.546
+Bem o que a gente fez ontem, né? Nós passamos aqui por seis. Eu diria seis grandes pedaços aqui.
+
+
+111
+00:09:55.546 --> 00:09:58.546
+é o primeiro. Foi literalmente a gente.
+
+
+112
+00:09:58.546 --> 00:10:04.546
+Quebrar o primeiro problema que a gente tinha numa cinma, que é cortar o sistema, ou seja.
+
+
+113
+00:10:04.546 --> 00:10:08.546
+Decompor um requisito muito grande em algo menor.
+
+
+114
+00:10:08.546 --> 00:10:10.546
+A gente começou a desenvolver.
+
+
+115
+00:10:10.546 --> 00:10:12.546
+O Java. Tá.
+
+
+116
+00:10:12.546 --> 00:10:14.546
+é.
+
+
+117
+00:10:14.546 --> 00:10:20.546
+O Java Two Pi. Java Power Pi. Então a gente escolheu esse nome.
+
+
+118
+00:10:20.546 --> 00:10:24.546
+A gente testou uma folha. Então a gente gerou uma tarefa.
+
+
+119
+00:10:24.546 --> 00:10:28.546
+Uma tarefa pequena para esse cara.
+
+
+120
+00:10:28.546 --> 00:10:31.546
+A gente entendeu, por exemplo, que existem arquivos que chegam.
+
+
+121
+00:10:31.546 --> 00:10:36.546
+E esses arquivos às vezes podem não estar corretos com o trailer, né?
+
+
+122
+00:10:36.546 --> 00:10:42.546
+Lembra lá, aqui dentro dos arquivos que a gente recebe do Sftp. Nós temos os detalhes que são somados.
+
+
+123
+00:10:42.546 --> 00:10:49.546
+Com Cobal Overpunt que muda os caracteres no final. E a gente tem o valor do trailer, que é a Soma Dos Dois às Vezes Pode Acontecer.
+
+
+124
+00:10:49.546 --> 00:10:52.546
+Que esse número não vem, correto?
+
+
+125
+00:10:52.546 --> 00:10:56.546
+Então você pode ter uma divergência. O que a gente entendeu na hora da nossa migração.
+
+
+126
+00:10:56.546 --> 00:11:01.546
+Que a gente não deve corrigir esse problema. Quem quiser abrir a câmera, até fica à vontade. Eu gosto de ver vocês.
+
+
+127
+00:11:01.546 --> 00:11:07.546
+Mas sim, na verdade, o que ele fez, classificar esse problema e não corrigir.
+
+
+128
+00:11:07.546 --> 00:11:12.546
+A gente identificou um pouquinho de binding. Também foi bem legal ontem, né?
+
+
+129
+00:11:12.546 --> 00:11:18.546
+Quem passou esse processo também. O Rafael mostrou um pouquinho do processo de como o Cláudio estava evitando.
+
+
+130
+00:11:18.546 --> 00:11:30.546
+Literalmente fazer qualquer modificação no ambiente, porque existia no Rhidming.
+
+
+131
+00:11:30.546 --> 00:11:41.546
+this guitar.
+
+
+132
+00:11:41.546 --> 00:11:48.546
+que.
+
+
+133
+00:11:48.546 --> 00:11:51.546
+A key…
+
+
+134
+00:11:51.546 --> 00:11:54.546
+Agent pro mundo.
+
+
+135
+00:11:54.546 --> 00:11:55.546
+Ta.
+
+
+136
+00:11:55.546 --> 00:12:00.546
+Un chimi.
+
+
+137
+00:12:00.546 --> 00:12:02.546
+De presolos para.
+
+
+138
+00:12:02.546 --> 00:12:19.546
+Pizza para one size pizza.
+
+
+139
+00:12:19.546 --> 00:12:25.546
+X. Ai, literalmente. Spacex. Como que é Moon Shot? Trabalha.
+
+
+140
+00:12:25.546 --> 00:12:34.546
+Eu gosto muito, sempre de tentar puxar essas informações e entender um pouquinho como eles trabalham.
+
+
+141
+00:12:34.546 --> 00:12:37.546
+Desculpa. E se vocês olharem.
+
+
+142
+00:12:37.546 --> 00:12:39.546
+A gente está exatamente no caminho certo.
+
+
+143
+00:12:39.546 --> 00:12:43.546
+Então o que eu estou mostrando para vocês aqui real, muita gente já faz.
+
+
+144
+00:12:43.546 --> 00:12:46.546
+Talvez muita coisa que eu falei. Você já faz.
+
+
+145
+00:12:46.546 --> 00:12:53.546
+E aí existe uma coisa da gente fazer e da gente idealizar. Isso acontece no meu dia a dia. às Vezes Eu Faço Um Bocado De Coisa E Depois Eu Falo Hum.
+
+
+146
+00:12:53.546 --> 00:12:55.546
+Caraca. Olha, mudou realmente isso aqui.
+
+
+147
+00:12:55.546 --> 00:12:57.546
+E a gente idealiza, né? Então.
+
+
+148
+00:12:57.546 --> 00:13:03.546
+Acho que durante essa semana vai ficar muito claro que a gente está caminhando para esse caminho aqui.
+
+
+149
+00:13:03.546 --> 00:13:06.546
+Poxa o quão o Brasil está longe disso.
+
+
+150
+00:13:06.546 --> 00:13:12.546
+E aí obviamente que eu vou deixar isso para você responder. Me responde aí no chat.
+
+
+151
+00:13:12.546 --> 00:13:14.546
+O combo. Você acha que o Brasil está longe.
+
+
+152
+00:13:14.546 --> 00:13:17.546
+De ter essa consciência aqui.
+
+
+153
+00:13:17.546 --> 00:13:21.546
+Se já. Acho que já existem empresas no Brasil.
+
+
+154
+00:13:21.546 --> 00:13:24.546
+Fazendo esse movimento, demitindo em massa.
+
+
+155
+00:13:24.546 --> 00:13:28.546
+Reduzindo, compactando.
+
+
+156
+00:13:28.546 --> 00:13:31.546
+Roles dentro da empresa, como, por exemplo.
+
+
+157
+00:13:31.546 --> 00:13:40.546
+Vou dar um exemplo do Nubank. O Nubank recentemente anunciou que não existe mais área de dados. Teoricamente, não existe Mais Profissionais De Dados Dentro Do Nubank.
+
+
+158
+00:13:40.546 --> 00:13:45.546
+Essa profissão foi condensada em uma como sofre Engineer.
+
+
+159
+00:13:45.546 --> 00:13:52.546
+Então, hoje o time de dados precisa saber. Engenharia de software. Eles têm aproximadamente entre seis meses a um ano para se adaptar.
+
+
+160
+00:13:52.546 --> 00:13:56.546
+Caso eles não se adaptem.
+
+
+161
+00:13:56.546 --> 00:14:00.546
+Enfim, então assim eu acho.
+
+
+162
+00:14:00.546 --> 00:14:02.546
+Que quando a gente olha para isso.
+
+
+163
+00:14:02.546 --> 00:14:06.546
+E a gente pensa que isso está muito distante.
+
+
+164
+00:14:06.546 --> 00:14:09.546
+Eu quero falar o seguinte para vocês.
+
+
+165
+00:14:09.546 --> 00:14:12.546
+Talvez esteja distante.
+
+
+166
+00:14:12.546 --> 00:14:20.546
+No seu ecossistema, mas está mais perto de você do que você imagina. Por exemplo, você pode ser o driver Da Cultura Que Vai Fazer Isso.
+
+
+167
+00:14:20.546 --> 00:14:22.546
+Olha só! Que loucura, né.
+
+
+168
+00:14:22.546 --> 00:14:26.546
+Quem concorda com isso? Eu fui o driver dentro da pfia. Olha que coisa louca, né?
+
+
+169
+00:14:26.546 --> 00:14:31.546
+Dentro de uma empresa fora do país. E o Fluidriver disso.
+
+
+170
+00:14:31.546 --> 00:14:36.546
+Eu fui o cara que literalmente meteu as caras.
+
+
+171
+00:14:36.546 --> 00:14:39.546
+Levantou a mão.
+
+
+172
+00:14:39.546 --> 00:14:44.546
+Falou que, em vez de três, quatro engenheiros, a gente conseguia fazer isso somente como um engenheiro. E num Devops.
+
+
+173
+00:14:44.546 --> 00:14:48.546
+E a gente entregou do outro lado. A gente está falando de um projeto há dois anos e meio atrás.
+
+
+174
+00:14:48.546 --> 00:14:50.546
+Imagina hoje. Então, né.
+
+
+175
+00:14:50.546 --> 00:14:56.546
+Então, hoje, literalmente, eu não preciso de ninguém. Graças a Deus. Estou brincando. Preciso sim. é sempre bom trabalhar com Pessoas De Vez Em Quando.
+
+
+176
+00:14:56.546 --> 00:14:58.546
+Quando elas são inteligentes.
+
+
+177
+00:14:58.546 --> 00:15:03.546
+Quando elas são animaizinhos de teta. Não é muito legal? Não, mas com relação à inteligência, é muito foda. Atrapalhar.
+
+
+178
+00:15:03.546 --> 00:15:07.546
+Mas brincadeiras à parte.
+
+
+179
+00:15:07.546 --> 00:15:14.546
+A grande ideia é que obviamente pô isso quer dizer, Luan, que você vem do background de engenharia de dados. Você Vai Saber Mais Que Um Devops.
+
+
+180
+00:15:14.546 --> 00:15:23.546
+Claro que não. Nunca. E aí nunca é nunca, né? Você pega. Por exemplo, o Daniel, que trabalha no meu Time, que é Brasileiro. Também Ele Tem Dezassete Anos De Thevops De Infredops Cara.
+
+
+181
+00:15:23.546 --> 00:15:27.546
+Como que eu vou bater com um cara desse nunca, né? Isso tá embedado dentro dele.
+
+
+182
+00:15:27.546 --> 00:15:33.546
+Mas em algum momento, ele vai ter que trabalhar com dados também. Como ele teve que trabalhar nesse último projeto Que Ele Fez Da F Cinto.
+
+
+183
+00:15:33.546 --> 00:15:36.546
+Então poxa. Aquele Skill dele já é um pouco menor.
+
+
+184
+00:15:36.546 --> 00:15:42.546
+Mas ele vai conseguir se virar. Se ele tem um mindset de um sênior, ele consegue qualquer sênior cara que vem.
+
+
+185
+00:15:42.546 --> 00:15:45.546
+Da engenharia de Dados. Ou vem da Engenharia de Ia.
+
+
+186
+00:15:45.546 --> 00:15:51.546
+Ou vem, cara de engenharia de software, ou vem de Devops. A infraestrutura que a pessoa é sênior.
+
+
+187
+00:15:51.546 --> 00:15:55.546
+Eu digo, qualquer senhor consegue se virar muito bem com essa nova ideologia. Aqui.
+
+
+188
+00:15:55.546 --> 00:15:58.546
+Okay.
+
+
+189
+00:15:58.546 --> 00:16:03.546
+Então vamos ver aqui que eu tenho aqui.
+
+
+190
+00:16:03.546 --> 00:16:07.546
+Construir as pessoas que conversam muito longe. Talvez.
+
+
+191
+00:16:07.546 --> 00:16:17.546
+Grandes empresas como Ifood. Sim, outra coisa que ficou bem claro, pelo menos para mim, a importância de uma excelente Discovery Com O Negócio Antes De Iniciar Qualquer Processo Com Ia Muito Bom Amor.
+
+
+192
+00:16:17.546 --> 00:16:22.546
+Eu diria que isso aqui é Sim, se você tiver isso na cabeça, cara, é jogo ganho basicamente, tá.
+
+
+193
+00:16:22.546 --> 00:16:26.546
+Porque o seu tempo vai ser aqui.
+
+
+194
+00:16:26.546 --> 00:16:29.546
+Compactando. Eu vim na Pad, principalmente quando escutava.
+
+
+195
+00:16:29.546 --> 00:16:32.546
+Faça sua mágica.
+
+
+196
+00:16:32.546 --> 00:16:37.546
+Eu estou tentando. Estou sendo na minha área que a empresa está bem perto. Não, eu nunca usei layoff. Não.
+
+
+197
+00:16:37.546 --> 00:16:40.546
+Por favor, de leves.
+
+
+198
+00:16:40.546 --> 00:16:48.546
+Alguém tem que causar. Eu trabalho para uma empresa do Qi, e lá os Devs estão fazendo cara feio para Usar A Gente Engineer Mas Essa Semana Já Vieram Perguntar.
+
+
+199
+00:16:48.546 --> 00:16:53.546
+Como o tempo limitado, meus works items e fazendo code review. Engraçado.
+
+
+200
+00:16:53.546 --> 00:16:57.546
+Eu acho que logo mais. Quem é mais velho no mercado antes de fazer de tudo hoje.
+
+
+201
+00:16:57.546 --> 00:17:01.546
+Se você tem essa flexibilidade com Ia, pode fazer também.
+
+
+202
+00:17:01.546 --> 00:17:07.546
+A empresa. O pessoal está sendo obrigado a usar ai usar Spec driven Cloud Code e Github Copilot. Obrigado, é ótimo.
+
+
+203
+00:17:07.546 --> 00:17:14.546
+No Brasil. Eu ouço bastante sobre empresas demitindo, porém, parece que estão tendo pouco retorno produtivo com os da Ia.
+
+
+204
+00:17:14.546 --> 00:17:17.546
+E muito gastos de Token. Eu também escuto isso.
+
+
+205
+00:17:17.546 --> 00:17:20.546
+E aí eu acho que vai muito dos profissionais do que literalmente da Ia. Tá.
+
+
+206
+00:17:20.546 --> 00:17:22.546
+Lo. Passei três anos.
+
+
+207
+00:17:22.546 --> 00:17:30.546
+Pensando: como vou criar um app e colocar ele para rodar com Ia em três meses no ar? Isso é Uma Outra Coisa Muito Legal Que Você Falou Aqui.
+
+
+208
+00:17:30.546 --> 00:17:36.546
+Que eu tenho um caso muito legal. Também eu trabalhava com um Vp.
+
+
+209
+00:17:36.546 --> 00:17:38.546
+Miles Trenchberg e Cara.
+
+
+210
+00:17:38.546 --> 00:17:41.546
+Ele era sítio. Ele foi sítio durante vinte anos.
+
+
+211
+00:17:41.546 --> 00:17:44.546
+Então ele conhecia muita dor de um City.
+
+
+212
+00:17:44.546 --> 00:17:52.546
+Cara. E aí ele começou a fazer um vibe coding de uma aplicação. Que cara? Ele achava que era muito Foda E Olha, A História.
+
+
+213
+00:17:52.546 --> 00:18:00.546
+E daí? Ele vai para o Kodoma uma solução no raplet, que é uma das ferramentas de A bem legal Que Funciona Você Consegue Fazer Deployment Você Consegue.
+
+
+214
+00:18:00.546 --> 00:18:02.546
+Na verdade, ter tudo dentro dele.
+
+
+215
+00:18:02.546 --> 00:18:04.546
+E ele me mostrou chamado Candela.
+
+
+216
+00:18:04.546 --> 00:18:11.546
+Ele me mostrou esse produto dele, que fazia controle de Cto e assim por diante. Orquestração das atividades. Quem estava fazendo o quê.
+
+
+217
+00:18:11.546 --> 00:18:13.546
+Eram Tools. Uma ferramenta.
+
+
+218
+00:18:13.546 --> 00:18:17.546
+E ele mostrou a versão inicial. Três meses depois, ele me mostrou.
+
+
+219
+00:18:17.546 --> 00:18:21.546
+Uma versão que já estava muito mais limpa. Funcionando bem. Legal.
+
+
+220
+00:18:21.546 --> 00:18:25.546
+E o cara acabou de receber um funding de doze milhões de dólares.
+
+
+221
+00:18:25.546 --> 00:18:30.546
+Tá? Então, só para vocês entenderem um pouquinho como que as coisas são loucas. Então.
+
+
+222
+00:18:30.546 --> 00:18:35.546
+Quanto mais domínio você tem de uma coisa mais fácil você literalmente criar algo.
+
+
+223
+00:18:35.546 --> 00:18:38.546
+E se você tiver expertise técnica, então você vai muito longe.
+
+
+224
+00:18:38.546 --> 00:18:45.546
+Então a ideia tendência é todo mundo ser engenheiro de software, inclusive engenheiro de A. é. A ideia é a Gente Ser Esse Conceito De Ai Nature Engineer.
+
+
+225
+00:18:45.546 --> 00:18:52.546
+E aí vão ter vários nomes em cima disso de software que sabe aveia de dados, que sabe a.
+
+
+226
+00:18:52.546 --> 00:18:58.546
+Vai ser um Ai Engineer que sabe a. Vai ser um cientista de dados que sabe a.
+
+
+227
+00:18:58.546 --> 00:18:59.546
+Né.
+
+
+228
+00:18:59.546 --> 00:19:01.546
+Porque o mercado não tem uma definição disso.
+
+
+229
+00:19:01.546 --> 00:19:04.546
+A maior definição que a gente tem hoje no mercado.
+
+
+230
+00:19:04.546 --> 00:19:08.546
+São duas, tá? Que é o Applied ai Engineer.
+
+
+231
+00:19:08.546 --> 00:19:11.546
+Então esse nome é muito forte lá fora.
+
+
+232
+00:19:11.546 --> 00:19:16.546
+Que é o cara que literalmente faz isso. E a gente está vendo num escopo.
+
+
+233
+00:19:16.546 --> 00:19:20.546
+Um pouco menor aqui. Eu estou extrapolando algumas curvas para mostrar para vocês o quão possível é.
+
+
+234
+00:19:20.546 --> 00:19:23.546
+Fazer vários trabalhos desempenhados como você, orquestrando.
+
+
+235
+00:19:23.546 --> 00:19:27.546
+Mas tem um outro ponto muito importante, que é.
+
+
+236
+00:19:27.546 --> 00:19:30.546
+O conceito de fooder Fdw, Né.
+
+
+237
+00:19:30.546 --> 00:19:33.546
+Fde, que é o Forward.
+
+
+238
+00:19:33.546 --> 00:19:38.546
+Deployed Engineer. Esse nome está assim completamente.
+
+
+239
+00:19:38.546 --> 00:19:42.546
+Explodindo.
+
+
+240
+00:19:42.546 --> 00:19:47.546
+Então, basicamente, é o cara que tem a inteligência do negócio.
+
+
+241
+00:19:47.546 --> 00:19:49.546
+Das soluções técnicas.
+
+
+242
+00:19:49.546 --> 00:19:52.546
+E ele é depoiado dentro do cliente.
+
+
+243
+00:19:52.546 --> 00:19:57.546
+E aí ele trabalha dentro do ambiente do cliente. Com o conhecimento do cliente.
+
+
+244
+00:19:57.546 --> 00:20:03.546
+Só que ele tem todo o quê? A solução técnica na mão. E agora, com o Iá, você consegue fazer isso?
+
+
+245
+00:20:03.546 --> 00:20:10.546
+Então isso tem explodido bastante lá fora também.
+
+
+246
+00:20:10.546 --> 00:20:16.546
+Luan. A empresa de trabalho vem como ensin, diretor. Alguns meses. Está funcionando.
+
+
+247
+00:20:16.546 --> 00:20:22.546
+De ouvir você falar que mistura é muito cada um no seu quadrado e limitado à sua função.
+
+
+248
+00:20:22.546 --> 00:20:25.546
+Aqui no Br. é muito. O cara faz tudo como está no exterior com Ia.
+
+
+249
+00:20:25.546 --> 00:20:29.546
+Essa é uma boa pergunta.
+
+
+250
+00:20:29.546 --> 00:20:35.546
+As empresas começaram a ver, né? E esse é um movimento que eu nunca imaginei que ia acontecer.
+
+
+251
+00:20:35.546 --> 00:20:42.546
+Americanos virando mais generalista. Eu nunca tinha visto isso acontecer. E pensei que isso nunca ia acontecer. Sendo bem sincero.
+
+
+252
+00:20:42.546 --> 00:20:47.546
+E o que a gente vê hoje é exatamente isso. Mas não é se generalista do jeito que a gente vê no Brasil.
+
+
+253
+00:20:47.546 --> 00:20:53.546
+é um cara que começa a ter uma amplitude maior, um chão maior para tocar um espaço maior para tocar.
+
+
+254
+00:20:53.546 --> 00:21:00.546
+Então ele começa. Na verdade, ele começa. Não, né? Eu falava há um tempo atrás, em alguns treinamentos meus.
+
+
+255
+00:21:00.546 --> 00:21:05.546
+Que eu sou da época não tão tão distante há um ano atrás, que a galera falava assim. Poxa, Luana.
+
+
+256
+00:21:05.546 --> 00:21:14.546
+Eu estou usando Ia, mas o meu time não entende. O meu chefe não entende. E tal, tal tal tal Tal Tal Tal Agora, A Gente já Tá Tipo Assim.
+
+
+257
+00:21:14.546 --> 00:21:21.546
+Meu chefe. Uma empresa quer produtividade. Eles têm mandatos de ato me obrigando a usar Ia. Eu tenho que usar. Ia. Então.
+
+
+258
+00:21:21.546 --> 00:21:24.546
+Você vê que de um ano pra cá muita coisa mudou.
+
+
+259
+00:21:24.546 --> 00:21:34.546
+E aí o que você começa a entender, na verdade, que agora está vindo de cima para baixo, não de baixo, para cima, e quando vem de cima para baixo, as coisas tendem realmente a acontecer De uma forma ou De outra.
+
+
+260
+00:21:34.546 --> 00:21:41.546
+Porque mexe no dinheiro. E aí, por exemplo, por que mexe no dinheiro? Se você pega uma empresa de consultoria, Por Exemplo Para O Meu Trabalho.
+
+
+261
+00:21:41.546 --> 00:21:50.546
+Você acha que para eles é mais lucrável botar dez engenheiros de dados num projeto de três milhões ou botar Dois Engenheiros De Dados Sênior.
+
+
+262
+00:21:50.546 --> 00:21:58.546
+Pagar um quinto do valor e ter uma margem de lucro muito maior. Isso se aplica a todas as outras Vertentes Também Então Se Você Pega Os Profissionais Que Se Destacam.
+
+
+263
+00:21:58.546 --> 00:22:02.546
+E se você olha um pouquinho como é a hierarquia do trabalho?
+
+
+264
+00:22:02.546 --> 00:22:06.546
+Hoje, cara. Um sênior consegue desempenhar o trabalho de dois, três, no mínimo.
+
+
+265
+00:22:06.546 --> 00:22:09.546
+Plenos, no mínimo, plenos.
+
+
+266
+00:22:09.546 --> 00:22:12.546
+Tá? E aí? Nem falando. Isso do Júnior.
+
+
+267
+00:22:12.546 --> 00:22:19.546
+Então, cada vez mais a gente vê no mercado. E aí vai acontecer, como sempre acontece, um modelo cíclico disso. Mas, enfim.
+
+
+268
+00:22:19.546 --> 00:22:22.546
+A gente já vê muita coisa acontecer.
+
+
+269
+00:22:22.546 --> 00:22:25.546
+é.
+
+
+270
+00:22:25.546 --> 00:22:30.546
+Hoje tem um time de Team e tem devies que não querem migrar e usar a fragilidade. Boa sorte.
+
+
+271
+00:22:30.546 --> 00:22:36.546
+Não. Será que eu estou louco? Mas acho que engenharia de dados está menos ameaçada que a engenharia de software. Só uma percepção.
+
+
+272
+00:22:36.546 --> 00:22:40.546
+Bem, a minha opinião sobre isso é que.
+
+
+273
+00:22:40.546 --> 00:22:44.546
+E eu sou muito feliz de ter escolhido engenharia de dados.
+
+
+274
+00:22:44.546 --> 00:22:47.546
+Pelo fato do seguinte: se você olhar.
+
+
+275
+00:22:47.546 --> 00:22:49.546
+Os Cientistas de Dados.
+
+
+276
+00:22:49.546 --> 00:22:51.546
+O que aconteceu com esse profissional, né?
+
+
+277
+00:22:51.546 --> 00:22:54.546
+Subcional ganha muito bem. Ainda.
+
+
+278
+00:22:54.546 --> 00:23:00.546
+Ele é super valioso, mas o engenheiro. Mas o cientista de dados clássicos hoje.
+
+
+279
+00:23:00.546 --> 00:23:03.546
+Ele tem muito menos vaga.
+
+
+280
+00:23:03.546 --> 00:23:08.546
+Se você olha hoje, por exemplo, um engenheiro de Machine Learning Engineer.
+
+
+281
+00:23:08.546 --> 00:23:13.546
+Também parou muito no tempo. Se você olhar engenharia de software, é o que llm está fazendo.
+
+
+282
+00:23:13.546 --> 00:23:15.546
+Se você olha dados.
+
+
+283
+00:23:15.546 --> 00:23:19.546
+Na minha percepção. Não, porque eu trabalho com dados. Eu acredito muito que.
+
+
+284
+00:23:19.546 --> 00:23:22.546
+O dado é derivado, né?
+
+
+285
+00:23:22.546 --> 00:23:25.546
+Empresa derivada pelo dado. Então.
+
+
+286
+00:23:25.546 --> 00:23:28.546
+Inevitavelmente dados ao centro de qualquer empresa.
+
+
+287
+00:23:28.546 --> 00:23:33.546
+Porque você precisa analisar, tratar e literalmente entregar valor com dados.
+
+
+288
+00:23:33.546 --> 00:23:38.546
+Então, se você conversar hoje com um engenheiro de software.
+
+
+289
+00:23:38.546 --> 00:23:45.546
+A gente teve a semana da engenharia. A gente. O Algimar tem vinte e dois anos de engenharia de software. Se Você Perguntar Para Ele O Seguinte Algimar.
+
+
+290
+00:23:45.546 --> 00:23:48.546
+Hoje.
+
+
+291
+00:23:48.546 --> 00:23:52.546
+Da porção das coisas que você faz de microserviços. Enfim, tal.
+
+
+292
+00:23:52.546 --> 00:23:55.546
+Você precisa trabalhar com tecnologias de dados.
+
+
+293
+00:23:55.546 --> 00:23:58.546
+Você precisava fazer isso. Há dez anos atrás.
+
+
+294
+00:23:58.546 --> 00:24:03.546
+Data vai te respondeu o seguinte. Não hoje eu preciso absolutamente. Eu preciso pensar no microsserviço.
+
+
+295
+00:24:03.546 --> 00:24:06.546
+Que transborda o dado para um local que vai fazer uma análise assim.
+
+
+296
+00:24:06.546 --> 00:24:12.546
+Que quando precisar processar esses microserviços, que eu sei que uma linguagem de progressão não vai fazer. Eu vou passar Isso Para O Spark.
+
+
+297
+00:24:12.546 --> 00:24:21.546
+Eu vou colocar isso dentro de um Storage para poder processar. Então, hoje, o engenheiro de dados precisa ter consciência Do Ambiente De Dados.
+
+
+298
+00:24:21.546 --> 00:24:24.546
+Assim como o engenheiro de dados precisa ter consciência do software.
+
+
+299
+00:24:24.546 --> 00:24:27.546
+Por isso que eu falo cada vez mais que essas coisas vão.
+
+
+300
+00:24:27.546 --> 00:24:32.546
+Se juntar.
+
+
+301
+00:24:32.546 --> 00:24:34.546
+O fde.
+
+
+302
+00:24:34.546 --> 00:24:42.546
+Ele geralmente é mais para consultoria. Quem trouxe muito desse termo foi a Palanti a sete, oito anos atrás. Mais ou menos.
+
+
+303
+00:24:42.546 --> 00:24:47.546
+Que ela falava realmente de fazer o Deployment dos seus engenheiros dentro.
+
+
+304
+00:24:47.546 --> 00:24:55.546
+Dos clientes aí no caso, porque eles trabalhavam com realmente Pentágono, exército americano e assim por diante. Então eles tinham Que Colocar O Engenheiro Lá Dentro.
+
+
+305
+00:24:55.546 --> 00:25:00.546
+Mas a grande ideia é que esse engenheiro vinha como todo treinamento técnico.
+
+
+306
+00:25:00.546 --> 00:25:05.546
+Ele era depoiado dentro do cliente para resolver o problema dele. Não uma demo.
+
+
+307
+00:25:05.546 --> 00:25:13.546
+Uma coisa que funcionou em outro cliente, mas sim uma coisa que ia funcionar dentro dele.
+
+
+308
+00:25:13.546 --> 00:25:20.546
+Trabalho para fora e temos plataformas desenvolvidas internamente, já que ajuda os Devs, engenharia no fluxo inteiro Dev dados a criar tudo.
+
+
+309
+00:25:20.546 --> 00:25:29.546
+Somente com linguagem natural, desde a tarefa com gira, infra pipe, modelagem, feature Bent, alerta até o deploy e cada vez mais.
+
+
+310
+00:25:29.546 --> 00:25:34.546
+O que o Brian falou aqui vai acontecer, tá? Nos últimos meses. Eu tenho. Acho que eu fiz, sei lá.
+
+
+311
+00:25:34.546 --> 00:25:37.546
+Oito, nove diferentes clientes.
+
+
+312
+00:25:37.546 --> 00:25:39.546
+Falando de infraestrutura de ar.
+
+
+313
+00:25:39.546 --> 00:25:43.546
+Então isso é uma tendência? Com certeza.
+
+
+314
+00:25:43.546 --> 00:25:47.546
+O que a gente viu ontem, né? No nosso repositório ontem.
+
+
+315
+00:25:47.546 --> 00:25:50.546
+A gente acabou com alguns.
+
+
+316
+00:25:50.546 --> 00:25:58.546
+Documentos. Dentro desse repositório, a gente vai ver isso em mais detalhes ao longo do dia. Hoje.
+
+
+317
+00:25:58.546 --> 00:26:01.546
+Mas aqui a gente terminou. Se a gente abrir docs, né?
+
+
+318
+00:26:01.546 --> 00:26:03.546
+A gente acabou primeiro, né?
+
+
+319
+00:26:03.546 --> 00:26:08.546
+A gente gerou um documento de requisito que veio de vários documentos do cliente.
+
+
+320
+00:26:08.546 --> 00:26:15.546
+Depois desse documento, foi gerado um documento de especificação técnica para o que a gente tinha que implementar do tipo um.
+
+
+321
+00:26:15.546 --> 00:26:23.546
+Inicialmente. Depois disso, a gente passou isso dentro do converge. O Converge quebrou isso em Ad.
+
+
+322
+00:26:23.546 --> 00:26:27.546
+Que são.
+
+
+323
+00:26:27.546 --> 00:26:28.546
+Arquitetura. Decision Records.
+
+
+324
+00:26:28.546 --> 00:26:31.546
+Os registros do que são extremamente importantes.
+
+
+325
+00:26:31.546 --> 00:26:37.546
+Como explicação, com texto, porque consequências e, principalmente, a evidência que te aponta isso.
+
+
+326
+00:26:37.546 --> 00:26:43.546
+E a gente gerou um documento também de contexto.
+
+
+327
+00:26:43.546 --> 00:26:45.546
+Aonde eu tenho todos os jargões.
+
+
+328
+00:26:45.546 --> 00:26:48.546
+Informações, localização.
+
+
+329
+00:26:48.546 --> 00:26:54.546
+E assim por diante. Então, quem fez todo esse processo pra gente de forma transparente?
+
+
+330
+00:26:54.546 --> 00:26:59.546
+Foi o converge. Foi um framework que eu desenvolvi para fazer isso.
+
+
+331
+00:26:59.546 --> 00:27:04.546
+Mas no final do dia, você poderia pedir para ele? Nm: Assim, de forma bem genérica.
+
+
+332
+00:27:04.546 --> 00:27:07.546
+ó, pega esse bando de coisa e transforma num documento.
+
+
+333
+00:27:07.546 --> 00:27:14.546
+De negócio pô. Pega agora esse documento de negócio e extrai os valores para criar um documento técnico.
+
+
+334
+00:27:14.546 --> 00:27:24.546
+Agora, com esse documento técnico, quebra isso em Adrs, para que eu possa ter rastrabilidade e ter cada uma dessas decisões separadas atomicamente.
+
+
+335
+00:27:24.546 --> 00:27:31.546
+Ou seja, eu estou decompondo o meu trabalho. Então a gente viu esses dois caras ontem, né?
+
+
+336
+00:27:31.546 --> 00:27:36.546
+E aí? Hoje a gente vai sentar na cadeira de um Analytics Engineer.
+
+
+337
+00:27:36.546 --> 00:27:41.546
+E de um dear engineer pergunta: qual a diferença entre essas duas bowls? Na sua opinião.
+
+
+338
+00:27:41.546 --> 00:28:00.546
+O que um da faz e o que um de faz. Basicamente.
+
+
+339
+00:28:00.546 --> 00:28:06.546
+Coloquei no chat.
+
+
+340
+00:28:06.546 --> 00:28:13.546
+Quando vocês colocam aí. Basicamente, eu separei alguns pontos que são extremamente importantes. Tá.
+
+
+341
+00:28:13.546 --> 00:28:21.546
+Gosto do que o Samuel falou aqui. O de analisa e o de executa. Essa é uma boa forma de.
+
+
+342
+00:28:21.546 --> 00:28:23.546
+De colocar essas duas voos.
+
+
+343
+00:28:23.546 --> 00:28:27.546
+Data está mais perto de infra data, mais perto de business. Muito bom. Também.
+
+
+344
+00:28:27.546 --> 00:28:32.546
+Acho que data mais próximo do negócio. Enquanto der a mais próxima da infra, meu irmão.
+
+
+345
+00:28:32.546 --> 00:28:36.546
+De análise de dados deve fazer ingestão de dados exatamente também.
+
+
+346
+00:28:36.546 --> 00:28:39.546
+Então dá para entender essa segregação. Muito bem.
+
+
+347
+00:28:39.546 --> 00:28:45.546
+Por exemplo, de transporta e ajusta faz. Traz valor para o negócio.
+
+
+348
+00:28:45.546 --> 00:28:47.546
+Então essas duas Rolls.
+
+
+349
+00:28:47.546 --> 00:28:55.546
+Mas aí deixa eu perguntar para você uma pergunta mais complexa. Por que você acha que existem essas duas Rolls.
+
+
+350
+00:28:55.546 --> 00:28:58.546
+Na sua opinião.
+
+
+351
+00:28:58.546 --> 00:29:03.546
+Que um profissional, por exemplo, um da não pode fazer tudo. Não conseguiria fazer tudo muito bem.
+
+
+352
+00:29:03.546 --> 00:29:07.546
+Ou por que um deno conseguiria fazer tudo bem. O que difere eles? Para que nós.
+
+
+353
+00:29:07.546 --> 00:29:13.546
+Por exemplo, ter duas pessoas desempenhando.
+
+
+354
+00:29:13.546 --> 00:29:17.546
+Porque o Da pode não ter conhecimento técnico.
+
+
+355
+00:29:17.546 --> 00:29:21.546
+Porque o dai de business, por exemplo.
+
+
+356
+00:29:21.546 --> 00:29:30.546
+Opção.
+
+
+357
+00:29:30.546 --> 00:29:34.546
+Pela quantidade de tarefas serem executadas. Permissão de acesso.
+
+
+358
+00:29:34.546 --> 00:29:41.546
+No passado. Um falar com a máquina para entregar o dado e o outro com o negócio. São disciplinas distintas.
+
+
+359
+00:29:41.546 --> 00:29:48.546
+Então tudo isso que vocês falaram faz totalmente sentido, né?
+
+
+360
+00:29:48.546 --> 00:29:50.546
+Acho que é mais o foco do profissional.
+
+
+361
+00:29:50.546 --> 00:29:56.546
+Geralmente, quem tem veia mais técnica. Se por der quem tem um veia mais business vai por da.
+
+
+362
+00:29:56.546 --> 00:30:00.546
+Cunhada fazer a parte de. De a entregar um App com Stranger.
+
+
+363
+00:30:00.546 --> 00:30:07.546
+Porque eu deito unicórnio. Não existe com certeza nenhum unicórnio existe, né? A gente nunca viu ele andando.
+
+
+364
+00:30:07.546 --> 00:30:09.546
+Nem voando, nem por aí.
+
+
+365
+00:30:09.546 --> 00:30:13.546
+Mas a grande ideia é o seguinte.
+
+
+366
+00:30:13.546 --> 00:30:15.546
+Tem uma Gina. Vou mudar um pouco o prisma.
+
+
+367
+00:30:15.546 --> 00:30:17.546
+Aqui só para vocês entenderem.
+
+
+368
+00:30:17.546 --> 00:30:23.546
+Se você tem um time de um Solutions, Architect.
+
+
+369
+00:30:23.546 --> 00:30:25.546
+Que faz o quê? Coordenar.
+
+
+370
+00:30:25.546 --> 00:30:29.546
+Se você tem um, de que implementa.
+
+
+371
+00:30:29.546 --> 00:30:32.546
+E se você tem um da que.
+
+
+372
+00:30:32.546 --> 00:30:36.546
+Fala com o cliente.
+
+
+373
+00:30:36.546 --> 00:30:39.546
+Ou né.
+
+
+374
+00:30:39.546 --> 00:30:46.546
+Mostra para o cliente.
+
+
+375
+00:30:46.546 --> 00:30:50.546
+O que é essa? O que essas três me mostram aqui, né?
+
+
+376
+00:30:50.546 --> 00:30:56.546
+Que o da também.
+
+
+377
+00:30:56.546 --> 00:30:59.546
+I tro de deitar na lista, né.
+
+
+378
+00:30:59.546 --> 00:31:06.546
+E a gente tem um outro cargo também. Ali, no meio, chamado Analítics Engineer. E eu acho muito legal esse Cargo Ter Explodido Tanto.
+
+
+379
+00:31:06.546 --> 00:31:09.546
+O que para vocês é um Analytics Engineer.
+
+
+380
+00:31:09.546 --> 00:31:16.546
+Beleza. O Daily Engineer e o Data Analyst ficou completamente claro.
+
+
+381
+00:31:16.546 --> 00:31:21.546
+E agora a gente está olhando o Data Engineer e o Analytics Engineer.
+
+
+382
+00:31:21.546 --> 00:31:32.546
+Qual a diferença desses dois caras? Porque são exatamente desses dois caras que a gente vai falar.
+
+
+383
+00:31:32.546 --> 00:31:37.546
+Em breve chegamos no King Kong.
+
+
+384
+00:31:37.546 --> 00:31:41.546
+Um bi mais técnico Ae foca em produtos de dados.
+
+
+385
+00:31:41.546 --> 00:31:47.546
+Tentativa de juntar as duas Skills. Muito bom, Jonathan. Eu gosto muito disso. Aí.
+
+
+386
+00:31:47.546 --> 00:31:51.546
+Tentativa falhada miseravelmente tentar unir essas duas. Que é exatamente isso? Tá.
+
+
+387
+00:31:51.546 --> 00:31:57.546
+O analista engenheiro nasceu para juntar essas duas profissões. Tá.
+
+
+388
+00:31:57.546 --> 00:31:59.546
+Ele nasceu por causa disso.
+
+
+389
+00:31:59.546 --> 00:32:01.546
+Que é uma pessoa que.
+
+
+390
+00:32:01.546 --> 00:32:04.546
+Entendia. Negócio.
+
+
+391
+00:32:04.546 --> 00:32:10.546
+Entendi os conceitos mais básicos do final do túnel, que é um warehouse de dados.
+
+
+392
+00:32:10.546 --> 00:32:13.546
+O que é um processo de Etl assim por diante.
+
+
+393
+00:32:13.546 --> 00:32:22.546
+Por isso que o Dbt explodiu, né? Porque a proposta do Dbt era justamente falar o quê, Etel e Les, Né Teoricamente Cara Você Conectava O Dbt No Dayware Housing.
+
+
+394
+00:32:22.546 --> 00:32:27.546
+E você basicamente teria todo o processo fim a fim funcionando.
+
+
+395
+00:32:27.546 --> 00:32:29.546
+Então essa era a grande ideia.
+
+
+396
+00:32:29.546 --> 00:32:33.546
+Obviamente que não existe One Size Fits All.
+
+
+397
+00:32:33.546 --> 00:32:35.546
+Mas a ideia foi basicamente esse, né.
+
+
+398
+00:32:35.546 --> 00:32:38.546
+Paga. Um, ganha dois.
+
+
+399
+00:32:38.546 --> 00:32:43.546
+Mas, no final das contas, quando a gente olha hoje no mercado, hoje, um engenheiro de dados faz muita parte, como.
+
+
+400
+00:32:43.546 --> 00:32:45.546
+Alguém falou que eu acho que a Ju falou.
+
+
+401
+00:32:45.546 --> 00:32:49.546
+Da ingestão do dado da transformação do dado.
+
+
+402
+00:32:49.546 --> 00:32:56.546
+Até a sua camada Gold, por exemplo. E ali o Analis Engineer vai se conecta.
+
+
+403
+00:32:56.546 --> 00:33:01.546
+Nessa parte da Gold. Ou trabalha juntamente com o Danny Engineer na Gold.
+
+
+404
+00:33:01.546 --> 00:33:05.546
+Para poder mostrar o que o cliente precisa.
+
+
+405
+00:33:05.546 --> 00:33:07.546
+E aí? Hoje.
+
+
+406
+00:33:07.546 --> 00:33:10.546
+Na nossa perspectiva aqui, de a.
+
+
+407
+00:33:10.546 --> 00:33:13.546
+O que a gente precisa garantir.
+
+
+408
+00:33:13.546 --> 00:33:16.546
+A gente precisa garantir que.
+
+
+409
+00:33:16.546 --> 00:33:20.546
+Todo mundo fala, né? Eu acho engraçado expor.
+
+
+410
+00:33:20.546 --> 00:33:25.546
+Soft Skill Communication Skills é uma Skill que você tem que aprender, cara.
+
+
+411
+00:33:25.546 --> 00:33:28.546
+Acho que você não tem muita opção, né?
+
+
+412
+00:33:28.546 --> 00:33:30.546
+Porque a gente fala com pessoas.
+
+
+413
+00:33:30.546 --> 00:33:35.546
+Via comunicação, né? Então assim não tem muito como fugir disso. Você vai ter que.
+
+
+414
+00:33:35.546 --> 00:33:38.546
+Cada vez mais, aprender a se comunicar.
+
+
+415
+00:33:38.546 --> 00:33:41.546
+Muito bem, então.
+
+
+416
+00:33:41.546 --> 00:33:43.546
+Hoje, se a gente falar tecnicamente.
+
+
+417
+00:33:43.546 --> 00:33:46.546
+De um engenheiro de dados e de um.
+
+
+418
+00:33:46.546 --> 00:33:54.546
+Analytics Engineer não tem nada que um agente não possa fazer. O que ele não pode fazer é literalmente se Comunicar Com O Cliente.
+
+
+419
+00:33:54.546 --> 00:34:00.546
+Então você vai fazer o papel exatamente esse. Mas a parte de construção. Ele pode ser feita por um agente.
+
+
+420
+00:34:00.546 --> 00:34:02.546
+Então cada um aqui.
+
+
+421
+00:34:02.546 --> 00:34:06.546
+Ele vai olhar o problema com prismas diferentes.
+
+
+422
+00:34:06.546 --> 00:34:08.546
+Ele vai ter granularidades.
+
+
+423
+00:34:08.546 --> 00:34:15.546
+Do problema também ele vai ver tabelas e conceitos de uma forma em que o engenheiro de dados vai ver.
+
+
+424
+00:34:15.546 --> 00:34:20.546
+Enquanto analista, um analista de dinheiro vai olhar muito mais no conceito de granularidade.
+
+
+425
+00:34:20.546 --> 00:34:23.546
+Teste.
+
+
+426
+00:34:23.546 --> 00:34:26.546
+é uma coisa extremamente importante, porque a gente está falando de um pipeline.
+
+
+427
+00:34:26.546 --> 00:34:33.546
+Que tira uma herança de muitas coisas importantes que a gente tinha na área de dados, que eram tabelas, por Exemplo Com Foreign Keys Com Primary Keys.
+
+
+428
+00:34:33.546 --> 00:34:38.546
+Constraintes que garantiam que cara, um dado não poderia entrar nulo numa coluna.
+
+
+429
+00:34:38.546 --> 00:34:43.546
+Com um valor deveria ser positivo e assim por diante. Normalmente em ambientes de big data.
+
+
+430
+00:34:43.546 --> 00:34:46.546
+Você tem que fazer isso de forma mais rústica.
+
+
+431
+00:34:46.546 --> 00:34:50.546
+Um outro ponto é como que o garanto. A verdade.
+
+
+432
+00:34:50.546 --> 00:34:56.546
+Então lembra que toda vez que a gente constrói uma solução nesse calibre, a gente sempre tem que garantir qual é O Resultado Final.
+
+
+433
+00:34:56.546 --> 00:34:59.546
+A gente tem que saber qual o resultado final.
+
+
+434
+00:34:59.546 --> 00:35:02.546
+E aqui. Nesse caso, o que a gente quer garantir é.
+
+
+435
+00:35:02.546 --> 00:35:08.546
+Se eu receber um valor ou um arquivo em que eu vá trabalhar, esse arquivo.
+
+
+436
+00:35:08.546 --> 00:35:13.546
+E que esse arquivo esteja diferente da regra final.
+
+
+437
+00:35:13.546 --> 00:35:18.546
+Eu não vou simplesmente resolver esse problema. O que eu vou fazer na verdade, é levantar esse problema.
+
+
+438
+00:35:18.546 --> 00:35:24.546
+E aí uma das coisas muito importantes da gente entender no conceito de Engenharia de dados de analíticas e Engineering.
+
+
+439
+00:35:24.546 --> 00:35:28.546
+Por exemplo, o conceito de grão. Isso é uma coisa que a gente usa muito.
+
+
+440
+00:35:28.546 --> 00:35:32.546
+O engenheiro de dados. Normalmente tá.
+
+
+441
+00:35:32.546 --> 00:35:34.546
+Normalmente ele tem um conhecimento.
+
+
+442
+00:35:34.546 --> 00:35:40.546
+De Day Housing. Então, quando a gente fala de Day Re Housing, impossível você não ter utilizado ter ouvido falar.
+
+
+443
+00:35:40.546 --> 00:35:42.546
+Desconceito de grão.
+
+
+444
+00:35:42.546 --> 00:35:47.546
+Com a granularidade do dado com a granularidade daquela pesquisa.
+
+
+445
+00:35:47.546 --> 00:35:50.546
+No nosso caso, a nossa granularidade.
+
+
+446
+00:35:50.546 --> 00:35:54.546
+é o Beth, por exemplo, que é o Betty.
+
+
+447
+00:35:54.546 --> 00:36:01.546
+Do arquivo, mais o Currency. Então os dois combinados me diz realmente qual é o grão.
+
+
+448
+00:36:01.546 --> 00:36:08.546
+Porque eu posso ter. às vezes o mesmo Batch de arquivo com currencies diferentes. Por isso que eu preciso de uma granularidade.
+
+
+449
+00:36:08.546 --> 00:36:11.546
+Nível Batch. Tá.
+
+
+450
+00:36:11.546 --> 00:36:14.546
+Outra coisa. Contrato.
+
+
+451
+00:36:14.546 --> 00:36:18.546
+Esse contrato aqui. é uma coisa interessante da gente discutir um pouquinho.
+
+
+452
+00:36:18.546 --> 00:36:21.546
+Contrato é para garantir.
+
+
+453
+00:36:21.546 --> 00:36:24.546
+Basicamente o que significa, certo.
+
+
+454
+00:36:24.546 --> 00:36:29.546
+Então a gente veio dia um dia dois falando de contrato.
+
+
+455
+00:36:29.546 --> 00:36:32.546
+Que você precisa saber o que define, certo.
+
+
+456
+00:36:32.546 --> 00:36:39.546
+Então o contrato que você deve criar, independentemente do que você está fazendo, principalmente com sistemas agênicos, vai garantir, cara.
+
+
+457
+00:36:39.546 --> 00:36:42.546
+Qual é a definição de certo? A gente vai ver isso um pouquinho, tá.
+
+
+458
+00:36:42.546 --> 00:36:47.546
+Depois, Beth vai processar em conjuntos de tabelas em conjuntos.
+
+
+459
+00:36:47.546 --> 00:36:56.546
+De dados, e a gente tem o conceito de pipeline de dados. Obviamente que eu acho que todo mundo aqui Conhece Qual O Conceito é.
+
+
+460
+00:36:56.546 --> 00:37:03.546
+E aí, o que a gente vai ver ao longo desse dia, a gente vai ver não só as escolhas Que Nós Fizemos Aqui Mas O Porquê Das Coisas.
+
+
+461
+00:37:03.546 --> 00:37:07.546
+Normalmente na vida real.
+
+
+462
+00:37:07.546 --> 00:37:09.546
+Muitas vezes.
+
+
+463
+00:37:09.546 --> 00:37:13.546
+é você que decide a Stack que você vai trabalhar? Projeto. Ele chega até você.
+
+
+464
+00:37:13.546 --> 00:37:19.546
+E obviamente por você ser especialista em alguma coisa. Você simplesmente é assinalado.
+
+
+465
+00:37:19.546 --> 00:37:23.546
+Para fazer isso. Então aqui a gente está pensando um pouquinho de coisa um pouquinho sobre isso.
+
+
+466
+00:37:23.546 --> 00:37:29.546
+Já existem coisas que foram assinaladas e dadas para a gente. Meio que herdou esse plano.
+
+
+467
+00:37:29.546 --> 00:37:34.546
+Então a gente vai se adaptar nisso. E vai fazer isso baseado nos conceitos. Porque a ideia aqui.
+
+
+468
+00:37:34.546 --> 00:37:40.546
+Não é a gente entender. Engenharia de dados é a ideia, daqui a gente tentar entender como a gente aborda.
+
+
+469
+00:37:40.546 --> 00:37:46.546
+Engenharia de dados de forma agêntica, como que a gente transforma esse processo.
+
+
+470
+00:37:46.546 --> 00:37:53.546
+De forma agêntica. E aí, aqui no pipeline de dados. é interessante, porque, por exemplo.
+
+
+471
+00:37:53.546 --> 00:37:56.546
+Quando você fala de.
+
+
+472
+00:37:56.546 --> 00:37:59.546
+Decompor um problema.
+
+
+473
+00:37:59.546 --> 00:38:05.546
+O pipeline de dados é interessante, porque você pode decompor de várias formas.
+
+
+474
+00:38:05.546 --> 00:38:06.546
+Então, por exemplo, a gente tem ali.
+
+
+475
+00:38:06.546 --> 00:38:09.546
+A entrada do dado que pode ser uma decomposição.
+
+
+476
+00:38:09.546 --> 00:38:14.546
+A gente tem a parte de ingestão de dados, que também pode ser uma decomposição.
+
+
+477
+00:38:14.546 --> 00:38:20.546
+A gente tem a parte do Lake Housing onde o dado vai ser armazenado. O local, que também pode ser uma decomposição.
+
+
+478
+00:38:20.546 --> 00:38:28.546
+A gente tem a quebra do Dbt juntamente com Bronze Silver e Gold, que também pode ser uma decomposição.
+
+
+479
+00:38:28.546 --> 00:38:32.546
+E a gente tem também o valor da verdade que vai ser validado contra isso.
+
+
+480
+00:38:32.546 --> 00:38:37.546
+Então, quando a gente começa a olhar como a gente vai quebrar esse pipeline.
+
+
+481
+00:38:37.546 --> 00:38:39.546
+A gente precisa entender.
+
+
+482
+00:38:39.546 --> 00:38:44.546
+O que cada tecnologia representa para a gente aqui, dentro do nosso ambiente.
+
+
+483
+00:38:44.546 --> 00:39:00.546
+Então, o Dlt, por exemplo, quando a gente olha aqui. Python Dlt? Não sei. Muita gente não conhece, tá.
+
+
+484
+00:39:00.546 --> 00:39:05.546
+Uou.
+
+
+485
+00:39:05.546 --> 00:39:13.546
+O Dlti. Uma tecnologia bem interessante em Python, na verdade, que ele é obviamente, tudo agora é nativo de Engenharia.
+
+
+486
+00:39:13.546 --> 00:39:19.546
+Mas basicamente, você consegue criar pipelines de movimentação de dados via Python.
+
+
+487
+00:39:19.546 --> 00:39:21.546
+E ele tem várias coisas interessantes aqui.
+
+
+488
+00:39:21.546 --> 00:39:28.546
+Do que ele consegue fazer. Ele consegue trabalhar com trilhões de ingestões. Ele consegue fazer diversas transformações.
+
+
+489
+00:39:28.546 --> 00:39:37.546
+Consegue fazer vários pipelines, e a gente escolheu. Ele obviamente, foi escolhido ele, justamente pelo processo de ser tudo local.
+
+
+490
+00:39:37.546 --> 00:39:42.546
+Que pode ser deployed na nuvem. Meu áudio está ruim. Pessoal.
+
+
+491
+00:39:42.546 --> 00:39:47.546
+Ou tá tudo bem.
+
+
+492
+00:39:47.546 --> 00:39:56.546
+Então a gente pode ter esse cara que vai ser colocado na nuvem. Mas a grande questão para a gente Poder Testar O Ambiente Como Um Todo é Que Tudo Pode Ser Colocado Local.
+
+
+493
+00:39:56.546 --> 00:40:02.546
+Mas se a gente olhar aqui, tudo pode ir para a nuvem. Então, por exemplo, o Dlt, você tem Cloud.
+
+
+494
+00:40:02.546 --> 00:40:05.546
+O Duct Tb. Você pode mandar ele para o Moderb.
+
+
+495
+00:40:05.546 --> 00:40:07.546
+Moderate, Tp, Moderduct, Tp.
+
+
+496
+00:40:07.546 --> 00:40:13.546
+Você manda ele para cima. Dbt: você tem um Dbt cloud, ou você tem um composer ou qualquer outra coisa.
+
+
+497
+00:40:13.546 --> 00:40:17.546
+Então todas essas tecnologias que a gente vai fazer. Local.
+
+
+498
+00:40:17.546 --> 00:40:20.546
+Elas podem ser colocadas na nuvem, o que é ótimo.
+
+
+499
+00:40:20.546 --> 00:40:26.546
+Porque isso possibilita para a gente poder testar. Então a gente vai ter o Dlt como Register ou como Ingester.
+
+
+500
+00:40:26.546 --> 00:40:35.546
+A gente vai armazenar essas informações no Ductb. A gente vai conectar o Dbt com o Ductb para receber essas Informações E Começar A Trabalhar Elas.
+
+
+501
+00:40:35.546 --> 00:40:39.546
+E a gente vai ter um Judge que vai julgar o que é certo e o que é errado.
+
+
+502
+00:40:39.546 --> 00:40:42.546
+Por isso que a gente precisa do Golden Match, né?
+
+
+503
+00:40:42.546 --> 00:40:48.546
+Do dataset escrito por Deus. Nesse caso, como a gente está fazendo a migração de um ambiente que já existe, A Gente Tem Esse Resultado Já.
+
+
+504
+00:40:48.546 --> 00:40:52.546
+Só tem uma coisa interessante aqui.
+
+
+505
+00:40:52.546 --> 00:40:55.546
+A gente sabe.
+
+
+506
+00:40:55.546 --> 00:40:59.546
+Que o movimento da tecnologia.
+
+
+507
+00:40:59.546 --> 00:41:01.546
+Engloba uma grande parte de dados.
+
+
+508
+00:41:01.546 --> 00:41:06.546
+E a gente viu isso aqui acontecer diante. Tem muita gente aqui que viu isso acontecer.
+
+
+509
+00:41:06.546 --> 00:41:13.546
+Na época de dois mil de terror Housing, depois de dois mil e dez de Day Lake, depois de dois Mil E Vinte De Day Lake House.
+
+
+510
+00:41:13.546 --> 00:41:15.546
+Então muita gente passou.
+
+
+511
+00:41:15.546 --> 00:41:20.546
+Por esses processos. E o que a gente entendeu hoje é que.
+
+
+512
+00:41:20.546 --> 00:41:27.546
+Eu não conheço nenhum projeto de dados que não utilize Lake Housing. Cara, eu realmente. Eu desconheço.
+
+
+513
+00:41:27.546 --> 00:41:34.546
+Cliente Médio Grande. Eu desconheço total. Nunca entrei numa call com um cliente que ele não soubesse que é Lake House.
+
+
+514
+00:41:34.546 --> 00:41:38.546
+O que ele já não tivesse ou não falasse de bronze sever. Então assim.
+
+
+515
+00:41:38.546 --> 00:41:43.546
+Se você não tem um background de engenharia de dados, mas você nunca quer errar.
+
+
+516
+00:41:43.546 --> 00:41:49.546
+Estúdio Lake House. E obviamente, você vai ter que estudar um pouquinho de Daily Housing. Um pouquinho de Daily Lake.
+
+
+517
+00:41:49.546 --> 00:41:51.546
+He did a Lake House para entender o que significa.
+
+
+518
+00:41:51.546 --> 00:41:55.546
+Mas todas as arquiteturas que eu conheço.
+
+
+519
+00:41:55.546 --> 00:42:00.546
+Independentemente da tecnologia que você for usar.
+
+
+520
+00:42:00.546 --> 00:42:01.546
+Utiliza o leque House.
+
+
+521
+00:42:01.546 --> 00:42:04.546
+E aí, quem trabalha com dado.
+
+
+522
+00:42:04.546 --> 00:42:10.546
+Isso é bem Bread and Butter. Isso é bem pão com manteiga. Então, o que a gente tem aqui, né?
+
+
+523
+00:42:10.546 --> 00:42:15.546
+Na nossa arquitetura, que a gente vai avaliar logo mais.
+
+
+524
+00:42:15.546 --> 00:42:19.546
+E aí imagina que tem um arquiteto de soluções apresentando esse problema para vocês.
+
+
+525
+00:42:19.546 --> 00:42:25.546
+A gente tem três pernas aqui, né? A primeira perna é quando eu recebo o dado que vem da Landing Zone.
+
+
+526
+00:42:25.546 --> 00:42:28.546
+Então imagine que vai acontecer, Sftp.
+
+
+527
+00:42:28.546 --> 00:42:31.546
+O engenheiro de software vai traduzir o Java para o Python.
+
+
+528
+00:42:31.546 --> 00:42:37.546
+Esse Python vai escrever em parque numa Landing Zone. Então esse é o trabalho.
+
+
+529
+00:42:37.546 --> 00:42:40.546
+Do engenheiro de software recebeu Java.
+
+
+530
+00:42:40.546 --> 00:42:44.546
+Criar a mesma aplicação em Python moderna.
+
+
+531
+00:42:44.546 --> 00:42:47.546
+E escrever em vez de Csv. Escrever em parquê.
+
+
+532
+00:42:47.546 --> 00:42:53.546
+Quando esse dado bate na camada Landing lá do Sftp.
+
+
+533
+00:42:53.546 --> 00:42:55.546
+A gente vai ter uma ingestão que vai colocar isso dentro.
+
+
+534
+00:42:55.546 --> 00:43:00.546
+To Duckdb. E a gente vai utilizar a. O quê? Bronze Silver e Gold.
+
+
+535
+00:43:00.546 --> 00:43:08.546
+O que a gente tem na bronze. O pessoal de dados já é cansado de ver isso. Principalmente se vocês Já Fizeram Vários Treinamentos Comigo.
+
+
+536
+00:43:08.546 --> 00:43:13.546
+There's. Eu não aguento mais falar de Bron Silvio Gloody. Graças a Deus que as pessoas já sabem o que é isso.
+
+
+537
+00:43:13.546 --> 00:43:22.546
+Eu não preciso mais falar. Eu já falei tanto disso que realmente eu me sinto. Até eu fico incomodado de falar tanto disso.
+
+
+538
+00:43:22.546 --> 00:43:25.546
+Mas engraçado que ainda existem várias nuances aqui. Tá, mas enfim.
+
+
+539
+00:43:25.546 --> 00:43:31.546
+O que você tem aqui.
+
+
+540
+00:43:31.546 --> 00:43:36.546
+Você tem a maturidade do dado. Basicamente, você está maturando o dado.
+
+
+541
+00:43:36.546 --> 00:43:41.546
+E você está mudando viés de interpretação dessa informação ao longo.
+
+
+542
+00:43:41.546 --> 00:43:46.546
+Dos passes desse dado. Então, quando você está no bronze.
+
+
+543
+00:43:46.546 --> 00:43:52.546
+A gente chama ele de Source Aligned. Porque ele está alinhado com a fonte. Ele tem que ser exatamente igual.
+
+
+544
+00:43:52.546 --> 00:43:54.546
+Por vários motivos. O principal motivo.
+
+
+545
+00:43:54.546 --> 00:43:58.546
+é que, em algum momento, se você precisar reprocessar.
+
+
+546
+00:43:58.546 --> 00:44:00.546
+Se você precisar ter auditoria.
+
+
+547
+00:44:00.546 --> 00:44:03.546
+Se você precisar.
+
+
+548
+00:44:03.546 --> 00:44:11.546
+Se você precisar incrementar valores. Se você precisa ter um local imutável onde ele não muda. E que diga a história da fonte.
+
+
+549
+00:44:11.546 --> 00:44:18.546
+Porque às vezes a fonte pode ser o dado. Pode ser excluído lá na fonte. Num banco de estados relacional, Você Pode Ter Um Purge De Dado E Perder Aquela Informação.
+
+
+550
+00:44:18.546 --> 00:44:24.546
+Então a bronze. O que ela vai fazer? Ela vai ser o dado exatamente.
+
+
+551
+00:44:24.546 --> 00:44:27.546
+Igual. Esse cara.
+
+
+552
+00:44:27.546 --> 00:44:29.546
+Para entrar no Leak House.
+
+
+553
+00:44:29.546 --> 00:44:31.546
+Bem. Daqui para cá.
+
+
+554
+00:44:31.546 --> 00:44:34.546
+A gente tem o mesmo grão.
+
+
+555
+00:44:34.546 --> 00:44:36.546
+Muitas das vezes.
+
+
+556
+00:44:36.546 --> 00:44:42.546
+Que a gente vai limpar esse dado. Então, nesse primeiro momento, a gente tem tabelas, despesas.
+
+
+557
+00:44:42.546 --> 00:44:45.546
+E aqui a gente vai conformar os grãos, né?
+
+
+558
+00:44:45.546 --> 00:44:51.546
+Por que é conformar os grãos? é começar. Talvez se você tem, por exemplo, cinco tabelas bronze.
+
+
+559
+00:44:51.546 --> 00:44:59.546
+Você vai convergir isso em duas tabelas. Silvers, por exemplo, se você tem três tabelas bronze, vamos dar um exemplo Aqui Muito Simples Tá.
+
+
+560
+00:44:59.546 --> 00:45:05.546
+Gente. Eu vou parar aqui as vezes que minha garganta está assim.
+
+
+561
+00:45:05.546 --> 00:45:08.546
+Está insuportável.
+
+
+562
+00:45:08.546 --> 00:45:11.546
+Bem perto do insuportável. O que acontece.
+
+
+563
+00:45:11.546 --> 00:45:14.546
+Na Bronze. Vamos pegar um exemplo muito bom, que eu gosto de usar.
+
+
+564
+00:45:14.546 --> 00:45:19.546
+Hoje. Você tem micro serviços, né? E imagino que você tem um usuário vendendo Bongo.
+
+
+565
+00:45:19.546 --> 00:45:25.546
+Um usuário vindo do posters e uma tabela de usuário vindo do mais quer. Então você tem três tabelas de usuário.
+
+
+566
+00:45:25.546 --> 00:45:30.546
+Na bronze. Por quê? Se você tiver duzentos tabelas na Landing.
+
+
+567
+00:45:30.546 --> 00:45:34.546
+A ideia é que você tenha duzentos tabelas na bronze. Tá.
+
+
+568
+00:45:34.546 --> 00:45:36.546
+Só que na hora que você for para a Silver.
+
+
+569
+00:45:36.546 --> 00:45:40.546
+Que. Que a gente vai fazer falar. Olha, poxa, eu tenho um usuário vindo do Post Price.
+
+
+570
+00:45:40.546 --> 00:45:44.546
+Usuário vindo do mais Kelly usuário vindo do Mongo. Db pô.
+
+
+571
+00:45:44.546 --> 00:45:52.546
+Para que eu vou ficar pesquisando isso toda vez, sendo que o meu negócio quer saber. Por exemplo, o usuário X pelo Cpf.
+
+
+572
+00:45:52.546 --> 00:45:59.546
+Let me a camada Gold Engineer. Ele quer pesquisar essa informação já governada em um local só de fácil acesso.
+
+
+573
+00:45:59.546 --> 00:46:02.546
+Por que a gente faz na camada Gold? Na camada? Silvia.
+
+
+574
+00:46:02.546 --> 00:46:07.546
+A gente conforma essa informação. A gente junta essas informações.
+
+
+575
+00:46:07.546 --> 00:46:09.546
+E cada passado dessa aqui.
+
+
+576
+00:46:09.546 --> 00:46:11.546
+Eu tenho regras de qualidade.
+
+
+577
+00:46:11.546 --> 00:46:16.546
+Então eu vou testar a granularidade. Eu vou verificar se aquele dado está certo ou não.
+
+
+578
+00:46:16.546 --> 00:46:22.546
+No nosso caso, se a gente achar um problema, a gente não vai literalmente.
+
+
+579
+00:46:22.546 --> 00:46:29.546
+Parar o pipeline. Mas muitas das vezes que a gente vai fazer, vai criar uma área de quarentena para colocar Essa Informação Guardada Em Algum Lugar.
+
+
+580
+00:46:29.546 --> 00:46:31.546
+E o dado aqui é muito importante. Tá?
+
+
+581
+00:46:31.546 --> 00:46:35.546
+Ele ainda não perdeu a granularidade. Ele continua na mesma granularidade.
+
+
+582
+00:46:35.546 --> 00:46:39.546
+E no mesmo tipo de visão. Aqui você tem uma visão operacional.
+
+
+583
+00:46:39.546 --> 00:46:44.546
+Aqui. Você continua tendo uma visão operacional quando você sai da Silver, e você vai para o Gold.
+
+
+584
+00:46:44.546 --> 00:46:46.546
+Você começa a mudar.
+
+
+585
+00:46:46.546 --> 00:46:51.546
+O sentido do dado. Então ele sai de uma visão operacional.
+
+
+586
+00:46:51.546 --> 00:46:55.546
+E ele vai para uma visão analítica.
+
+
+587
+00:46:55.546 --> 00:46:56.546
+E é aqui que, geralmente.
+
+
+588
+00:46:56.546 --> 00:46:58.546
+One Analytics Engineer. Entra.
+
+
+589
+00:46:58.546 --> 00:47:03.546
+Ele entra para entender o conceito, para verificar o que foi feito da Silver para Gold.
+
+
+590
+00:47:03.546 --> 00:47:07.546
+E para criar essas visões, que vão ser apresentadas para o usuário final.
+
+
+591
+00:47:07.546 --> 00:47:14.546
+Então, teoricamente, esse cara aqui é o fluxo que a gente tem de uma camada de uma arquitetura. Medalhão.
+
+
+592
+00:47:14.546 --> 00:47:19.546
+Que vai fazer isso? Isso é canônico. Então isso pode ser aplicado em qualquer tecnologia.
+
+
+593
+00:47:19.546 --> 00:47:22.546
+Agora, uma coisa interessante.
+
+
+594
+00:47:22.546 --> 00:47:26.546
+é quando a gente começa a pensar um pouquinho em modelagem de dados.
+
+
+595
+00:47:26.546 --> 00:47:29.546
+Dentro.
+
+
+596
+00:47:29.546 --> 00:47:32.546
+De cada um desses caras aqui.
+
+
+597
+00:47:32.546 --> 00:47:34.546
+A gente tem uma modelagem de dados.
+
+
+598
+00:47:34.546 --> 00:47:40.546
+Então, por exemplo, se a gente for na bronze, a gente tem uma terceiro forma normal.
+
+
+599
+00:47:40.546 --> 00:47:42.546
+Se a gente for com uma camada? Silver.
+
+
+600
+00:47:42.546 --> 00:47:47.546
+Você pode ter uma terceiro forma normal, como você pode também ter o conceito de Ods.
+
+
+601
+00:47:47.546 --> 00:47:51.546
+Como você pode ter também um conceito de tabelas conformadas.
+
+
+602
+00:47:51.546 --> 00:47:53.546
+Pô. Quando eu vou pra Gold.
+
+
+603
+00:47:53.546 --> 00:48:00.546
+Você pode ter uma obt, que é uma one big table, que é uma tabela gigantesca. Ou você pode ter um Star esquema.
+
+
+604
+00:48:00.546 --> 00:48:04.546
+Então, às vezes as pessoas olham a arquitetura, medalhão.
+
+
+605
+00:48:04.546 --> 00:48:06.546
+Como uma modelagem.
+
+
+606
+00:48:06.546 --> 00:48:12.546
+Mas, na verdade, na prática, existe uma modelagem na Silver e existe uma modelagem na Gold.
+
+
+607
+00:48:12.546 --> 00:48:15.546
+E aí o que acontece?
+
+
+608
+00:48:15.546 --> 00:48:18.546
+Quando você passa isso para o agente.
+
+
+609
+00:48:18.546 --> 00:48:21.546
+Quando a gente precisa.
+
+
+610
+00:48:21.546 --> 00:48:25.546
+Olhar essa informação.
+
+
+611
+00:48:25.546 --> 00:48:27.546
+Você começa.
+
+
+612
+00:48:27.546 --> 00:48:29.546
+Dá para ele uma característica.
+
+
+613
+00:48:29.546 --> 00:48:31.546
+De organização.
+
+
+614
+00:48:31.546 --> 00:48:34.546
+Então essa modelagem vai ajudar bastante.
+
+
+615
+00:48:34.546 --> 00:48:37.546
+Como a gente está falando de agentes de sistemas agênticos.
+
+
+616
+00:48:37.546 --> 00:48:43.546
+O que a gente quer garantir que os Adrs possam ser consultados.
+
+
+617
+00:48:43.546 --> 00:48:47.546
+Que uma camada ontológica possa ser citada no seu modelo.
+
+
+618
+00:48:47.546 --> 00:48:52.546
+E que você tenha a observabilidade e obedeça os contratos.
+
+
+619
+00:48:52.546 --> 00:48:55.546
+Então tudo isso tem que fazer parte.
+
+
+620
+00:48:55.546 --> 00:48:57.546
+Do seu modelo agêntico.
+
+
+621
+00:48:57.546 --> 00:49:02.546
+Tá Luan. Na prática, o que seria isso, né.
+
+
+622
+00:49:02.546 --> 00:49:05.546
+Olha que loucura que você pode fazer, por exemplo.
+
+
+623
+00:49:05.546 --> 00:49:09.546
+Você pode ter um cartão.
+
+
+624
+00:49:09.546 --> 00:49:14.546
+O que é um cartão? Imagina, eu tenho uma agente que consulta uma tabela.
+
+
+625
+00:49:14.546 --> 00:49:16.546
+Beleza. E aí?
+
+
+626
+00:49:16.546 --> 00:49:20.546
+Obviamente que você não quer que toda vez.
+
+
+627
+00:49:20.546 --> 00:49:26.546
+Que um sistema de agentes consulte, consulte a tabela, porque isso vai ser caro em nível de Token.
+
+
+628
+00:49:26.546 --> 00:49:33.546
+Então, o que você quer fazer para cada tabela dessa? Você quer criar um cartão e botar na frente dela.
+
+
+629
+00:49:33.546 --> 00:49:36.546
+Por exemplo, um cartão. Desse jeito.
+
+
+630
+00:49:36.546 --> 00:49:39.546
+Poxa. Eu tenho um cartão aqui.
+
+
+631
+00:49:39.546 --> 00:49:42.546
+Dessa tabela. Reporting.
+
+
+632
+00:49:42.546 --> 00:49:46.546
+Guard settlement reconciliation, que é a store procedure.
+
+
+633
+00:49:46.546 --> 00:49:51.546
+Então imagine se eu coloco um cartão na frente dela. Vocês vão entender esse conceito, tá? Eu coloco um cartão na frente dela.
+
+
+634
+00:49:51.546 --> 00:49:54.546
+Aonde ele tem cara? Qual o grão.
+
+
+635
+00:49:54.546 --> 00:49:57.546
+O que significa na linha no nível linha.
+
+
+636
+00:49:57.546 --> 00:50:02.546
+Então, o que a linha significa? Qual o significado dessa tabela.
+
+
+637
+00:50:02.546 --> 00:50:06.546
+Com a camada que ela está. Quem é o honor dessa informação?
+
+
+638
+00:50:06.546 --> 00:50:10.546
+Tá se.
+
+
+639
+00:50:10.546 --> 00:50:13.546
+Ela tem questionamentos ou não?
+
+
+640
+00:50:13.546 --> 00:50:18.546
+Se ela tem privacidade de dados. E qual é a fonte dela?
+
+
+641
+00:50:18.546 --> 00:50:23.546
+Olha só. Agentes não inventam Star esquema para parecer.
+
+
+642
+00:50:23.546 --> 00:50:28.546
+Ocupados. Eles realmente estão tendo um hard timing.
+
+
+643
+00:50:28.546 --> 00:50:31.546
+Então o que eu estou querendo falar para vocês? Uma coisa que.
+
+
+644
+00:50:31.546 --> 00:50:36.546
+Poucas pessoas falam a modelagem de dado.
+
+
+645
+00:50:36.546 --> 00:50:37.546
+De sistemas vai mudar.
+
+
+646
+00:50:37.546 --> 00:50:39.546
+Vocês botam fé. Por quê?
+
+
+647
+00:50:39.546 --> 00:50:43.546
+Porque do jeito que a gente cria a modelagem de dados, a gente está criando para servir quem.
+
+
+648
+00:50:43.546 --> 00:50:49.546
+Humanos. As novas modelagens de dados vão ser criadas para o quê? Para servir quem.
+
+
+649
+00:50:49.546 --> 00:50:53.546
+Servir a gente.
+
+
+650
+00:50:53.546 --> 00:50:59.546
+Isso muda completamente a forma como o dado é colocado no disco.
+
+
+651
+00:50:59.546 --> 00:51:04.546
+Totalmente como dado. é organizado, como vocês acharam. Foda isso, né?
+
+
+652
+00:51:04.546 --> 00:51:06.546
+Sinistro, né.
+
+
+653
+00:51:06.546 --> 00:51:13.546
+Vocês tiver um clique aí, faz sentido.
+
+
+654
+00:51:13.546 --> 00:51:15.546
+Kimbo foi para as Cucue.
+
+
+655
+00:51:15.546 --> 00:51:18.546
+Eu vou.
+
+
+656
+00:51:18.546 --> 00:51:20.546
+Eu vou usar uma expressão carioca.
+
+
+657
+00:51:20.546 --> 00:51:24.546
+Minha voz. Minha voz foi pros caralho.
+
+
+658
+00:51:24.546 --> 00:51:30.546
+Que eu vou te falar, rapaz. Eu amo vocês. Viu.
+
+
+659
+00:51:30.546 --> 00:51:33.546
+Faz tempo. Eu não me lembro da última vez. Tem sentido. Isso não.
+
+
+660
+00:51:33.546 --> 00:51:37.546
+Mas, Bora, eu vou parando aqui. Mas eu chego lá.
+
+
+661
+00:51:37.546 --> 00:51:41.546
+Tá? Pede uma partilha no Ifood.
+
+
+662
+00:51:41.546 --> 00:51:46.546
+Faz sentido. Vamos parar. é assim o que eu quero nesse treinamento. Tá.
+
+
+663
+00:51:46.546 --> 00:51:53.546
+Eu quero agitar vocês. Eu quero tirar vocês da zona de conforto. Eu quero que vocês pensem.
+
+
+664
+00:51:53.546 --> 00:51:59.546
+Porque são coisas. às vezes que a gente não pensa, são coisas. às vezes que não está na nossa cabeça.
+
+
+665
+00:51:59.546 --> 00:52:04.546
+E aí, quando eu falo isso aqui, talvez dá o clique. Falo, caralho. é verdade. Faz sentido, né? Que eu não tô falando.
+
+
+666
+00:52:04.546 --> 00:52:08.546
+That's total. Faz sentido.
+
+
+667
+00:52:08.546 --> 00:52:12.546
+Beleza. O Ramon falou: cara, eu entendi, mas não clicou.
+
+
+668
+00:52:12.546 --> 00:52:16.546
+Então falo. Foda aí, Ramon. Quando você entender, imagina o seguinte.
+
+
+669
+00:52:16.546 --> 00:52:20.546
+Eu vou fazer você entender.
+
+
+670
+00:52:20.546 --> 00:52:23.546
+Então, olha só.
+
+
+671
+00:52:23.546 --> 00:52:24.546
+Imagina o seguinte.
+
+
+672
+00:52:24.546 --> 00:52:26.546
+Você tem um Star. Esquema beleza.
+
+
+673
+00:52:26.546 --> 00:52:29.546
+Vamos desenhar aqui um Star Skin.
+
+
+674
+00:52:29.546 --> 00:52:32.546
+E depois falam. Que fundamentos não é importantes.
+
+
+675
+00:52:32.546 --> 00:52:35.546
+Mas beleza. Vamos.
+
+
+676
+00:52:35.546 --> 00:53:05.546
+Vamos seguir o barco. Vamos desenhar o Star Scheme.
+
+
+677
+00:53:15.546 --> 00:53:18.546
+Beleza. Vamos, vamos desenhar um Star. Esquema.
+
+
+678
+00:53:18.546 --> 00:53:20.546
+Aonde eu tenho o grão.
+
+
+679
+00:53:20.546 --> 00:53:23.546
+De Beth Id.
+
+
+680
+00:53:23.546 --> 00:53:27.546
+Eu tenho uma tabela que tem a granularidade por Bet aí de.
+
+
+681
+00:53:27.546 --> 00:53:31.546
+E eu tenho uma outra tabela. Vocês vão pirar algum.
+
+
+682
+00:53:31.546 --> 00:53:35.546
+Com Beth Id.
+
+
+683
+00:53:35.546 --> 00:53:41.546
+Currency. Bem, eu pirei quando eu cheguei nessa idealização. Tá.
+
+
+684
+00:53:41.546 --> 00:53:45.546
+Then it's isso aqui, nós, como humanos.
+
+
+685
+00:53:45.546 --> 00:53:53.546
+De dados trabalhamos, entendemos. E aí, quem trabalha com modelagem dimensional, entende muito bem isso.
+
+
+686
+00:53:53.546 --> 00:53:58.546
+Beleza aí o que acontece? Tá.
+
+
+687
+00:53:58.546 --> 00:54:01.546
+é.
+
+
+688
+00:54:01.546 --> 00:54:03.546
+O que que acontece aqui. Obrigado, Leandro.
+
+
+689
+00:54:03.546 --> 00:54:10.546
+Mas a ideia é vocês se tornarem muito fodas. Porque esses cliques que a gente tem assim, cara, são Game Changers.
+
+
+690
+00:54:10.546 --> 00:54:13.546
+Pra caralho que muda a forma como você aborda o problema.
+
+
+691
+00:54:13.546 --> 00:54:15.546
+é só isso que eu quero que vocês saiam disso aqui.
+
+
+692
+00:54:15.546 --> 00:54:23.546
+Quero que você saia desse trabalho, caralho. Existe uma forma diferente de abordar o problema. é isso que vai fazer Você Ser Genial Isso Que Vai Fazer Você Ganhar Dinheiro.
+
+
+693
+00:54:23.546 --> 00:54:28.546
+é o que galera de novo não está fazendo é usar Ia para resolver problema.
+
+
+694
+00:54:28.546 --> 00:54:33.546
+Você vai usar a Ia como uma forma diferente de repensar sobre os problemas.
+
+
+695
+00:54:33.546 --> 00:54:38.546
+E daí? Você vai conseguir resolver uma parada que a galera está usando o Ia. é isso que agora vocês entendam.
+
+
+696
+00:54:38.546 --> 00:54:42.546
+Uma parte que a galera já está usando. A, mas demora.
+
+
+697
+00:54:42.546 --> 00:54:46.546
+Dez horas. Se eu conseguir fazer a mesma coisa em trinta minutos.
+
+
+698
+00:54:46.546 --> 00:54:55.546
+é exatamente exatamente isso que acontece comigo. Pô na Pf. Todo mundo usa Ia. Mas hoje a gente tem reuniões Aí Porque Eu Tinha Que Entender Cara, Como Que Você Fez O Agents Spec.
+
+
+699
+00:54:55.546 --> 00:55:01.546
+Como que você pensou no Hardness? O que é Harness na prática? Porque você lê muita coisa sobre Hardness.
+
+
+700
+00:55:01.546 --> 00:55:07.546
+Pô. Como que você conseguiu reduzir de setecentos horas para fazer isso? Em trinta horas?
+
+
+701
+00:55:07.546 --> 00:55:13.546
+Então, por exemplo, eu fiz um projeto de setecentos horas em trinta horas para vocês terem só para vocês terem uma ideia.
+
+
+702
+00:55:13.546 --> 00:55:17.546
+Com trinta horas, uma semana de trabalho já tinha acabado setecentos horas que a gente tinha vendido.
+
+
+703
+00:55:17.546 --> 00:55:20.546
+Eu fiquei três meses sem trabalhar na picha.
+
+
+704
+00:55:20.546 --> 00:55:24.546
+Eu estou acabando. Agora que eu vou apresentar no cliente, eu deixei a fábrica rodando.
+
+
+705
+00:55:24.546 --> 00:55:27.546
+Você tem noção que é isso? A gente vendeu um projeto de trezentos e setenta mil dólares.
+
+
+706
+00:55:27.546 --> 00:55:30.546
+Eu gastei trinta horas para ajetar a fábrica.
+
+
+707
+00:55:30.546 --> 00:55:32.546
+Eu comecei a receber os documentos.
+
+
+708
+00:55:32.546 --> 00:55:39.546
+Fiz a tradução. Mandei para os clientes validarem há duas semanas atrás. Tinha cinco ou seis erros de trinta e sete tabelas.
+
+
+709
+00:55:39.546 --> 00:55:43.546
+Ajustei esses cargos. Trabalhei em trinta e quarenta horas.
+
+
+710
+00:55:43.546 --> 00:55:45.546
+Então isso é realidade.
+
+
+711
+00:55:45.546 --> 00:55:47.546
+é o quê? Ah, eu sou um gênio. Claro que não.
+
+
+712
+00:55:47.546 --> 00:55:50.546
+Se eu fosse um gênio, eu não estaria nem aqui falando com vocês.
+
+
+713
+00:55:50.546 --> 00:55:52.546
+Estaria lá em Marte. Provavelmente.
+
+
+714
+00:55:52.546 --> 00:55:58.546
+Mas brincadeiras à parte, não é subso. é só como você olha, o problema é só sobre isso.
+
+
+715
+00:55:58.546 --> 00:56:02.546
+Você olha, é aquela mesma coisa que eu gosto de falar.
+
+
+716
+00:56:02.546 --> 00:56:07.546
+Eu. Até a minha dor até fala. Porque isso é tão importante que eu gostaria que vocês entendessem que não é Só Sobre O Técnico Velho.
+
+
+717
+00:56:07.546 --> 00:56:09.546
+é sobre abordagem. Por exemplo.
+
+
+718
+00:56:09.546 --> 00:56:13.546
+Você fala que você quer comprar um carro? Um golfe? Pô, eu quero comprar um golf.
+
+
+719
+00:56:13.546 --> 00:56:17.546
+é engraçado. Parece que todo lugar que você vai. Você vê a porra do golfe.
+
+
+720
+00:56:17.546 --> 00:56:20.546
+Você pegou tudo. Quanto é canto? Olha o golf parecendo.
+
+
+721
+00:56:20.546 --> 00:56:24.546
+Porque eu sou mecanismo de atenção. Ele virou para isso.
+
+
+722
+00:56:24.546 --> 00:56:27.546
+é a mesma coisa que quando você muda a lente.
+
+
+723
+00:56:27.546 --> 00:56:35.546
+E você começa a veiar como um sistema nervoso central que se incorpora você em vez de ser uma tecnologia que te destrava.
+
+
+724
+00:56:35.546 --> 00:56:38.546
+Você começa a abordar as coisas de uma forma diferente.
+
+
+725
+00:56:38.546 --> 00:56:42.546
+Então, olha só o que eu comecei a entender.
+
+
+726
+00:56:42.546 --> 00:56:46.546
+Eu não sei se vocês já fizeram muito. Context Engineering tá.
+
+
+727
+00:56:46.546 --> 00:56:48.546
+Mas quando você começa a pedir.
+
+
+728
+00:56:48.546 --> 00:56:53.546
+Para a Llm.
+
+
+729
+00:56:53.546 --> 00:56:55.546
+Consultar alguma coisa.
+
+
+730
+00:56:55.546 --> 00:56:58.546
+Então eu falo. Pô.
+
+
+731
+00:56:58.546 --> 00:57:14.546
+Llm.
+
+
+732
+00:57:14.546 --> 00:57:21.546
+Já que vocês são, foda me. Explica aí como resolve isso?
+
+
+733
+00:57:21.546 --> 00:57:24.546
+Me acha o Bet mais recente? O que ela vai fazer?
+
+
+734
+00:57:24.546 --> 00:57:30.546
+Vocês não são os bichão. Vocês não querem entender. Então vamos entender como se comporta agora.
+
+
+735
+00:57:30.546 --> 00:57:31.546
+O que ela vai fazer aqui.
+
+
+736
+00:57:31.546 --> 00:57:35.546
+Ela tem duas tabelas para olhar, certo.
+
+
+737
+00:57:35.546 --> 00:57:47.546
+Ela tem uma tabela que tem granularidade, Beth. E ela também tem uma outra tabela que tem granularidade. Beth mais currency.
+
+
+738
+00:57:47.546 --> 00:57:51.546
+E aí, o que ela faz.
+
+
+739
+00:57:51.546 --> 00:57:55.546
+Tem todo mundo tem que entender isso aqui, porque isso aqui vai destravar.
+
+
+740
+00:57:55.546 --> 00:58:01.546
+Oh, Mindset. De vocês vocês entenderem o quão sinistro é trabalhar com isso em grande escala.
+
+
+741
+00:58:01.546 --> 00:58:04.546
+O que acontece aqui. Guys.
+
+
+742
+00:58:04.546 --> 00:58:08.546
+Estou esperando vocês falarem no chat.
+
+
+743
+00:58:08.546 --> 00:58:12.546
+Opa. Então uma das coisas que pode acontecer, eu falar.
+
+
+744
+00:58:12.546 --> 00:58:15.546
+Deixa eu pensar aqui, pô.
+
+
+745
+00:58:15.546 --> 00:58:17.546
+Existe, né.
+
+
+746
+00:58:17.546 --> 00:58:19.546
+Aqui.
+
+
+747
+00:58:19.546 --> 00:58:23.546
+Existe aqui.
+
+
+748
+00:58:23.546 --> 00:58:25.546
+O que ele vai fazer.
+
+
+749
+00:58:25.546 --> 00:58:27.546
+Ele pode consultar.
+
+
+750
+00:58:27.546 --> 00:58:30.546
+Esse aqui é um ótimo. Um Last.
+
+
+751
+00:58:30.546 --> 00:58:38.546
+Update Bet, Id.
+
+
+752
+00:58:38.546 --> 00:58:42.546
+Ele vai pensar bem. O que? Recent Batch Means.
+
+
+753
+00:58:42.546 --> 00:58:45.546
+Aí. Olha só. Que delícia.
+
+
+754
+00:58:45.546 --> 00:58:47.546
+Les updated at.
+
+
+755
+00:58:47.546 --> 00:58:50.546
+Ingested at.
+
+
+756
+00:58:50.546 --> 00:58:53.546
+Updated.
+
+
+757
+00:58:53.546 --> 00:58:56.546
+Date Time.
+
+
+758
+00:58:56.546 --> 00:59:00.546
+Que a gente está em Stamp.
+
+
+759
+00:59:00.546 --> 00:59:11.546
+E aí, qual é o certo.
+
+
+760
+00:59:11.546 --> 00:59:19.546
+Vocês estão entendendo para onde eu estou querendo.
+
+
+761
+00:59:19.546 --> 00:59:22.546
+Estou meio onde eu estou querendo chegar aqui.
+
+
+762
+00:59:22.546 --> 00:59:28.546
+Que eu estou querendo falar para vocês é quando você delega a Llm fazer consulta em qualquer fonte de dados.
+
+
+763
+00:59:28.546 --> 00:59:30.546
+Que você não tem uma ontologia.
+
+
+764
+00:59:30.546 --> 00:59:34.546
+Que você não tem uma semântica que você não tem um cartão.
+
+
+765
+00:59:34.546 --> 00:59:37.546
+Que você não tem uma modelagem própria para isso?
+
+
+766
+00:59:37.546 --> 00:59:39.546
+Ela não sabe.
+
+
+767
+00:59:39.546 --> 00:59:43.546
+O data in advance. Ele não tem o metadata in advance.
+
+
+768
+00:59:43.546 --> 00:59:46.546
+Então ele tem que fazer a querer em cima disso? Não só isso.
+
+
+769
+00:59:46.546 --> 00:59:50.546
+Ele tem que entender ambiguidade. E tem um sério problema aqui.
+
+
+770
+00:59:50.546 --> 00:59:53.546
+Esse thinking dele.
+
+
+771
+00:59:53.546 --> 00:59:55.546
+é reverberado dezassete vezes para cima.
+
+
+772
+00:59:55.546 --> 01:00:02.546
+Então deixa eu mostrar uma coisa para vocês aqui que eu não ia mostrar. é só pra vocês entenderem o Quanto Esse Tópico Um Tópico.
+
+
+773
+01:00:02.546 --> 01:00:08.546
+Muito, muito, muito, muito, mas muito importante.
+
+
+774
+01:00:08.546 --> 01:00:14.546
+Velho Monarchy, não tá, prometo.
+
+
+775
+01:00:14.546 --> 01:00:16.546
+Então.
+
+
+776
+01:00:16.546 --> 01:00:19.546
+Dois mil. Vinte, seis.
+
+
+777
+01:00:19.546 --> 01:00:22.546
+O seu dado tem um novo consumidor.
+
+
+778
+01:00:22.546 --> 01:00:24.546
+Ele não lê Dashboards.
+
+
+779
+01:00:24.546 --> 01:00:30.546
+Então, provavelmente, esse diagnóstico que foi dado.
+
+
+780
+01:00:30.546 --> 01:00:33.546
+Pelite ainda continua muito relevante.
+
+
+781
+01:00:33.546 --> 01:00:38.546
+A gente tech ai does not fail because it lacks intelligence it fails because it lacks integrity.
+
+
+782
+01:00:38.546 --> 01:00:42.546
+Ele. Integrity begins with data, isso é muito forte.
+
+
+783
+01:00:42.546 --> 01:00:46.546
+Muito, muito forte, muito, mas muito mais forte do que o forte do forte.
+
+
+784
+01:00:46.546 --> 01:00:53.546
+E aí toda empresa hoje está correndo com o Deployment de Agents. Mas o que ninguém está fazendo realmente.
+
+
+785
+01:00:53.546 --> 01:00:56.546
+é falar de data Layer.
+
+
+786
+01:00:56.546 --> 01:01:00.546
+Que é o nosso problema desde mil novecentos. Lá vai bolinhas, né?
+
+
+787
+01:01:00.546 --> 01:01:05.546
+Ou seja, Pop in Pope Out. A gente tem vários sistemas agênticos que faz.
+
+
+788
+01:01:05.546 --> 01:01:09.546
+Contexto que faz uma maravilha a porra toda. Mas e no final.
+
+
+789
+01:01:09.546 --> 01:01:12.546
+E aí, o que a galera aborda hoje, né?
+
+
+790
+01:01:12.546 --> 01:01:15.546
+Você tem a estratégia de melhorar Prompt.
+
+
+791
+01:01:15.546 --> 01:01:23.546
+Você tem a estratégia de fazer loops agênticos. Você tem a estratégia de fazer Fine Tuning de Models.
+
+
+792
+01:01:23.546 --> 01:01:25.546
+Só que nenhum deles resolve o problema.
+
+
+793
+01:01:25.546 --> 01:01:27.546
+Que é.
+
+
+794
+01:01:27.546 --> 01:01:29.546
+O problema físico.
+
+
+795
+01:01:29.546 --> 01:01:34.546
+Então, basicamente, o que eu trouxe, que eu vou publicar isso pro X videos.
+
+
+796
+01:01:34.546 --> 01:01:36.546
+Eu já estou para fazer isso há um tempo, né?
+
+
+797
+01:01:36.546 --> 01:01:39.546
+Se a gente olhar. Mil, nove, cem, dezassete.
+
+
+798
+01:01:39.546 --> 01:01:42.546
+A gente teve o Cód fazendo.
+
+
+799
+01:01:42.546 --> 01:01:43.546
+A modelagem relacional.
+
+
+800
+01:01:43.546 --> 01:01:48.546
+Em mil nove, cem, dezanove e seid. A gente teve o Star esquema de Kimball em dois mil. A gente teve.
+
+
+801
+01:01:48.546 --> 01:01:52.546
+Terceira forma normal de Ima. Em dois mil treze, a gente teve o Lindest.
+
+
+802
+01:01:52.546 --> 01:01:57.546
+Lindist. Não sei falar o nome do meu mentor, Lin.
+
+
+803
+01:01:57.546 --> 01:02:03.546
+Vinte. Ah, agora eu falei data volt. Depois a gente teve a Guny falando de Datamash.
+
+
+804
+01:02:03.546 --> 01:02:10.546
+E aí, o que eu estou trazendo para o mercado, que é algo que ainda não existe. Que eu estou Mostrando Para Vocês Em Primeira Mão E Ninguém Nunca Viu Isso Aqui.
+
+
+805
+01:02:10.546 --> 01:02:17.546
+Koac, que é um protocolo agêntico de leitura de dados em nível camada.
+
+
+806
+01:02:17.546 --> 01:02:20.546
+Física, camada, leitura.
+
+
+807
+01:02:20.546 --> 01:02:22.546
+E com alto Heating.
+
+
+808
+01:02:22.546 --> 01:02:25.546
+Então, basicamente o que eu fiz, né?
+
+
+809
+01:02:25.546 --> 01:02:30.546
+The. Peguei todas as modelagens e o embedei dentro de uma modelagem. Só.
+
+
+810
+01:02:30.546 --> 01:02:33.546
+E aí eu não vou mostrar aqui.
+
+
+811
+01:02:33.546 --> 01:02:40.546
+Mas ela fica mais ou menos assim.
+
+
+812
+01:02:40.546 --> 01:02:42.546
+Deixa eu mostrar aqui. Eu tenho duas camadas.
+
+
+813
+01:02:42.546 --> 01:02:46.546
+Uma camada física e uma camada de leitura.
+
+
+814
+01:02:46.546 --> 01:02:48.546
+Então.
+
+
+815
+01:02:48.546 --> 01:02:51.546
+O que acontece basicamente, só pra vocês. Deram uma pirada.
+
+
+816
+01:02:51.546 --> 01:02:55.546
+Eu não vou entrar nisso. Aqui. Não, porque o treinamento não é sobre isso.
+
+
+817
+01:02:55.546 --> 01:02:59.546
+Mas o que eu faço aqui nessa interpelação.
+
+
+818
+01:02:59.546 --> 01:03:06.546
+Você tem o primeiro ler, que é literalmente a parte de físico.
+
+
+819
+01:03:06.546 --> 01:03:10.546
+Então, como dado como layout do dado, é feito físico.
+
+
+820
+01:03:10.546 --> 01:03:17.546
+E como que o layout do dado é feito em leitura, e a gente tem um agente no meio. Então, Basicamente O Que Ele Faz é.
+
+
+821
+01:03:17.546 --> 01:03:23.546
+Ele consegue ter um entendimento físico, e ele consegue ter as cardinalidades e métricas dessa informação.
+
+
+822
+01:03:23.546 --> 01:03:33.546
+Então, na verdade, eu uni todas as melhores práticas. E eu testei todos os modelos em grande escala só para Vocês Terem Uma Ideia De Como Isso é Foda Que Eu Vou Anunciar Daqui Os Próximos Meses.
+
+
+823
+01:03:33.546 --> 01:03:43.546
+Eu tive setenta e três mais de acurácia de token de velocidade do que qualquer outro modelo de modelagem existente. Eu Testei Isso Com Dez Bilhões De Linhas Em Cada Um Deles.
+
+
+824
+01:03:43.546 --> 01:03:49.546
+Então eu peguei. Botei dados na terceira forma normal. Pedi para a gente consultar em sete aliens.
+
+
+825
+01:03:49.546 --> 01:03:54.546
+Peguei o Star esquema. Fiz a mesma coisa, peguei o Datavolt, fiz a mesma coisa e peguei o. Acertei e Fiz A Mesma Coisa.
+
+
+826
+01:03:54.546 --> 01:04:06.546
+Eu Tive De Noventa E Cinco A Cem De Acurácia Só Pra Você Ter Ideia No Walt A Gente Teve dez de acurácia no Star esquema, a gente teve oitenta e cinco de acurácia e na terceiro forma normal, a gente teve oitenta e cinco de acurácia.
+
+
+827
+01:04:06.546 --> 01:04:09.546
+Eu consegui bater perto de cem para acurácia.
+
+
+828
+01:04:09.546 --> 01:04:17.546
+Então, basicamente, eu uso um pouquinho das ideias de hubsink links e satélites, para poder fazer isso.
+
+
+829
+01:04:17.546 --> 01:04:21.546
+Tá? Mas eu quero mostrar aqui como que vai ficar.
+
+
+830
+01:04:21.546 --> 01:04:23.546
+Ideia é você ter uma tabela.
+
+
+831
+01:04:23.546 --> 01:04:29.546
+Cara. Isso aqui é foda. Ai, meu Deus do céu! Então eu crio uma chave. Hash.
+
+
+832
+01:04:29.546 --> 01:04:36.546
+Na hora em que o cliente passa para dentro da modelagem. Então vamos supor que eu tenho uma chave de Negócio Que Eu Venho Né.
+
+
+833
+01:04:36.546 --> 01:04:44.546
+Isso aqui é totalmente confidencial que eu estou mostrando para vocês. Nunca ninguém, ninguém tá quando eu falo, ninguém é Ninguém Só O Danielinstate Que Viu.
+
+
+834
+01:04:44.546 --> 01:04:49.546
+Southern List que viu isso aqui é o único que já viu. E.
+
+
+835
+01:04:49.546 --> 01:04:52.546
+E só basicamente, tá, essa é a minha pesquisa.
+
+
+836
+01:04:52.546 --> 01:04:57.546
+Mas você tem um customer Id pela chave.
+
+
+837
+01:04:57.546 --> 01:04:59.546
+Que vai ser racheado.
+
+
+838
+01:04:59.546 --> 01:05:01.546
+Ele é determiníssco. Então esse câncer vai.
+
+
+839
+01:05:01.546 --> 01:05:03.546
+E aí ele é colocado.
+
+
+840
+01:05:03.546 --> 01:05:07.546
+Em todas as tabelas. Esse hash de relação.
+
+
+841
+01:05:07.546 --> 01:05:12.546
+Então, toda vez que eu quero fazer uma query por ele, eu tenho essa rés atômica para garantir que esse dado retorna.
+
+
+842
+01:05:12.546 --> 01:05:16.546
+E aí deixa eu só mostrar como que o dado fica para vocês verem.
+
+
+843
+01:05:16.546 --> 01:05:20.546
+Aqui está a parte de.
+
+
+844
+01:05:20.546 --> 01:05:29.546
+De comparação. Mas eu quero mostrar como que o dado fica no layout. Aqui são os testes que eu fiz De Acurácia De Cartão E Assim Por Diante.
+
+
+845
+01:05:29.546 --> 01:05:32.546
+Vocês vão entender meu ponto, tá? Quando eu.
+
+
+846
+01:05:32.546 --> 01:05:38.546
+Quando mostrar.
+
+
+847
+01:05:38.546 --> 01:05:40.546
+O que eu faço com o dado, né?
+
+
+848
+01:05:40.546 --> 01:05:44.546
+Então o dado a tabela recebe cartões.
+
+
+849
+01:05:44.546 --> 01:05:48.546
+Então, basicamente, olha só que foda. Ele recebe um cartão de contexto.
+
+
+850
+01:05:48.546 --> 01:05:54.546
+Eles recebem um cartão de janela. Ele recebe um cartão de métrica.
+
+
+851
+01:05:54.546 --> 01:05:59.546
+Ele recebe um cartão de projeção, ele recebe um cartão de Constraints e ele recebe um cartão de Freshness.
+
+
+852
+01:05:59.546 --> 01:06:01.546
+Para poder saber. Staleness.
+
+
+853
+01:06:01.546 --> 01:06:05.546
+Então, na hora em que o dado bate.
+
+
+854
+01:06:05.546 --> 01:06:09.546
+Ele não vai na tabela. Ele vai no meu cartão, então eu mostro um cartão para o sistema logênico.
+
+
+855
+01:06:09.546 --> 01:06:15.546
+E esse cara entrega essa informação para essa métrica.
+
+
+856
+01:06:15.546 --> 01:06:18.546
+Então imagina o seguinte.
+
+
+857
+01:06:18.546 --> 01:06:22.546
+What is the monthly revenue trend for the last six months in qualway.
+
+
+858
+01:06:22.546 --> 01:06:24.546
+O meu.
+
+
+859
+01:06:24.546 --> 01:06:28.546
+O meu trending de vendas nos últimos seis meses, né?
+
+
+860
+01:06:28.546 --> 01:06:32.546
+Então, basicamente, o que ele vai fazer.
+
+
+861
+01:06:32.546 --> 01:06:36.546
+Ele vai bater no cartão de Token, que só tem oitocentos e cinquenta tokens.
+
+
+862
+01:06:36.546 --> 01:06:41.546
+Ele vai achar caralho. Isso aqui é Mind Blowing, né? Ele vai achar o contexto hoje.
+
+
+863
+01:06:41.546 --> 01:06:45.546
+Ele vai chamar Window que dos últimos seis meses. E vai achar a cláusula where.
+
+
+864
+01:06:45.546 --> 01:06:52.546
+Ele vai bater na métrica de soma. Ele vai fazer a projeção das colunas.
+
+
+865
+01:06:52.546 --> 01:07:01.546
+Ele vai pegar as constraintes que tem que ser os Freshners, as regras. E quando ele for passar para o Modelo Ele Já Passa Com Uma Query Feita Correto Para Ele Retornar Então Ele Não Tem Alucinação.
+
+
+866
+01:07:01.546 --> 01:07:04.546
+Porque o cartão de leitura me disse o que ele tem que consultar.
+
+
+867
+01:07:04.546 --> 01:07:10.546
+Então é como se eu colocasse um cartão na frente desse cara da Llm antes dele consultar o dado.
+
+
+868
+01:07:10.546 --> 01:07:15.546
+Que está na projeção.
+
+
+869
+01:07:15.546 --> 01:07:22.546
+Deu para entender um pouco. Só que aí fica um pouco mais gostoso, porque, por exemplo, isso aqui é gostoso, gostosinho. Por quê?
+
+
+870
+01:07:22.546 --> 01:07:25.546
+Vamos supor que você tem.
+
+
+871
+01:07:25.546 --> 01:07:31.546
+Um Led. Você tem um Brem, e você tem um Memory. Então, por exemplo, vamos supor que você tem um Sql.
+
+
+872
+01:07:31.546 --> 01:07:36.546
+Você tem um quadrante e você tem um grafo.
+
+
+873
+01:07:36.546 --> 01:07:39.546
+Eu consigo fazer a mesma coisa também. Por quê?
+
+
+874
+01:07:39.546 --> 01:07:43.546
+Porque lembra da chave. Olha só a chave socada aqui.
+
+
+875
+01:07:43.546 --> 01:07:52.546
+O customer hashtag. Então, só com o customer hasht nos três. Então, na hora que eu faço a pesquisa, eu Posso Fazer Split Brain Na Mesma Query Nos Tres Tipos De Data Stores Diferentes.
+
+
+876
+01:07:52.546 --> 01:07:55.546
+Eu rodo isso em produção.
+
+
+877
+01:07:55.546 --> 01:08:05.546
+E daí? Vai, tá, daqui vai! Como a gente faz a pesquisa vetorial. Só quero ver se eu consigo mostrar Para Vocês Como Que Fica.
+
+
+878
+01:08:05.546 --> 01:08:09.546
+A projeção da Query.
+
+
+879
+01:08:09.546 --> 01:08:14.546
+Se eu estiver aqui.
+
+
+880
+01:08:14.546 --> 01:08:19.546
+Aqui que eu tenho. Eu espero. Calma aí. Confiem que a gente vai chegar lá.
+
+
+881
+01:08:19.546 --> 01:08:21.546
+Aqui. ó.
+
+
+882
+01:08:21.546 --> 01:08:28.546
+é isso aqui. Então aqui é como eu insiro a informação física.
+
+
+883
+01:08:28.546 --> 01:08:31.546
+E aqui, como eu recupero essa informação. Então, olha só. Que legal.
+
+
+884
+01:08:31.546 --> 01:08:36.546
+Monthly Revenue Trend Last Month. Então ele lê os cartões.
+
+
+885
+01:08:36.546 --> 01:08:40.546
+Ele cria a projeção com oitocentos e cinquenta Tokens. Só.
+
+
+886
+01:08:40.546 --> 01:08:43.546
+Ele passa isso para um modelo de Llm.
+
+
+887
+01:08:43.546 --> 01:08:49.546
+Ele faz. A Query montada exatamente no local certo, para que ele não possa alucinar.
+
+
+888
+01:08:49.546 --> 01:08:55.546
+E eu testei com sono vinte e quatro em trezentos e vinte milissegundos. Esse cara.
+
+
+889
+01:08:55.546 --> 01:09:00.546
+Então rodei aqui algumas comparações. Questão de.
+
+
+890
+01:09:00.546 --> 01:09:03.546
+De cem milhões de linhas, vinte milhões de linhas e assim por diante.
+
+
+891
+01:09:03.546 --> 01:09:08.546
+E aqui vai. Tem várias outras coisas. Deixa eu ver se tem uma coisa legal aqui pra mostrar também.
+
+
+892
+01:09:08.546 --> 01:09:10.546
+Tá? Olha só. Que legal.
+
+
+893
+01:09:10.546 --> 01:09:13.546
+Quando eu tava rodando a comparação.
+
+
+894
+01:09:13.546 --> 01:09:20.546
+Eu mostrei esse budista. Ele ficou doido. Eu tentei rodar no Walt The Watch of Memory.
+
+
+895
+01:09:20.546 --> 01:09:25.546
+Depois eu tentei rodar no Kimball. Eu tive cinquenta e cinco de acurácia.
+
+
+896
+01:09:25.546 --> 01:09:31.546
+Depois eu fiz no ímul. Tive sessenta. Depois eu fiz com a Gold. Então, cara, peguei tudo, joguei dentro de uma tabela.
+
+
+897
+01:09:31.546 --> 01:09:36.546
+Obt. Eu tive sessenta e cinco de resultados de acurácia.
+
+
+898
+01:09:36.546 --> 01:09:38.546
+Depois eu fiz na versão sete.
+
+
+899
+01:09:38.546 --> 01:09:47.546
+E depois eu adicionei os cartões. Então eu fui para noventa e dois. Então você tem noção do que é Você Sair De Um Nível De Alucinação De Cinquenta E Cinco Sessenta Para Noventa E Dois Dois.
+
+
+900
+01:09:47.546 --> 01:09:51.546
+Utilizando isso muito foda, né.
+
+
+901
+01:09:51.546 --> 01:09:53.546
+Então esse é para mostrar para vocês.
+
+
+902
+01:09:53.546 --> 01:09:58.546
+Uma coisa importante que as coisas estão mudando, não só na camada que a gente olha.
+
+
+903
+01:09:58.546 --> 01:10:02.546
+Mas na camada debaixo dela.
+
+
+904
+01:10:02.546 --> 01:10:05.546
+E isso muda a quantidade de tokens que você faz.
+
+
+905
+01:10:05.546 --> 01:10:15.546
+Olha só. Que foda. Eu testei com Opus quatro sete com Gpt cinco quatro com Jam Nine dois cinco, ambos Batendo Mais De Noventa De Acuraça.
+
+
+906
+01:10:15.546 --> 01:10:19.546
+Não é um Llm. Só são vários llms fazendo essa mesma.
+
+
+907
+01:10:19.546 --> 01:10:21.546
+Ora, mas a aula não é para isso.
+
+
+908
+01:10:21.546 --> 01:10:26.546
+Eu só queria mostrar para vocês. E desculpa ter devagado. Espero que tenha.
+
+
+909
+01:10:26.546 --> 01:10:28.546
+Que tenha valido de alguma coisa.
+
+
+910
+01:10:28.546 --> 01:10:31.546
+Então o que é um cartão, né.
+
+
+911
+01:10:31.546 --> 01:10:35.546
+é você criar um cartão para frente daquela tabela.
+
+
+912
+01:10:35.546 --> 01:10:38.546
+Ou para frente daquela entidade, para que o seu Llm.
+
+
+913
+01:10:38.546 --> 01:10:48.546
+Possa fazer a consulta. Beleza.
+
+
+914
+01:10:48.546 --> 01:10:52.546
+Então, só para deixar claro.
+
+
+915
+01:10:52.546 --> 01:10:54.546
+O consumidor não é humano.
+
+
+916
+01:10:54.546 --> 01:10:58.546
+E eu quero que vocês pensem muito bem hoje, como que o dado é consumido.
+
+
+917
+01:10:58.546 --> 01:11:05.546
+O dado é consumido de várias formas hoje, mas nenhuma delas hoje é mais humana. A gente reduziu cara.
+
+
+918
+01:11:05.546 --> 01:11:07.546
+De forma gigantesca.
+
+
+919
+01:11:07.546 --> 01:11:10.546
+Quem é o leitor daquela informação?
+
+
+920
+01:11:10.546 --> 01:11:14.546
+Tanto é que a gente fala muito de Mcp.
+
+
+921
+01:11:14.546 --> 01:11:17.546
+Tanto que a gente fala de Ajuye.
+
+
+922
+01:11:17.546 --> 01:11:20.546
+Tanto que a gente fala de diversas coisas aqui.
+
+
+923
+01:11:20.546 --> 01:11:27.546
+Então a grande questão.
+
+
+924
+01:11:27.546 --> 01:11:29.546
+Quando você estiver modelando.
+
+
+925
+01:11:29.546 --> 01:11:35.546
+Modele, pensando em formas. E aqui é só. é nisso. Depois a gente vai ter um treinamento.
+
+
+926
+01:11:35.546 --> 01:11:48.546
+Sobre isso, né? é porque é um treinamento que não vende muito, né? Vou falar de modelagem agêntica. Quem vai Querer Saber De Modelagem Agêntica Né Você Está Mais Legal Com Um Produto.
+
+
+927
+01:11:48.546 --> 01:11:51.546
+Mas isso reduz absurdamente.
+
+
+928
+01:11:51.546 --> 01:11:54.546
+Tá.
+
+
+929
+01:11:54.546 --> 01:11:58.546
+Beleza. Então, duas perguntas.
+
+
+930
+01:11:58.546 --> 01:12:01.546
+Que a gente tem que entender. Tá?
+
+
+931
+01:12:01.546 --> 01:12:11.546
+Eu preciso saber sempre. Eu preciso ter observação do meu sistema. Eu preciso ter contrato dele. São duas coisas importantíssimas. Então Independentemente Do Que Você Fizer.
+
+
+932
+01:12:11.546 --> 01:12:13.546
+Você precisa ter essa informação.
+
+
+933
+01:12:13.546 --> 01:12:17.546
+Porque essa informação vai trazer para você. O quê?
+
+
+934
+01:12:17.546 --> 01:12:23.546
+A gente vai sair da escala e da esfera de não determiníssco para alguma coisa determinística.
+
+
+935
+01:12:23.546 --> 01:12:27.546
+Então, na hora em que eu for.
+
+
+936
+01:12:27.546 --> 01:12:32.546
+Fazer uma modelagem.
+
+
+937
+01:12:32.546 --> 01:12:37.546
+Eu quero que vocês pensem nisso. Tá vendo, seja. Vão sair daqui pensando nisso.
+
+
+938
+01:12:37.546 --> 01:12:39.546
+E daí? Vocês têm o Llm.
+
+
+939
+01:12:39.546 --> 01:12:45.546
+Cara. Como que é a modelagem hoje? Terceira forma normal. Mas pode ter alucinação e tal.
+
+
+940
+01:12:45.546 --> 01:12:49.546
+Como que eu crio uma modelagem de uma forma que possa me facilitar cartões e tal.
+
+
+941
+01:12:49.546 --> 01:12:56.546
+Vai trabalhando isso com a Llm, você vai entender exatamente como cada processo chega.
+
+
+942
+01:12:56.546 --> 01:13:00.546
+Mas eu vou apresentar isso. Espero que.
+
+
+943
+01:13:00.546 --> 01:13:03.546
+Daqui a pouco tempo.
+
+
+944
+01:13:03.546 --> 01:13:06.546
+Mas é uma coisa legal de vocês fazerem.
+
+
+945
+01:13:06.546 --> 01:13:11.546
+E que ajuda bastante em redução de token em acurácia de resultado, principalmente.
+
+
+946
+01:13:11.546 --> 01:13:19.546
+Então pense que isso pode ser uma camada entre o contexto, por exemplo.
+
+
+947
+01:13:19.546 --> 01:13:24.546
+Eu só passei aqui, né, André? Ali eu precisaria literalmente de quinze horas também pra.
+
+
+948
+01:13:24.546 --> 01:13:29.546
+Explicar cada modelagem. Como funciona assim por diante.
+
+
+949
+01:13:29.546 --> 01:13:34.546
+A gente viu o binding funcionando. Então a gente deu regras explícitas para a Llm.
+
+
+950
+01:13:34.546 --> 01:13:44.546
+Para ela seguir para ela ter Frozen alguma. Seguiram outras? Não. A gente viu que binding é basicamente colocar ele Dentro De Um Ambiente Para Ele Respeitar.
+
+
+951
+01:13:44.546 --> 01:13:51.546
+E o que a gente vai fazer agora? A gente vai escrever na camada moderna. é uma nova pasta onde A Gente Tem Abertura Para Poder Fazer Isso.
+
+
+952
+01:13:51.546 --> 01:13:54.546
+E a gente vai continuar utilizando os nossos.
+
+
+953
+01:13:54.546 --> 01:13:57.546
+Diria quatro kits aqui que a gente tem, né?
+
+
+954
+01:13:57.546 --> 01:13:59.546
+O primeiro converge.
+
+
+955
+01:13:59.546 --> 01:14:04.546
+Que vai fazer toda a orquestração da intenção. Até, literalmente, a fábrica.
+
+
+956
+01:14:04.546 --> 01:14:06.546
+O senhor Isaac vai cortar.
+
+
+957
+01:14:06.546 --> 01:14:10.546
+Os sistemas. O Task Spec, que vai quebrar.
+
+
+958
+01:14:10.546 --> 01:14:14.546
+O corte em tarefas atômicas.
+
+
+959
+01:14:14.546 --> 01:14:20.546
+E o Brief Spec, que vai fazer com que nós possamos ler de diferentes Lms de uma forma.
+
+
+960
+01:14:20.546 --> 01:14:22.546
+Mas natural. Beleza.
+
+
+961
+01:14:22.546 --> 01:14:24.546
+Então vamos lá começar a entender.
+
+
+962
+01:14:24.546 --> 01:14:26.546
+O que a gente vai fazer hoje, tá?
+
+
+963
+01:14:26.546 --> 01:14:33.546
+Então a gente vai passar. Na verdade, a gente vai tentar entender. Lá no notebook llm.
+
+
+964
+01:14:33.546 --> 01:14:36.546
+Virtual Lm: O que significa.
+
+
+965
+01:14:36.546 --> 01:14:44.546
+Essas informações, realmente que a gente tem dessa tradução, porque agora a gente precisa colocar isso no nível de.
+
+
+966
+01:14:44.546 --> 01:14:54.546
+Engenharia de dados. Então a gente vai abrir aqui o notebook. Lm.
+
+
+967
+01:14:54.546 --> 01:14:57.546
+E a gente vai perguntar.
+
+
+968
+01:14:57.546 --> 01:15:00.546
+O que é uma linha para o tipo? Um, né.
+
+
+969
+01:15:00.546 --> 01:15:04.546
+Pec três, um Bet, uma.
+
+
+970
+01:15:04.546 --> 01:15:06.546
+Currency. Cite a página.
+
+
+971
+01:15:06.546 --> 01:15:11.546
+Vamos dar uma olhada no que isso significa.
+
+
+972
+01:15:11.546 --> 01:15:14.546
+Você poderia pensar assim. Megarão também, tá?
+
+
+973
+01:15:14.546 --> 01:15:20.546
+E existem vários pontos. Por exemplo, poxa, como que você atualiza esse cartão, né?
+
+
+974
+01:15:20.546 --> 01:15:23.546
+Então, na verdade, você pode ter um Observer no sistema.
+
+
+975
+01:15:23.546 --> 01:15:26.546
+Que entende. Por exemplo, quando você tem isso.
+
+
+976
+01:15:26.546 --> 01:15:34.546
+Você pode ter um sistema de selfie healing que pelas métricas, vai entendendo que aquelas quero estão alucinando ou não estão recebendo bem.
+
+
+977
+01:15:34.546 --> 01:15:36.546
+E aí você consegue.
+
+
+978
+01:15:36.546 --> 01:15:43.546
+Resolver essa informação, voltar com ela atualizada.
+
+
+979
+01:15:43.546 --> 01:15:46.546
+Então aqui. ó, ele explica basicamente.
+
+
+980
+01:15:46.546 --> 01:15:48.546
+Uma linha, né?
+
+
+981
+01:15:48.546 --> 01:15:51.546
+Do arquivo.
+
+
+982
+01:15:51.546 --> 01:15:55.546
+Então aqui a gente tem do primeiro byte, que é o recorde Id.
+
+
+983
+01:15:55.546 --> 01:15:57.546
+De doze a dezassete Transaction Id.
+
+
+984
+01:15:57.546 --> 01:16:00.546
+Dezoito a trinta e três, mexendo Id.
+
+
+985
+01:16:00.546 --> 01:16:05.546
+Trinta e quatro a quarenta e nove, Primary Account, Number e assim por diante.
+
+
+986
+01:16:05.546 --> 01:16:09.546
+O que a gente quer entender aqui. Como o sistema funciona.
+
+
+987
+01:16:09.546 --> 01:16:15.546
+Para que nada mais é. A gente está testando e passando tempo num seg onde breem, para literalmente.
+
+
+988
+01:16:15.546 --> 01:16:23.546
+Entender o problema. Quanto mais entender problema, mais fácil vai ser para automatizar esse processo.
+
+
+989
+01:16:23.546 --> 01:16:28.546
+Então a gente está aqui no século de Brain, fazendo perguntas. Se vocês vierem aqui.
+
+
+990
+01:16:28.546 --> 01:16:32.546
+Se vocês puxarem a última atualização do repositório.
+
+
+991
+01:16:32.546 --> 01:16:35.546
+Tá.
+
+
+992
+01:16:35.546 --> 01:16:40.546
+O que vocês vão ver.
+
+
+993
+01:16:40.546 --> 01:16:44.546
+A Passage Run.
+
+
+994
+01:16:44.546 --> 01:16:45.546
+De tres.
+
+
+995
+01:16:45.546 --> 01:16:48.546
+E a gente vai aqui em Prompt Recap.
+
+
+996
+01:16:48.546 --> 01:16:54.546
+Então a gente vai fazer um prompt recap aqui enquanto a gente faz algumas pesquisas.
+
+
+997
+01:16:54.546 --> 01:17:03.546
+Então vamos abrir aqui a Llm.
+
+
+998
+01:17:03.546 --> 01:17:08.546
+E vamos fazer a seguinte pergunta para ela.
+
+
+999
+01:17:08.546 --> 01:17:10.546
+Leo Docks.
+
+
+1000
+01:17:10.546 --> 01:17:12.546
+O arquivo de consensos.
+
+
+1001
+01:17:12.546 --> 01:17:17.546
+Que a gente teve o consenso da Llm.
+
+
+1002
+01:17:17.546 --> 01:17:27.546
+A gente rodou, lembra para poder quebrar as tarefas. E a gente tem que fazer o consenso das llms, que São Duas Llms Diferentes Mais Você Concordando.
+
+
+1003
+01:17:27.546 --> 01:17:30.546
+Deu o documento de Adr.
+
+
+1004
+01:17:30.546 --> 01:17:32.546
+E ler o Doc Sinks.
+
+
+1005
+01:17:32.546 --> 01:17:35.546
+Aí me explica basicamente, né.
+
+
+1006
+01:17:35.546 --> 01:17:38.546
+Contexto de ingestão.
+
+
+1007
+01:17:38.546 --> 01:17:40.546
+Quais são as Adrs.
+
+
+1008
+01:17:40.546 --> 01:17:43.546
+Quantos Task Specs existem?
+
+
+1009
+01:17:43.546 --> 01:17:46.546
+I. Camada moderna de Landing. Existe ou não.
+
+
+1010
+01:17:46.546 --> 01:17:49.546
+O que a gente vai fazer hoje à noite?
+
+
+1011
+01:17:49.546 --> 01:17:55.546
+E aí verifica se a evidência de reconciliação está faltando ou não.
+
+
+1012
+01:17:55.546 --> 01:17:58.546
+Basicamente, ele vai verificar todas as informações.
+
+
+1013
+01:17:58.546 --> 01:18:05.546
+Entendi, é mais ou menos o anexo da tabela com extrato da informação concedida por odontologia. Quando a gente chega Para Olhar A Tabela.
+
+
+1014
+01:18:05.546 --> 01:18:08.546
+Já tem todo o contexto.
+
+
+1015
+01:18:08.546 --> 01:18:15.546
+Sim, Luan. Não consegui ontem ter o consenso. Parece que teria que ter o Kim ou o Codex. é isso Mesmo Muito Bom Diego é.
+
+
+1016
+01:18:15.546 --> 01:18:22.546
+Eu construí inicialmente para permitir inicialmente só o Códex e só o.
+
+
+1017
+01:18:22.546 --> 01:18:25.546
+O Kimi. Mas na próxima atualização.
+
+
+1018
+01:18:25.546 --> 01:18:34.546
+Que eu vou enviar.
+
+
+1019
+01:18:34.546 --> 01:18:36.546
+Eu vou adicionar o homem Pie.
+
+
+1020
+01:18:36.546 --> 01:18:40.546
+E aí o meu pai vai te dar a possibilidade de você usar a indina dele pra.
+
+
+1021
+01:18:40.546 --> 01:18:43.546
+Qualquer modelo.
+
+
+1022
+01:18:43.546 --> 01:18:46.546
+Então que ele me passou a explicação.
+
+
+1023
+01:18:46.546 --> 01:18:52.546
+Oh.
+
+
+1024
+01:18:52.546 --> 01:18:57.546
+A tarefa fica. Block.
+
+
+1025
+01:18:57.546 --> 01:19:00.546
+Atualizantes antes de fechar.
+
+
+1026
+01:19:00.546 --> 01:19:08.546
+Boa aqui. ó, então ele explica dos papers a piscão. Então, quem fez o Assignment? Então eu, como agente que Lead.
+
+
+1027
+01:19:08.546 --> 01:19:11.546
+Fiz isso ontem. Eu autorizei.
+
+
+1028
+01:19:11.546 --> 01:19:15.546
+A Marina falou exatamente que se houver algum tipo de problema.
+
+
+1029
+01:19:15.546 --> 01:19:17.546
+Nós não iremos.
+
+
+1030
+01:19:17.546 --> 01:19:19.546
+Realmente corrigir, mas a gente vai recusar.
+
+
+1031
+01:19:19.546 --> 01:19:22.546
+E a gente vai tratar isso realmente.
+
+
+1032
+01:19:22.546 --> 01:19:26.546
+Quais são as Adrs? Então, as Adrs.
+
+
+1033
+01:19:26.546 --> 01:19:29.546
+Primeiro escrever a primeira Idr, que é Steel Thread.
+
+
+1034
+01:19:29.546 --> 01:19:36.546
+A primeira ideia era primeiro escrever na Modern que a gente fez. Depois era Modern Passer, Skin, Scheme, Writer e Handler.
+
+
+1035
+01:19:36.546 --> 01:19:41.546
+Está fechada. Tres fechada, que é um decimal exato.
+
+
+1036
+01:19:41.546 --> 01:19:46.546
+Depois o outro Edi. é sobre falar de você. Como trabalhar com Pen Token.
+
+
+1037
+01:19:46.546 --> 01:19:51.546
+Com últimos quatro gos, o Cpf mascarado antes da Goug.
+
+
+1038
+01:19:51.546 --> 01:19:56.546
+E a cinco está fechado. Também quer manter os cento e setenta e três, quarenta e quatro.
+
+
+1039
+01:19:56.546 --> 01:19:58.546
+Recusado. Se esse dado não bater.
+
+
+1040
+01:19:58.546 --> 01:20:00.546
+A seis está o quê?
+
+
+1041
+01:20:00.546 --> 01:20:03.546
+Esperando.
+
+
+1042
+01:20:03.546 --> 01:20:10.546
+Que ela fala. Basicamente para não pegar Dactobi, Dlt, Dbt, Duck, Lake, Dexter ou Fast Api.
+
+
+1043
+01:20:10.546 --> 01:20:17.546
+Então, basicamente, ele explica isso. Quantas tarefas foram criadas. Então ele olhou basicamente lá no Task Spec, no state dele.
+
+
+1044
+01:20:17.546 --> 01:20:24.546
+Ele viu que tem uma tarefa criada somente que foi a primeira tarefa que a gente fez. A mais básica.
+
+
+1045
+01:20:24.546 --> 01:20:29.546
+Ele perguntou se isso existe. Se os documentos de parquê existem, não existem.
+
+
+1046
+01:20:29.546 --> 01:20:31.546
+Que a gente não criou.
+
+
+1047
+01:20:31.546 --> 01:20:34.546
+O único documento que a gente fez é esse parce.
+
+
+1048
+01:20:34.546 --> 01:20:36.546
+Que foi feito ontem, né?
+
+
+1049
+01:20:36.546 --> 01:20:40.546
+Olha só. Que legal. Então, ontem foi escrito parceiro. Lembra que a gente pediu.
+
+
+1050
+01:20:40.546 --> 01:20:44.546
+A gente gerou a tarefa e pediu para ele escrever o passer da um.
+
+
+1051
+01:20:44.546 --> 01:20:48.546
+It is gonna.
+
+
+1052
+01:20:48.546 --> 01:20:54.546
+Desculpa. Ele escreveu passe, mas falta o Model. O esquema. O Writer.
+
+
+1053
+01:20:54.546 --> 01:21:02.546
+Falta o teste. Falta todas as outras dois, três, quatro e cinco. A gente vai fazer tudo isso.
+
+
+1054
+01:21:02.546 --> 01:21:04.546
+Amanhã, tá.
+
+
+1055
+01:21:04.546 --> 01:21:07.546
+Quebrou assim.
+
+
+1056
+01:21:07.546 --> 01:21:12.546
+A evidência do dado lá no Reconciliation. Jason.
+
+
+1057
+01:21:12.546 --> 01:21:16.546
+Aí. A recomendação é deixar o seis não subscrever.
+
+
+1058
+01:21:16.546 --> 01:21:21.546
+Em seguir. Ou seja, basicamente, a gente fez só um pequeno pedaço de ontem, certo?
+
+
+1059
+01:21:21.546 --> 01:21:27.546
+Mas eu quis mostrar uma coisa para vocês. Muito legal. Espero que vocês achem foda isso aqui. O que eu fiz, lembra.
+
+
+1060
+01:21:27.546 --> 01:21:44.546
+Lembra que ontem à noite.
+
+
+1061
+01:21:44.546 --> 01:21:51.546
+Lembra que ontem à noite, inclusive o André estava fazendo isso local. Enfim, a gente abriu vários modelos, né? A gente.
+
+
+1062
+01:21:51.546 --> 01:21:58.546
+Pediu para vários modelos escreverem a mesma tarefa para a gente ver se o Task Spec é esse bichão mesmo aí.
+
+
+1063
+01:21:58.546 --> 01:22:01.546
+Então a gente fez no Queen sete bilhões. A gente fez no Queen.
+
+
+1064
+01:22:01.546 --> 01:22:05.546
+Tres oito. A gente fez o de psique. Flash.
+
+
+1065
+01:22:05.546 --> 01:22:08.546
+E a gente fez no Groc.
+
+
+1066
+01:22:08.546 --> 01:22:11.546
+Aí. O que eu fiz? Eu pedi.
+
+
+1067
+01:22:11.546 --> 01:22:16.546
+Para basicamente esse cara entrar nos três e fazer uma comparação de tabela.
+
+
+1068
+01:22:16.546 --> 01:22:19.546
+Se o cranking da tarefa funcionou para os tres.
+
+
+1069
+01:22:19.546 --> 01:22:26.546
+Então Kent task spec make three different models. Execute The Same Tax zero One Passer Leaf.
+
+
+1070
+01:22:26.546 --> 01:22:31.546
+So the room can see the harness not the vendor as the unity of work.
+
+
+1071
+01:22:31.546 --> 01:22:33.546
+Eu acho isso muito foda, né? E olha só. Que legal!
+
+
+1072
+01:22:33.546 --> 01:22:36.546
+Hey, gerou uma tabela falando assim. Work Tree.
+
+
+1073
+01:22:36.546 --> 01:22:38.546
+De Psic Flash Queen.
+
+
+1074
+01:22:38.546 --> 01:22:42.546
+E Queen. Dois bilhões. Beleza.
+
+
+1075
+01:22:42.546 --> 01:22:48.546
+O módulo que é realmente o modelo que executou o Flash. Aqui a gente executou o Queen. Max.
+
+
+1076
+01:22:48.546 --> 01:22:52.546
+E aqui a gente executou dois cinco, sete Bi.
+
+
+1077
+01:22:52.546 --> 01:22:56.546
+Beleza. Wallclock.
+
+
+1078
+01:22:56.546 --> 01:22:58.546
+Aqui. A gente tem dez minutos.
+
+
+1079
+01:22:58.546 --> 01:23:02.546
+Não demorou tudo isso. Acho que ele deve ter pego a sessão aberta todo o tempo.
+
+
+1080
+01:23:02.546 --> 01:23:05.546
+Vinte e oito minutos e seis minutos.
+
+
+1081
+01:23:05.546 --> 01:23:07.546
+Então não vamos contar com isso aqui. O passe.
+
+
+1082
+01:23:07.546 --> 01:23:10.546
+Trezentos e trinta e nove linhas do Jeepcy.
+
+
+1083
+01:23:10.546 --> 01:23:15.546
+Setecentos e vinte e quatro linhas do Queen três oito.
+
+
+1084
+01:23:15.546 --> 01:23:18.546
+R quatrocentos e quinze. Linhas.
+
+
+1085
+01:23:18.546 --> 01:23:21.546
+Do Queen agora. Testes.
+
+
+1086
+01:23:21.546 --> 01:23:25.546
+O Jeep Sique fez vinte e oito de oito.
+
+
+1087
+01:23:25.546 --> 01:23:29.546
+Ele fez um auto teste com as Pictures básicas.
+
+
+1088
+01:23:29.546 --> 01:23:36.546
+E aqui ele não conseguiu importar. O teste. Não foi pedido teste. Na verdade, teste explicitamente.
+
+
+1089
+01:23:36.546 --> 01:23:47.546
+Eu consegui fazer o stamping da tarefa. Ou seja, pegar essa tarefa para mim estampar ela e falar que eu Vou Executar Consegui Todas Elas Consegui.
+
+
+1090
+01:23:47.546 --> 01:23:50.546
+O Task Spec aceitou essa tarefa.
+
+
+1091
+01:23:50.546 --> 01:23:53.546
+Não no Tier.
+
+
+1092
+01:23:53.546 --> 01:23:56.546
+Moveu para Donny. E aqui não.
+
+
+1093
+01:23:56.546 --> 01:23:59.546
+Mas a parte legal é o seguinte.
+
+
+1094
+01:23:59.546 --> 01:24:03.546
+O código em si. No final, passou no teste.
+
+
+1095
+01:24:03.546 --> 01:24:06.546
+Passou.
+
+
+1096
+01:24:06.546 --> 01:24:08.546
+Só que. Olha só. Que legal.
+
+
+1097
+01:24:08.546 --> 01:24:13.546
+O D sete B e volpés in this following. Ele.
+
+
+1098
+01:24:13.546 --> 01:24:16.546
+Ele trapaceou.
+
+
+1099
+01:24:16.546 --> 01:24:20.546
+Olha o Inval que ele criou.
+
+
+1100
+01:24:20.546 --> 01:24:27.546
+Eco pés. All for evolve.
+
+
+1101
+01:24:27.546 --> 01:24:37.546
+Então, basicamente, ele mostra que o que funcionou, o que não funcionou, e assim por diante.
+
+
+1102
+01:24:37.546 --> 01:24:40.546
+Mas código. Eles conseguiram fazer.
+
+
+1103
+01:24:40.546 --> 01:24:45.546
+Então, só para vocês entenderem como que isso aqui é muito real.
+
+
+1104
+01:24:45.546 --> 01:24:49.546
+Se consegue escrever a mesma tabela em vários.
+
+
+1105
+01:24:49.546 --> 01:24:51.546
+Mas não somente isso.
+
+
+1106
+01:24:51.546 --> 01:25:08.546
+às vezes você pode ver coisas como isso aqui.
+
+
+1107
+01:25:08.546 --> 01:25:11.546
+Aqui são perguntas adicionais, né?
+
+
+1108
+01:25:11.546 --> 01:25:14.546
+Deixa, eu já. Até.
+
+
+1109
+01:25:14.546 --> 01:25:16.546
+Mover pra cá.
+
+
+1110
+01:25:16.546 --> 01:25:25.546
+A gente vai usar o Ontolayer também para fazer pesquisas em relação aos contratos ao Spec, assim por diante. Então, A Gente Vai Usar Tanto O Site Onde.
+
+
+1111
+01:25:25.546 --> 01:25:28.546
+Contra o Toleia. Tá.
+
+
+1112
+01:25:28.546 --> 01:25:32.546
+Valeu, André! Sapequinha.
+
+
+1113
+01:25:32.546 --> 01:25:38.546
+Vamos executar aqui essas queries que vão tanto no Secund Brain quanto as queries que vão.
+
+
+1114
+01:25:38.546 --> 01:25:43.546
+Dentro do grafo. Então aqui a gente está perguntando: fonte.
+
+
+1115
+01:25:43.546 --> 01:25:45.546
+Quer entender o problema.
+
+
+1116
+01:25:45.546 --> 01:25:48.546
+O Loader. O que significa.
+
+
+1117
+01:25:48.546 --> 01:25:54.546
+Vamos lá entrar. Aqui também. E aí vocês vão investigar esse cara.
+
+
+1118
+01:25:54.546 --> 01:25:57.546
+Somente das fontes. O que significa.
+
+
+1119
+01:25:57.546 --> 01:26:01.546
+O Privacy die do pen e do Cpf.
+
+
+1120
+01:26:01.546 --> 01:26:06.546
+Onde ele vai ser tokenizado. Ele vai para a camada, Gold. Então.
+
+
+1121
+01:26:06.546 --> 01:26:12.546
+Must die at the modern passer. Então, aonde essa informação até tem que chegar.
+
+
+1122
+01:26:12.546 --> 01:26:15.546
+Para que a gente entender as regras do negócio. Até onde elas podem chegar.
+
+
+1123
+01:26:15.546 --> 01:26:20.546
+Então aqui eu não posso mostrar essa informação lá na minha camada. Gold.
+
+
+1124
+01:26:20.546 --> 01:26:24.546
+Ou seja, não espere até alcançar o parquê. Ou a tabela Gold.
+
+
+1125
+01:26:24.546 --> 01:26:27.546
+Ele tem que morrer no parcer.
+
+
+1126
+01:26:27.546 --> 01:26:32.546
+A privacidade. Ela tem que ser feita antes, não na Gold.
+
+
+1127
+01:26:32.546 --> 01:26:34.546
+Você já responde, tá.
+
+
+1128
+01:26:34.546 --> 01:26:39.546
+Outra pergunta.
+
+
+1129
+01:26:39.546 --> 01:26:47.546
+Qual a diferença de bronze sobre Gold nas fontes.
+
+
+1130
+01:26:47.546 --> 01:26:51.546
+Simply, pedindo para ele citar a página.
+
+
+1131
+01:26:51.546 --> 01:26:58.546
+é importante. Muito.
+
+
+1132
+01:26:58.546 --> 01:27:05.546
+Aqui, perguntando basicamente toda a diferença da fonte. Quando o valor vier.
+
+
+1133
+01:27:05.546 --> 01:27:17.546
+Diferente.
+
+
+1134
+01:27:17.546 --> 01:27:25.546
+Por último, se as fontes contêm qualquer tipo de arquitetura que já foi definida anteriormente.
+
+
+1135
+01:27:25.546 --> 01:27:41.546
+Na verdade, não. Não, porque quem está definindo somos nós ou já recebemos a definição do que seria o pipeline De Dados Realmente Tá.
+
+
+1136
+01:27:41.546 --> 01:27:43.546
+Beleza.
+
+
+1137
+01:27:43.546 --> 01:27:45.546
+Agora a gente vai.
+
+
+1138
+01:27:45.546 --> 01:27:50.546
+Para o Query Plan. A gente vai tentar entender os Specs, né?
+
+
+1139
+01:27:50.546 --> 01:27:56.546
+Isso aqui é importante. Então a gente vai fazer uma query lá naquela área ontológica.
+
+
+1140
+01:27:56.546 --> 01:28:04.546
+Perguntando a esses caras.
+
+
+1141
+01:28:04.546 --> 01:28:10.546
+Vamos lá.
+
+
+1142
+01:28:10.546 --> 01:28:12.546
+Fazer mesmo aqui.
+
+
+1143
+01:28:12.546 --> 01:28:14.546
+Eu não estou perguntando. Basicamente.
+
+
+1144
+01:28:14.546 --> 01:28:19.546
+Sobre esse documento? Sobre o Sims.
+
+
+1145
+01:28:19.546 --> 01:28:23.546
+Perguntar o que o constructor consome essa noite, né?
+
+
+1146
+01:28:23.546 --> 01:28:32.546
+O que a gente vai fazer como engenheiros e analistas Engineer. Então, o que eu quero que ele faça é Basicamente Entender O Que A Gente Vai Construir.
+
+
+1147
+01:28:32.546 --> 01:28:33.546
+E aí? Vejam aquele assessor.
+
+
+1148
+01:28:33.546 --> 01:28:35.546
+A pasta modern para tentar entender.
+
+
+1149
+01:28:35.546 --> 01:28:39.546
+Modern, onde a gente escreveu ontem. O nosso primeiro tipo.
+
+
+1150
+01:28:39.546 --> 01:28:45.546
+Que é o primeiro passer que está aqui. Que foi feito? Somente esqueletim desse pásser.
+
+
+1151
+01:28:45.546 --> 01:28:48.546
+Ele vai ler essas informações.
+
+
+1152
+01:28:48.546 --> 01:28:51.546
+E depois a gente fazia a mesma pergunta que a gente já fez. Na verdade, né?
+
+
+1153
+01:28:51.546 --> 01:28:59.546
+Aonde eu pago embora, né? Qual é a relação que a gente tem? E a ontologia vai fazer exatamente isso Pra Gente Mostrar A Relação.
+
+
+1154
+01:28:59.546 --> 01:29:05.546
+Desses Cards. Então vou deixar aqui executando e a gente volta nele. Já. Já.
+
+
+1155
+01:29:05.546 --> 01:29:09.546
+O que eu estou fazendo aqui? Entendendo o meu ambiente.
+
+
+1156
+01:29:09.546 --> 01:29:15.546
+Agora a gente vai fazer a mesma coisa que a gente fez ontem. A gente vai decompor as atividades.
+
+
+1157
+01:29:15.546 --> 01:29:18.546
+Só que da engenharia de dados e.
+
+
+1158
+01:29:18.546 --> 01:29:21.546
+The parte de analis engineering, beleza.
+
+
+1159
+01:29:21.546 --> 01:29:26.546
+Então a gente vai usar a mesma ideia que a gente usou ontem, que vai ser o Sim Wise, que vocês têm acesso.
+
+
+1160
+01:29:26.546 --> 01:29:31.546
+Então a gente vai pegar as informações, cortar, fazer o Swim Lenes, fazer os Legs.
+
+
+1161
+01:29:31.546 --> 01:29:36.546
+E a gente vai gerar Steel Threat, que é thread importante aí para a gente.
+
+
+1162
+01:29:36.546 --> 01:29:39.546
+Vamos dar uma olhadinha nela. Aqui, agora.
+
+
+1163
+01:29:39.546 --> 01:29:42.546
+Me acompanhe. Vem comigo, tá?
+
+
+1164
+01:29:42.546 --> 01:29:46.546
+Antes da gente, literalmente, entrar.
+
+
+1165
+01:29:46.546 --> 01:29:49.546
+Eu quero entrar aqui no quatro.
+
+
+1166
+01:29:49.546 --> 01:29:53.546
+E no quatro, na verdade, o que ele vai mostrar.
+
+
+1167
+01:29:53.546 --> 01:29:56.546
+Ele vai fazer uma query muito interessante.
+
+
+1168
+01:29:56.546 --> 01:29:59.546
+Que o Solutions Architect.
+
+
+1169
+01:29:59.546 --> 01:30:03.546
+Deixou aqui.
+
+
+1170
+01:30:03.546 --> 01:30:06.546
+Deixou pra gente aqui.
+
+
+1171
+01:30:06.546 --> 01:30:08.546
+As informações da arquitetura.
+
+
+1172
+01:30:08.546 --> 01:30:10.546
+Dentro de.
+
+
+1173
+01:30:10.546 --> 01:30:12.546
+Plans.
+
+
+1174
+01:30:12.546 --> 01:30:14.546
+Veja que dentro de planes.
+
+
+1175
+01:30:14.546 --> 01:30:16.546
+Tem um arquivo chamado Modern.
+
+
+1176
+01:30:16.546 --> 01:30:21.546
+O que a gente vai fazer todos esses dias. E o que a arquitetura significa? Como ela vai ser.
+
+
+1177
+01:30:21.546 --> 01:30:25.546
+Feita. Então, basicamente.
+
+
+1178
+01:30:25.546 --> 01:30:29.546
+Eu estou perguntando isso. Estou pedindo para ir.
+
+
+1179
+01:30:29.546 --> 01:30:35.546
+No meu modern, que já é um documento que a gente recebeu para literalmente ver a arquitetura que a gente precisa traduzir.
+
+
+1180
+01:30:35.546 --> 01:30:42.546
+A gente viu como engenheiro de software que a gente vai traduzir de Java para Python. Aqui a gente vê Exatamente Quais São Os Pedaços De Tecnologia Que A Gente Vai Usar.
+
+
+1181
+01:30:42.546 --> 01:30:44.546
+E o que a gente vai usar.
+
+
+1182
+01:30:44.546 --> 01:30:51.546
+Então deixa ele responder a pergunta ontológica que ele fez lá anteriormente.
+
+
+1183
+01:30:51.546 --> 01:30:54.546
+E aqui vai colocar a gente na prova.
+
+
+1184
+01:30:54.546 --> 01:30:55.546
+De entender por que.
+
+
+1185
+01:30:55.546 --> 01:31:03.546
+Que foi selecionado essas tecnologias, tá claro que a gente poderia também definir quais seriam as tecnologias baseadas no requisito.
+
+
+1186
+01:31:03.546 --> 01:31:11.546
+Mas a gente ia gastar muito tempo com isso. Deixou dele dar essa atriz.
+
+
+1187
+01:31:11.546 --> 01:31:13.546
+Eu já provei o ponto.
+
+
+1188
+01:31:13.546 --> 01:31:16.546
+Então agora, basicamente.
+
+
+1189
+01:31:16.546 --> 01:31:19.546
+Fazer a pesquisa moderna. Alguma dúvida? Até então.
+
+
+1190
+01:31:19.546 --> 01:31:26.546
+Perguntem.
+
+
+1191
+01:31:26.546 --> 01:31:33.546
+Quanto isso. Eu fiz um desenho.
+
+
+1192
+01:31:33.546 --> 01:31:35.546
+Foi um workshop.
+
+
+1193
+01:31:35.546 --> 01:31:39.546
+Aqui. ó.
+
+
+1194
+01:31:39.546 --> 01:31:41.546
+Que eu quero trazer para vocês no boot Camp.
+
+
+1195
+01:31:41.546 --> 01:31:56.546
+Que esse cara aqui? Vocês estão entendendo que a gente tá fazendo isso aqui, né?
+
+
+1196
+01:31:56.546 --> 01:31:58.546
+Então o que eu estou fazendo? Tá.
+
+
+1197
+01:31:58.546 --> 01:32:00.546
+Só para vocês entenderem que isso é canônico?
+
+
+1198
+01:32:00.546 --> 01:32:02.546
+Então eu tenho uma requisição.
+
+
+1199
+01:32:02.546 --> 01:32:05.546
+Com uma intenção, gera um documento.
+
+
+1200
+01:32:05.546 --> 01:32:08.546
+De negócio gera um documento.
+
+
+1201
+01:32:08.546 --> 01:32:12.546
+De técnico.
+
+
+1202
+01:32:12.546 --> 01:32:14.546
+Decompõe essa informação.
+
+
+1203
+01:32:14.546 --> 01:32:18.546
+Pelas costuras do sistema. Vamos pensar. Frontinha de back end.
+
+
+1204
+01:32:18.546 --> 01:32:24.546
+Medalhão. Enfim, corta pelas partes mais principais do sistema.
+
+
+1205
+01:32:24.546 --> 01:32:29.546
+Depois abre mais, fazendo exatamente isso que eu falei. Abre mais pelos tipos.
+
+
+1206
+01:32:29.546 --> 01:32:32.546
+Depois, dentro de cada um desses, por exemplo, front end.
+
+
+1207
+01:32:32.546 --> 01:32:36.546
+é um Swim Lane. é uma linha de trabalho que você vai ter.
+
+
+1208
+01:32:36.546 --> 01:32:40.546
+Dentro da série de trabalho. Você tem vários subtrabalhos.
+
+
+1209
+01:32:40.546 --> 01:32:42.546
+Esses subtrabalhos aqui.
+
+
+1210
+01:32:42.546 --> 01:32:47.546
+Vão virar tarefas atômicas. Então isso aqui, independentemente do framework.
+
+
+1211
+01:32:47.546 --> 01:32:49.546
+Se for, converge. Se não for.
+
+
+1212
+01:32:49.546 --> 01:32:54.546
+Serve para vocês.
+
+
+1213
+01:32:54.546 --> 01:32:59.546
+Vocês criaram uma Skill para cada um desses processos, ou vocês usaram um converge.
+
+
+1214
+01:32:59.546 --> 01:33:03.546
+Vocês podem escolher.
+
+
+1215
+01:33:03.546 --> 01:33:08.546
+Então, de onde veio a ideia? Luan veio exatamente isso aqui. Por eu ter feito isso aqui.
+
+
+1216
+01:33:08.546 --> 01:33:10.546
+Repetidas vezes.
+
+
+1217
+01:33:10.546 --> 01:33:12.546
+Eu entendi que isso aqui.
+
+
+1218
+01:33:12.546 --> 01:33:15.546
+é um processo que sempre segue para a gente, tá?
+
+
+1219
+01:33:15.546 --> 01:33:19.546
+Para a construção de sistemas agênticos.
+
+
+1220
+01:33:19.546 --> 01:33:21.546
+Dono aqui, ó.
+
+
+1221
+01:33:21.546 --> 01:33:31.546
+Vou entender. Então, a síntese, né? Relacionamento entre Legacy Dark Factory moderno, né?
+
+
+1222
+01:33:31.546 --> 01:33:34.546
+Então, aqui a gente tem a execução de um contrato.
+
+
+1223
+01:33:34.546 --> 01:33:37.546
+Esse contrato.
+
+
+1224
+01:33:37.546 --> 01:33:42.546
+No legado. Ele completa do tipo zero um. é o tipo cinco.
+
+
+1225
+01:33:42.546 --> 01:33:48.546
+A gente tem informações de evidência desse resultado final no Database.
+
+
+1226
+01:33:48.546 --> 01:33:54.546
+E a gente tem uma evidência que a gente pode verificar que esse valor funcionou ou não. Tanto é que Quando O Valor Vem Errado.
+
+
+1227
+01:33:54.546 --> 01:33:57.546
+A gente rejeita esse valor.
+
+
+1228
+01:33:57.546 --> 01:34:00.546
+Depois no Pipeline. Moderno, né.
+
+
+1229
+01:34:00.546 --> 01:34:03.546
+A gente tem uma implementação independente.
+
+
+1230
+01:34:03.546 --> 01:34:05.546
+é essa? Ainda continua funcionando.
+
+
+1231
+01:34:05.546 --> 01:34:10.546
+Aqui a gente tem uma observação moderna. Parquê Gold? E evidência.
+
+
+1232
+01:34:10.546 --> 01:34:15.546
+E aí, o que a gente vai ter? Na verdade, é uma fábrica. Posteriormente.
+
+
+1233
+01:34:15.546 --> 01:34:19.546
+Fazendo esse processo moderno para a gente de forma autônoma.
+
+
+1234
+01:34:19.546 --> 01:34:23.546
+Então a gente vai ter duas plantas aqui. Olha que legal.
+
+
+1235
+01:34:23.546 --> 01:34:29.546
+A planta que vai legada.
+
+
+1236
+01:34:29.546 --> 01:34:31.546
+E a planta moderna.
+
+
+1237
+01:34:31.546 --> 01:34:35.546
+Então eu recebo um pacote de Python que foi feito pelo engenheiro de software.
+
+
+1238
+01:34:35.546 --> 01:34:40.546
+Coloco esse dado na tabela. Desculpa, coloco esse dado no Sftp.
+
+
+1239
+01:34:40.546 --> 01:34:44.546
+Em formato para que eu tenho um Dlt que registra.
+
+
+1240
+01:34:44.546 --> 01:34:49.546
+Esse cara move para o Duck. Db.
+
+
+1241
+01:34:49.546 --> 01:34:52.546
+Deductb. A gente utiliza Dbt.
+
+
+1242
+01:34:52.546 --> 01:34:56.546
+Bronze, Silver e Gold. E depois ele valida essa informação.
+
+
+1243
+01:34:56.546 --> 01:35:01.546
+Então, se a gente for pensar no passo a passo. Olha que delícia, né?
+
+
+1244
+01:35:01.546 --> 01:35:03.546
+Cara. Muito bom aprender com a Yar. Velho.
+
+
+1245
+01:35:03.546 --> 01:35:05.546
+Então, aqui recebo o dado.
+
+
+1246
+01:35:05.546 --> 01:35:08.546
+Valido. Identifico.
+
+
+1247
+01:35:08.546 --> 01:35:12.546
+Ela é correta. Ela é admissível.
+
+
+1248
+01:35:12.546 --> 01:35:16.546
+Não. Então ela veio pra quarentena, lembra.
+
+
+1249
+01:35:16.546 --> 01:35:20.546
+Sim. Então eu faço dispatching do Python do Handler, né?
+
+
+1250
+01:35:20.546 --> 01:35:23.546
+Depois. E aí se a gente vê aqui. ó.
+
+
+1251
+01:35:23.546 --> 01:35:28.546
+O Handler faz o Parsing dessa informação, que é o que a gente já tem aqui.
+
+
+1252
+01:35:28.546 --> 01:35:36.546
+Depois ele valida depois. O tipo do resultado é válido. Não deu errado. Então, quarentena.
+
+
+1253
+01:35:36.546 --> 01:35:40.546
+Sim, sim. Então publico parquê?
+
+
+1254
+01:35:40.546 --> 01:35:42.546
+Varia do parquê.
+
+
+1255
+01:35:42.546 --> 01:35:47.546
+Publicação foi válida. Não bloqueio. é publicação. Foi sim.
+
+
+1256
+01:35:47.546 --> 01:35:52.546
+Carrega pelo Dlt. Manda para o Duck. Db.
+
+
+1257
+01:35:52.546 --> 01:35:57.546
+Qualidade passou. Não bloqueia. Na Gold, passou. Reconcilia.
+
+
+1258
+01:35:57.546 --> 01:36:02.546
+Tem alguma diferença? Não. Então classifique e bloqueia. Sim.
+
+
+1259
+01:36:02.546 --> 01:36:04.546
+Passa pela parte do Dexter.
+
+
+1260
+01:36:04.546 --> 01:36:08.546
+E entregue esse dado na camada. Gold.
+
+
+1261
+01:36:08.546 --> 01:36:13.546
+Olha só. Que foda isso aqui. Ele desenhou pra gente o nosso Runtime.
+
+
+1262
+01:36:13.546 --> 01:36:15.546
+Técnico.
+
+
+1263
+01:36:15.546 --> 01:36:18.546
+Que ele explica exatamente o que eu fale.
+
+
+1264
+01:36:18.546 --> 01:36:22.546
+O que vai ser feito.
+
+
+1265
+01:36:22.546 --> 01:36:26.546
+E é isso.
+
+
+1266
+01:36:26.546 --> 01:36:32.546
+Prompt kits. Então a gente vai agora fazer algumas perguntinhas.
+
+
+1267
+01:36:32.546 --> 01:36:36.546
+Que são as mesmas perguntas padrões que a gente fez da última vez que é.
+
+
+1268
+01:36:36.546 --> 01:36:38.546
+Basicamente pedir, né?
+
+
+1269
+01:36:38.546 --> 01:36:40.546
+Para ler os documentos.
+
+
+1270
+01:36:40.546 --> 01:36:43.546
+Explicar o que é? O converge.
+
+
+1271
+01:36:43.546 --> 01:36:45.546
+O senhor Aise de novo.
+
+
+1272
+01:36:45.546 --> 01:36:50.546
+Qual é a linha que a gente vai cortar essa noite da Lt. Gold?
+
+
+1273
+01:36:50.546 --> 01:36:56.546
+Qual vai ser o sim que vai ser cortado. E porquê? O que a gente vai fazer literalmente hoje.
+
+
+1274
+01:36:56.546 --> 01:36:58.546
+Então ele vai ler essas informações.
+
+
+1275
+01:36:58.546 --> 01:37:01.546
+Pergunta. Gente pode perguntar.
+
+
+1276
+01:37:01.546 --> 01:37:05.546
+Algum desses projetos você pretende transformar em open source.
+
+
+1277
+01:37:05.546 --> 01:37:10.546
+Qual a taxa de todos esses projetos que eu estou mostrando para vocês, que não são open source, né?
+
+
+1278
+01:37:10.546 --> 01:37:13.546
+Sim.
+
+
+1279
+01:37:13.546 --> 01:37:17.546
+Possivelmente o Test Spec e o Sinwise.
+
+
+1280
+01:37:17.546 --> 01:37:20.546
+Menos o converge. Tá.
+
+
+1281
+01:37:20.546 --> 01:37:22.546
+O velho tem uma outra.
+
+
+1282
+01:37:22.546 --> 01:37:24.546
+Uma outra utilização para ele.
+
+
+1283
+01:37:24.546 --> 01:37:39.546
+Mas os dois principais Task Spec e o sim mais. Sim.
+
+
+1284
+01:37:39.546 --> 01:37:42.546
+Oh, meu Deus! Luan.
+
+
+1285
+01:37:42.546 --> 01:37:46.546
+Como você gerou os arquivos que serviram de base para o Prd.
+
+
+1286
+01:37:46.546 --> 01:37:54.546
+Boa pergunta para o business requirement document. Então, basicamente, como eu gerei, é quando eu estava construindo o caso de uso.
+
+
+1287
+01:37:54.546 --> 01:37:58.546
+E eu estava trabalhando com a Llm. Eu usei o sol para fazer isso.
+
+
+1288
+01:37:58.546 --> 01:38:04.546
+Então, basicamente, o meu processo de construção do caso de uso foi olhar para a Curve.
+
+
+1289
+01:38:04.546 --> 01:38:07.546
+Eles traem um documento completo da Curvy.
+
+
+1290
+01:38:07.546 --> 01:38:14.546
+Explicar cara. A gente vai construir um booticamp com essas características, enfim e tal. E aí fui modelando a parte de legado. Enfim.
+
+
+1291
+01:38:14.546 --> 01:38:18.546
+E na hora da gente construir os sistemas. O que eu pedi na verdade, é.
+
+
+1292
+01:38:18.546 --> 01:38:22.546
+Para ele gerar documentos, né?
+
+
+1293
+01:38:22.546 --> 01:38:27.546
+Relacionados a source, procedures e assim por diante. Então, basicamente, por cada tipo aqui.
+
+
+1294
+01:38:27.546 --> 01:38:30.546
+Ele gerou todos os documentos que eu preciso.
+
+
+1295
+01:38:30.546 --> 01:38:34.546
+O que é? Embalde e mail, documentos importantes.
+
+
+1296
+01:38:34.546 --> 01:38:38.546
+Samples desses documentos. E o que é esperado em cima disso?
+
+
+1297
+01:38:38.546 --> 01:38:43.546
+Como a gente está falando que a gente não tem acesso ao Java, né? A gente vai precisar fazer isso baseado.
+
+
+1298
+01:38:43.546 --> 01:38:46.546
+Nos inputs do sistema.
+
+
+1299
+01:38:46.546 --> 01:38:50.546
+A gente vai traduzir recebendo essas especificações do banco.
+
+
+1300
+01:38:50.546 --> 01:38:55.546
+Da entrada dos exemplos e da saída dos arquivos, tanto de preço ser gerado e ser criado.
+
+
+1301
+01:38:55.546 --> 01:39:00.546
+E aqui em State.
+
+
+1302
+01:39:00.546 --> 01:39:06.546
+Eu criei alguns e mails, algumas reuniões, algumas políticas importantes para, justamente.
+
+
+1303
+01:39:06.546 --> 01:39:11.546
+Trazer algumas falsos positivos que a gente vai ver na fábrica.
+
+
+1304
+01:39:11.546 --> 01:39:18.546
+A ideia é que a fábrica consiga pegar certos saltos positivos que estavam aqui no processo, e a gente consiga alertar.
+
+
+1305
+01:39:18.546 --> 01:39:20.546
+Para o cliente.
+
+
+1306
+01:39:20.546 --> 01:39:26.546
+Essa informação. Então o que é? Converge, né? Compilação aqui de um Pipeline de Fuzz e Brief.
+
+
+1307
+01:39:26.546 --> 01:39:30.546
+Autónomo e vol nove passos.
+
+
+1308
+01:39:30.546 --> 01:39:33.546
+Dois passos. Um ano de barreira.
+
+
+1309
+01:39:33.546 --> 01:39:38.546
+Que é o passo do quatro e depois os passos de cinco a oito, que é a máquina.
+
+
+1310
+01:39:38.546 --> 01:39:40.546
+Então, se um aiz.
+
+
+1311
+01:39:40.546 --> 01:39:47.546
+Ele queria Seams Winlane Legs e o plano de tarefa que vai ser executado pelo Test Spec.
+
+
+1312
+01:39:47.546 --> 01:39:49.546
+Faz a criação de uma.
+
+
+1313
+01:39:49.546 --> 01:39:52.546
+Tarefa no nível atômico.
+
+
+1314
+01:39:52.546 --> 01:39:57.546
+E o converge faz o sequenciamento e encapsulamento de tudo isso. E o controle de One Time.
+
+
+1315
+01:39:57.546 --> 01:40:01.546
+Validação é literalmente a fábrica, né?
+
+
+1316
+01:40:01.546 --> 01:40:05.546
+Então ele explica basicamente tudo aqui que a gente vai fazer.
+
+
+1317
+01:40:05.546 --> 01:40:08.546
+E aí ele fala.
+
+
+1318
+01:40:08.546 --> 01:40:10.546
+Qual é assim.
+
+
+1319
+01:40:10.546 --> 01:40:12.546
+Quais são os cinzas que a gente vai fazer?
+
+
+1320
+01:40:12.546 --> 01:40:17.546
+A gente vai quebrar. A gente tem síms relacionados ao software Engineer.
+
+
+1321
+01:40:17.546 --> 01:40:20.546
+E a gente tem, sim, relacionados ao ter em dinheiro.
+
+
+1322
+01:40:20.546 --> 01:40:24.546
+Então a gente vai ver. Basicamente o que ele vai fazer e vai cortar aqui.
+
+
+1323
+01:40:24.546 --> 01:40:26.546
+Já, já tá.
+
+
+1324
+01:40:26.546 --> 01:40:31.546
+Vamos para o seis. Deixa eu parar no sete.
+
+
+1325
+01:40:31.546 --> 01:40:33.546
+Agora vai ficar interessante. ó.
+
+
+1326
+01:40:33.546 --> 01:40:37.546
+Então o Seis aqui vai fazer o quê?
+
+
+1327
+01:40:37.546 --> 01:40:40.546
+Você está no passe dois da estrutura do North Wind.
+
+
+1328
+01:40:40.546 --> 01:40:45.546
+A gente vai pegar o Adr seis.
+
+
+1329
+01:40:45.546 --> 01:40:48.546
+E a gente vai pedir para ele passar esse Edr.
+
+
+1330
+01:40:48.546 --> 01:40:51.546
+Para dentro do sistema do.
+
+
+1331
+01:40:51.546 --> 01:40:53.546
+Conve Luan.
+
+
+1332
+01:40:53.546 --> 01:40:56.546
+Qual é o passe? Dois.
+
+
+1333
+01:40:56.546 --> 01:41:00.546
+Lembrar do passe dois do Converge.
+
+
+1334
+01:41:00.546 --> 01:41:03.546
+Deixa eu deixar o Link aqui.
+
+
+1335
+01:41:03.546 --> 01:41:05.546
+Passe dois do Converge.
+
+
+1336
+01:41:05.546 --> 01:41:09.546
+é pegar os documentos técnicos.
+
+
+1337
+01:41:09.546 --> 01:41:11.546
+Que a gente gerou ali, né.
+
+
+1338
+01:41:11.546 --> 01:41:13.546
+E gerar as Adrs.
+
+
+1339
+01:41:13.546 --> 01:41:16.546
+Então, o que esse cara vai fazer.
+
+
+1340
+01:41:16.546 --> 01:41:19.546
+Ele vai ler. Você é o passe dois.
+
+
+1341
+01:41:19.546 --> 01:41:23.546
+Leia os documentos.
+
+
+1342
+01:41:23.546 --> 01:41:24.546
+Os Adrs.
+
+
+1343
+01:41:24.546 --> 01:41:30.546
+Usa as informações e escreve os ideas no que a gente vai precisar fazer.
+
+
+1344
+01:41:30.546 --> 01:41:34.546
+Para trabalhar. O Lake House.
+
+
+1345
+01:41:34.546 --> 01:41:36.546
+Que é Dlt.
+
+
+1346
+01:41:36.546 --> 01:41:39.546
+Ductb, bronze.
+
+
+1347
+01:41:39.546 --> 01:41:41.546
+Silver Gold.
+
+
+1348
+01:41:41.546 --> 01:41:46.546
+Regra de privacidade. E Golden Match.
+
+
+1349
+01:41:46.546 --> 01:41:51.546
+Então isso vem a partir do nosso conhecimento. Como dado a gente vai quebrando esse cara.
+
+
+1350
+01:41:51.546 --> 01:41:55.546
+Ele vai começar a quebrar. Então essa primeira parte que ele vai quebrar.
+
+
+1351
+01:41:55.546 --> 01:41:57.546
+Na segunda parte. Ele vai decompor.
+
+
+1352
+01:41:57.546 --> 01:42:04.546
+Ele vai fazer o quê? Ele vai decompor essas atividades. E aí, do jeito que ele vai criar as Legs.
+
+
+1353
+01:42:04.546 --> 01:42:07.546
+Ele vai desenhar as Legs.
+
+
+1354
+01:42:07.546 --> 01:42:10.546
+Um registro.
+
+
+1355
+01:42:10.546 --> 01:42:13.546
+Dois medalham e três Match.
+
+
+1356
+01:42:13.546 --> 01:42:15.546
+Você precisa fazer isso.
+
+
+1357
+01:42:15.546 --> 01:42:17.546
+No.
+
+
+1358
+01:42:17.546 --> 01:42:19.546
+Se você estiver passando pelo converge.
+
+
+1359
+01:42:19.546 --> 01:42:26.546
+Você pode explicitamente falar, cara, eu quero separar por Frontback.
+
+
+1360
+01:42:26.546 --> 01:42:31.546
+Dado ai, por exemplo. Ou você pode simplesmente falar, cara.
+
+
+1361
+01:42:31.546 --> 01:42:36.546
+Vamos lá. Como eu faço, tá?
+
+
+1362
+01:42:36.546 --> 01:42:40.546
+Você pode falar para ele o seguinte.
+
+
+1363
+01:42:40.546 --> 01:42:43.546
+Converge. Olha essa pasta.
+
+
+1364
+01:42:43.546 --> 01:42:45.546
+Essa pasta tem um bocado de documento.
+
+
+1365
+01:42:45.546 --> 01:42:48.546
+Ou seja, o Zé. Aí ele gerou.
+
+
+1366
+01:42:48.546 --> 01:42:51.546
+O arquivo de requisito.
+
+
+1367
+01:42:51.546 --> 01:42:53.546
+Aí eu falo. Converge, passe um.
+
+
+1368
+01:42:53.546 --> 01:42:56.546
+Olha essa pasta.
+
+
+1369
+01:42:56.546 --> 01:43:04.546
+Aí. Ele vai lá. Transforma o Brd em vários documentos técnicos em várias Adrs automaticamente. Depois eu falo.
+
+
+1370
+01:43:04.546 --> 01:43:08.546
+Passe três. Olha a pasta de Ad. Hars.
+
+
+1371
+01:43:08.546 --> 01:43:10.546
+Automaticamente, ele transforma.
+
+
+1372
+01:43:10.546 --> 01:43:13.546
+Isso. Nas atividades.
+
+
+1373
+01:43:13.546 --> 01:43:16.546
+Depois eu falo. Passe quatro. Olha.
+
+
+1374
+01:43:16.546 --> 01:43:23.546
+A Swing Lanes automaticamente ele olha e cria o plano adversarial.
+
+
+1375
+01:43:23.546 --> 01:43:24.546
+Depois se está tudo certo.
+
+
+1376
+01:43:24.546 --> 01:43:27.546
+Bear with Text Spell, Desk Spec File Test Spec.
+
+
+1377
+01:43:27.546 --> 01:43:29.546
+Próximo passo? Passo? Cinco.
+
+
+1378
+01:43:29.546 --> 01:43:31.546
+Olha.
+
+
+1379
+01:43:31.546 --> 01:43:34.546
+O plano. Olha a Swing.
+
+
+1380
+01:43:34.546 --> 01:43:36.546
+E automaticamente, ele.
+
+
+1381
+01:43:36.546 --> 01:43:39.546
+Cria tudo pra mim.
+
+
+1382
+01:43:39.546 --> 01:43:41.546
+Então eu não preciso digitar esse texto.
+
+
+1383
+01:43:41.546 --> 01:43:45.546
+Aqui, aqui. Eu só estou mostrando explicitamente para você.
+
+
+1384
+01:43:45.546 --> 01:43:47.546
+Alguns pedaços.
+
+
+1385
+01:43:47.546 --> 01:44:01.546
+E algumas regras. Então, nesse caso, aqui eu estou. Eu automaticamente falando, como eu quero cortar o sistema, mas você Não Precisa Fazer Isso.
+
+
+1386
+01:44:01.546 --> 01:44:03.546
+Então ele vai escrever.
+
+
+1387
+01:44:03.546 --> 01:44:12.546
+Esse novo cara.
+
+
+1388
+01:44:12.546 --> 01:44:14.546
+Escreveu.
+
+
+1389
+01:44:14.546 --> 01:44:18.546
+Sete.
+
+
+1390
+01:44:18.546 --> 01:44:19.546
+Para registrar o Dlt.
+
+
+1391
+01:44:19.546 --> 01:44:21.546
+Ou oito para o Duck Link.
+
+
+1392
+01:44:21.546 --> 01:44:24.546
+O nove para bronze livre. Gold.
+
+
+1393
+01:44:24.546 --> 01:44:30.546
+O dez para parcer.
+
+
+1394
+01:44:30.546 --> 01:44:33.546
+E o onze. A validação.
+
+
+1395
+01:44:33.546 --> 01:44:36.546
+Ele escreveu aqui os Adrs.
+
+
+1396
+01:44:36.546 --> 01:44:40.546
+Depois dos ideas, eu vou pedir para ele decompor essas atividades. Então, o que ele vai fazer.
+
+
+1397
+01:44:40.546 --> 01:44:44.546
+Ele vai começar a escrever essas atividades aqui em Tasks.
+
+
+1398
+01:44:44.546 --> 01:44:48.546
+Certo.
+
+
+1399
+01:44:48.546 --> 01:44:51.546
+Deixa ele fazer isso? Ele vai criar essas atividades.
+
+
+1400
+01:44:51.546 --> 01:44:56.546
+E depois a gente vai literalmente fazer o sign do consenso, né?
+
+
+1401
+01:44:56.546 --> 01:45:00.546
+De concordar aqui. Nesse caso.
+
+
+1402
+01:45:00.546 --> 01:45:02.546
+Eu vou ter que assinar.
+
+
+1403
+01:45:02.546 --> 01:45:05.546
+Concordar assinar com isso.
+
+
+1404
+01:45:05.546 --> 01:45:08.546
+O que você vai fazer na prática ali.
+
+
+1405
+01:45:08.546 --> 01:45:14.546
+O próximo passo do Converge vai falar para você. Exatamente isso, beleza. Você está no passo quatro.
+
+
+1406
+01:45:14.546 --> 01:45:16.546
+Você precisa.
+
+
+1407
+01:45:16.546 --> 01:45:23.546
+Usar uma llma adversarial hoje. Você pode usar só o Kim ou só o codec.
+
+
+1408
+01:45:23.546 --> 01:45:27.546
+Então, como eu falei: ideia expandir isso para o Mypie.
+
+
+1409
+01:45:27.546 --> 01:45:30.546
+E aí ser uma higiene transparente para você.
+
+
+1410
+01:45:30.546 --> 01:45:36.546
+Que ele fala para você. Você tem as configurações desse padrão, mas ele vai falar para você, tá? Qual é A Linha Que Você Quer Executar.
+
+
+1411
+01:45:36.546 --> 01:45:44.546
+Ah, eu quero fazer diverso salarial contra, sei lá, o Deep beleza. Ele vai lá fazer adversarial, mandar pro Gypsique. Eu Avalie Desse Plano.
+
+
+1412
+01:45:44.546 --> 01:45:50.546
+Verifica brechas e tal e traga aqui as informações. Ele vai lá e pum! Tenta fechar esse cara pra gente.
+
+
+1413
+01:45:50.546 --> 01:45:52.546
+E aí você vai estar no meio.
+
+
+1414
+01:45:52.546 --> 01:45:54.546
+Fazendo.
+
+
+1415
+01:45:54.546 --> 01:45:57.546
+Essa informação. Tá.
+
+
+1416
+01:45:57.546 --> 01:46:04.546
+Então tá aqui no set que a gente vai ter que compor esse cara. O que está acontecendo exatamente agora, né?
+
+
+1417
+01:46:04.546 --> 01:46:06.546
+Ele vai decompor.
+
+
+1418
+01:46:06.546 --> 01:46:23.546
+Duas cinza aqui. Ele vai criar assim.
+
+
+1419
+01:46:23.546 --> 01:46:26.546
+Alguém está seguindo comigo?
+
+
+1420
+01:46:26.546 --> 01:46:34.546
+Que no primeiro e no segundo dia, vocês estavam seguindo. Não estou vendo mais vocês digitando aí. O que está Acontecendo Vocês Estão Seguindo Opa Tem Tem Seguindo Boa.
+
+
+1421
+01:46:34.546 --> 01:46:39.546
+Está criando aí?
+
+
+1422
+01:46:39.546 --> 01:46:42.546
+Sem token.
+
+
+1423
+01:46:42.546 --> 01:46:44.546
+Boa.
+
+
+1424
+01:46:44.546 --> 01:46:56.546
+Beleza. Criamos um Steel Thread.
+
+
+1425
+01:46:56.546 --> 01:46:58.546
+Tá.
+
+
+1426
+01:46:58.546 --> 01:47:01.546
+Beleza. Então.
+
+
+1427
+01:47:01.546 --> 01:47:03.546
+Toxines.
+
+
+1428
+01:47:03.546 --> 01:47:06.546
+Validation.
+
+
+1429
+01:47:06.546 --> 01:47:11.546
+Sim, Review. Se a gente vir aqui.
+
+
+1430
+01:47:11.546 --> 01:47:15.546
+Scenes.
+
+
+1431
+01:47:15.546 --> 01:47:17.546
+Ingest landing.
+
+
+1432
+01:47:17.546 --> 01:47:25.546
+Legs Semiclin e Emit está aqui. Dbt Gold. Ele escreveu aqui, assim você está vendo.
+
+
+1433
+01:47:25.546 --> 01:47:27.546
+Ia uma delas, porque esse texto servem.
+
+
+1434
+01:47:27.546 --> 01:47:33.546
+Ele quebrou esse cara em várias atividades.
+
+
+1435
+01:47:33.546 --> 01:47:37.546
+Que era exatamente o que a gente queria. Atividades assim. Desculpa, Legs, né?
+
+
+1436
+01:47:37.546 --> 01:47:42.546
+Que vão ser quebradas posteriormente, em atividades.
+
+
+1437
+01:47:42.546 --> 01:47:44.546
+Cadê beleza?
+
+
+1438
+01:47:44.546 --> 01:47:46.546
+Então aqui a gente vai executar agora o set.
+
+
+1439
+01:47:46.546 --> 01:47:49.546
+Que é o.
+
+
+1440
+01:47:49.546 --> 01:47:51.546
+Contando que é o sete. é oito.
+
+
+1441
+01:47:51.546 --> 01:48:03.546
+Oito, que é o consenso.
+
+
+1442
+01:48:03.546 --> 01:48:14.546
+Se você usar sua agenda especí nesse projeto, você acha que ele atingaria o resultado com a mesma qualidade? Converge.
+
+
+1443
+01:48:14.546 --> 01:48:21.546
+Boa pergunta. Eu acho que o Sins justificam e chegam no mesmo meio.
+
+
+1444
+01:48:21.546 --> 01:48:23.546
+A diferença é.
+
+
+1445
+01:48:23.546 --> 01:48:27.546
+Quando isso se torna contínuo. Então essa é sua pergunta muito boa. Tá lan.
+
+
+1446
+01:48:27.546 --> 01:48:30.546
+Então, por exemplo, vamos fazer isso. One Time.
+
+
+1447
+01:48:30.546 --> 01:48:34.546
+Uma vez só one shot. Desculpa, one shot não one time.
+
+
+1448
+01:48:34.546 --> 01:48:40.546
+Então eu voltar a dizer isso uma vez, com um arquivo só, e assim por diante.
+
+
+1449
+01:48:40.546 --> 01:48:43.546
+Então passar pelo Processo de Spread Development, pelo Agent Spec.
+
+
+1450
+01:48:43.546 --> 01:48:45.546
+Ele faria de uma forma diferente.
+
+
+1451
+01:48:45.546 --> 01:48:48.546
+Mas você chegaria num resultado.
+
+
+1452
+01:48:48.546 --> 01:48:51.546
+Tão bom quanto tá.
+
+
+1453
+01:48:51.546 --> 01:48:56.546
+Quite a diferença do Converge o converge tem e você vai ver na quinta feira, amanhã.
+
+
+1454
+01:48:56.546 --> 01:49:04.546
+Ele tem uma visibilidade e um nível de controle muito bom. E ele foi construído para ser contínuo. Então está. Aí Está A Diferença Porque Por Exemplo.
+
+
+1455
+01:49:04.546 --> 01:49:09.546
+Se você fosse fazer isso para cinco arquivos, o que aconteceria, né?
+
+
+1456
+01:49:09.546 --> 01:49:13.546
+Você faria um Spec para cinco vezes para cada um desses arquivos. Esse é o correto, né?
+
+
+1457
+01:49:13.546 --> 01:49:17.546
+Você injetaria tudo aquilo que você acha. Design define.
+
+
+1458
+01:49:17.546 --> 01:49:23.546
+Designing Beauty Sheep. Então você faria todo o processo.
+
+
+1459
+01:49:23.546 --> 01:49:25.546
+Todas as vezes.
+
+
+1460
+01:49:25.546 --> 01:49:28.546
+Como converge, como eu sei qual é a intenção.
+
+
+1461
+01:49:28.546 --> 01:49:34.546
+Quando você recebe essa nova requisição, o sistema já preparado para virar uma esteira autônoma.
+
+
+1462
+01:49:34.546 --> 01:49:37.546
+Só que não só esse ter autônoma que você pega.
+
+
+1463
+01:49:37.546 --> 01:49:39.546
+Identifica que é uma feature.
+
+
+1464
+01:49:39.546 --> 01:49:42.546
+Quebra Adr.
+
+
+1465
+01:49:42.546 --> 01:49:46.546
+Sim. Swinglandes legs, quebra tarefa.
+
+
+1466
+01:49:46.546 --> 01:49:50.546
+Executa. Eu não mostrei ainda a execução. Realmente.
+
+
+1467
+01:49:50.546 --> 01:49:54.546
+Mas quando a gente começar de fato a executar esse cara.
+
+
+1468
+01:49:54.546 --> 01:49:59.546
+Quando a gente realmente executar, ele que a gente vai ver. Na verdade.
+
+
+1469
+01:49:59.546 --> 01:50:01.546
+é que ele vai ter um loop de execução?
+
+
+1470
+01:50:01.546 --> 01:50:06.546
+E esse lobo de execução, cara, ele vai ajudar.
+
+
+1471
+01:50:06.546 --> 01:50:08.546
+Tremendamente. Você não só você vê.
+
+
+1472
+01:50:08.546 --> 01:50:23.546
+Mas fala assim. Quero que minha mente exploda. Fala aí.
+
+
+1473
+01:50:23.546 --> 01:50:26.546
+Tá? Então olha só.
+
+
+1474
+01:50:26.546 --> 01:50:31.546
+O que a sua mente explodir. Isso aqui, ó.
+
+
+1475
+01:50:31.546 --> 01:50:33.546
+Você vai conseguir.
+
+
+1476
+01:50:33.546 --> 01:50:34.546
+De amanhã, por exemplo.
+
+
+1477
+01:50:34.546 --> 01:50:38.546
+Isso aqui. Você vai ter um board dentro do linear com o projeto.
+
+
+1478
+01:50:38.546 --> 01:50:47.546
+Você vai ter um agente que vai atualizar o board inteiro. Quem fez o que fez? Quais são as camadas? Os Milestones Que São Sims Que Foram Feitos.
+
+
+1479
+01:50:47.546 --> 01:50:53.546
+Pressão, escopo, progresso. O que que ele registrou? O que foi feito.
+
+
+1480
+01:50:53.546 --> 01:50:56.546
+E daí, quando você vê a atividade, ele vai registrar toda vez.
+
+
+1481
+01:50:56.546 --> 01:51:00.546
+Que as atividades foram feitas. E depois você tem.
+
+
+1482
+01:51:00.546 --> 01:51:07.546
+Isso aqui o seu backlog. E olha só. Que parada, foda, né?
+
+
+1483
+01:51:07.546 --> 01:51:11.546
+A gente. Kimi Backendi, Cvg Agent Codecs.
+
+
+1484
+01:51:11.546 --> 01:51:13.546
+Então você tem toda a informação.
+
+
+1485
+01:51:13.546 --> 01:51:15.546
+Da tarefa aqui.
+
+
+1486
+01:51:15.546 --> 01:51:17.546
+E você tem todo o estado.
+
+
+1487
+01:51:17.546 --> 01:51:20.546
+Dessa tarefa que está aqui.
+
+
+1488
+01:51:20.546 --> 01:51:22.546
+E existem, por exemplo.
+
+
+1489
+01:51:22.546 --> 01:51:26.546
+Uma tarefa que tem relação com a outra.
+
+
+1490
+01:51:26.546 --> 01:51:30.546
+Então elas são colocadas aqui também.
+
+
+1491
+01:51:30.546 --> 01:51:32.546
+Está aqui. ó.
+
+
+1492
+01:51:32.546 --> 01:51:37.546
+Existe uma dependência de uma tarefa com a outra. Então eu consigo especificar tudo isso.
+
+
+1493
+01:51:37.546 --> 01:51:39.546
+Isso aqui é o linear. Se você nunca usou.
+
+
+1494
+01:51:39.546 --> 01:51:45.546
+Se você está trabalhando com agentes, utilize, é simplesmente perfeito.
+
+
+1495
+01:51:45.546 --> 01:51:50.546
+Homenage Iniciador de Atividades Para mim, para sistemas Agênticos.
+
+
+1496
+01:51:50.546 --> 01:51:52.546
+Sem dúvida.
+
+
+1497
+01:51:52.546 --> 01:51:58.546
+Então aqui ele está gerando Steel Thread para cada um deles. As tarefas aqui, Landing Passer.
+
+
+1498
+01:51:58.546 --> 01:52:00.546
+A tarefa.
+
+
+1499
+01:52:00.546 --> 01:52:04.546
+Acho que já é uma mídia, não é, Small?
+
+
+1500
+01:52:04.546 --> 01:52:09.546
+Lt. Register. Tres mal.
+
+
+1501
+01:52:09.546 --> 01:52:11.546
+Small.
+
+
+1502
+01:52:11.546 --> 01:52:14.546
+Tarefas. Small, aqui.
+
+
+1503
+01:52:14.546 --> 01:52:18.546
+Ele está criando as atividades. Quanto a gente conversa aqui.
+
+
+1504
+01:52:18.546 --> 01:52:25.546
+Beleza.
+
+
+1505
+01:52:25.546 --> 01:52:27.546
+Eu tenho um projeto para fazer.
+
+
+1506
+01:52:27.546 --> 01:52:32.546
+Eu tenho um projeto para fazer. Um processo de manutenção, criação automática de scrapers.
+
+
+1507
+01:52:32.546 --> 01:52:35.546
+Esse processo seria muito complexo para isso.
+
+
+1508
+01:52:35.546 --> 01:52:40.546
+Não injeta, ele no converge passo a passo.
+
+
+1509
+01:52:40.546 --> 01:52:43.546
+Que ele vai automatizar todo o novo requisito. Toda nova.
+
+
+1510
+01:52:43.546 --> 01:52:46.546
+A parada que você for fazer.
+
+
+1511
+01:52:46.546 --> 01:52:53.546
+Luan, no caso de uma migração de sistemas concorrentes e os dados precisam ser adaptados ou incluir não informados. Os dados falantes.
+
+
+1512
+01:52:53.546 --> 01:52:56.546
+Faltando. Isso é tratado.
+
+
+1513
+01:52:56.546 --> 01:53:04.546
+Vai ser tratado do jeito que você quiser que seja tratada, vai depender do seu caso de uso. Mas a Questão é O Converge é Um Framework.
+
+
+1514
+01:53:04.546 --> 01:53:09.546
+Você que vai editar.
+
+
+1515
+01:53:09.546 --> 01:53:11.546
+Como ele vai ser.
+
+
+1516
+01:53:11.546 --> 01:53:17.546
+Feito ele só um framework para poder agilizar esse processo. Em vez de você fazer um Spec drama development.
+
+
+1517
+01:53:17.546 --> 01:53:22.546
+Ou fazer da sua cabeça ele poupasse um. Vou fazer isso. Passo dois: fazer isso. Ele automatiza esse processo.
+
+
+1518
+01:53:22.546 --> 01:53:24.546
+Então, independentemente do trabalho.
+
+
+1519
+01:53:24.546 --> 01:53:27.546
+Empresa de pessoa é já Devops. Estamos usando a Mcpd.
+
+
+1520
+01:53:27.546 --> 01:53:31.546
+Acho que seria possível. Você tem a gente com ele? Sim.
+
+
+1521
+01:53:31.546 --> 01:53:35.546
+O converge aqui. ó.
+
+
+1522
+01:53:35.546 --> 01:53:37.546
+Ele tem aqui Test Spec.
+
+
+1523
+01:53:37.546 --> 01:53:48.546
+Two eixos. Tá vendo? Se a gente olhar esse cara aqui.
+
+
+1524
+01:53:48.546 --> 01:53:53.546
+A primeira indign dele. Default é linha, mas ele tem Github.
+
+
+1525
+01:53:53.546 --> 01:53:58.546
+Línia e gira. Tá vendo? Ele é um adapter.
+
+
+1526
+01:53:58.546 --> 01:54:01.546
+Então você pode criar o adapter do Edger.
+
+
+1527
+01:54:01.546 --> 01:54:05.546
+E ele vai fazer a mesma coisa. Ele vai registrar.
+
+
+1528
+01:54:05.546 --> 01:54:08.546
+Todas essas tarefas e assim por diante. Dentro.
+
+
+1529
+01:54:08.546 --> 01:54:12.546
+Azure e Vobs.
+
+
+1530
+01:54:12.546 --> 01:54:15.546
+Então esse passo que a gente vai passar amanhã.
+
+
+1531
+01:54:15.546 --> 01:54:17.546
+Ele vai mostrar isso. Por quê?
+
+
+1532
+01:54:17.546 --> 01:54:25.546
+Eu vou a gente para aqui, né? Nesses dois dias no Task Spec. Mas depois que a gente vai fazer, A Gente Vai Registrar Essas Atividades.
+
+
+1533
+01:54:25.546 --> 01:54:30.546
+A gente vai fazer o binding dessas atividades.
+
+
+1534
+01:54:30.546 --> 01:54:34.546
+Que é fechar o contrato com Test Spec.
+
+
+1535
+01:54:34.546 --> 01:54:39.546
+Depois a gente vai lopar essas informações. Task, loop.
+
+
+1536
+01:54:39.546 --> 01:54:43.546
+E aí esse cara vai ficar lupando até concluir a tabela inteira.
+
+
+1537
+01:54:43.546 --> 01:54:45.546
+Tá.
+
+
+1538
+01:54:45.546 --> 01:54:49.546
+Podemos ter. Podemos voltar às dez e.
+
+
+1539
+01:54:49.546 --> 01:54:51.546
+Dez e quinze.
+
+
+1540
+01:54:51.546 --> 01:54:55.546
+Que na verdade é o tempo. Não, ele já acabou aqui.
+
+
+1541
+01:54:55.546 --> 01:54:57.546
+Ele criou todas as Steel threads. Tá vendo? Olha que fod.
+
+
+1542
+01:54:57.546 --> 01:55:01.546
+Tudo que a gente tinha que fazer.
+
+
+1543
+01:55:01.546 --> 01:55:05.546
+Gold Silver Bronze, Dlt Landing.
+
+
+1544
+01:55:05.546 --> 01:55:11.546
+Para tudo pra mim aqui, cara. A gente vai avaliar elas em detalhes. Já já tá. Se faz sentido ou não.
+
+
+1545
+01:55:11.546 --> 01:55:14.546
+Então a gente volta às dez e quinze, tá?
+
+
+1546
+01:55:14.546 --> 01:55:17.546
+Book que eu vejo se eu tomo mais um pouco de.
+
+
+1547
+01:55:17.546 --> 01:55:22.546
+Alguma coisa na garganta?
+
+
+1548
+01:55:22.546 --> 01:55:24.546
+Tá. Tá legal.
+
+
+1549
+01:55:24.546 --> 01:55:54.546
+Já volto. Oita.
+
+
+1550
+02:02:59.546 --> 02:03:06.546
+Vamos de volta.
+
+
+1551
+02:03:06.546 --> 02:03:36.546
+Estamos ou não? Estamos de volta.
+
+
+1552
+02:03:43.546 --> 02:03:50.546
+Então, o que aconteceu? Pessoal.
+
+
+1553
+02:03:50.546 --> 02:03:53.546
+A gente pediu para o Task Spec gerar, né?
+
+
+1554
+02:03:53.546 --> 02:03:55.546
+Então, se a gente vier aqui.
+
+
+1555
+02:03:55.546 --> 02:03:58.546
+Em Docs.
+
+
+1556
+02:03:58.546 --> 02:04:00.546
+Desks.
+
+
+1557
+02:04:00.546 --> 02:04:05.546
+Temos as nossas tarefas que foram geradas aqui.
+
+
+1558
+02:04:05.546 --> 02:04:13.546
+Como é que eu fiquei? Até curioso. O que foi isso? Aqui.
+
+
+1559
+02:04:13.546 --> 02:04:32.546
+Olha. Não sabia.
+
+
+1560
+02:04:32.546 --> 02:04:52.546
+Isso quer dizer o quê? Vai permanecer opens.
+
+
+1561
+02:04:52.546 --> 02:04:54.546
+Então o que ele fez aqui, né?
+
+
+1562
+02:04:54.546 --> 02:04:58.546
+Ele quebrou.
+
+
+1563
+02:04:58.546 --> 02:05:00.546
+As legs.
+
+
+1564
+02:05:00.546 --> 02:05:05.546
+Criou as atividades. Atividade para Landing, para Dlt.
+
+
+1565
+02:05:05.546 --> 02:05:08.546
+Para Dbt para bronze.
+
+
+1566
+02:05:08.546 --> 02:05:11.546
+Gold.
+
+
+1567
+02:05:11.546 --> 02:05:15.546
+E aí, bora dar uma olhada.
+
+
+1568
+02:05:15.546 --> 02:05:21.546
+Nas próximas execuções. Aqui.
+
+
+1569
+02:05:21.546 --> 02:05:24.546
+Nove, dez e onze.
+
+
+1570
+02:05:24.546 --> 02:05:28.546
+Então, aqui a gente vai na nove.
+
+
+1571
+02:05:28.546 --> 02:05:32.546
+A gente já pediu para ele fazer isso, né?
+
+
+1572
+02:05:32.546 --> 02:05:34.546
+Ou não.
+
+
+1573
+02:05:34.546 --> 02:05:40.546
+Sim.
+
+
+1574
+02:05:40.546 --> 02:05:54.546
+Sim, quebrou as leg.
+
+
+1575
+02:05:54.546 --> 02:06:01.546
+Só confirmar, mas sim.
+
+
+1576
+02:06:01.546 --> 02:06:02.546
+Já executamos esse cara.
+
+
+1577
+02:06:02.546 --> 02:06:05.546
+Agora a gente vai executar.
+
+
+1578
+02:06:05.546 --> 02:06:09.546
+Alangering.
+
+
+1579
+02:06:09.546 --> 02:06:11.546
+To Lake House.
+
+
+1580
+02:06:11.546 --> 02:06:16.546
+Então, para a gente ter um mínimo viável, para verificar se toda essa criação de código vai funcionar ou não, vai.
+
+
+1581
+02:06:16.546 --> 02:06:20.546
+Então aqui a gente vai pegar.
+
+
+1582
+02:06:20.546 --> 02:06:24.546
+O tipo um. Agora você vai escrever Scheme, o Writer e o Handler.
+
+
+1583
+02:06:24.546 --> 02:06:27.546
+A gente.
+
+
+1584
+02:06:27.546 --> 02:06:29.546
+Construir.
+
+
+1585
+02:06:29.546 --> 02:06:32.546
+A parte interminística do parquê.
+
+
+1586
+02:06:32.546 --> 02:06:38.546
+Depois a gente vai construir o Lake House com Dr. T. Duck.
+
+
+1587
+02:06:38.546 --> 02:06:42.546
+Bronze. Depois a gente ia fazer o Golden para validar.
+
+
+1588
+02:06:42.546 --> 02:06:46.546
+Se esse cara executa contra um arquivo.
+
+
+1589
+02:06:46.546 --> 02:06:48.546
+Tal? Vai ser bem interessante agora.
+
+
+1590
+02:06:48.546 --> 02:06:54.546
+Vamos pegar esse cara.
+
+
+1591
+02:06:54.546 --> 02:06:58.546
+Está tudo criado aqui. Vocês geraram as? Conseguiram gerar aí.
+
+
+1592
+02:06:58.546 --> 02:07:06.546
+Tem as tarefas quebradas para vocês.
+
+
+1593
+02:07:06.546 --> 02:07:11.546
+Boa. Agora vamos lá.
+
+
+1594
+02:07:11.546 --> 02:07:12.546
+Vamos executar esse cara.
+
+
+1595
+02:07:12.546 --> 02:07:14.546
+Vou deixar aqui, né.
+
+
+1596
+02:07:14.546 --> 02:07:19.546
+Esse cara.
+
+
+1597
+02:07:19.546 --> 02:07:26.546
+Esse cara. Geralmente você pode até abrir três works tres se você quiser. Tá.
+
+
+1598
+02:07:26.546 --> 02:07:32.546
+Para poder trabalhar cada um deles. Estou deixando aqui para a gente ver o cranking dessas atividades. Passo a passo.
+
+
+1599
+02:07:32.546 --> 02:07:34.546
+Ele vai começar a pegar.
+
+
+1600
+02:07:34.546 --> 02:07:39.546
+A parte interna. Toda a parte de Ducks.
+
+
+1601
+02:07:39.546 --> 02:07:43.546
+Dbt.
+
+
+1602
+02:07:43.546 --> 02:07:45.546
+E toda a parte de validação.
+
+
+1603
+02:07:45.546 --> 02:07:59.546
+Para a gente verificar se essa tradução vai funcionar.
+
+
+1604
+02:07:59.546 --> 02:08:03.546
+E aí o que acontece?
+
+
+1605
+02:08:03.546 --> 02:08:06.546
+Por padrão.
+
+
+1606
+02:08:06.546 --> 02:08:09.546
+A gente está olhando. O Task Spec.
+
+
+1607
+02:08:09.546 --> 02:08:17.546
+E o que ele faz? A gente precisa aqui explicitamente falar pra ele, né? Executa, né? Então ele gerou as Tarefas As Tarefas Estão Aqui Paradas.
+
+
+1608
+02:08:17.546 --> 02:08:23.546
+Certo? E ele vai basicamente pegar llm que eu quero. Nesse caso, ele vai executar tudo.
+
+
+1609
+02:08:23.546 --> 02:08:25.546
+Pelo grok. Porque eu estou utilizando ele.
+
+
+1610
+02:08:25.546 --> 02:08:29.546
+Mas eu posso ter uma forma de invocar ele.
+
+
+1611
+02:08:29.546 --> 02:08:32.546
+De uma diferente forma. Então, olha só. Que legal.
+
+
+1612
+02:08:32.546 --> 02:08:36.546
+Se eu abrir aqui. ó.
+
+
+1613
+02:08:36.546 --> 02:08:38.546
+Desk.
+
+
+1614
+02:08:38.546 --> 02:09:07.546
+Mesh.
+
+
+1615
+02:09:07.546 --> 02:09:15.546
+Isso é novo também. Tá.
+
+
+1616
+02:09:15.546 --> 02:09:19.546
+Selecionei recentemente no Task Spec.
+
+
+1617
+02:09:19.546 --> 02:09:22.546
+Por quê? Porque.
+
+
+1618
+02:09:22.546 --> 02:09:25.546
+Só quem tem essa capacidade de executar dentro de um loop realmente.
+
+
+1619
+02:09:25.546 --> 02:09:29.546
+é o converge. Então, se a gente for olhar aqui, o converge.
+
+
+1620
+02:09:29.546 --> 02:09:36.546
+Converge no passo no último passo dele, que é o passo oito. Tá vendo?
+
+
+1621
+02:09:36.546 --> 02:09:40.546
+Ele vai executar isso no loop.
+
+
+1622
+02:09:40.546 --> 02:09:45.546
+Mas o Task Spec não tinha isso configurado.
+
+
+1623
+02:09:45.546 --> 02:09:46.546
+Então.
+
+
+1624
+02:09:46.546 --> 02:09:48.546
+Eu trouxe o Taskmash.
+
+
+1625
+02:09:48.546 --> 02:09:54.546
+Justamente para possibilitar que quando eu abrir open source, o task Spec.
+
+
+1626
+02:09:54.546 --> 02:09:59.546
+Ele já tem a China de looping.
+
+
+1627
+02:09:59.546 --> 02:10:02.546
+Então foi por causa disso? Só para vocês entenderem porquê?
+
+
+1628
+02:10:02.546 --> 02:10:04.546
+Então, quando a gente usa o, converge.
+
+
+1629
+02:10:04.546 --> 02:10:08.546
+Eu não preciso usar.
+
+
+1630
+02:10:08.546 --> 02:10:13.546
+O Taskmash? Porque eu já estou usando o próprio mecanismo de loop dele.
+
+
+1631
+02:10:13.546 --> 02:10:17.546
+Eu converge. Mas se eu tiver. Só utilizando Task Spec, por exemplo.
+
+
+1632
+02:10:17.546 --> 02:10:25.546
+Apostas altas que mexe para isso.
+
+
+1633
+02:10:25.546 --> 02:10:27.546
+Bidia aqui. Uma explicação.
+
+
+1634
+02:10:27.546 --> 02:10:30.546
+Do que é o Taskmash.
+
+
+1635
+02:10:30.546 --> 02:10:48.546
+Ele vai explicar aqui, rapidinho. O que que.
+
+
+1636
+02:10:48.546 --> 02:10:50.546
+Gente. Ficou. Alguma dúvida?
+
+
+1637
+02:10:50.546 --> 02:10:54.546
+Na decomposição das tarefas.
+
+
+1638
+02:10:54.546 --> 02:10:59.546
+Quer ser a parte mais importante de terça. E quarto é entender. Decomposição.
+
+
+1639
+02:10:59.546 --> 02:11:02.546
+Porque, como.
+
+
+1640
+02:11:02.546 --> 02:11:04.546
+Basicamente entender o Task.
+
+
+1641
+02:11:04.546 --> 02:11:06.546
+E o. Sim Wise.
+
+
+1642
+02:11:06.546 --> 02:11:08.546
+Que é parte do Conglomerado.
+
+
+1643
+02:11:08.546 --> 02:11:14.546
+Pode perguntar. André.
+
+
+1644
+02:11:14.546 --> 02:11:19.546
+Well tá me escutando bem.
+
+
+1645
+02:11:19.546 --> 02:11:20.546
+Hello.
+
+
+1646
+02:11:20.546 --> 02:11:22.546
+Estou a descontar.
+
+
+1647
+02:11:22.546 --> 02:11:28.546
+Tô te escutando. Bem.
+
+
+1648
+02:11:28.546 --> 02:11:29.546
+Agora. Sim.
+
+
+1649
+02:11:29.546 --> 02:11:30.546
+Opa eh, one.
+
+
+1650
+02:11:30.546 --> 02:11:43.546
+Vamos lá deixa eu talvez, eu volte um pouquinho atrás mas eu preciso só entender um detalhe que nem você comentou né, que beleza você não é programador java.
+
+
+1651
+02:11:43.546 --> 02:12:00.546
+Ok você colocou na definição do, projeto exatamente para a gente poder sair. Da zona de conforto mas a minha curiosidade é referente à enjoying que você colocou no lugar do, air flow que ser.
+
+
+1652
+02:12:00.546 --> 02:12:01.546
+Knightstein.
+
+
+1653
+02:12:01.546 --> 02:12:11.546
+Esqueci o nome dela isso daxster como que você, programou para que converge soubesse, lidar com daxster.
+
+
+1654
+02:12:11.546 --> 02:12:18.546
+Em, que momento em, que você criou, esse especialista, em que momento em, que o projeto.
+
+
+1655
+02:12:18.546 --> 02:12:19.546
+Boa, boa.
+
+
+1656
+02:12:19.546 --> 02:12:27.546
+Digamos, que eu quero tecnologia, xpto no lugar do daxter em que momento você. Fez isso para que tivesse essa victory na sua arquitetura.
+
+
+1657
+02:12:27.546 --> 02:12:36.546
+Boa pergunta. Tá? Então, por exemplo, quando eu defini minha feature.
+
+
+1658
+02:12:36.546 --> 02:12:44.546
+Então vamos pegar aqui, por exemplo, vamos abrir o modem. Desculpa, vamos abrir aqui.
+
+
+1659
+02:12:44.546 --> 02:12:49.546
+Plans modem. Então, quando eu estava definindo o que seria falado em cada um deles.
+
+
+1660
+02:12:49.546 --> 02:12:52.546
+E de pipeline moderna.
+
+
+1661
+02:12:52.546 --> 02:12:55.546
+Eu comecei a falar das camadas, né?
+
+
+1662
+02:12:55.546 --> 02:12:59.546
+Então, se você pensar um pouquinho nas camadas de um pipeline de dados.
+
+
+1663
+02:12:59.546 --> 02:13:02.546
+Basicamente, a gente sempre vai ter esse.
+
+
+1664
+02:13:02.546 --> 02:13:05.546
+Esse misto aqui, né? Tipo.
+
+
+1665
+02:13:05.546 --> 02:13:10.546
+Aqui é ingestão.
+
+
+1666
+02:13:10.546 --> 02:13:14.546
+Iq. Processamento.
+
+
+1667
+02:13:14.546 --> 02:13:19.546
+Aqui é servem.
+
+
+1668
+02:13:19.546 --> 02:13:20.546
+Basicamente falando, tá.
+
+
+1669
+02:13:20.546 --> 02:13:23.546
+E que é sério.
+
+
+1670
+02:13:23.546 --> 02:13:27.546
+E aí, toda vez que você olha para uma arquitetura dessa forma.
+
+
+1671
+02:13:27.546 --> 02:13:33.546
+Que você sempre tem aqui. Para coordenar esses caras. E para orquestrar esses caras, né?
+
+
+1672
+02:13:33.546 --> 02:13:37.546
+Você tem.
+
+
+1673
+02:13:37.546 --> 02:13:42.546
+Você tem uma camada de orquestração.
+
+
+1674
+02:13:42.546 --> 02:13:47.546
+Também. E essa camada de orquestração toma conta. Basicamente.
+
+
+1675
+02:13:47.546 --> 02:13:55.546
+Do rolê todo. Então ela vai ser responsável por orquestrar esse pipeline, garantir que ele rode e assim por diante.
+
+
+1676
+02:13:55.546 --> 02:13:57.546
+Vou chegar aqui e vou botar Orchestration.
+
+
+1677
+02:13:57.546 --> 02:14:02.546
+E aí o que acontece? O que a gente está usando para, por exemplo, a ingestão. Quando a gente olha pô.
+
+
+1678
+02:14:02.546 --> 02:14:08.546
+Estão utilizando.
+
+
+1679
+02:14:08.546 --> 02:14:10.546
+Dlt.
+
+
+1680
+02:14:10.546 --> 02:14:13.546
+O que está usando para o processamento.
+
+
+1681
+02:14:13.546 --> 02:14:15.546
+Teoricamente, Dbt.
+
+
+1682
+02:14:15.546 --> 02:14:18.546
+O que a gente está utilizando para serve.
+
+
+1683
+02:14:18.546 --> 02:14:21.546
+Dark, Tb.
+
+
+1684
+02:14:21.546 --> 02:14:24.546
+E aí sobra nosso querido.
+
+
+1685
+02:14:24.546 --> 02:14:26.546
+Orquestração.
+
+
+1686
+02:14:26.546 --> 02:14:28.546
+Quando a gente olha para a orquestração.
+
+
+1687
+02:14:28.546 --> 02:14:31.546
+Nós temos algo que assim.
+
+
+1688
+02:14:31.546 --> 02:14:34.546
+A gente sabe que é o mais utilizado do mercado.
+
+
+1689
+02:14:34.546 --> 02:14:39.546
+Careflow.
+
+
+1690
+02:14:39.546 --> 02:14:43.546
+Super utilizado no mercado.
+
+
+1691
+02:14:43.546 --> 02:14:46.546
+Só que. Por que eu quis trazer o Daxster.
+
+
+1692
+02:14:46.546 --> 02:14:49.546
+Porque o Eflow.
+
+
+1693
+02:14:49.546 --> 02:14:58.546
+Como eu posso dizer isso? E eu sou um Mvp Gflow. Como que eu posso dizer isso?
+
+
+1694
+02:14:58.546 --> 02:15:04.546
+E na questão da escolha não eu queria, só entender na arquitetura agêntica.
+
+
+1695
+02:15:04.546 --> 02:15:21.546
+Em que momento o agente passou a conhecer o daxter passou a saber as melhores práticas de programação daxter, a melhor arquitetura de aplicação do daxter em que momento esse conhecimento de daxter.
+
+
+1696
+02:15:21.546 --> 02:15:22.546
+Aqui. ó Aham!
+
+
+1697
+02:15:22.546 --> 02:15:24.546
+Entrou no rolê.
+
+
+1698
+02:15:24.546 --> 02:15:25.546
+Entrou no rolê aqui.
+
+
+1699
+02:15:25.546 --> 02:15:27.546
+Foi o test flow, foi o converge em que. Momento.
+
+
+1700
+02:15:27.546 --> 02:15:31.546
+Foi o Task Spec. Então, exatamente. Boa pergunta.
+
+
+1701
+02:15:31.546 --> 02:15:40.546
+Quando o Task Spec entra em ação, ele criou a tarefa aqui. Vamos pegar a gente. Ainda não tem a Tarefa Do Dax Mas Vamos Pegar O Dlt Também Que é Completamente.
+
+
+1702
+02:15:40.546 --> 02:15:42.546
+Normal, image, né.
+
+
+1703
+02:15:42.546 --> 02:15:44.546
+Então, o que que acontece.
+
+
+1704
+02:15:44.546 --> 02:15:46.546
+Ele tem aqui toda a explicação.
+
+
+1705
+02:15:46.546 --> 02:15:57.546
+Aí. Ele tem um objetivo: executar o Dlt Register, blá, blá, blá. Ele tem um contexto do que é o comportamento.
+
+
+1706
+02:15:57.546 --> 02:15:59.546
+Quando o Task Spec.
+
+
+1707
+02:15:59.546 --> 02:16:01.546
+Pega essa tarefa.
+
+
+1708
+02:16:01.546 --> 02:16:04.546
+E ele vai executar essa tarefa.
+
+
+1709
+02:16:04.546 --> 02:16:07.546
+Ele passa com o texto que ele precisa. Do quê?
+
+
+1710
+02:16:07.546 --> 02:16:13.546
+De um agente especialista para implementar aquela tarefa específica.
+
+
+1711
+02:16:13.546 --> 02:16:17.546
+Então, quando eu faço launching desse agente.
+
+
+1712
+02:16:17.546 --> 02:16:20.546
+Ele vai vir com o conhecimento do Dlt.
+
+
+1713
+02:16:20.546 --> 02:16:27.546
+E se você tiver os Mcps disponíveis aqui automaticamente por debaixo dos panos? Eu já uso o hexa.
+
+
+1714
+02:16:27.546 --> 02:16:33.546
+Ou Taville ou Context Seven. Basicamente, todos que pegam contextos externos.
+
+
+1715
+02:16:33.546 --> 02:16:37.546
+E ele vai lá. Pega as informações em tempo real.
+
+
+1716
+02:16:37.546 --> 02:16:48.546
+Do que ele precisa saber para escrever essa tarefa. E ele escreve essa tarefa com contexto mais atualizado. Então, quem Faz Isso é O Task Spec.
+
+
+1717
+02:16:48.546 --> 02:16:56.546
+Toda vez que ele, vai executar ele busca ele não faz que nem o processo, anterior que gerava uma, base de conhecimento.
+
+
+1718
+02:16:56.546 --> 02:16:58.546
+Toda vez, exatamente.
+
+
+1719
+02:16:58.546 --> 02:17:02.546
+Toda vez aqui. Eu não gero base de conhecimento mais.
+
+
+1720
+02:17:02.546 --> 02:17:05.546
+E aí a pergunta é: aonde eu vou pagar, né.
+
+
+1721
+02:17:05.546 --> 02:17:08.546
+Antigamente, eu tinha uma base de conhecimento que fazia isso.
+
+
+1722
+02:17:08.546 --> 02:17:14.546
+Só que. Qual o problema? A base ficava desatualizada muito rapidamente.
+
+
+1723
+02:17:14.546 --> 02:17:22.546
+Então eu comecei a pedir para o File Crow, para o ex ou assim por diante. Para buscar essa informação, Onde é O Calcanhar De Aquiles Você Vai Ter Um Gasto Maior.
+
+
+1724
+02:17:22.546 --> 02:17:26.546
+Agora, o que eu faço na verdade, é isso aqui.
+
+
+1725
+02:17:26.546 --> 02:17:28.546
+Eu primeiro vou no Contex. Seven.
+
+
+1726
+02:17:28.546 --> 02:17:33.546
+E o Contex Seven é de graça.
+
+
+1727
+02:17:33.546 --> 02:17:36.546
+Então eu vou no Tier automaticamente aqui.
+
+
+1728
+02:17:36.546 --> 02:17:39.546
+Nesse cara.
+
+
+1729
+02:17:39.546 --> 02:17:45.546
+Well, ele é frio. Está vendo? Se for um repositório público, o que geralmente é, né?
+
+
+1730
+02:17:45.546 --> 02:17:50.546
+Ele vai estar aqui. Ele vai conseguir vir aqui? Sei lá, Dagester.
+
+
+1731
+02:17:50.546 --> 02:17:54.546
+Pesquisar. Caíno Darkste.
+
+
+1732
+02:17:54.546 --> 02:17:57.546
+E pegar, né?
+
+
+1733
+02:17:57.546 --> 02:18:06.546
+O conteúdo mais recente do da.
+
+
+1734
+02:18:06.546 --> 02:18:09.546
+Are aí você está pagando o risco da peculiaridade.
+
+
+1735
+02:18:09.546 --> 02:18:19.546
+Se. Por, acaso no seu projeto estiver com o dark tv, são? Xpto você está pagando esse risco.
+
+
+1736
+02:18:19.546 --> 02:18:20.546
+Tá.
+
+
+1737
+02:18:20.546 --> 02:18:22.546
+Afinal das contas, eu quero a tarefa executada.
+
+
+1738
+02:18:22.546 --> 02:18:25.546
+Nesse conceito aqui, mas, sim, eu estou pagando esse risco.
+
+
+1739
+02:18:25.546 --> 02:18:31.546
+Se ele não achar, ele pode escrever uma forma menos atualizada.
+
+
+1740
+02:18:31.546 --> 02:18:34.546
+Da do, por exemplo, daxer.
+
+
+1741
+02:18:34.546 --> 02:18:36.546
+Sim, ele pode.
+
+
+1742
+02:18:36.546 --> 02:18:37.546
+Diferentemente. Por exemplo.
+
+
+1743
+02:18:37.546 --> 02:18:40.546
+O alucinar um bug né.
+
+
+1744
+02:18:40.546 --> 02:18:41.546
+Eu acho difícil.
+
+
+1745
+02:18:41.546 --> 02:18:43.546
+Que ainda tem esse detalhe que.
+
+
+1746
+02:18:43.546 --> 02:18:49.546
+Tem um detalhe que que eu acho até interessante claro no serviço.
+
+
+1747
+02:18:49.546 --> 02:19:01.546
+Atualizações novas, updates novos bugs, novos.
+
+
+1748
+02:19:01.546 --> 02:19:02.546
+Com certeza. Com certeza.
+
+
+1749
+02:19:02.546 --> 02:19:04.546
+Então você está pagando pelo desconhecido que pode ser que no seu projeto você está inserindo um bug que ainda não foi depurado ou seja.
+
+
+1750
+02:19:04.546 --> 02:19:09.546
+Enjoy ainda não está maturado o suficiente para o projeto, em produção.
+
+
+1751
+02:19:09.546 --> 02:19:16.546
+Isso é uma das coisas que eu meio que vou falar, que eu sinto falta, porque eu ainda não tive uma diferença.
+
+
+1752
+02:19:16.546 --> 02:19:21.546
+De ter conseguido com agentes Spec não ter conseguido com converge, mas.
+
+
+1753
+02:19:21.546 --> 02:19:26.546
+Definitivamente eu posso uma hora ter um problema por causa disso.
+
+
+1754
+02:19:26.546 --> 02:19:29.546
+Mas aí que tá, né, André? O que? Que acontece.
+
+
+1755
+02:19:29.546 --> 02:19:32.546
+Ele não só executa a tarefa, né?
+
+
+1756
+02:19:32.546 --> 02:19:38.546
+Ele precisa executar duas coisas muito densas aqui.
+
+
+1757
+02:19:38.546 --> 02:19:40.546
+Ele precisa executar todos os Evol.
+
+
+1758
+02:19:40.546 --> 02:19:43.546
+Que são pelo menos dois.
+
+
+1759
+02:19:43.546 --> 02:19:45.546
+E ele precisa validar.
+
+
+1760
+02:19:45.546 --> 02:19:47.546
+Esse cartão.
+
+
+1761
+02:19:47.546 --> 02:19:49.546
+Então ele precisa executar o Evol verde.
+
+
+1762
+02:19:49.546 --> 02:19:54.546
+E ele precisa ter um cartão de validade que fala. Pô, beleza. Deixa eu a Ln entender esse.
+
+
+1763
+02:19:54.546 --> 02:19:56.546
+Esse ball que fez.
+
+
+1764
+02:19:56.546 --> 02:19:59.546
+Realmente faz sentido para isso.
+
+
+1765
+02:19:59.546 --> 02:20:04.546
+Então ele precisa passar por esses dois. Então, se por algum acaso ele escreveu alguma coisa que é alucinar aqui.
+
+
+1766
+02:20:04.546 --> 02:20:08.546
+A ideia é que o Ivol pegue esse problema.
+
+
+1767
+02:20:08.546 --> 02:20:09.546
+A ideia é, mas pode acontecer.
+
+
+1768
+02:20:09.546 --> 02:20:13.546
+No and thank you.
+
+
+1769
+02:20:13.546 --> 02:20:26.546
+Não entendi é por causa que é que nem as, distribuições você tem, hoje você tem as linux rolin release que está sempre atualizado e você tem as de.
+
+
+1770
+02:20:26.546 --> 02:20:47.546
+As distribuições que são? Suportadas até x tempos, que elas, não estão sendo.
+
+
+1771
+02:20:47.546 --> 02:20:48.546
+Isso.
+
+
+1772
+02:20:48.546 --> 02:20:53.546
+Apesar direta então você optou pelo rolling releases ou seja você sempre vai estar atualizado e com seus, guarde reis para que para o processo, que você quer ele tenha a qualidade contudo numa organização você vai ter a equipe de segurança.
+
+
+1773
+02:20:53.546 --> 02:21:00.546
+Que vai ficar te dando porrada nos dando porrada que você está usando uma coisa que pode ter uma, brecha de segurança.
+
+
+1774
+02:21:00.546 --> 02:21:03.546
+Verdade. Com certeza.
+
+
+1775
+02:21:03.546 --> 02:21:17.546
+No bacana já esclareceu era uma coisa que eu estava tentando enxergar e não consegui enxergar de jeito, de jeito, nenhum, aonde aonde foi, criado esse especialista, como que ele pegou esse conhecimento.
+
+
+1776
+02:21:17.546 --> 02:21:19.546
+Então é tudo quando ele vai executar depois que faz as task.
+
+
+1777
+02:21:19.546 --> 02:21:23.546
+Sim, isso. Exatamente.
+
+
+1778
+02:21:23.546 --> 02:21:29.546
+Beleza. Olha só aqui. O que é o Taskmash, né?
+
+
+1779
+02:21:29.546 --> 02:21:58.546
+Acho que não vai dar para ver aqui. Porque está pequenininho. Tá.
+
+
+1780
+02:21:58.546 --> 02:22:01.546
+Ele faz o seguinte. Ele pega a intenção.
+
+
+1781
+02:22:01.546 --> 02:22:05.546
+Cria. O plano gera.
+
+
+1782
+02:22:05.546 --> 02:22:08.546
+Atividade atômica.
+
+
+1783
+02:22:08.546 --> 02:22:13.546
+Dá um stamp nessa tarefa, né? Assina essa tarefa.
+
+
+1784
+02:22:13.546 --> 02:22:18.546
+E aí eu passo para o Taskmash. O que Taskmash faz.
+
+
+1785
+02:22:18.546 --> 02:22:23.546
+Ele olha automaticamente para o seu ambiente. Que você tem.
+
+
+1786
+02:22:23.546 --> 02:22:31.546
+Se você está local e vai olhar local. Se ele está dentro de um container, ele vai olhar container.
+
+
+1787
+02:22:31.546 --> 02:22:37.546
+E o que ele faz, né?
+
+
+1788
+02:22:37.546 --> 02:22:41.546
+Ele usa a Engine que você tem disponível.
+
+
+1789
+02:22:41.546 --> 02:22:45.546
+Então ele já é aware de codecs.
+
+
+1790
+02:22:45.546 --> 02:22:50.546
+De cloud de Grock e de um ipad.
+
+
+1791
+02:22:50.546 --> 02:22:56.546
+Então, se você tiver qualquer uma delas ali, ele vai reconhecer isso para você. E na hora da criação.
+
+
+1792
+02:22:56.546 --> 02:23:00.546
+Ele vai falar para você. Qual é a higiene que você quer executar? Essas tarefas?
+
+
+1793
+02:23:00.546 --> 02:23:05.546
+Por tipo que você quer executar. Você pode ter uma tabela de configuração que fala.
+
+
+1794
+02:23:05.546 --> 02:23:10.546
+Pô as tarefas. Small, eu quero executar nesse modelo as mídias. Eu quero executar nesse modelo.
+
+
+1795
+02:23:10.546 --> 02:23:14.546
+As lives. Eu quero dizer que está nesse modelo.
+
+
+1796
+02:23:14.546 --> 02:23:18.546
+Então ele vai dividir isso para você.
+
+
+1797
+02:23:18.546 --> 02:23:22.546
+Então, por exemplo.
+
+
+1798
+02:23:22.546 --> 02:23:24.546
+Como ele faria, né?
+
+
+1799
+02:23:24.546 --> 02:23:30.546
+Esse processo. Deixa eu mostrar aqui.
+
+
+1800
+02:23:30.546 --> 02:23:35.546
+O Flow Chart.
+
+
+1801
+02:23:35.546 --> 02:23:43.546
+Oh, meu filho. Mostra aqui, por favor.
+
+
+1802
+02:23:43.546 --> 02:23:48.546
+é que eu não quero o interno? Não que o interno é meio tenso de entender.
+
+
+1803
+02:23:48.546 --> 02:23:53.546
+Eu quero aqui!
+
+
+1804
+02:23:53.546 --> 02:23:57.546
+Ah, yes, okay.
+
+
+1805
+02:23:57.546 --> 02:23:59.546
+Deixa eu ver se ele.
+
+
+1806
+02:23:59.546 --> 02:24:25.546
+She terminar de montar aqui. Isso aqui é legal.
+
+
+1807
+02:24:25.546 --> 02:24:29.546
+Você desenhou e sumiu, amigo.
+
+
+1808
+02:24:29.546 --> 02:24:52.546
+Esse aqui, ó que ele não conseguiu compilar.
+
+
+1809
+02:24:52.546 --> 02:24:57.546
+Enquanto isso, ele está aqui, ó cozinhando, né?
+
+
+1810
+02:24:57.546 --> 02:25:27.546
+Executando as tarefas.
+
+
+1811
+02:25:35.546 --> 02:25:51.546
+Let me see faz aqui.
+
+
+1812
+02:25:51.546 --> 02:26:21.546
+Obrigado por não gerar o gráfico.
+
+
+1813
+02:26:23.546 --> 02:26:36.546
+Perderizar o gráfico. Vamos ver se ele consegue. Opa.
+
+
+1814
+02:26:36.546 --> 02:26:43.546
+Então vamos ver.
+
+
+1815
+02:26:43.546 --> 02:26:45.546
+Use in Docs.
+
+
+1816
+02:26:45.546 --> 02:26:47.546
+Tasks.
+
+
+1817
+02:26:47.546 --> 02:26:52.546
+Stage. O que que a gente tem aqui? ó.
+
+
+1818
+02:26:52.546 --> 02:26:57.546
+Ses tarefas.
+
+
+1819
+02:26:57.546 --> 02:27:02.546
+Sete completas. Nada em progresso bloqueado. Dor, enfim.
+
+
+1820
+02:27:02.546 --> 02:27:08.546
+Foram trabalhadas, quais foram esforços.
+
+
+1821
+02:27:08.546 --> 02:27:13.546
+Todas, Small. Gosto.
+
+
+1822
+02:27:13.546 --> 02:27:16.546
+Então, se a gente vier aqui, ó.
+
+
+1823
+02:27:16.546 --> 02:27:21.546
+Ah.
+
+
+1824
+02:27:21.546 --> 02:27:25.546
+It's in my camp.
+
+
+1825
+02:27:25.546 --> 02:27:29.546
+A mentira que você quebrou de novo.
+
+
+1826
+02:27:29.546 --> 02:27:31.546
+Tá zoando, velho.
+
+
+1827
+02:27:31.546 --> 02:27:33.546
+Que imaginou.
+
+
+1828
+02:27:33.546 --> 02:27:37.546
+Obrigado de novo. Você.
+
+
+1829
+02:27:37.546 --> 02:27:41.546
+Não perguntar para o cloud.
+
+
+1830
+02:27:41.546 --> 02:27:47.546
+Se você vai quebrar ou não.
+
+
+1831
+02:27:47.546 --> 02:27:50.546
+Ainda botei no Fable. Só porque.
+
+
+1832
+02:27:50.546 --> 02:27:53.546
+Tô com raiva.
+
+
+1833
+02:27:53.546 --> 02:27:57.546
+Mas um D aqui Modern.
+
+
+1834
+02:27:57.546 --> 02:27:59.546
+Ingestam.
+
+
+1835
+02:27:59.546 --> 02:28:01.546
+Src.
+
+
+1836
+02:28:01.546 --> 02:28:05.546
+North Windpay, Types Card.
+
+
+1837
+02:28:05.546 --> 02:28:06.546
+A gente. Tive do pausser, né?
+
+
+1838
+02:28:06.546 --> 02:28:11.546
+Ao modelo.
+
+
+1839
+02:28:11.546 --> 02:28:13.546
+Beleza.
+
+
+1840
+02:28:13.546 --> 02:28:19.546
+Esquema.
+
+
+1841
+02:28:19.546 --> 02:28:22.546
+Writer! ó.
+
+
+1842
+02:28:22.546 --> 02:28:28.546
+Pie Arrow. Pai era o parquê maravilhoso atualizado.
+
+
+1843
+02:28:28.546 --> 02:28:31.546
+Muito bom.
+
+
+1844
+02:28:31.546 --> 02:28:34.546
+Handler, que é o principal, que é o que chama.
+
+
+1845
+02:28:34.546 --> 02:28:37.546
+Beleza. ótimo, tudo escrito.
+
+
+1846
+02:28:37.546 --> 02:29:03.546
+E aí requirements. Pai, era o.
+
+
+1847
+02:29:03.546 --> 02:29:09.546
+Entre vinte e um e vinte e três. Tá vendo? Não pegou cem atualizado.
+
+
+1848
+02:29:09.546 --> 02:29:16.546
+Mas provavelmente pegou estável.
+
+
+1849
+02:29:16.546 --> 02:29:19.546
+Olha aí o Fable aí. Sim, hein, Fable.
+
+
+1850
+02:29:19.546 --> 02:29:22.546
+Me matou de.
+
+
+1851
+02:29:22.546 --> 02:29:25.546
+Matou de orgulho. Irmão.
+
+
+1852
+02:29:25.546 --> 02:29:29.546
+Go. O que o Taskmash faz, né.
+
+
+1853
+02:29:29.546 --> 02:29:34.546
+Ele verifica as engines que você tem. Ele tem um shein aqui que é.
+
+
+1854
+02:29:34.546 --> 02:29:37.546
+é um Jaime bem fina.
+
+
+1855
+02:29:37.546 --> 02:29:41.546
+Que verifica.
+
+
+1856
+02:29:41.546 --> 02:29:44.546
+Daí. Ele tem um Demon.
+
+
+1857
+02:29:44.546 --> 02:29:48.546
+Em gol que registra as atividades para você.
+
+
+1858
+02:29:48.546 --> 02:29:52.546
+Daí. Ele faz o dispatching, diz: Faz o leasing.
+
+
+1859
+02:29:52.546 --> 02:29:54.546
+E daí você escolhe qual.
+
+
+1860
+02:29:54.546 --> 02:29:57.546
+De forma nativa que você quer executar.
+
+
+1861
+02:29:57.546 --> 02:29:59.546
+Ele executa isso.
+
+
+1862
+02:29:59.546 --> 02:30:02.546
+Cria.
+
+
+1863
+02:30:02.546 --> 02:30:04.546
+Cria um Work Tree.
+
+
+1864
+02:30:04.546 --> 02:30:09.546
+Faz, executa, fecha, move, faz um Branch.
+
+
+1865
+02:30:09.546 --> 02:30:14.546
+Faz o Merge dentro da faz. Cria um pull request.
+
+
+1866
+02:30:14.546 --> 02:30:17.546
+Manda para você e depois finaliza.
+
+
+1867
+02:30:17.546 --> 02:30:23.546
+é isso que o Taskmash faz.
+
+
+1868
+02:30:23.546 --> 02:30:26.546
+Então está aqui em Gestão.
+
+
+1869
+02:30:26.546 --> 02:30:29.546
+Lake House, Dlt.
+
+
+1870
+02:30:29.546 --> 02:30:34.546
+Então aqui eu tenho.
+
+
+1871
+02:30:34.546 --> 02:30:37.546
+Em gestão.
+
+
+1872
+02:30:37.546 --> 02:30:41.546
+Dt. Ductb.
+
+
+1873
+02:30:41.546 --> 02:30:43.546
+Beleza.
+
+
+1874
+02:30:43.546 --> 02:30:46.546
+Porque Landing.
+
+
+1875
+02:30:46.546 --> 02:30:50.546
+Drop Registra.
+
+
+1876
+02:30:50.546 --> 02:30:57.546
+Você attachment nos arquivos. Tencionamento.
+
+
+1877
+02:30:57.546 --> 02:31:02.546
+Execução. Pet.
+
+
+1878
+02:31:02.546 --> 02:31:05.546
+E a gente tem um Dlt.
+
+
+1879
+02:31:05.546 --> 02:31:10.546
+Com bronze, Silver e Gold.
+
+
+1880
+02:31:10.546 --> 02:31:14.546
+O bronze. Definição das colunas.
+
+
+1881
+02:31:14.546 --> 02:31:18.546
+A Query.
+
+
+1882
+02:31:18.546 --> 02:31:21.546
+Silve.
+
+
+1883
+02:31:21.546 --> 02:31:25.546
+Query.
+
+
+1884
+02:31:25.546 --> 02:31:27.546
+Definição.
+
+
+1885
+02:31:27.546 --> 02:31:30.546
+Gold.
+
+
+1886
+02:31:30.546 --> 02:31:32.546
+Beleza.
+
+
+1887
+02:31:32.546 --> 02:31:38.546
+Se está funcionando, a gente vai saber na quinta feira, porque a gente vai ver o que está o processo Inteiro Mas O Que Eu Queria Mostrar Aqui.
+
+
+1888
+02:31:38.546 --> 02:31:45.546
+A gente tem basicamente a mesma ideia que a gente já viu. Que a gente trabalhou com Spectrum Development, que Foi A Gente Foi Decompondo.
+
+
+1889
+02:31:45.546 --> 02:31:48.546
+Até, de fato, a higiene criar.
+
+
+1890
+02:31:48.546 --> 02:31:51.546
+Esse cara.
+
+
+1891
+02:31:51.546 --> 02:31:54.546
+O requisito do claudinho já foi melhor.
+
+
+1892
+02:31:54.546 --> 02:31:58.546
+Eu acredito. O pai era o vinte e cinco um.
+
+
+1893
+02:31:58.546 --> 02:32:01.546
+We go, hein.
+
+
+1894
+02:32:01.546 --> 02:32:12.546
+O mais recente.
+
+
+1895
+02:32:12.546 --> 02:32:15.546
+Então a gente viu uma Steel Thread.
+
+
+1896
+02:32:15.546 --> 02:32:21.546
+Que basicamente fizemos o pedaço um.
+
+
+1897
+02:32:21.546 --> 02:32:23.546
+A gente vai fazer amanhã.
+
+
+1898
+02:32:23.546 --> 02:32:29.546
+Como esse processo entra no loop. Então, por exemplo, a gente fez a primeira parte do processo.
+
+
+1899
+02:32:29.546 --> 02:32:32.546
+Certo? Agora imagina que você tem uma fábrica.
+
+
+1900
+02:32:32.546 --> 02:32:36.546
+Que recebe requisito constantemente.
+
+
+1901
+02:32:36.546 --> 02:32:38.546
+O que a gente vai fazer amanhã.
+
+
+1902
+02:32:38.546 --> 02:32:41.546
+Colocar isso no processo constante dentro de um loop.
+
+
+1903
+02:32:41.546 --> 02:32:44.546
+Quem vai tomar conta disso? Converge.
+
+
+1904
+02:32:44.546 --> 02:32:51.546
+Então a gente vai literalmente se comportar como orquestrador amanhã. Como ai engineer.
+
+
+1905
+02:32:51.546 --> 02:32:53.546
+Vou verificar como que a gente consegue.
+
+
+1906
+02:32:53.546 --> 02:32:55.546
+Padronizar isso.
+
+
+1907
+02:32:55.546 --> 02:32:58.546
+Então a gente tem um Dlt para trazer informação.
+
+
+1908
+02:32:58.546 --> 02:33:01.546
+Bronze sever para arrumar o dado.
+
+
+1909
+02:33:01.546 --> 02:33:09.546
+A taxar essa informação dentro da evidência que a gente vai fazer para comparar essas informações. Depois com o legado E Com O Moderno.
+
+
+1910
+02:33:09.546 --> 02:33:16.546
+A gente vai ter o Golden Match para garantir que esse dado está correto. Graças a Deus. A gente tem isso.
+
+
+1911
+02:33:16.546 --> 02:33:20.546
+E amanhã a gente vai executar tudo em paralelo.
+
+
+1912
+02:33:20.546 --> 02:33:23.546
+Dois, três, quatro.
+
+
+1913
+02:33:23.546 --> 02:33:27.546
+E cinco, a gente vai executar todas essas traduções em paralelo.
+
+
+1914
+02:33:27.546 --> 02:33:32.546
+Beleza. Eu deixei algumas perguntas para vocês aqui.
+
+
+1915
+02:33:32.546 --> 02:33:34.546
+Para vocês fazerem.
+
+
+1916
+02:33:34.546 --> 02:33:36.546
+Sobre bagster que a gente vai trabalhar.
+
+
+1917
+02:33:36.546 --> 02:33:39.546
+Sobre a informação de.
+
+
+1918
+02:33:39.546 --> 02:33:46.546
+De tipos diferentes que a gente vai trabalhar, porque cada tipo tem uma forma diferente de trabalhar.
+
+
+1919
+02:33:46.546 --> 02:33:49.546
+E eu quero que vocês pesquisem. Invistam, né?
+
+
+1920
+02:33:49.546 --> 02:33:53.546
+Amanhã vai ser um dia de looping que vai vir com um bocado de conteúdo novo.
+
+
+1921
+02:33:53.546 --> 02:33:58.546
+E principalmente, vai mostrar para vocês como que vocês vão ligar a fábrica.
+
+
+1922
+02:33:58.546 --> 02:34:00.546
+Já no estilo semiautônomo.
+
+
+1923
+02:34:00.546 --> 02:34:03.546
+Tá.
+
+
+1924
+02:34:03.546 --> 02:34:07.546
+Então eu recomendo vocês fazerem isso.
+
+
+1925
+02:34:07.546 --> 02:34:13.546
+Beleza. E aí deu pra solidificar. Hoje, a ideia é solidificar a execução.
+
+
+1926
+02:34:13.546 --> 02:34:17.546
+Do nosso Framework deu para ficar solidificado.
+
+
+1927
+02:34:17.546 --> 02:34:21.546
+Eu sei que tem várias lacunas ainda, mas amanhã a gente já vê. Execução de tudo.
+
+
+1928
+02:34:21.546 --> 02:34:25.546
+Então lê o requisito, entender todo o processo e passar por ele. Fim a fim.
+
+
+1929
+02:34:25.546 --> 02:34:46.546
+Mas deu pra entender. Aqui me dá aí o cinto.
+
+
+1930
+02:34:46.546 --> 02:34:49.546
+Pelo menos vocês tenham os frameworks, né?
+
+
+1931
+02:34:49.546 --> 02:34:53.546
+Alguns frameworks ficam um pouco mais tranquilo de vocês trabalharem.
+
+
+1932
+02:34:53.546 --> 02:35:00.546
+Beleza. Eu vou terminar um pouco mais cedo hoje. Na verdade, na hora até onze horas. Vou terminar um pouco mais cedo.
+
+
+1933
+02:35:00.546 --> 02:35:03.546
+Porque minha garganta tá assim.
+
+
+1934
+02:35:03.546 --> 02:35:10.546
+Top amanhã. Eu espero dormir bem essa noite. E aí eu volto melhor com a minha garganta, se Deus quiser.
+
+
+1935
+02:35:10.546 --> 02:35:16.546
+E a gente se vê amanhã. Valeu? Eu geralmente não sou de ficar doente. Eu tô ruim hoje.
+
+
+1936
+02:35:16.546 --> 02:35:23.546
+Beleza. Gente, por favor, executem. Tire um tempinho aí para deixar seus agentes executando para chegar no mesmo momento do que eu.
+
+
+1937
+02:35:23.546 --> 02:35:26.546
+Para a gente poder criar o loop juntos. Beleza.
+
+
+1938
+02:35:26.546 --> 02:35:29.290
+Ab.
+
+
+

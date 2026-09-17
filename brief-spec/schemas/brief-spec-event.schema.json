@@ -1,0 +1,67 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/luanmorenommaciel/brief-spec/schemas/brief-spec-event.schema.json",
+  "title": "Brief-Spec bounded material event 1.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version", "event_id", "project_id", "kind", "importance", "access",
+    "occurred_at", "observed_at", "source", "method_context", "headline",
+    "entity_refs", "evidence_ids", "details", "previous_event_hash", "event_hash"
+  ],
+  "properties": {
+    "schema_version": { "const": "brief-spec-event/1.0" },
+    "event_id": { "type": "string", "pattern": "^bse-[0-9a-f]{24}$" },
+    "project_id": { "type": "string", "minLength": 1 },
+    "kind": {
+      "enum": [
+        "INTENT_DECLARED", "INTENT_REVISED", "PLAN_CREATED", "TASK_CREATED",
+        "TASK_STARTED", "TASK_COMPLETED", "TASK_FAILED", "TASK_ACCEPTED",
+        "TASK_REJECTED", "DECISION_REQUESTED", "DECISION_RECORDED",
+        "BLOCKER_RAISED", "BLOCKER_CLEARED", "EVIDENCE_ADDED", "ARTIFACT_CREATED",
+        "DRIFT_DETECTED", "DRIFT_RESOLVED", "LESSON_PROPOSED", "HUMAN_NOTE"
+      ]
+    },
+    "importance": {
+      "enum": ["informational", "notable", "needs-attention", "blocking"]
+    },
+    "access": { "enum": ["local", "private", "public"] },
+    "occurred_at": { "type": "string", "format": "date-time" },
+    "observed_at": { "type": "string", "format": "date-time" },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["system"],
+      "properties": {
+        "system": { "type": "string", "minLength": 1 },
+        "harness": { "type": ["string", "null"] },
+        "adapter_version": { "type": ["string", "null"] },
+        "opaque_ref": { "type": ["string", "null"] },
+        "source_revision": { "type": ["string", "null"] },
+        "provider_event_kind": { "type": ["string", "null"] }
+      }
+    },
+    "method_context": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["method"],
+      "properties": {
+        "method": { "enum": ["general", "seamwise", "task-spec", "converge"] },
+        "phase": { "type": ["string", "null"] },
+        "intent_ref": { "type": ["string", "null"] },
+        "task_ref": { "type": ["string", "null"] },
+        "parent_ref": { "type": ["string", "null"] }
+      }
+    },
+    "headline": { "type": "string", "minLength": 1, "maxLength": 500 },
+    "entity_refs": {
+      "type": "array", "maxItems": 64, "items": { "type": "string" }
+    },
+    "evidence_ids": {
+      "type": "array", "maxItems": 64, "items": { "type": "string" }
+    },
+    "details": { "type": "object" },
+    "previous_event_hash": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "event_hash": { "type": "string", "pattern": "^[0-9a-f]{64}$" }
+  }
+}

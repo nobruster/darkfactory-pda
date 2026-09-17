@@ -1,0 +1,678 @@
+{
+  "candidate_artifacts": {
+    "core_wheel_sha256": "77305f5d5c08504baf3b91eeb5264566aeff74d5e7eb71bbf0dbed0921dff2c2",
+    "path": "release-manifest.json",
+    "sha256": "0aedc4e61157632cfdb17f220a11093d7d12c8e4dd7d91382eb1e7fa66dd431f"
+  },
+  "created_at": "2026-08-13T18:58:38.740399Z",
+  "hosts": {
+    "claude": {
+      "failures": [],
+      "host": "claude",
+      "host_version": "2.1.231 (Claude Code)",
+      "passed": 8,
+      "required": 8,
+      "scenarios": [
+        {
+          "authorized_changes_only": true,
+          "bundle_sha256": "9e6fb94726b88b4877c6e83c7839096268e855f0610810be9cedd1d0bbf7c619",
+          "canonical_sha256": "f9d74ad0aee1192f70048f28a0890fad6be0673cf1a64639de5678896db9023f",
+          "classification_matches": true,
+          "cost_usd": 0.1268937,
+          "delivered": "PASS",
+          "hook_observed": true,
+          "mode": "outcome",
+          "models": [
+            "claude-sonnet-5"
+          ],
+          "rendered": "PASS",
+          "resolved": "PASS",
+          "session_ref_sha256": [
+            "82f55c0c252003799cc3529da082af4c63e21eb562b398ba2d22954f1314dc1c"
+          ],
+          "status": "PASS",
+          "strict_validation": "PASS",
+          "subject": "bug",
+          "work_type": "debugging"
+        },
+        {
+          "authorized_changes_only": true,
+          "bundle_sha256": "446c3e3c92263b41900746e2a05b647348c44f8b2b209a20e332a80d6ab43a8b",
+          "canonical_sha256": "4ddccbe044620efeaff26cfe03d51217b2a86592409c29f0f0c10e4f128c31bc",
+          "classification_matches": true,
+          "cost_usd": 0.1354401,
+          "delivered": "PASS",
+          "hook_observed": true,
+          "mode": "orient",
+          "models": [
+            "claude-sonnet-5"
+          ],
+          "rendered": "PASS",
+          "resolved": "PASS",
+          "session_ref_sha256": [
+            "3cc757b05e5f626ac3cee07e08022c519c643d3ea9da4e1904cbd3126ccb2c12",
+            "4b01d5fd9a049a9f668c02bea230f65f8c00903e57ed6c952678f290948c9ca9",
+            "70c6b4376d5160e1a2e9b04eccc1c43a8fa4c2da2a4723d759fede099314ba79"
+          ],
+          "status": "PASS",
+          "strict_validation": "PASS",
+          "subject": "codebase",
+          "work_type": "exploration"
+        },
+        {
+          "authorized_changes_only": true,
+          "bundle_sha256": "de824bb9930696e33ea157e470bba2b7e698987e2985e6d93c74975128602757",
+          "canonical_sha256": "950d28ff7872b02c2b1b0cd7c65053cf2db37f715acfd7e365ea6df61f46e63a",
+          "classification_matches": true,
+          "cost_usd": 0.08876400000000001,
+          "delivered": "PASS",
+          "hook_observed": true,
+          "mode": "outcome",
+          "models": [
+            "claude-sonnet-5"
+          ],
+          "rendered": "PASS",
+          "resolved": "PASS",
+          "session_ref_sha256": [
+            "af5ae5a812fe927ca4f6b4b7da0b551561196288c03b56dfd5e63e5c8b9953c4"
+          ],
+          "status": "PASS",
+          "strict_validation": "PASS",
+          "subject": "general",
+          "work_type": "general"
+        },
+        {
+          "authorized_changes_only": true,
+          "bundle_sha256": "f04fc801cd6f2298d0da4c3739aff8ae943562ae72cca4cb1e448f209a0d168e",
+          "canonical_sha256": "3eb5bebc9dc9297c84d0379de569ef459601decc29b74af593f9f0d66b69aeaf",
+          "classification_matches": true,
+          "cost_usd": 0.12486599999999999,
+          "delivered": "PASS",
+          "hook_observed": true,
+          "mode": "spoken",
+          "models": [
+            "claude-sonnet-5"
+          ],
+          "rendered": "PASS",
+          "resolved": "PASS",
+          "session_ref_sha256": [
+            "f3e3d5f661a302bf512a56cb2e684b8757a4c964ca87048920b8543a4f394a9a"
+          ],
+          "status": "PASS",
+          "strict_validation": "PASS",
+          "subject": "feature",
+          "work_type": "implementation"
+        },
+        {
+          "authorized_changes_only": true,
+          "bundle_sha256": "9f12df2cdb8cfbc088529d2bee4d6074ca035d80ec9b6c39bb5bed64216e16f6",
+          "canonical_sha256": "7d7d1ede733a14007ff4d1c1644d79df019061b6788194e17baf7831792ca857",
+          "classification_matches": true,
+          "cost_usd": 0.1433892,
+          "delivered": "PASS",
+          "hook_observed": true,
+          "mode": "spoken",
+          "models": [
+            "claude-sonnet-5"
+          ],
+          "rendered": "PASS",
+          "resolved": "PASS",
+          "session_ref_sha256": [
+            "5a779cf583691d75f82951ab413e77652252e1993570a129684a1547af190d17"
+          ],
+          "status": "PASS",
+          "strict_validation": "PASS",
+          "subject": "incident",
+          "work_type": "operations"
+        },
+        {
+          "authorized_changes_only": true,
+          "bundle_sha256": "15dd23845566397a503435a3acd4f3fb77d8d233c4e0f2312a5da5dacb36978d",
+          "canonical_sha256": "8f5f387ff977e23c330138374730c9ce8016f1f7a7662f344a011b07343ef76d",
+          "classification_matches": true,
+          "cost_usd": 0.1135413,
+          "delivered": "PASS",
+          "hook_observed": true,
+          "mode": "orient",
+          "models": [
+            "claude-sonnet-5"
+          ],
+          "rendered": "PASS",
+          "resolved": "PASS",
+          "session_ref_sha256": [
+            "5c6527aed1fa30a0bfa6794158c8b3589b3026b92663427e73854ee54ad80c14"
+          ],
+          "status": "PASS",
+          "strict_validation": "PASS",
+          "subject": "architecture",
+          "work_type": "planning"
+        },
+        {
+          "authorized_changes_only": true,
+          "bundle_sha256": "243546711ef0831ef30fd529e1c7f900c01beff91a870e4a454beff2533d04a5",
+          "canonical_sha256": "281e3abd556e699a66954b1ec0b1ab50d5406cf380128cd90d54c022e42e528d",
+          "classification_matches": true,
+          "cost_usd": 0.1269804,
+          "delivered": "PASS",
+          "hook_observed": true,
+          "mode": "teach",
+          "models": [
+            "claude-sonnet-5"
+          ],
+          "rendered": "PASS",
+          "resolved": "PASS",
+          "session_ref_sha256": [
+            "30d920ce6f314f3ac9c61e397647567d27a4116bd0c106717e8e335504f3f45b"
+          ],
+          "status": "PASS",
+          "strict_validation": "PASS",
+          "subject": "dependency",
+          "work_type": "research"
+        },
+        {
+          "authorized_changes_only": true,
+          "bundle_sha256": "2cbb7e20da173644d73576cf4549942de0ec6e5143fc9ee70e1b790ffbb1f416",
+          "canonical_sha256": "87a87cd3adccead62a3308735ad68df4ad9ff0666d66119f7e10c327ac45d2d4",
+          "classification_matches": true,
+          "cost_usd": 0.1224456,
+          "delivered": "PASS",
+          "hook_observed": true,
+          "mode": "teach",
+          "models": [
+            "claude-sonnet-5"
+          ],
+          "rendered": "PASS",
+          "resolved": "PASS",
+          "session_ref_sha256": [
+            "2976058550e349bae63aeb52bc9ecde685bdb7859c9c72dbdbab33d510218b52"
+          ],
+          "status": "PASS",
+          "strict_validation": "PASS",
+          "subject": "pull-request",
+          "work_type": "review"
+        }
+      ],
+      "status": "PASS",
+      "summary_sha256": "a02a7cc6ea5b228b5b11df7a7194cc7be6dc929176bbb7870d4423905fb0926c"
+    },
+    "codex": {
+      "failures": [],
+      "host": "codex",
+      "host_version": "codex-cli 0.147.0",
+      "passed": 8,
+      "required": 8,
+      "scenarios": [
+        {
+          "authorized_changes_only": true,
+          "bundle_sha256": "3f78893d7bf768e6a4be028c5f74e17aa16adce9fc1253588f5b18846efd0ce1",
+          "canonical_sha256": "edf98f0ca51e751b5b112d1182e7bf69e3a126d255447c43e99bb4485d669dd7",
+          "classification_matches": true,
+          "cost_usd": null,
+          "delivered": "PASS",
+          "hook_observed": true,
+          "mode": "outcome",
+          "models": [],
+          "rendered": "PASS",
+          "resolved": "PASS",
+          "session_ref_sha256": [
+            "ec93c895b4308c3aded07c009bfa540eddfc78e381481e55b02c38b98b63a0a6"
+          ],
+          "status": "PASS",
+          "strict_validation": "PASS",
+          "subject": "bug",
+          "work_type": "debugging"
+        },
+        {
+          "authorized_changes_only": true,
+          "bundle_sha256": "3fa422f607421a70b178a9fc756019aceffe2b0d18a99bb505d2ae19c7c67db0",
+          "canonical_sha256": "b0f078a4e76d3220618b3ae860f28efab30ccae826b57a381ea65a4d4c0007ce",
+          "classification_matches": true,
+          "cost_usd": null,
+          "delivered": "PASS",
+          "hook_observed": true,
+          "mode": "orient",
+          "models": [],
+          "rendered": "PASS",
+          "resolved": "PASS",
+          "session_ref_sha256": [
+            "9d4c5d483ea5cad7f38748cb7ba78080c16fd04e886aeaf312338bbfa6db5d54"
+          ],
+          "status": "PASS",
+          "strict_validation": "PASS",
+          "subject": "codebase",
+          "work_type": "exploration"
+        },
+        {
+          "authorized_changes_only": true,
+          "bundle_sha256": "cdd21a1bbc391c2484e8dcf6e2a6186da58b271f349e7f112e546c0d7cfc28fd",
+          "canonical_sha256": "d36fbcf33a53eef932cd003171884146ea2d631096ce3e537412818b71a94b66",
+          "classification_matches": true,
+          "cost_usd": null,
+          "delivered": "PASS",
+          "hook_observed": true,
+          "mode": "outcome",
+          "models": [],
+          "rendered": "PASS",
+          "resolved": "PASS",
+          "session_ref_sha256": [
+            "83030b70414a91f29907e44b125787da424c1b96745a2d89518232f8d18383d9"
+          ],
+          "status": "PASS",
+          "strict_validation": "PASS",
+          "subject": "general",
+          "work_type": "general"
+        },
+        {
+          "authorized_changes_only": true,
+          "bundle_sha256": "496a27c33626a9660b26aebf2a0bb7c9c93739e885957f7a1ff436b6f209568f",
+          "canonical_sha256": "c2a648032312b2d2721e309dafb0771ad06d704d5e32b7b48a9c66b1dcbb69b5",
+          "classification_matches": true,
+          "cost_usd": null,
+          "delivered": "PASS",
+          "hook_observed": true,
+          "mode": "spoken",
+          "models": [],
+          "rendered": "PASS",
+          "resolved": "PASS",
+          "session_ref_sha256": [
+            "89b6538598de33410ec3e43e22d8bb981c99ebda0783c1820c913cb5fee8e9c0"
+          ],
+          "status": "PASS",
+          "strict_validation": "PASS",
+          "subject": "feature",
+          "work_type": "implementation"
+        },
+        {
+          "authorized_changes_only": true,
+          "bundle_sha256": "320b4746e8141aa81bc87b28eb8f05738de9b0c47aec49eca8a7e9fb7d2246e8",
+          "canonical_sha256": "6329662bd4061c82aff4f6f2dbd3fd96de9da74baf89b3e31ba67ad37366610d",
+          "classification_matches": true,
+          "cost_usd": null,
+          "delivered": "PASS",
+          "hook_observed": true,
+          "mode": "spoken",
+          "models": [],
+          "rendered": "PASS",
+          "resolved": "PASS",
+          "session_ref_sha256": [
+            "d5751e1dbe76a22c7625dcaff594cf74c619070cb10fa48271ce53767d4b276b"
+          ],
+          "status": "PASS",
+          "strict_validation": "PASS",
+          "subject": "incident",
+          "work_type": "operations"
+        },
+        {
+          "authorized_changes_only": true,
+          "bundle_sha256": "4f9f50e41a5f0822e60e69d280f9d20d2d66798144d5d7ea85f4be450c0381f3",
+          "canonical_sha256": "c5c882241addd51b6bb44c2c177a60dc688cc5323051947530c1053db190502b",
+          "classification_matches": true,
+          "cost_usd": null,
+          "delivered": "PASS",
+          "hook_observed": true,
+          "mode": "orient",
+          "models": [],
+          "rendered": "PASS",
+          "resolved": "PASS",
+          "session_ref_sha256": [
+            "97008be2036d50058248fa85c16ff4c9678e439ae015cd29b544728952a913d0"
+          ],
+          "status": "PASS",
+          "strict_validation": "PASS",
+          "subject": "architecture",
+          "work_type": "planning"
+        },
+        {
+          "authorized_changes_only": true,
+          "bundle_sha256": "5d036e99ccbd0744f60e0e7236541d809ad090783187a77d405e33311e3afb8b",
+          "canonical_sha256": "34c3af3f3f84ee20e545f613c7e7762e6df47168c7b707edf45290e127ee012c",
+          "classification_matches": true,
+          "cost_usd": null,
+          "delivered": "PASS",
+          "hook_observed": true,
+          "mode": "teach",
+          "models": [],
+          "rendered": "PASS",
+          "resolved": "PASS",
+          "session_ref_sha256": [
+            "2dcb07ccaee1dfa3ee62f4fee6e12614ea3aff0c19f7d44fb1bb2fa5f03706b6"
+          ],
+          "status": "PASS",
+          "strict_validation": "PASS",
+          "subject": "dependency",
+          "work_type": "research"
+        },
+        {
+          "authorized_changes_only": true,
+          "bundle_sha256": "2dda8672a6a94f7f8ecfe0621cba1ded538b0383a6c3503e7413c2315432f6fc",
+          "canonical_sha256": "85f967a0bc02335014e55c85fe70b6239beb7f422bb4f434b933dd05012284e0",
+          "classification_matches": true,
+          "cost_usd": null,
+          "delivered": "PASS",
+          "hook_observed": true,
+          "mode": "teach",
+          "models": [],
+          "rendered": "PASS",
+          "resolved": "PASS",
+          "session_ref_sha256": [
+            "e132b6ab9637be818733cc96d54d79fd1fb3124875028a948f45c7fb192fd17d"
+          ],
+          "status": "PASS",
+          "strict_validation": "PASS",
+          "subject": "pull-request",
+          "work_type": "review"
+        }
+      ],
+      "status": "PASS",
+      "summary_sha256": "5c46a1ac82fdbc388ba9d16be151670e02efa0d1f205a06f75421cf446cec030"
+    },
+    "grok": {
+      "failures": [],
+      "host": "grok",
+      "host_version": "grok 1.0.3 (1a29d5bc12d4)",
+      "passed": 4,
+      "required": 4,
+      "scenarios": [
+        {
+          "authorized_changes_only": true,
+          "bundle_sha256": "c90cff53d43a0184f1e997c891e22cf3d61def4d2e4d477a11b71f5b6c85ff11",
+          "canonical_sha256": "bd62523ea4e8f9baa008c44a31f9440a77fdd301d7930596d3f07a8fdeccbbf9",
+          "classification_matches": true,
+          "cost_usd": 0.0191336,
+          "delivered": "PASS",
+          "hook_observed": true,
+          "mode": "outcome",
+          "models": [
+            "grok-4.5-build"
+          ],
+          "rendered": "PASS",
+          "resolved": "PASS",
+          "session_ref_sha256": [
+            "97c82fa357dab22eb84ade863bf742f5e07517c23ef18c9d5adcec3d3dac0741"
+          ],
+          "status": "PASS",
+          "strict_validation": "PASS",
+          "subject": "bug",
+          "work_type": "debugging"
+        },
+        {
+          "authorized_changes_only": true,
+          "bundle_sha256": "b2f02e75800090547f1033ee52638458de999c2340ba456a76f1983cefa2e004",
+          "canonical_sha256": "fa86961db2f58e09f389d059306635287cfe484ac73d2a909a784466618df5d8",
+          "classification_matches": true,
+          "cost_usd": 0.0404424,
+          "delivered": "PASS",
+          "hook_observed": true,
+          "mode": "orient",
+          "models": [
+            "grok-4.5-build"
+          ],
+          "rendered": "PASS",
+          "resolved": "PASS",
+          "session_ref_sha256": [
+            "f45ac9edc21de19ce77336d7d39d1a2fb7fa1de77d17144732000d82af696d41"
+          ],
+          "status": "PASS",
+          "strict_validation": "PASS",
+          "subject": "codebase",
+          "work_type": "exploration"
+        },
+        {
+          "authorized_changes_only": true,
+          "bundle_sha256": "9e0c274a19ce67ad20bdaab916f1c5fd56a249f7424036e653baf3759ed53c24",
+          "canonical_sha256": "e3bbffd0f770844c9a09b77ac67a8fd7cdf93502e03d2d8740850bc3302b2cfa",
+          "classification_matches": true,
+          "cost_usd": 0.0481896,
+          "delivered": "PASS",
+          "hook_observed": true,
+          "mode": "spoken",
+          "models": [
+            "grok-4.5-build"
+          ],
+          "rendered": "PASS",
+          "resolved": "PASS",
+          "session_ref_sha256": [
+            "7e8be6afaa4b2194e0cb7e4a67c0fef75a0f4dec2ce2a27ee581d918755238fc"
+          ],
+          "status": "PASS",
+          "strict_validation": "PASS",
+          "subject": "feature",
+          "work_type": "implementation"
+        },
+        {
+          "authorized_changes_only": true,
+          "bundle_sha256": "afe277987b386bde9298fc053202a27b1c79f6dc710174abd3257cf378298a11",
+          "canonical_sha256": "bc5ad96995844fb1a45b2663aa2502efc30dec00459e0b9b0e257ded8698aad7",
+          "classification_matches": true,
+          "cost_usd": 0.0217216,
+          "delivered": "PASS",
+          "hook_observed": true,
+          "mode": "teach",
+          "models": [
+            "grok-4.5-build"
+          ],
+          "rendered": "PASS",
+          "resolved": "PASS",
+          "session_ref_sha256": [
+            "aef4f2d8c187a0afe5fdd61994acbb96b7bd9dda3938a8f874a3d8d854d11a9b"
+          ],
+          "status": "PASS",
+          "strict_validation": "PASS",
+          "subject": "pull-request",
+          "work_type": "review"
+        }
+      ],
+      "status": "PASS",
+      "summary_sha256": "970d97484a5b35e6930c7824c2b44dc34b505364c0cada89ba7718b377abde7e"
+    },
+    "kimi": {
+      "failures": [],
+      "host": "kimi",
+      "host_version": "0.35.0",
+      "passed": 4,
+      "required": 4,
+      "scenarios": [
+        {
+          "authorized_changes_only": true,
+          "bundle_sha256": "427b55a9cd7646dd4674ee04ded32864997b5451e890b1bd8d43467784832736",
+          "canonical_sha256": "5916c52b585b2ebb955e071635fa11af5f77f4a99777cfe095de83bb52997378",
+          "classification_matches": true,
+          "cost_usd": null,
+          "delivered": "PASS",
+          "hook_observed": true,
+          "mode": "outcome",
+          "models": [],
+          "rendered": "PASS",
+          "resolved": "PASS",
+          "session_ref_sha256": [
+            "cc157d5c3de0aa232b43c1c11f935b2c7301411417351a976498b8da46b99723"
+          ],
+          "status": "PASS",
+          "strict_validation": "PASS",
+          "subject": "bug",
+          "work_type": "debugging"
+        },
+        {
+          "authorized_changes_only": true,
+          "bundle_sha256": "95d1b1c1baeebd9ff144857e607233cc67384b54491b2c94bee25efedc11a86d",
+          "canonical_sha256": "f93510903db0730c7b9f3768ecef293a441b8b880be8293e3ea3c3a375260645",
+          "classification_matches": true,
+          "cost_usd": null,
+          "delivered": "PASS",
+          "hook_observed": true,
+          "mode": "orient",
+          "models": [],
+          "rendered": "PASS",
+          "resolved": "PASS",
+          "session_ref_sha256": [
+            "d5b64fd280f25dec22a0f835ecffd48bdf775936354c89b5a7664c80c8280db3"
+          ],
+          "status": "PASS",
+          "strict_validation": "PASS",
+          "subject": "codebase",
+          "work_type": "exploration"
+        },
+        {
+          "authorized_changes_only": true,
+          "bundle_sha256": "c60ee076022b0daacbf350780500914ad2aea9e91ba74c9d2caf22cd84f69f2c",
+          "canonical_sha256": "d890f53ab0f5561ebc9b39e115ed763b109b2906364c88902c4b56613b097239",
+          "classification_matches": true,
+          "cost_usd": null,
+          "delivered": "PASS",
+          "hook_observed": true,
+          "mode": "spoken",
+          "models": [],
+          "rendered": "PASS",
+          "resolved": "PASS",
+          "session_ref_sha256": [
+            "3c8bc3f69b5989da5ae69ad955eceba7560792b7c8b1404f2fa54d68b84f1e24"
+          ],
+          "status": "PASS",
+          "strict_validation": "PASS",
+          "subject": "feature",
+          "work_type": "implementation"
+        },
+        {
+          "authorized_changes_only": true,
+          "bundle_sha256": "34f5054eb80638721d6f8e3c25feee1749ca82f90a13b85afd211c4e3ef3df0f",
+          "canonical_sha256": "63ffa433591e28504e325f8b61f7b12eedffedc9aafa5a127fbddf548b7c2a04",
+          "classification_matches": true,
+          "cost_usd": null,
+          "delivered": "PASS",
+          "hook_observed": true,
+          "mode": "teach",
+          "models": [],
+          "rendered": "PASS",
+          "resolved": "PASS",
+          "session_ref_sha256": [
+            "a99f0aac2602b8f5a3ff79686ac2dfbe7a821e1593621849694870e1d3def3e5"
+          ],
+          "status": "PASS",
+          "strict_validation": "PASS",
+          "subject": "pull-request",
+          "work_type": "review"
+        }
+      ],
+      "status": "PASS",
+      "summary_sha256": "ed1fa7e83dbd77435cd6f79b3fb587464a1cde26336be59d30ebc23be238e059"
+    },
+    "omp": {
+      "failures": [],
+      "host": "omp",
+      "host_version": "omp/17.3.0",
+      "passed": 4,
+      "required": 4,
+      "scenarios": [
+        {
+          "authorized_changes_only": true,
+          "bundle_sha256": "174841cb9f2dfd35d90d3abfc0cd10acc4b88b91ecae80f083b2cafa558acb0d",
+          "canonical_sha256": "99404558f826231766cfdf461a70eb560cc3fa3fe12e46bbd512ea55538d4b35",
+          "classification_matches": true,
+          "cost_usd": null,
+          "delivered": "PASS",
+          "hook_observed": true,
+          "mode": "outcome",
+          "models": [
+            "deepseek-v4-pro"
+          ],
+          "rendered": "PASS",
+          "resolved": "PASS",
+          "session_ref_sha256": [
+            "3f8d2aef0b2cab935764dd29fc2a456658db16339561ff52163ad8b23202373f",
+            "f35230613ae2b7293c3983a940dbd617dac2f72930a16fd2dce0c605b173ab6b"
+          ],
+          "status": "PASS",
+          "strict_validation": "PASS",
+          "subject": "bug",
+          "work_type": "debugging"
+        },
+        {
+          "authorized_changes_only": true,
+          "bundle_sha256": "dc738136b23e811e4b30eb39908448ad69536ff5464cf8e639c45cd9e02ccb71",
+          "canonical_sha256": "2dd0331e10286112280554f9cc2d488ec0b90f12a78aa0e3bfe0e5f3ad0b1fa3",
+          "classification_matches": true,
+          "cost_usd": null,
+          "delivered": "PASS",
+          "hook_observed": true,
+          "mode": "orient",
+          "models": [
+            "deepseek-v4-pro"
+          ],
+          "rendered": "PASS",
+          "resolved": "PASS",
+          "session_ref_sha256": [
+            "585167e2095b6f7fc55f5e16a0ea3ee26c89d4d3e39f9045f6af5015ff4cca15",
+            "db6c3be235078cf5f114d399ecf6035ea0800769bf5959d9f60febefd8fb9a35"
+          ],
+          "status": "PASS",
+          "strict_validation": "PASS",
+          "subject": "codebase",
+          "work_type": "exploration"
+        },
+        {
+          "authorized_changes_only": true,
+          "bundle_sha256": "0ba5840bdb859fafa6ed183e3c71c1bed16b67d903f54006fa2065595731b3a2",
+          "canonical_sha256": "2912f1a66c9725f8617f90ce53f9145366e2624832ba2d90d10fbf6e2d3a65ee",
+          "classification_matches": true,
+          "cost_usd": null,
+          "delivered": "PASS",
+          "hook_observed": true,
+          "mode": "spoken",
+          "models": [
+            "deepseek-v4-pro"
+          ],
+          "rendered": "PASS",
+          "resolved": "PASS",
+          "session_ref_sha256": [
+            "0ca159d6d32a61e6e09a5452e3de835be71235d7463603d3560534eeeffaff0a",
+            "c19a82fc4c2109165410c697485e409093875be39361f6ce37f5b3171d11fb6b"
+          ],
+          "status": "PASS",
+          "strict_validation": "PASS",
+          "subject": "feature",
+          "work_type": "implementation"
+        },
+        {
+          "authorized_changes_only": true,
+          "bundle_sha256": "5bd3a57cfb4069979a4508cf1d31b4f2ef31192498d945155605dbdf61c1d8cb",
+          "canonical_sha256": "0b867221b5de655abb6e60fdc167ccb26dd56fdc98f77e381cdfc7e68216173f",
+          "classification_matches": true,
+          "cost_usd": null,
+          "delivered": "PASS",
+          "hook_observed": true,
+          "mode": "teach",
+          "models": [
+            "deepseek-v4-pro"
+          ],
+          "rendered": "PASS",
+          "resolved": "PASS",
+          "session_ref_sha256": [
+            "11b3ece0f073d2e3b7df36ca5470ff7d7a9dd0b0ec8275cbe46f534906aafc57",
+            "e56e8029d7359cd24c9c1b33b0a473ecfea099e5772f0bf499c6100380b2f4ad"
+          ],
+          "status": "PASS",
+          "strict_validation": "PASS",
+          "subject": "pull-request",
+          "work_type": "review"
+        }
+      ],
+      "status": "PASS",
+      "summary_sha256": "e293e905dee2de41924ed22291f2e2c719097e2c615e9ffbb44ce801b5815115"
+    }
+  },
+  "kind": "brief-spec-live-e2e-evidence",
+  "privacy": "Sanitized decisions, hashes, and opaque-reference hashes only; no credentials or raw transcripts.",
+  "required_hosts": [
+    "codex",
+    "claude",
+    "omp",
+    "grok",
+    "kimi"
+  ],
+  "schema_version": "1.0",
+  "source_revision_base": "4adf20412028aa858a982c2149c3622327efa11a",
+  "source_state": "dirty-worktree-candidate",
+  "source_worktree_fingerprint": "975647c437867b419979db657413ce7e377ce1e19ad678eaeb18a3328781c6ec",
+  "status": "authorized",
+  "version": "0.5.0"
+}

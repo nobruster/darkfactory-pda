@@ -1,0 +1,2 @@
+# uv.lock is generated. Keep it out of diffs and language statistics.
+uv.lock -diff linguist-generated=true

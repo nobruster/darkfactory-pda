@@ -1,0 +1,62 @@
+version: 1
+type_number: "06"
+
+raw_data_classification: restricted_synthetic_commercial_data
+
+merchant_tax_id:
+  classification: legal_entity_identifier
+  input: 14_digit_CNPJ
+  validation_before_masking: CNPJ_two_Mod11_check_digits
+  transformation:
+    algorithm: retain_last4
+    output_format: '**********<last4>'
+  clear_value_prohibited_in:
+    - sanitized_csv
+    - application_logs
+    - error_messages
+    - batch_evidence
+    - database_staging
+    - database_operational
+
+validated_passthrough:
+  identifiers:
+    - chargeback_id
+    - merchant_id
+    - reason_code
+  description:
+    allowed_downstream: true
+    required_validation:
+      - strict_UTF8
+      - NFC
+      - codepoint_length_1_through_80
+      - no_control_or_bidi_characters
+      - no_CR_or_LF
+      - no_spreadsheet_formula_prefix
+      - no_digit_runs_11_through_19
+      - contains_no_raw_CNPJ
+
+whole_output_validation:
+  sanitized_csv: scan_every_byte_for_every_raw_CNPJ
+  failure_code: PRIVACY_OUTPUT_VIOLATION
+  failure_behavior: reject_entire_batch_without_publishing_csv
+
+failure_handling:
+  include_raw_row: false
+  include_raw_description: false
+  include_raw_CNPJ: false
+  include_mask: false
+  safe_fields:
+    - batch_id
+    - source_filename
+    - physical_record_number
+    - rejection_code
+    - declared_aggregate_controls
+    - computed_aggregate_controls
+
+batch_evidence_allowed:
+  - controlled_filenames
+  - hashes_and_byte_sizes
+  - batch_type_and_layout
+  - static_rejection_code
+  - aggregate_count_original_and_chargeback_controls
+  - procedure_and_reconciliation_status

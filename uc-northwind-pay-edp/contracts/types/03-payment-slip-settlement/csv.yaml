@@ -1,0 +1,58 @@
+version: 1
+type_number: "03"
+
+format:
+  encoding: UTF-8
+  line_ending: LF
+  delimiter: comma
+  header: required
+  quote_mode: minimal
+  null_representation: empty
+  decimal_separator: period
+  row_order: completed_pair_physical_order
+  final_newline: required
+  max_rows: 10000
+  max_file_bytes: 8000000
+
+logical_row:
+  source: adjacent_A_and_B_pair
+  emit_only_after_complete_pair: true
+  incomplete_pair_behavior: reject_entire_batch_without_output
+
+columns:
+  - { position: 1, name: batch_id, type: string, regex: '^B[0-9]{15}$' }
+  - { position: 2, name: source_file, type: string, regex: '^NW_PAYMENT_SLIP_[0-9]{8}_B[0-9]{15}\.rem$' }
+  - { position: 3, name: source_record_number_a, type: integer, minimum: 3, maximum: 22000 }
+  - { position: 4, name: source_record_number_b, type: integer, minimum: 4, maximum: 22001 }
+  - { position: 5, name: lot_number, type: string, regex: '^(?!000000)[0-9]{6}$' }
+  - { position: 6, name: sequence, type: string, regex: '^(?!000000)[0-9]{6}$' }
+  - { position: 7, name: settlement_id, type: string, regex: '^[A-Z][A-Z0-9]{15}$' }
+  - { position: 8, name: payment_reference_token, type: string, regex: '^payref_[0-9a-f]{24}$' }
+  - { position: 9, name: payment_reference_last4, type: string, regex: '^[0-9]{4}$' }
+  - { position: 10, name: beneficiary_token, type: string, regex: '^party_[0-9a-f]{24}$' }
+  - { position: 11, name: beneficiary_tax_id_type, type: enum, values: [CPF, CNPJ] }
+  - { position: 12, name: beneficiary_tax_id_masked, type: string, regex: '^(\*{7}|\*{10})[0-9]{4}$' }
+  - { position: 13, name: bank_account_token, type: string, regex: '^acct_[0-9a-f]{24}$' }
+  - { position: 14, name: bank_account_last4, type: string, regex: '^[0-9]{4}$' }
+  - { position: 15, name: due_date, type: date, format: yyyy-MM-dd }
+  - { position: 16, name: payment_date, type: date, format: yyyy-MM-dd }
+  - { position: 17, name: face_amount_brl, type: canonical_unsigned_decimal, precision: 18, scale: 2 }
+  - { position: 18, name: discount_brl, type: canonical_unsigned_decimal, precision: 18, scale: 2 }
+  - { position: 19, name: fee_brl, type: canonical_unsigned_decimal, precision: 18, scale: 2 }
+  - { position: 20, name: net_amount_brl, type: canonical_unsigned_decimal, precision: 18, scale: 2 }
+  - { position: 21, name: status, type: literal, value: SETTLED }
+  - { position: 22, name: bank_reference, type: string, regex: '^[A-Z][A-Z0-9]{19}$' }
+  - { position: 23, name: client_reference, type: string, regex: '^[A-Z][A-Z0-9]{19}$' }
+
+semantic_links:
+  - source_file date and batch equal the row batch and raw header.
+  - source_record_number_b equals source_record_number_a plus one.
+  - tax-ID mask length agrees with beneficiary_tax_id_type.
+  - row count and monetary sums equal sanitized-manifest stage controls.
+  - complete output is scanned for every raw payment reference, beneficiary name, tax ID, branch-account value, and account number.
+
+database_target:
+  schema: staging
+  table: payment_slip_settlement
+  natural_batch_key: [batch_id, lot_number, sequence]
+  global_unique_key: settlement_id

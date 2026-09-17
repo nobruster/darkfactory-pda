@@ -1,0 +1,12 @@
+batch_id: B202607230000002
+currency: BRL
+source_count: 1
+staged_count: 1
+applied_count: 1
+source_net_amount: "-12.34"
+staged_net_amount: "-12.34"
+applied_net_amount: "-12.34"
+count_delta: 0
+amount_delta: "0.00"
+reject_count: 0
+status: MATCHED

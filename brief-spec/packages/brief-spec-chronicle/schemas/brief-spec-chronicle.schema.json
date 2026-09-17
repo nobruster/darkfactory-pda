@@ -1,0 +1,71 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/luanmorenommaciel/brief-spec/schemas/brief-spec-chronicle.schema.json",
+  "title": "Brief-Spec Project Chronicle 1.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version", "kind", "chronicle_version", "project", "window",
+    "ledger_head_hash", "source_event_ids", "intent_anchors", "current_state",
+    "material_changes", "milestones", "detours", "drift", "decisions", "blockers",
+    "lessons", "human_actions", "next_actions", "relations", "evidence_ids",
+    "evidence", "canonical_sha256"
+  ],
+  "properties": {
+    "schema_version": { "const": "brief-spec-chronicle/1.0" },
+    "kind": { "const": "brief-spec-project-chronicle" },
+    "chronicle_version": { "type": "string", "minLength": 1 },
+    "project": {
+      "type": "object", "additionalProperties": false,
+      "required": ["project_id", "name", "root_sha256"],
+      "properties": {
+        "project_id": { "type": "string", "pattern": "^bscp-[0-9a-f]{24}$" },
+        "name": { "type": "string", "minLength": 1 },
+        "root_sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" }
+      }
+    },
+    "window": {
+      "type": "object", "additionalProperties": false,
+      "required": ["since", "until", "created_at", "ledger_cutoff_event_id"],
+      "properties": {
+        "since": { "type": "string", "format": "date-time" },
+        "until": { "type": "string", "format": "date-time" },
+        "created_at": { "type": "string", "format": "date-time" },
+        "ledger_cutoff_event_id": { "type": "string", "pattern": "^bse-[0-9a-f]{24}$" }
+      }
+    },
+    "ledger_head_hash": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "source_event_ids": { "type": "array", "items": { "type": "string" } },
+    "intent_anchors": { "type": "array", "items": { "type": "object" } },
+    "current_state": { "type": "object" },
+    "material_changes": { "type": "array", "items": { "type": "object" } },
+    "milestones": { "type": "array", "items": { "type": "object" } },
+    "detours": { "type": "array", "items": { "type": "object" } },
+    "drift": { "type": "array", "items": { "$ref": "brief-spec-drift.schema.json" } },
+    "decisions": { "type": "array", "items": { "$ref": "brief-spec-decision.schema.json" } },
+    "blockers": { "type": "array", "items": { "type": "object" } },
+    "lessons": { "type": "array", "items": { "$ref": "brief-spec-lesson-proposal.schema.json" } },
+    "human_actions": { "type": "array", "items": { "type": "object" } },
+    "next_actions": { "type": "array", "maxItems": 3, "items": { "type": "string" } },
+    "relations": { "type": "array", "items": { "type": "object" } },
+    "evidence_ids": { "type": "array", "items": { "type": "string" } },
+    "evidence": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["evidence_id", "access", "expires_at", "content_sha256", "source_event_ids"],
+        "properties": {
+          "evidence_id": { "type": "string", "minLength": 1 },
+          "access": { "enum": ["local", "private", "public"] },
+          "expires_at": { "type": ["string", "null"], "format": "date-time" },
+          "content_sha256": { "type": ["string", "null"], "pattern": "^[0-9a-f]{64}$" },
+          "source_event_ids": {
+            "type": "array", "minItems": 1, "items": { "type": "string" }
+          }
+        }
+      }
+    },
+    "canonical_sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" }
+  }
+}

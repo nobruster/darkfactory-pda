@@ -1,0 +1,24 @@
+name: northwind_modern
+version: "1.0.0"
+config-version: 2
+profile: northwind_modern
+
+model-paths: ["models"]
+macro-paths: ["macros"]
+test-paths: ["tests"]
+target-path: "../../.runtime/dbt/target"
+log-path: "../../.runtime/dbt/logs"
+packages-install-path: "../../.runtime/dbt/packages"
+clean-targets: ["../../.runtime/dbt/target"]
+
+models:
+  northwind_modern:
+    bronze:
+      +schema: bronze
+      +materialized: table
+    silver:
+      +schema: silver
+      +materialized: table
+    gold:
+      +schema: gold
+      +materialized: table

@@ -1,0 +1,119 @@
+version: 1
+type_number: "02"
+
+grain:
+  keys: [batch_id, currency]
+  currency: BRL
+
+procedure_order:
+  - sequence: 1
+    procedure: legacy.apply_instant_payment_batch
+    arguments: [batch_id]
+    transaction: same_business_transaction
+  - sequence: 2
+    procedure: reporting.refresh_instant_payment_reconciliation
+    arguments: [batch_id]
+    transaction: same_business_transaction
+
+source_controls:
+  count: trailer.event_count
+  credit_amount: trailer.credit_total_brl
+  debit_amount: trailer.debit_total_brl
+  net_amount: trailer.net_total_brl
+  returned_count: 'count(event where status = RETURNED)'
+  persistence: control.batches
+
+stage_controls:
+  count: 'count(*) from staging.instant_payment_event where batch_id = :batch_id'
+  credit_amount: 'sum(amount_brl) filter (where direction = C) from staging.instant_payment_event where batch_id = :batch_id'
+  debit_amount: 'sum(abs(amount_brl)) filter (where direction = D) from staging.instant_payment_event where batch_id = :batch_id'
+  net_amount: 'sum(amount_brl) from staging.instant_payment_event where batch_id = :batch_id'
+  returned_count: 'count(*) filter (where status = RETURNED) from staging.instant_payment_event where batch_id = :batch_id'
+
+operational_controls:
+  count: 'count(*) from legacy.instant_payment_event where batch_id = :batch_id'
+  credit_amount: 'sum(amount_brl) filter (where direction = C) from legacy.instant_payment_event where batch_id = :batch_id'
+  debit_amount: 'sum(abs(amount_brl)) filter (where direction = D) from legacy.instant_payment_event where batch_id = :batch_id'
+  net_amount: 'sum(amount_brl) from legacy.instant_payment_event where batch_id = :batch_id'
+  returned_count: 'count(*) filter (where status = RETURNED) from legacy.instant_payment_event where batch_id = :batch_id'
+
+report:
+  relation: reporting.instant_payment_reconciliation
+  required_columns:
+    - batch_id
+    - currency
+    - source_count
+    - staged_count
+    - applied_count
+    - source_credit_amount
+    - staged_credit_amount
+    - applied_credit_amount
+    - source_debit_amount
+    - staged_debit_amount
+    - applied_debit_amount
+    - source_net_amount
+    - staged_net_amount
+    - applied_net_amount
+    - source_returned_count
+    - staged_returned_count
+    - applied_returned_count
+    - count_delta
+    - credit_amount_delta
+    - debit_amount_delta
+    - net_amount_delta
+    - returned_count_delta
+    - reject_count
+    - status
+
+tolerances:
+  count_delta: 0
+  credit_amount_delta: "0.00"
+  debit_amount_delta: "0.00"
+  net_amount_delta: "0.00"
+  returned_count_delta: 0
+
+semantics:
+  replay: idempotent_by_batch_id_and_source_record_number
+  global_end_to_end_id: unique_across_accepted_batches
+  operational_apply: insert_missing_rows_without_updating_existing_rows
+  count_delta: applied_count_minus_source_count
+  credit_amount_delta: applied_credit_amount_minus_source_credit_amount
+  debit_amount_delta: applied_debit_amount_minus_source_debit_amount
+  net_amount_delta: applied_net_amount_minus_source_net_amount
+  returned_count_delta: applied_returned_count_minus_source_returned_count
+  reject_count: 'count(*) from control.rejects where batch_id = :batch_id'
+  transaction: staging_load_then_both_procedures_and_oracle_commit_or_rollback_together
+
+success:
+  - No rejected records.
+  - Source, staged, and applied counts are identical.
+  - Source, staged, and applied credit, debit, and net amounts are identical.
+  - Source, staged, and applied returned counts are identical.
+  - No duplicate natural batch key or global end_to_end_id exists.
+  - Every delta is zero and report status is MATCHED.
+
+approved_example:
+  batch_id: B202607230000101
+  currency: BRL
+  source_count: 2
+  staged_count: 2
+  applied_count: 2
+  source_credit_amount: "200.00"
+  staged_credit_amount: "200.00"
+  applied_credit_amount: "200.00"
+  source_debit_amount: "26.55"
+  staged_debit_amount: "26.55"
+  applied_debit_amount: "26.55"
+  source_net_amount: "173.45"
+  staged_net_amount: "173.45"
+  applied_net_amount: "173.45"
+  source_returned_count: 1
+  staged_returned_count: 1
+  applied_returned_count: 1
+  count_delta: 0
+  credit_amount_delta: "0.00"
+  debit_amount_delta: "0.00"
+  net_amount_delta: "0.00"
+  returned_count_delta: 0
+  reject_count: 0
+  status: MATCHED

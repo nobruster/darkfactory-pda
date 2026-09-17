@@ -1,0 +1,101 @@
+version: 1
+type_number: "03"
+
+raw_data_classification: restricted_synthetic_financial_data
+
+transformations:
+  payment_reference:
+    normalization: none
+    algorithm: HMAC-SHA-256
+    key_environment_variable: NWP_PAYMENT_REFERENCE_KEY
+    key_encoding: UTF-8
+    input_encoding: ASCII
+    missing_key_behavior: fail_closed
+    output_format: 'payref_<first-24-lowercase-hex-characters>'
+    retain: last4
+  beneficiary_name:
+    normalization: right_trim_uppercase_ascii
+    algorithm: HMAC-SHA-256
+    key_environment_variable: NWP_PARTY_TOKEN_KEY
+    key_encoding: UTF-8
+    input_encoding: ASCII
+    missing_key_behavior: fail_closed
+    output_format: 'party_<first-24-lowercase-hex-characters>'
+  bank_account:
+    canonical_input: 'bank_code:branch_number:account_number:check_digit'
+    algorithm: HMAC-SHA-256
+    key_environment_variable: NWP_ACCOUNT_TOKEN_KEY
+    key_encoding: UTF-8
+    input_encoding: ASCII
+    missing_key_behavior: fail_closed
+    output_format: 'acct_<first-24-lowercase-hex-characters>'
+    retain: account_last4
+  beneficiary_tax_id:
+    validation_before_masking: tax_type_padding_length_and_Mod11
+    cpf_transport_rule: remove_exactly_three_leading_padding_zeroes
+    cpf_mask: '*******<last4>'
+    cnpj_mask: '**********<last4>'
+
+fixture_tokenization:
+  payment_reference_key: northwind-pay-edp-fixture-payment-reference-key-v1
+  beneficiary_name_key: northwind-pay-edp-fixture-party-key-v1
+  bank_account_key: northwind-pay-edp-fixture-account-key-v1
+  keys_are_distinct: true
+  may_be_used_outside_tests: false
+
+secret_separation:
+  all_three_keys_must_be_distinct: true
+  shared_with_NWP_TOKENIZATION_KEY: false
+  available_to: processor_only
+  serialized_in_artifacts: false
+
+safe_passthrough:
+  settlement_id: structured_identifier_only
+  bank_reference: structured_identifier_only
+  client_reference: structured_identifier_only
+  rules:
+    - uppercase_US_ASCII
+    - begins_with_letter
+    - letters_and_digits_only
+    - cannot_equal_or_contain_any_raw_restricted_value
+    - cannot_begin_with_spreadsheet_formula_character
+
+prohibited_clear_values:
+  - payment_reference
+  - beneficiary_name_after_right_trim
+  - beneficiary_tax_id_transport_value
+  - beneficiary_tax_id_without_CPF_padding
+  - bank_branch_account_and_check_digit
+  - account_number
+
+prohibited_destinations:
+  - sanitized_csv
+  - application_logs
+  - error_messages
+  - batch_evidence
+  - database_staging
+  - database_operational
+
+whole_output_validation:
+  sanitized_csv: scan_every_byte_for_every_prohibited_clear_value
+  failure_behavior: reject_entire_batch_without_publishing_csv
+
+failure_handling:
+  include_raw_record: false
+  include_restricted_value: false
+  include_token_or_mask: false
+  safe_fields:
+    - batch_id
+    - source_filename
+    - physical_record_number
+    - rejection_code
+    - declared_aggregate_controls
+    - computed_aggregate_controls
+
+batch_evidence_allowed:
+  - controlled_filenames
+  - hashes_and_byte_sizes
+  - batch_type_and_layout
+  - static_rejection_code
+  - aggregate_lot_count_physical_count_logical_count_and_money_controls
+  - procedure_and_reconciliation_status

@@ -1,0 +1,177 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/luanmorenommaciel/brief-spec/releases/download/v0.5.0/brief-spec-delivery.schema.json",
+  "title": "Brief-Spec delivery envelope 2.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "kind",
+    "source",
+    "classification",
+    "explanation",
+    "brief",
+    "provenance",
+    "artifacts",
+    "work_items"
+  ],
+  "properties": {
+    "schema_version": { "const": "2.0" },
+    "kind": { "const": "brief-spec-delivery" },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["harness", "brief_spec_version", "created_at"],
+      "properties": {
+        "harness": { "type": "string", "minLength": 1 },
+        "session_ref": { "type": ["string", "null"] },
+        "brief_spec_version": { "type": "string", "minLength": 1 },
+        "host_version": { "type": ["string", "null"] },
+        "adapter_version": { "type": ["string", "null"] },
+        "source_revision": { "type": ["string", "null"] },
+        "created_at": { "type": "string", "format": "date-time" },
+        "model_provider": { "type": ["string", "null"] },
+        "model": { "type": ["string", "null"] }
+      }
+    },
+    "classification": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "work_type",
+        "subject",
+        "confidence",
+        "origin",
+        "classified_at",
+        "profile_version",
+        "rule_ids"
+      ],
+      "properties": {
+        "work_type": {
+          "enum": [
+            "general",
+            "exploration",
+            "review",
+            "implementation",
+            "debugging",
+            "planning",
+            "research",
+            "operations"
+          ]
+        },
+        "subject": {
+          "type": "string",
+          "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+          "maxLength": 64
+        },
+        "confidence": { "enum": ["high", "medium", "low"] },
+        "origin": { "enum": ["explicit", "host", "inferred", "fallback", "reported"] },
+        "classified_at": { "type": "string", "format": "date-time" },
+        "profile_version": { "const": "1.0" },
+        "rule_ids": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 },
+          "uniqueItems": true
+        },
+        "decision_id": { "type": "string", "pattern": "^bsd-[0-9a-f]{24}$" },
+        "input_sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+        "record_sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+        "adapter_version": { "type": "string", "minLength": 1 }
+      }
+    },
+    "explanation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["profile_version", "sections"],
+      "properties": {
+        "profile_version": { "const": "1.0" },
+        "sections": {
+          "type": "array",
+          "minItems": 3,
+          "maxItems": 6,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["id", "label", "content"],
+            "properties": {
+              "id": { "type": "string", "pattern": "^[a-z][a-z0-9_]*$" },
+              "label": { "type": "string", "minLength": 1 },
+              "content": { "type": "string", "minLength": 1 }
+            }
+          }
+        }
+      }
+    },
+    "brief": {
+      "oneOf": [
+        { "$ref": "brief-spec-outcome-brief.schema.json" },
+        { "$ref": "brief-spec-session-checkpoint.schema.json" }
+      ]
+    },
+    "provenance": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["provider", "locator", "retrieved_at", "basis", "access"],
+        "properties": {
+          "provider": { "type": "string", "minLength": 1 },
+          "locator": { "type": "string", "minLength": 1, "maxLength": 2048 },
+          "retrieved_at": { "type": "string", "format": "date-time" },
+          "basis": { "enum": ["direct", "derived", "reported"] },
+          "access": { "enum": ["local", "private", "public"] },
+          "content_sha256": { "type": ["string", "null"], "pattern": "^[0-9a-f]{64}$" }
+        }
+      }
+    },
+    "artifacts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["artifact_id", "role", "locator", "media_type", "access"],
+        "properties": {
+          "artifact_id": { "type": "string", "minLength": 1 },
+          "role": { "type": "string", "minLength": 1 },
+          "locator": { "type": "string", "minLength": 1, "maxLength": 2048 },
+          "media_type": { "type": "string", "minLength": 1 },
+          "access": { "enum": ["local", "private", "public"] },
+          "size_bytes": { "type": ["integer", "null"], "minimum": 0 },
+          "sha256": { "type": ["string", "null"], "pattern": "^[0-9a-f]{64}$" },
+          "source_revision": { "type": ["string", "null"] },
+          "observed_at": { "type": ["string", "null"], "format": "date-time" },
+          "expires_at": { "type": ["string", "null"], "format": "date-time" }
+        }
+      }
+    },
+    "work_items": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["work_id", "activity", "headline", "last_updated"],
+        "properties": {
+          "work_id": { "type": "string", "minLength": 1 },
+          "parent_id": { "type": ["string", "null"] },
+          "runtime": { "type": ["string", "null"] },
+          "agent_ref": { "type": ["string", "null"] },
+          "activity": {
+            "enum": [
+              "RUNNING",
+              "NEEDS_INPUT",
+              "WAITING",
+              "PAUSED",
+              "STALE",
+              "COMPLETED",
+              "FAILED"
+            ]
+          },
+          "headline": { "type": "string", "minLength": 1 },
+          "human_action": { "type": ["string", "null"] },
+          "last_updated": { "type": "string", "format": "date-time" },
+          "result_ref": { "type": ["string", "null"] }
+        }
+      }
+    }
+  }
+}

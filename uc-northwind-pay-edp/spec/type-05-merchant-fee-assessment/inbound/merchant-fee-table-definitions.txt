@@ -1,0 +1,13 @@
+-- staging.merchant_fee_assessment  dump 2026-06-22
+CREATE TABLE staging.merchant_fee_assessment (
+    batch_id             char(16)      NOT NULL,
+    source_record_number int           NOT NULL,
+    merchant_id          varchar(32)   NOT NULL,
+    document_masked      varchar(20)   NOT NULL,
+    gross_amount         decimal(18,2) NOT NULL,
+    fee_rate             decimal(9,6)  NOT NULL,
+    assessed_fee         decimal(18,2) NOT NULL,
+    calculated_fee       decimal(18,2) NOT NULL,
+    PRIMARY KEY (batch_id, source_record_number)
+)
+GO

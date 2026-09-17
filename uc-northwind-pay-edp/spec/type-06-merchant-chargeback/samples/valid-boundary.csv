@@ -1,0 +1,2 @@
+chargeback_id;batch_id;merchant_id;merchant_tax_id;reason_code;description;original_amount_brl;rate_percent;chargeback_amount_brl;business_date
+CBK2000022905002;B200002290000502;MER0000000000002;98765432000198;MIN;"Limite inferior";2,00;1,000;0,02;29/02/2000

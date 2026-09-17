@@ -1,0 +1,105 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://briefspec.dev/schemas/briefspec-delivery.schema.json",
+  "title": "BriefSpec delivery envelope",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "kind",
+    "source",
+    "brief",
+    "provenance",
+    "artifacts",
+    "work_items"
+  ],
+  "properties": {
+    "schema_version": { "const": "1.0" },
+    "kind": { "const": "briefspec-delivery" },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["runtime", "briefspec_version", "created_at"],
+      "properties": {
+        "runtime": { "type": "string", "minLength": 1 },
+        "session_ref": { "type": ["string", "null"] },
+        "briefspec_version": { "type": "string", "minLength": 1 },
+        "host_version": { "type": ["string", "null"] },
+        "source_revision": { "type": ["string", "null"] },
+        "created_at": { "type": "string", "format": "date-time" },
+        "model": { "type": ["string", "null"] }
+      }
+    },
+    "brief": {
+      "oneOf": [
+        { "$ref": "outcome-brief.schema.json" },
+        { "$ref": "session-checkpoint.schema.json" }
+      ]
+    },
+    "provenance": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["provider", "locator", "retrieved_at", "basis", "access"],
+        "properties": {
+          "provider": { "type": "string", "minLength": 1 },
+          "locator": { "type": "string", "minLength": 1, "maxLength": 2048 },
+          "retrieved_at": { "type": "string", "format": "date-time" },
+          "basis": { "enum": ["direct", "derived", "reported"] },
+          "access": { "enum": ["local", "private", "public"] },
+          "content_sha256": { "type": ["string", "null"], "pattern": "^[0-9a-f]{64}$" }
+        }
+      }
+    },
+    "artifacts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["artifact_id", "role", "locator", "media_type", "access"],
+        "properties": {
+          "artifact_id": { "type": "string", "minLength": 1 },
+          "role": { "type": "string", "minLength": 1 },
+          "locator": { "type": "string", "minLength": 1, "maxLength": 2048 },
+          "media_type": { "type": "string", "minLength": 1 },
+          "access": { "enum": ["local", "private", "public"] },
+          "size_bytes": { "type": ["integer", "null"], "minimum": 0 },
+          "sha256": { "type": ["string", "null"], "pattern": "^[0-9a-f]{64}$" },
+          "source_revision": { "type": ["string", "null"] },
+          "observed_at": { "type": ["string", "null"], "format": "date-time" },
+          "expires_at": { "type": ["string", "null"], "format": "date-time" }
+        }
+      }
+    },
+    "work_items": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["work_id", "activity", "headline", "last_updated"],
+        "properties": {
+          "work_id": { "type": "string", "minLength": 1 },
+          "parent_id": { "type": ["string", "null"] },
+          "runtime": { "type": ["string", "null"] },
+          "agent_ref": { "type": ["string", "null"] },
+          "activity": {
+            "enum": [
+              "RUNNING",
+              "NEEDS_INPUT",
+              "WAITING",
+              "PAUSED",
+              "STALE",
+              "COMPLETED",
+              "FAILED"
+            ]
+          },
+          "headline": { "type": "string", "minLength": 1 },
+          "human_action": { "type": ["string", "null"] },
+          "last_updated": { "type": "string", "format": "date-time" },
+          "result_ref": { "type": ["string", "null"] }
+        }
+      }
+    }
+  }
+}

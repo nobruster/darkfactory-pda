@@ -1,0 +1,48 @@
+version: 1
+type_number: "02"
+
+format:
+  encoding: UTF-8
+  line_ending: LF
+  delimiter: comma
+  header: required
+  quote_mode: minimal
+  null_representation: empty
+  decimal_separator: period
+  row_order: source_event_order
+  final_newline: required
+  max_rows: 10000
+  max_file_bytes: 6000000
+
+columns:
+  - { position: 1, name: batch_id, type: string, nullable: false }
+  - { position: 2, name: source_file, type: string, nullable: false }
+  - { position: 3, name: source_record_number, type: integer, nullable: false }
+  - { position: 4, name: end_to_end_id, type: string, nullable: false }
+  - { position: 5, name: transaction_id, type: string, nullable: false }
+  - { position: 6, name: payer_document_token, type: string, nullable: false }
+  - { position: 7, name: payer_document_masked, type: string, nullable: false }
+  - { position: 8, name: payee_document_token, type: string, nullable: false }
+  - { position: 9, name: payee_document_masked, type: string, nullable: false }
+  - { position: 10, name: event_timestamp, type: offset_datetime, nullable: false }
+  - { position: 11, name: amount_brl, type: decimal, precision: 18, scale: 2, nullable: false, rule: C_is_positive_and_D_is_negative }
+  - { position: 12, name: direction, type: string, nullable: false }
+  - { position: 13, name: status, type: string, nullable: false }
+  - { position: 14, name: return_code, type: string, nullable: true }
+  - { position: 15, name: description, type: string, nullable: false }
+
+database_target:
+  schema: staging
+  table: instant_payment_event
+  natural_batch_key:
+    - batch_id
+    - end_to_end_id
+
+validation:
+  - Clear CPF or CNPJ values are forbidden.
+  - The complete rendered CSV is scanned for every raw payer and payee document before publication.
+  - Document tokens must match '^doc_[0-9a-f]{24}$'.
+  - Signed amount must agree with direction.
+  - Event timestamps preserve the validated canonical source lexeme.
+  - Descriptions are decoded exactly once and quoted according to RFC 4180 rules when required.
+  - No partial CSV is published when any row fails.

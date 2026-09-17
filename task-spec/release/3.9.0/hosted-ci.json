@@ -1,0 +1,46 @@
+{
+  "contract": "HostedCIEvidence/v1",
+  "version": "3.9.0",
+  "observed_at": "2026-08-17T00:50:44Z",
+  "provider": "github-actions",
+  "repository": "luanmorenommaciel/task-spec",
+  "repository_visibility": "private",
+  "run_id": 31982608460,
+  "run_url": "https://github.com/luanmorenommaciel/task-spec/actions/runs/31982608460",
+  "event": "push",
+  "head_commit": "5da13778a4af31614e630fedf8338a5b0053e1ea",
+  "result": "pass",
+  "jobs": [
+    {
+      "platform": "ubuntu-latest",
+      "job_id": 95251958353,
+      "result": "pass",
+      "started_at": "2026-08-17T00:38:20Z",
+      "completed_at": "2026-08-17T00:43:25Z",
+      "gate_step": "make check (includes isolated install-to-accept demo)",
+      "gate_result": "pass"
+    },
+    {
+      "platform": "macos-latest",
+      "job_id": 95251958295,
+      "result": "pass",
+      "started_at": "2026-08-17T00:38:20Z",
+      "completed_at": "2026-08-17T00:45:41Z",
+      "gate_step": "make check (includes isolated install-to-accept demo)",
+      "gate_result": "pass"
+    },
+    {
+      "platform": "ubuntu-latest",
+      "job_id": 95251958346,
+      "result": "pass",
+      "started_at": "2026-08-17T00:38:20Z",
+      "completed_at": "2026-08-17T00:39:21Z",
+      "gate_step": "Require live Docker isolation proof",
+      "gate_result": "pass"
+    }
+  ],
+  "limitations": [
+    "This proves the repository and autonomous-isolation gates on GitHub-hosted runners; it is not production reliability evidence.",
+    "Private release installation and signed provenance are retained separately."
+  ]
+}

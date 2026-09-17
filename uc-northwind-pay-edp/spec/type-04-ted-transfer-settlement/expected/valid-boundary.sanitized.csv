@@ -1,0 +1,2 @@
+batch_id,source_file,source_record_number,movement_id,original_transfer_id,movement_kind,movement_ts,amount_brl,payer_account_token,payer_tax_id_masked,beneficiary_account_token,beneficiary_tax_id_masked,beneficiary_ispb,purpose_code,status_code,return_reason_code
+B200002290000302,NW_TED_SETTLEMENT_20000229_B200002290000302.dat,2,TED2000022900302,,TRANSFER,2000-02-29T23:59:59-03:00,999999999999.99,tedacct_069be82430f0211efea99688,**********9962,tedacct_d5e739415682707d8eba2695,*******8909,00000001,SALARIO,OK,

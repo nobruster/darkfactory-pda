@@ -1,0 +1,86 @@
+version: 1
+type_number: "04"
+
+raw_data_classification: restricted_synthetic_financial_data
+
+account_transformation:
+  applies_to: [payer_account, beneficiary_account]
+  canonical_input: 'ispb:branch:account'
+  algorithm: HMAC-SHA-256
+  key_environment_variable: NWP_TED_ACCOUNT_TOKEN_KEY
+  key_encoding: UTF-8
+  input_encoding: ASCII
+  missing_key_behavior: fail_closed
+  correlation_scope: payer_and_beneficiary_accounts_for_type_04
+  output_format: 'tedacct_<first-24-lowercase-hex-characters>'
+
+tax_id_transformation:
+  validation_before_masking: party_type_padding_length_and_Mod11
+  individual:
+    transport_rule: remove_exactly_three_leading_padding_zeroes
+    mask: '*******<last4>'
+  company:
+    mask: '**********<last4>'
+
+fixture_tokenization:
+  key: northwind-pay-edp-fixture-ted-account-key-v1
+  may_be_used_outside_tests: false
+
+secret_separation:
+  shared_with_NWP_TOKENIZATION_KEY: false
+  shared_with_other_type_specific_keys: false
+  available_to: processor_only
+  serialized_in_artifacts: false
+
+safe_passthrough:
+  movement_ids: structured_identifier_only
+  purpose_code: structured_identifier_only
+  return_reason_code: structured_identifier_only
+  rules:
+    - uppercase_US_ASCII
+    - begins_with_letter
+    - declared_letters_digits_or_underscore_only
+    - cannot_equal_or_contain_any_raw_restricted_value
+    - cannot_begin_with_spreadsheet_formula_character
+
+prohibited_clear_values:
+  - payer_account
+  - beneficiary_account
+  - payer_tax_id_transport_value
+  - payer_tax_id_without_CPF_padding
+  - beneficiary_tax_id_transport_value
+  - beneficiary_tax_id_without_CPF_padding
+  - beneficiary_name_after_right_trim
+  - return_reason_text_after_right_trim
+
+prohibited_destinations:
+  - sanitized_csv
+  - application_logs
+  - error_messages
+  - batch_evidence
+  - database_staging
+  - database_operational
+
+whole_output_validation:
+  sanitized_csv: scan_every_byte_for_every_prohibited_clear_value
+  failure_behavior: reject_entire_batch_without_publishing_csv
+
+failure_handling:
+  include_raw_record: false
+  include_restricted_value: false
+  include_token_or_mask: false
+  safe_fields:
+    - batch_id
+    - source_filename
+    - physical_record_number
+    - rejection_code
+    - declared_aggregate_controls
+    - computed_aggregate_controls
+
+batch_evidence_allowed:
+  - controlled_filenames
+  - hashes_and_byte_sizes
+  - batch_type_and_layout
+  - static_rejection_code
+  - aggregate_transfer_return_gross_returned_and_net_controls
+  - procedure_and_reconciliation_status

@@ -1,0 +1,13 @@
+{
+  "pilot": "apex",
+  "session_id": "",
+  "runtime": "codex",
+  "scenario": "",
+  "status_action_seconds": null,
+  "proof_location_seconds": null,
+  "comprehension_score_1_to_5": null,
+  "checkpoint_helpfulness_1_to_5": null,
+  "format_felt_predictable": null,
+  "notes": "",
+  "contains_no_raw_transcript": true
+}

@@ -1,0 +1,75 @@
+version: 1
+type_number: "02"
+
+raw_data_classification: restricted_synthetic_pii
+
+document_transformation:
+  applies_to:
+    - payer_document
+    - payee_document
+  token:
+    algorithm: HMAC-SHA-256
+    key_environment_variable: NWP_DOCUMENT_TOKEN_KEY
+    key_encoding: UTF-8
+    input_encoding: ASCII
+    output_format: 'doc_<first-24-lowercase-hex-characters>'
+    missing_key_behavior: fail_closed
+    correlation_scope: payer_and_payee_documents_for_type_02
+  mask:
+    algorithm: retain_last4
+    cpf_output: '*******<last4>'
+    cnpj_output: '**********<last4>'
+  clear_value_prohibited_in:
+    - sanitized_csv
+    - application_logs
+    - error_messages
+    - batch_evidence
+    - database_staging
+    - database_operational
+  whole_output_validation:
+    sanitized_csv: scan_every_byte_for_every_raw_payer_and_payee_document
+    failure_behavior: reject_entire_batch
+
+description_handling:
+  classification: untrusted_source_text
+  preserve_after_validated_escape_decode: true
+  prohibited_content:
+    - C0_or_C1_control
+    - carriage_return_line_feed_or_null
+    - bidirectional_control
+    - leading_spreadsheet_formula_character
+    - digit_run_that_looks_like_CPF_CNPJ_or_PAN
+    - raw_payer_or_payee_document
+  prohibited_in:
+    - application_logs
+    - error_messages
+    - batch_evidence
+
+fixture_tokenization:
+  key: northwind-pay-edp-fixture-document-key-v1
+  may_be_used_outside_tests: false
+
+failure_handling:
+  include_raw_line: false
+  include_document_value: false
+  include_description: false
+  include_document_token_or_mask: false
+  safe_fields:
+    - batch_id
+    - source_filename
+    - physical_record_number
+    - rejection_code
+
+batch_evidence_allowed:
+  - controlled_filenames
+  - hashes_and_byte_sizes
+  - batch_type_and_layout
+  - static_rejection_code
+  - aggregate_count_credit_debit_net_and_returned_controls
+  - procedure_and_reconciliation_status
+
+secret_separation:
+  NWP_DOCUMENT_TOKEN_KEY:
+    shared_with_NWP_TOKENIZATION_KEY: false
+    available_to: processor_only
+    serialized_in_artifacts: false

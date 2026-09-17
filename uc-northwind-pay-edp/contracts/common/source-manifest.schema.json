@@ -1,0 +1,833 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://northwind-pay.local/contracts/source-manifest-v1.schema.json",
+  "title": "NorthWind Pay source manifest v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "batch_id",
+    "file_type",
+    "schema_version",
+    "source_controls",
+    "source_file"
+  ],
+  "properties": {
+    "batch_id": {
+      "type": "string",
+      "pattern": "^B[0-9]{15}$"
+    },
+    "file_type": {
+      "type": "object",
+      "required": [
+        "number"
+      ],
+      "properties": {
+        "number": {
+          "enum": [
+            "01",
+            "02",
+            "03",
+            "04",
+            "05",
+            "06"
+          ]
+        }
+      }
+    },
+    "schema_version": {
+      "const": 1
+    },
+    "source_controls": {
+      "type": "object"
+    },
+    "source_file": {
+      "type": "object"
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "file_type": {
+            "properties": {
+              "number": {
+                "const": "01"
+              }
+            }
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "file_type": {
+            "$ref": "#/$defs/type01FileType"
+          },
+          "source_controls": {
+            "$ref": "#/$defs/type01SourceControls"
+          },
+          "source_file": {
+            "$ref": "#/$defs/type01SourceFile"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "file_type": {
+            "properties": {
+              "number": {
+                "const": "02"
+              }
+            }
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "file_type": {
+            "$ref": "#/$defs/type02FileType"
+          },
+          "source_controls": {
+            "$ref": "#/$defs/type02SourceControls"
+          },
+          "source_file": {
+            "$ref": "#/$defs/type02SourceFile"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "file_type": {
+            "properties": {
+              "number": {
+                "const": "03"
+              }
+            }
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "file_type": {
+            "$ref": "#/$defs/type03FileType"
+          },
+          "source_controls": {
+            "$ref": "#/$defs/type03SourceControls"
+          },
+          "source_file": {
+            "$ref": "#/$defs/type03SourceFile"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "file_type": {
+            "properties": {
+              "number": {
+                "const": "04"
+              }
+            }
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "file_type": {
+            "$ref": "#/$defs/type04FileType"
+          },
+          "source_controls": {
+            "$ref": "#/$defs/type04SourceControls"
+          },
+          "source_file": {
+            "$ref": "#/$defs/type04SourceFile"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "file_type": {
+            "properties": {
+              "number": {
+                "const": "05"
+              }
+            }
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "file_type": {
+            "$ref": "#/$defs/type05FileType"
+          },
+          "source_controls": {
+            "$ref": "#/$defs/type05SourceControls"
+          },
+          "source_file": {
+            "$ref": "#/$defs/type05SourceFile"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "file_type": {
+            "properties": {
+              "number": {
+                "const": "06"
+              }
+            }
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "file_type": {
+            "$ref": "#/$defs/type06FileType"
+          },
+          "source_controls": {
+            "$ref": "#/$defs/type06SourceControls"
+          },
+          "source_file": {
+            "$ref": "#/$defs/type06SourceFile"
+          }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "canonicalMoney": {
+      "type": "string",
+      "pattern": "^-?(0|[1-9][0-9]{0,15})\\.[0-9]{2}$",
+      "not": {
+        "const": "-0.00"
+      }
+    },
+    "canonicalUnsignedMoney": {
+      "type": "string",
+      "pattern": "^(0|[1-9][0-9]{0,15})\\.[0-9]{2}$"
+    },
+    "canonicalReturnedMoney": {
+      "oneOf": [
+        {
+          "const": "0.00"
+        },
+        {
+          "type": "string",
+          "pattern": "^-(?:0\\.(?!00$)[0-9]{2}|[1-9][0-9]{0,15}\\.[0-9]{2})$"
+        }
+      ]
+    },
+    "type01FileType": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "code",
+        "contract_version",
+        "layout_version",
+        "number"
+      ],
+      "properties": {
+        "code": {
+          "const": "CRD_SETTLE01"
+        },
+        "contract_version": {
+          "const": 1
+        },
+        "layout_version": {
+          "const": "001"
+        },
+        "number": {
+          "const": "01"
+        }
+      }
+    },
+    "type01SourceControls": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "currency",
+        "detail_count",
+        "net_amount"
+      ],
+      "properties": {
+        "currency": {
+          "const": "BRL"
+        },
+        "detail_count": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 999999
+        },
+        "net_amount": {
+          "$ref": "#/$defs/canonicalMoney"
+        }
+      }
+    },
+    "type01SourceFile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "encoding",
+        "final_newline",
+        "line_ending",
+        "name",
+        "sha256",
+        "size_bytes"
+      ],
+      "properties": {
+        "encoding": {
+          "const": "ISO-8859-1"
+        },
+        "final_newline": {
+          "const": "required"
+        },
+        "line_ending": {
+          "const": "LF"
+        },
+        "name": {
+          "type": "string",
+          "pattern": "^NW_CARD_SETTLEMENT_[0-9]{8}_B[0-9]{15}\\.dat$"
+        },
+        "sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "size_bytes": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    },
+    "type02FileType": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "code",
+        "contract_version",
+        "layout_version",
+        "number"
+      ],
+      "properties": {
+        "code": {
+          "const": "PIX_EVENTS01"
+        },
+        "contract_version": {
+          "const": 1
+        },
+        "layout_version": {
+          "const": "001"
+        },
+        "number": {
+          "const": "02"
+        }
+      }
+    },
+    "type02SourceControls": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "credit_amount",
+        "currency",
+        "debit_amount",
+        "event_count",
+        "net_amount"
+      ],
+      "properties": {
+        "credit_amount": {
+          "$ref": "#/$defs/canonicalUnsignedMoney"
+        },
+        "currency": {
+          "const": "BRL"
+        },
+        "debit_amount": {
+          "$ref": "#/$defs/canonicalUnsignedMoney"
+        },
+        "event_count": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10000
+        },
+        "net_amount": {
+          "$ref": "#/$defs/canonicalMoney"
+        }
+      }
+    },
+    "type02SourceFile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "encoding",
+        "final_newline",
+        "line_ending",
+        "name",
+        "sha256",
+        "size_bytes"
+      ],
+      "properties": {
+        "encoding": {
+          "const": "UTF-8"
+        },
+        "final_newline": {
+          "const": "required"
+        },
+        "line_ending": {
+          "const": "LF"
+        },
+        "name": {
+          "type": "string",
+          "pattern": "^NW_INSTANT_PAYMENT_[0-9]{8}_B[0-9]{15}\\.txt$"
+        },
+        "sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "size_bytes": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 5200000
+        }
+      }
+    },
+    "type03FileType": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "code",
+        "contract_version",
+        "layout_version",
+        "number"
+      ],
+      "properties": {
+        "code": {
+          "const": "PAYSLIPSET03"
+        },
+        "contract_version": {
+          "const": 1
+        },
+        "layout_version": {
+          "const": "001"
+        },
+        "number": {
+          "const": "03"
+        }
+      }
+    },
+    "type03SourceControls": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "currency",
+        "discount_amount",
+        "face_amount",
+        "fee_amount",
+        "logical_count",
+        "lot_count",
+        "net_amount",
+        "orphan_segment_count",
+        "physical_record_count"
+      ],
+      "properties": {
+        "currency": {
+          "const": "BRL"
+        },
+        "discount_amount": {
+          "$ref": "#/$defs/canonicalUnsignedMoney"
+        },
+        "face_amount": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/canonicalUnsignedMoney"
+            },
+            {
+              "not": {
+                "const": "0.00"
+              }
+            }
+          ]
+        },
+        "fee_amount": {
+          "$ref": "#/$defs/canonicalUnsignedMoney"
+        },
+        "logical_count": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10000
+        },
+        "lot_count": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1000
+        },
+        "net_amount": {
+          "$ref": "#/$defs/canonicalUnsignedMoney"
+        },
+        "orphan_segment_count": {
+          "const": 0
+        },
+        "physical_record_count": {
+          "type": "integer",
+          "minimum": 6,
+          "maximum": 22002
+        }
+      }
+    },
+    "type03SourceFile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "encoding",
+        "final_newline",
+        "line_ending",
+        "name",
+        "record_length_bytes",
+        "sha256",
+        "size_bytes"
+      ],
+      "properties": {
+        "encoding": {
+          "const": "US-ASCII"
+        },
+        "final_newline": {
+          "const": "required"
+        },
+        "line_ending": {
+          "const": "CRLF"
+        },
+        "name": {
+          "type": "string",
+          "pattern": "^NW_PAYMENT_SLIP_[0-9]{8}_B[0-9]{15}\\.rem$"
+        },
+        "record_length_bytes": {
+          "const": 240
+        },
+        "sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "size_bytes": {
+          "type": "integer",
+          "minimum": 1452,
+          "maximum": 5324484,
+          "multipleOf": 242
+        }
+      }
+    },
+    "type04FileType": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "code",
+        "contract_version",
+        "layout_version",
+        "number"
+      ],
+      "properties": {
+        "code": {
+          "const": "TED_SETTLE04"
+        },
+        "contract_version": {
+          "const": 1
+        },
+        "layout_version": {
+          "const": "001"
+        },
+        "number": {
+          "const": "04"
+        }
+      }
+    },
+    "type04SourceControls": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "currency",
+        "gross_amount",
+        "net_amount",
+        "return_amount",
+        "return_count",
+        "transfer_count"
+      ],
+      "properties": {
+        "currency": {
+          "const": "BRL"
+        },
+        "gross_amount": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/canonicalUnsignedMoney"
+            },
+            {
+              "not": {
+                "const": "0.00"
+              }
+            }
+          ]
+        },
+        "net_amount": {
+          "$ref": "#/$defs/canonicalUnsignedMoney"
+        },
+        "return_amount": {
+          "$ref": "#/$defs/canonicalReturnedMoney"
+        },
+        "return_count": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 10000
+        },
+        "transfer_count": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10000
+        }
+      }
+    },
+    "type04SourceFile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "encoding",
+        "final_newline",
+        "line_ending",
+        "name",
+        "sha256",
+        "size_bytes"
+      ],
+      "properties": {
+        "encoding": {
+          "const": "US-ASCII"
+        },
+        "final_newline": {
+          "const": "required"
+        },
+        "line_ending": {
+          "const": "CRLF"
+        },
+        "name": {
+          "type": "string",
+          "pattern": "^NW_TED_SETTLEMENT_[0-9]{8}_B[0-9]{15}\\.dat$"
+        },
+        "sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "size_bytes": {
+          "type": "integer",
+          "minimum": 306,
+          "maximum": 2570142
+        }
+      }
+    },
+    "type05FileType": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "code",
+        "contract_version",
+        "layout_version",
+        "number"
+      ],
+      "properties": {
+        "code": {
+          "const": "MER_FEESET05"
+        },
+        "contract_version": {
+          "const": 1
+        },
+        "layout_version": {
+          "const": "001"
+        },
+        "number": {
+          "const": "05"
+        }
+      }
+    },
+    "type05SourceControls": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "assessed_fee",
+        "calculated_fee",
+        "currency",
+        "gross_amount",
+        "row_count"
+      ],
+      "properties": {
+        "assessed_fee": {
+          "$ref": "#/$defs/canonicalUnsignedMoney"
+        },
+        "calculated_fee": {
+          "$ref": "#/$defs/canonicalUnsignedMoney"
+        },
+        "currency": {
+          "const": "BRL"
+        },
+        "gross_amount": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/canonicalUnsignedMoney"
+            },
+            {
+              "not": {
+                "const": "0.00"
+              }
+            }
+          ]
+        },
+        "row_count": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10000
+        }
+      }
+    },
+    "type05SourceFile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "encoding",
+        "final_newline",
+        "line_ending",
+        "name",
+        "sha256",
+        "size_bytes",
+        "unicode_normalization"
+      ],
+      "properties": {
+        "encoding": {
+          "const": "UTF-8"
+        },
+        "final_newline": {
+          "const": "required"
+        },
+        "line_ending": {
+          "const": "LF"
+        },
+        "name": {
+          "type": "string",
+          "pattern": "^NW_MERCHANT_FEES_[0-9]{8}_B[0-9]{15}\\.csv$"
+        },
+        "sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "size_bytes": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 5130138
+        },
+        "unicode_normalization": {
+          "const": "NFC"
+        }
+      }
+    },
+    "type06FileType": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "code",
+        "contract_version",
+        "layout_version",
+        "number"
+      ],
+      "properties": {
+        "code": {
+          "const": "MER_CHGBK06"
+        },
+        "contract_version": {
+          "const": 1
+        },
+        "layout_version": {
+          "const": "001"
+        },
+        "number": {
+          "const": "06"
+        }
+      }
+    },
+    "type06SourceControls": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "calculated_amount",
+        "chargeback_amount",
+        "currency",
+        "original_amount",
+        "row_count"
+      ],
+      "properties": {
+        "calculated_amount": {
+          "$ref": "#/$defs/canonicalUnsignedMoney"
+        },
+        "chargeback_amount": {
+          "$ref": "#/$defs/canonicalUnsignedMoney"
+        },
+        "currency": {
+          "const": "BRL"
+        },
+        "original_amount": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/canonicalUnsignedMoney"
+            },
+            {
+              "not": {
+                "const": "0.00"
+              }
+            }
+          ]
+        },
+        "row_count": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10000
+        }
+      }
+    },
+    "type06SourceFile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "encoding",
+        "final_newline",
+        "line_ending",
+        "name",
+        "sha256",
+        "size_bytes",
+        "unicode_normalization"
+      ],
+      "properties": {
+        "encoding": {
+          "const": "UTF-8"
+        },
+        "final_newline": {
+          "const": "required"
+        },
+        "line_ending": {
+          "const": "LF"
+        },
+        "name": {
+          "type": "string",
+          "pattern": "^NW_MERCHANT_CHARGEBACK_[0-9]{8}_B[0-9]{15}\\.csv$"
+        },
+        "sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "size_bytes": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 5130138
+        },
+        "unicode_normalization": {
+          "const": "NFC"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,2 @@
+batch_id,source_file,source_record_number,chargeback_id,merchant_id,merchant_tax_id_masked,reason_code,description,original_amount_brl,rate_percent,chargeback_amount_brl,calculated_amount_brl,business_date,rounding_mode
+B202607230000501,NW_MERCHANT_CHARGEBACK_20260723_B202607230000501.csv,2,CBK2026072305001,MER0000000000001,**********0195,FRAUD,Ajuste de chargeback,67.00,1.500,1.01,1.01,2026-07-23,HALF_UP

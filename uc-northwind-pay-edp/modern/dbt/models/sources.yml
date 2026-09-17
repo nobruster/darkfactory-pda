@@ -1,0 +1,15 @@
+version: 2
+
+sources:
+  - name: landing
+    description: Immutable sanitized Parquet registered by dlt. Never edited.
+    schema: landing
+    tables:
+      - name: card_settlement
+        description: One privacy-safe Type 01 movement per source detail record.
+      - name: card_settlement_control
+        description: Per-batch controls published by the writer, including a wrong declaration.
+      - name: merchant_chargeback
+        description: One privacy-safe Type 06 chargeback per source detail record.
+      - name: merchant_chargeback_control
+        description: Per-batch Type 06 controls published by the writer.

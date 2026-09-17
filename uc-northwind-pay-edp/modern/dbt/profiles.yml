@@ -1,0 +1,8 @@
+northwind_modern:
+  target: local
+  outputs:
+    local:
+      type: duckdb
+      path: "{{ env_var('NWP_MODERN_DUCKDB', '../lakehouse/ducklake/northwind_modern.duckdb') }}"
+      threads: 1
+      schema: main

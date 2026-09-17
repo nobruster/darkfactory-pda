@@ -1,0 +1,149 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  actions: read
+  contents: read
+
+jobs:
+  authorize:
+    name: Require exact-SHA CI authorization
+    runs-on: ubuntu-latest
+    steps:
+      - name: Locate successful CI run for the tag SHA
+        id: ci
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          run_id="$(gh api "repos/$GITHUB_REPOSITORY/actions/workflows/ci.yml/runs?head_sha=$GITHUB_SHA&status=completed&per_page=100" --jq '.workflow_runs[] | select(.conclusion == "success") | .id' | head -n 1)"
+          test -n "$run_id"
+          echo "run_id=$run_id" >> "$GITHUB_OUTPUT"
+      - name: Download the already-tested candidate bytes
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh run download "${{ steps.ci.outputs.run_id }}" --repo "$GITHUB_REPOSITORY" --name "brief-spec-candidate-$GITHUB_SHA" --dir dist
+      - name: Verify authorization binds these bytes to this SHA
+        run: |
+          python -c 'import hashlib,json,os,pathlib; value=json.loads(pathlib.Path("dist/release-authorization.json").read_text()); assert value==value|{"sha":os.environ["GITHUB_SHA"],"version":os.environ["GITHUB_REF_NAME"].removeprefix("v")}; assert value["status"]=="authorized"; assert "live-host-matrix" in value["gates"]; assert value["live_e2e_sha256"]==hashlib.sha256(pathlib.Path("dist/live-e2e-evidence.json").read_bytes()).hexdigest()'
+          cd dist
+          sha256sum --check SHA256SUMS
+      - name: Prepare PyPI-only distribution directory
+        run: |
+          mkdir pypi
+          cp dist/*.whl dist/*.tar.gz pypi/
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: brief-spec-${{ github.ref_name }}-${{ github.sha }}
+          path: |
+            dist/
+            pypi/
+          if-no-files-found: error
+
+  draft-release:
+    name: Stage verified GitHub release
+    needs: authorize
+    runs-on: ubuntu-latest
+    permissions:
+      attestations: write
+      contents: write
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: brief-spec-${{ github.ref_name }}-${{ github.sha }}
+      - name: Generate build provenance
+        uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4.2.1
+        with:
+          subject-path: |
+            dist/*.whl
+            dist/*.tar.gz
+      - name: Create or refresh draft release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if gh release view "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            gh release upload "$GITHUB_REF_NAME" dist/* --clobber --repo "$GITHUB_REPOSITORY"
+          else
+            gh release create "$GITHUB_REF_NAME" dist/* \
+              --repo "$GITHUB_REPOSITORY" \
+              --verify-tag \
+              --draft \
+              --title "Brief-Spec ${GITHUB_REF_NAME#v}" \
+              --generate-notes
+          fi
+
+  publish-pypi:
+    name: Publish identical artifacts to PyPI
+    needs: draft-release
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/project/brief-spec/
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: brief-spec-${{ github.ref_name }}-${{ github.sha }}
+      - name: Publish with Trusted Publishing
+        uses: pypa/gh-action-pypi-publish@dc37677b2e1c63e2034f94d8a5b11f265b73ba33 # release/v1
+        with:
+          packages-dir: pypi/
+          skip-existing: true
+
+  verify-published:
+    name: Verify and install the published PyPI bytes
+    needs: publish-pypi
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.14"
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: brief-spec-${{ github.ref_name }}-${{ github.sha }}
+      - name: Wait for PyPI file visibility and verify digests
+        run: |
+          published=0
+          for attempt in 1 2 3 4 5; do
+            if python scripts/check-pypi-artifacts.py \
+              --dist pypi --require-published; then
+              published=1
+              break
+            fi
+            sleep 15
+          done
+          test "$published" = 1
+      - name: Clean install from immutable PyPI distributions
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: |
+          version="${RELEASE_TAG#v}"
+          python -m venv "$RUNNER_TEMP/published-smoke"
+          "$RUNNER_TEMP/published-smoke/bin/python" -m pip install \
+            --disable-pip-version-check --no-cache-dir \
+            "brief-spec==$version" \
+            "brief-spec-renderer-pdf==$version" \
+            "brief-spec-renderer-audio==$version"
+          "$RUNNER_TEMP/published-smoke/bin/brief-spec" --version
+          "$RUNNER_TEMP/published-smoke/bin/briefspec" --version
+          "$RUNNER_TEMP/published-smoke/bin/brief-spec" capabilities all --json
+
+  finalize-release:
+    name: Finalize GitHub release
+    needs: verify-published
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Publish the staged GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release edit "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" --draft=false

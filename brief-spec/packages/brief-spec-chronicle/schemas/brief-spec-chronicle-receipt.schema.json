@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/luanmorenommaciel/brief-spec/schemas/brief-spec-chronicle-receipt.schema.json",
+  "title": "Brief-Spec Chronicle receipt 1.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version", "project_id", "ledger_head_hash", "snapshot_sha256",
+    "created_at", "artifacts"
+  ],
+  "properties": {
+    "schema_version": { "const": "brief-spec-chronicle-receipt/1.0" },
+    "project_id": { "type": "string", "pattern": "^bscp-[0-9a-f]{24}$" },
+    "ledger_head_hash": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "snapshot_sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "created_at": { "type": "string", "format": "date-time" },
+    "destination": { "type": ["object", "null"] },
+    "artifacts": { "type": "array", "items": { "type": "object" } }
+  }
+}

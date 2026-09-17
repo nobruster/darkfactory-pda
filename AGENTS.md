@@ -14,43 +14,39 @@ o juiz, as ferramentas e o exemplo de referência.
 
 Estrutura:
 
-- `fabrica/` — conteúdo próprio, editável
-- `converge/` — **vendorizado** (cópia, não submódulo): o upstream saiu do ar.
-  Editável, e mudanças aqui viram commits deste repositório. Ver
-  [`converge/VENDORED.md`](converge/VENDORED.md)
-- `brief-spec/`, `seamwise/`, `task-spec/`, `uc-northwind-pay-edp/` —
-  **submódulos git de terceiros**
+- `fabrica/` — conteúdo próprio
+- `.claude/` — ambiente de agentes
+- `converge/`, `brief-spec/`, `seamwise/`, `task-spec/`,
+  `uc-northwind-pay-edp/` — **vendorizadas**: cópias de repositórios de
+  terceiros, versionadas direto aqui
+
+**Não há submódulos.** `git clone` traz tudo.
 
 ---
 
-## Regra 1 — Não edite dentro dos submódulos
+## Regra 1 — Código de terceiros: edite com consciência
 
-As **quatro** pastas de submódulo (`brief-spec/`, `seamwise/`, `task-spec/`,
-`uc-northwind-pay-edp/`) são clones de repositórios de
-[@luanmorenommaciel](https://github.com/luanmorenommaciel). Editar ali:
+As cinco pastas vendorizadas vieram de repositórios de
+[@luanmorenommaciel](https://github.com/luanmorenommaciel), congeladas num
+commit específico (ver o `VENDORED.md` de cada uma).
 
-- não gera commit neste repositório — vira mudança pendente no repo de outra
-  pessoa, no clone local;
-- se alguém rodar `git submodule update`, **a mudança é perdida em silêncio**.
+Editar ali **gera commit normal deste repositório** — não se perde nada, ao
+contrário de quando eram submódulos. Mas duas coisas mudam:
 
-Se precisar de comportamento diferente do que um submódulo oferece, a saída é
-uma das três — nunca editar direto:
+1. **A cópia diverge do upstream.** Quatro dos cinco repositórios continuam
+   ativos; quanto mais você edita, mais caro fica comparar ou trazer
+   atualizações.
+2. **Atualizar é manual.** Não existe `git submodule update`. É buscar o
+   upstream e reconciliar à mão.
+
+Por isso, antes de editar dentro de uma pasta vendorizada, prefira:
 
 1. Camada de adaptação em `fabrica/`
-2. Issue ou PR no repositório upstream
-3. Fork próprio, e o submódulo passa a apontar para o fork
+2. Issue ou PR no upstream, quando ele ainda existe
+3. Só então, editar direto — e registre no `VENDORED.md` o que divergiu
 
-Para atualizar um submódulo para um commit novo do upstream:
-
-```bash
-git submodule update --remote --merge <pasta>
-git commit -am "chore: atualiza <pasta>"
-```
-
-**Exceção: `converge/` não é submódulo.** O upstream saiu do ar (404) e os
-arquivos foram copiados para cá, congelados em `f6df8af`. Editar ali gera
-commit normal deste repositório — e não há upstream para onde mandar PR.
-Ver [`converge/VENDORED.md`](converge/VENDORED.md).
+⚠️ `converge/` é o único cujo upstream **saiu do ar** (HTTP 404). Ali não há
+para onde mandar PR, e editar direto é o caminho normal.
 
 ---
 
@@ -180,10 +176,5 @@ cd fabrica && python -m pytest tests/ -v
 Os 12 testes provam que o juiz **acusa**. Se algum falhar, o juiz está cego —
 e um juiz cego aprova tudo.
 
-Verifique também que nenhum submódulo ficou com mudança local pendente:
-
-```bash
-git submodule foreach 'git status --porcelain'
-```
-
-Saída vazia é o esperado.
+Se você alterou algo dentro de uma pasta vendorizada, anote a divergência no
+`VENDORED.md` dela — é o que permite reconciliar com o upstream depois.

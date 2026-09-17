@@ -1,0 +1,103 @@
+version: 1
+file_type:
+  number: "01"
+  name: Card Settlement Detail
+  code: CRD_SETTLE01
+  layout_version: "001"
+  filename_regex: '^NW_CARD_SETTLEMENT_[0-9]{8}_B[0-9]{15}\.dat$'
+  encoding: ISO-8859-1
+  line_ending: LF
+  final_newline: required
+  blank_lines: forbidden
+
+record_sequence:
+  - record: header
+    cardinality: exactly_one
+    position: first
+  - record: detail
+    cardinality: one_or_more
+  - record: trailer
+    cardinality: exactly_one
+    position: last
+
+overpunch:
+  description: >-
+    The last digit carries the sign. Characters are indexed from zero through
+    nine in the positive and negative strings.
+  positive_characters: "{ABCDEFGHI"
+  negative_characters: "}JKLMNOPQR"
+  decimal_scale: 2
+  examples:
+    - encoded: "00000001234E"
+      decoded: "123.45"
+    - encoded: "00000000500{"
+      decoded: "50.00"
+    - encoded: "00000000123M"
+      decoded: "-12.34"
+
+records:
+  header:
+    discriminator: H
+    length_bytes: 40
+    fields:
+      - { name: record_type, start: 1, end: 1, length: 1, type: literal, value: H }
+      - { name: file_date, start: 2, end: 9, length: 8, type: date, format: yyyyMMdd }
+      - { name: batch_id, start: 10, end: 25, length: 16, type: ascii, regex: '^B[0-9]{15}$' }
+      - { name: file_type_code, start: 26, end: 37, length: 12, type: literal, value: CRD_SETTLE01 }
+      - { name: layout_version, start: 38, end: 40, length: 3, type: literal, value: "001" }
+
+  detail:
+    discriminator: D
+    length_bytes: 124
+    fields:
+      - { name: record_type, start: 1, end: 1, length: 1, type: literal, value: D }
+      - { name: transaction_id, start: 2, end: 17, length: 16, type: ascii, regex: '^[A-Z0-9]{16}$' }
+      - { name: merchant_id, start: 18, end: 33, length: 16, type: ascii, regex: '^[A-Z0-9]{16}$' }
+      - { name: pan, start: 34, end: 49, length: 16, type: digits, privacy: tokenize }
+      - { name: cpf, start: 50, end: 60, length: 11, type: digits, privacy: mask }
+      - { name: transaction_date, start: 61, end: 68, length: 8, type: date, format: yyyyMMdd }
+      - { name: transaction_time, start: 69, end: 74, length: 6, type: time, format: HHmmss }
+      - { name: amount_brl, start: 75, end: 86, length: 12, type: signed_overpunch, scale: 2 }
+      - { name: currency, start: 87, end: 89, length: 3, type: literal, value: BRL }
+      - { name: movement_code, start: 90, end: 90, length: 1, type: enum, values: [P, R] }
+      - { name: authorization_code, start: 91, end: 96, length: 6, type: ascii, regex: '^[A-Z0-9]{6}$' }
+      - { name: nsu, start: 97, end: 108, length: 12, type: digits }
+      - { name: terminal_id, start: 109, end: 124, length: 16, type: ascii, regex: '^[A-Z0-9]{16}$' }
+
+  trailer:
+    discriminator: T
+    length_bytes: 46
+    fields:
+      - { name: record_type, start: 1, end: 1, length: 1, type: literal, value: T }
+      - { name: file_date, start: 2, end: 9, length: 8, type: date, format: yyyyMMdd }
+      - { name: detail_count, start: 10, end: 15, length: 6, type: unsigned_integer }
+      - { name: net_amount_brl, start: 16, end: 30, length: 15, type: signed_overpunch, scale: 2 }
+      - { name: batch_id, start: 31, end: 46, length: 16, type: ascii, regex: '^B[0-9]{15}$' }
+
+cross_record_rules:
+  - Header and trailer file dates must match.
+  - Header and trailer batch IDs must match.
+  - The filename date and batch ID must match the header.
+  - Trailer detail_count must equal the number of detail records.
+  - Trailer net_amount_brl must equal the exact sum of detail amount_brl.
+  - Purchase movement P requires a strictly positive amount.
+  - Refund movement R requires a strictly negative amount.
+  - Duplicate transaction_id values within a batch are forbidden.
+
+canonical_rejection_codes:
+  invalid_batch_id: INVALID_BATCH_ID
+  invalid_manifest: INVALID_MANIFEST
+  invalid_transport: INVALID_TRANSPORT
+  invalid_record_sequence: INVALID_RECORD_SEQUENCE
+  invalid_record_length: INVALID_RECORD_LENGTH
+  invalid_date: INVALID_DATE
+  invalid_time: INVALID_TIME
+  invalid_detail: INVALID_DETAIL
+  invalid_trailer: INVALID_TRAILER
+  header_mismatch: HEADER_MISMATCH
+  trailer_mismatch: TRAILER_MISMATCH
+  invalid_overpunch: INVALID_OVERPUNCH
+  invalid_movement_amount: INVALID_MOVEMENT_AMOUNT
+  source_control_total_mismatch: SOURCE_CONTROL_TOTAL_MISMATCH
+  tokenization_key_missing: TOKENIZATION_KEY_MISSING
+  tokenization_error: TOKENIZATION_ERROR

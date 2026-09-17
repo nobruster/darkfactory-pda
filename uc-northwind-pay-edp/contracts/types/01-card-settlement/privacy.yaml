@@ -1,0 +1,64 @@
+version: 1
+type_number: "01"
+
+raw_data_classification: restricted_synthetic_pii
+
+fields:
+  pan:
+    source_record: detail
+    classification: cardholder_data
+    allowed_raw_format: 16_digits
+    transformations:
+      token:
+        algorithm: HMAC-SHA-256
+        key_environment_variable: NWP_TOKENIZATION_KEY
+        key_encoding: UTF-8
+        input_encoding: ASCII
+        output_format: 'tok_<first-24-lowercase-hex-characters>'
+        missing_key_behavior: fail_closed
+      last4:
+        output_format: last_4_digits
+    prohibited_outputs:
+      - sanitized_csv
+      - application_logs
+      - error_messages
+      - batch_evidence
+      - database_staging
+      - database_operational
+
+  cpf:
+    source_record: detail
+    classification: personal_identifier
+    allowed_raw_format: 11_digits
+    transformation:
+      algorithm: retain_last4
+      output_format: '*******<last4>'
+    prohibited_outputs:
+      - sanitized_csv
+      - application_logs
+      - error_messages
+      - batch_evidence
+      - database_staging
+      - database_operational
+
+fixture_tokenization:
+  description: Public non-production key used only to make synthetic fixtures deterministic.
+  key: northwind-pay-edp-fixture-key-v1
+  may_be_used_outside_tests: false
+
+handling:
+  raw_sftp_zones:
+    access: least_privilege
+    content_may_be_logged: false
+  local_java_temporary_storage:
+    persist_after_batch: false
+  evidence:
+    store_raw_content: false
+    store_raw_sha256: true
+    safe_record_reference:
+      - source_filename
+      - physical_record_number
+      - transaction_id
+  failure_messages:
+    include_raw_line: false
+    include_field_value_for_pan_or_cpf: false

@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/luanmorenommaciel/brief-spec/schemas/brief-spec-decision.schema.json",
+  "title": "Brief-Spec Chronicle decision 1.0",
+  "type": "object",
+  "required": ["decision_id", "state", "source_event_ids"],
+  "properties": {
+    "decision_id": { "type": "string", "minLength": 1 },
+    "question": { "type": ["string", "null"] },
+    "alternatives": { "type": "array", "items": { "type": "string" } },
+    "choice": { "type": ["string", "null"] },
+    "owner": { "type": ["string", "null"] },
+    "rationale": { "type": ["string", "null"] },
+    "consequences": { "type": "array", "items": { "type": "string" } },
+    "state": { "enum": ["requested", "recorded"] },
+    "source_event_ids": { "type": "array", "minItems": 1, "items": { "type": "string" } }
+  }
+}

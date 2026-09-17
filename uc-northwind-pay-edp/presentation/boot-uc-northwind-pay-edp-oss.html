@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Agentic Engineering in Practice — Bootcamp Reference · OSS v3 · English Edition</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,600&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --navy:#13293c; --ink:#20374c; --muted:#5c6f80; --faint:#8b9aa8;
+  --green:#2f8a57; --greenbright:#4ec37f; --greenink:#1f5c3a;
+  --paper:#ffffff; --darkbg:#0e2130; --darkbg2:#0b1b28; --code:#0d1e2c;
+  --cardbg:#f3f6f9; --cardborder:#dbe3ec; --gatebg:#ecf6ef; --gateborder:#2f8a57;
+  --notebg:#eef3fa; --noteborder:#3d5f8a; --amberbg:#fdf6e8; --amberborder:#c08a2d;
+  --tablehead:#1b3a55; --zebra:#f5f8fb;
+  --ccomment:#5d7488; --ctoken:#8fd9a8; --ckey:#e8c66b; --ccyan:#7cc4de; --ctext:#c9d6df; --cwarn:#e8a06b;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#22303c;font-family:'Source Serif 4',Georgia,serif;color:var(--ink)}
+.deck{width:1000px;margin:0 auto}
+section.slide{width:1000px;height:1414px;background:var(--paper);position:relative;overflow:hidden;padding:74px 84px 60px;display:block}
+section.slide.dark{background:linear-gradient(160deg,#0f2434 0%,#0c1d2b 55%,#0a1823 100%);color:#e9eef2}
+.pagenum{position:absolute;bottom:26px;left:0;right:0;text-align:center;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--faint);letter-spacing:.15em}
+.dark .pagenum{color:#5d7488}
+.runhead{position:absolute;top:30px;right:84px;font-family:'JetBrains Mono',monospace;font-size:8.5px;letter-spacing:.22em;color:var(--faint)}
+h1{font-family:'Playfair Display',serif;font-weight:700;font-size:34px;line-height:1.18;color:var(--navy);margin-bottom:8px}
+h1.numbered{padding-left:56px;position:relative}
+.passglyph{position:absolute;left:0;top:4px;font-family:'Playfair Display',serif;font-style:italic;font-weight:600;font-size:34px;color:var(--green)}
+.kicker{font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:.24em;color:var(--faint);text-transform:uppercase;margin-bottom:20px}
+h1+.kicker{margin-top:2px}
+p{font-size:14.5px;line-height:1.62;margin-bottom:13px}
+p b{color:var(--navy)}
+code{font-family:'JetBrains Mono',monospace;font-size:.88em;background:#eef2f6;padding:1px 5px;border-radius:3px;color:#28425c}
+.dark code{background:rgba(255,255,255,.08);color:#bcd2df}
+.enginebar{display:flex;font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:.06em;margin:14px 0 20px;border-radius:4px;overflow:hidden}
+.enginebar span{padding:9px 14px;white-space:nowrap}
+.eb-dim{background:#22415c;color:#9db4c6}
+.eb-dark{background:#16324a;color:#fff;font-weight:600}
+.eb-mid{background:#3c5a76;color:#dbe6ef}
+.eb-green{background:#2f8a57;color:#fff;font-weight:600}
+.cards{display:flex;gap:16px;margin:20px 0}
+.card{flex:1;border:1px solid var(--cardborder);background:var(--cardbg);border-radius:5px;padding:16px 18px}
+.card .lbl{font-family:'JetBrains Mono',monospace;font-size:8.5px;letter-spacing:.22em;color:var(--faint);text-transform:uppercase;margin-bottom:7px}
+.card h3{font-family:'Playfair Display',serif;font-size:17px;color:var(--navy);margin-bottom:7px}
+.card p{font-size:12px;line-height:1.55;margin:0;color:#42566a}
+.gate,.note,.amber{border-radius:4px;padding:15px 20px;margin:16px 0}
+.gate{background:var(--gatebg);border-left:4px solid var(--gateborder)}
+.note{background:var(--notebg);border-left:4px solid var(--noteborder)}
+.amber{background:var(--amberbg);border-left:4px solid var(--amberborder)}
+.gate .lbl,.note .lbl,.amber .lbl{font-family:'JetBrains Mono',monospace;font-size:8.5px;letter-spacing:.22em;text-transform:uppercase;margin-bottom:7px}
+.gate .lbl{color:var(--greenink)} .note .lbl{color:#2d4a70} .amber .lbl{color:#8a611c}
+.gate p,.note p,.amber p{font-size:13px;line-height:1.6;margin:0}
+.codeblock{background:var(--code);border-radius:8px;padding:22px 26px;margin:18px 0;font-family:'JetBrains Mono',monospace;font-size:11.5px;line-height:1.75;color:var(--ctext);white-space:pre;overflow:hidden}
+.codeblock .c{color:var(--ccomment)} .codeblock .g{color:var(--ctoken)} .codeblock .y{color:var(--ckey)} .codeblock .b{color:var(--ccyan)} .codeblock .o{color:var(--cwarn)}
+table.data{width:100%;border-collapse:collapse;margin:18px 0;font-size:12.5px}
+table.data th{background:var(--tablehead);color:#fff;font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.18em;text-transform:uppercase;text-align:left;padding:10px 14px;font-weight:600}
+table.data td{padding:10px 14px;border-bottom:1px solid #e4eaf1;vertical-align:top;line-height:1.5}
+table.data tr:nth-child(even) td{background:var(--zebra)}
+table.data td:first-child{font-weight:600;color:var(--navy);white-space:nowrap}
+table.data code{font-size:10.5px}
+.figcap{font-size:11px;color:var(--muted);line-height:1.5;margin-top:-6px;margin-bottom:14px}
+.figcap b{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.1em;color:var(--navy)}
+.toc{margin-top:26px}
+.tocrow{display:flex;align-items:baseline;font-size:14px;padding:7px 0}
+.tocrow .n{width:44px;font-family:'Playfair Display',serif;font-style:italic;color:var(--green);font-size:15px}
+.tocrow .t{color:var(--navy);font-weight:600;white-space:nowrap}
+.tocrow .dots{flex:1;border-bottom:1px dotted #b9c6d2;margin:0 10px;transform:translateY(-3px)}
+.tocrow .d{font-size:11.5px;font-style:italic;color:var(--faint);white-space:nowrap}
+.statrow{display:flex;gap:56px;margin-top:56px}
+.stat .v{font-family:'Playfair Display',serif;font-size:44px;font-weight:700;color:var(--greenbright)}
+.stat .k{font-family:'JetBrains Mono',monospace;font-size:8.5px;letter-spacing:.2em;color:#7e93a4;text-transform:uppercase;margin-top:6px;line-height:1.6}
+.coverrule{border-top:1px solid rgba(255,255,255,.14);margin:44px 0 22px}
+.covermeta{display:flex;gap:80px}
+.covermeta .lbl{font-family:'JetBrains Mono',monospace;font-size:8.5px;letter-spacing:.22em;color:#7e93a4;text-transform:uppercase;margin-bottom:6px}
+.covermeta p{font-size:13px;color:#c9d6df;margin:0}
+.versionbox{display:inline-block;margin-top:40px;border:1px solid rgba(78,195,127,.45);border-radius:5px;padding:14px 22px;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.12em;color:#8fd9a8}
+h2{font-family:'Playfair Display',serif;font-size:20px;color:var(--navy);margin:20px 0 8px}
+ul.plain{margin:0 0 13px 20px}
+ul.plain li{font-size:13.5px;line-height:1.65;margin-bottom:5px}
+.twocol{display:flex;gap:20px;margin:18px 0}
+.twocol>div{flex:1}
+.protorow{display:flex;align-items:flex-start;margin-bottom:16px}
+.protorow .stepn{width:30px;height:30px;border-radius:50%;background:var(--navy);color:#fff;font-family:'JetBrains Mono',monospace;font-size:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-right:16px}
+.protorow .stepbody{flex:1}
+.protorow .stepbody b{display:block;font-family:'Playfair Display',serif;font-size:15.5px;color:var(--navy);margin-bottom:3px}
+.protorow .stepbody p{font-size:12.5px;line-height:1.55;margin:0;color:#42566a}
+.threestep{display:flex;gap:14px;align-items:stretch;margin:18px 0}
+.threestep .step{flex:1;border:1px solid var(--cardborder);border-top:3px solid var(--green);background:var(--cardbg);border-radius:4px;padding:14px 16px}
+.threestep .step .lbl{font-family:'JetBrains Mono',monospace;font-size:8.5px;letter-spacing:.2em;color:var(--green);text-transform:uppercase;margin-bottom:6px}
+.threestep .step h3{font-family:'Playfair Display',serif;font-size:16px;color:var(--navy);margin-bottom:6px}
+.threestep .step p{font-size:11.5px;line-height:1.5;margin:0;color:#42566a}
+.threestep .arr{align-self:center;color:var(--faint);font-size:18px}
+</style>
+</head>
+<body>
+<div class="deck">
+
+<!-- ============ 1 · COVER ============ -->
+<section class="slide dark" style="padding-top:120px">
+  <div style="font-family:'Playfair Display',serif;font-weight:700;font-size:40px;color:#fff">Agentic Engineering <span style="color:var(--greenbright)">in Practice</span></div>
+  <div class="kicker" style="color:#7e93a4;margin-top:74px">BOOTCAMP · REFERENCE DOCUMENT · ENGLISH EDITION · INTERNAL USE</div>
+  <h1 style="font-family:'Playfair Display',serif;font-weight:700;font-size:54px;line-height:1.15;color:#fff;margin:10px 0 0">From Zero to Production —<br><span style="color:var(--greenbright);font-style:italic">the AI-Native Engineer</span></h1>
+  <p style="font-size:15px;line-height:1.7;color:#c9d6df;margin-top:30px;max-width:660px">In five evenings, one engineer builds — alone — what a team took four years to build: an <b style="color:#fff">agentic factory</b> that migrates the legacy NorthWind Pay EDP financial platform onto a modern, 100% open-source stack, reproducible on any laptop. The factory understands the legacy, translates it, raises the new platform, and validates every cent against the old system — until it runs by itself.</p>
+  <div class="statrow">
+    <div class="stat"><div class="v">5</div><div class="k">DAYS · 4H/DAY<br>19H30–23H30 · LIVE</div></div>
+    <div class="stat"><div class="v">100%</div><div class="k">OPEN-SOURCE<br>LOCAL-FIRST</div></div>
+    <div class="stat"><div class="v">2</div><div class="k">USE CASES<br>LEGACY + MODERN</div></div>
+    <div class="stat"><div class="v">v3</div><div class="k">OSS EDITION<br>ENGLISH</div></div>
+  </div>
+  <div class="versionbox">OSS V3 · ENGLISH EDITION · SNAPSHOT 2026-08-18 · NORTHWIND PAY EDP · COHORT 24–28/08</div>
+  <div class="coverrule"></div>
+  <div class="covermeta">
+    <div><div class="lbl">DOCUMENT</div><p>Bootcamp reference · v3 (English)</p></div>
+    <div><div class="lbl">ACADEMY</div><p>Engenharia de Dados Academy</p></div>
+    <div><div class="lbl">STACK</div><p>OntoLayer · Converge · AgentSpec · Dark Factory · Golden-Match</p></div>
+  </div>
+  <p style="font-size:11px;font-style:italic;color:#7e93a4;line-height:1.7;margin-top:26px">English edition of the OSS v2 reference, restated and expanded against the live estate: the working legacy baseline, the modern target plan, the Dark Factory doctrine, and the corrected workshop record. Where the v2 booklet and the repository disagree, this edition follows the repository.</p>
+  <div class="pagenum">01</div>
+</section>
+
+<!-- ============ 2 · CONTENTS ============ -->
+<section class="slide">
+  <div class="runhead">AGENTIC ENGINEERING IN PRACTICE · OSS V3</div>
+  <h1>What is in this document</h1>
+  <div class="kicker">NINE SECTIONS · ONE STORY: A LEGACY PLATFORM, A COHORT, AND THE FACTORY THAT REPLACES IT</div>
+  <div class="toc">
+    <div class="tocrow"><span class="n">01</span><span class="t">The Boot Camp</span><span class="dots"></span><span class="d">five evenings · the promise · why it is different</span></div>
+    <div class="tocrow"><span class="n">02</span><span class="t">The Reason</span><span class="dots"></span><span class="d">the migration that never starts · the autonomy ruler</span></div>
+    <div class="tocrow"><span class="n">03</span><span class="t">The Cohort</span><span class="dots"></span><span class="d">561 applied · 249 selected · nobody below L3</span></div>
+    <div class="tocrow"><span class="n">04</span><span class="t">The Setup</span><span class="dots"></span><span class="d">laptop-first · production → OSS map · semi-ready artifacts</span></div>
+    <div class="tocrow"><span class="n">05</span><span class="t">The Days</span><span class="dots"></span><span class="d">five personas · the rings · the autonomy curve</span></div>
+    <div class="tocrow"><span class="n">06</span><span class="t">Day 1 — The Archaeologist</span><span class="dots"></span><span class="d">Prompt + Context Engineering</span></div>
+    <div class="tocrow"><span class="n">07</span><span class="t">Day 2 — The Translator</span><span class="dots"></span><span class="d">Harness Engineering</span></div>
+    <div class="tocrow"><span class="n">08</span><span class="t">Day 3 — The Builder</span><span class="dots"></span><span class="d">seams → swimlanes → legs</span></div>
+    <div class="tocrow"><span class="n">09</span><span class="t">Day 4 — The Orchestrator</span><span class="dots"></span><span class="d">Loop + Eval · the golden-match AHA</span></div>
+    <div class="tocrow"><span class="n">10</span><span class="t">Day 5 — The Autonomous Factory</span><span class="dots"></span><span class="d">Dark Factory · self-healing · Demo Day</span></div>
+    <div class="tocrow"><span class="n">11</span><span class="t">What We Are Going to Do</span><span class="dots"></span><span class="d">the mission · the Converge spine · the vocabulary</span></div>
+    <div class="tocrow"><span class="n">12</span><span class="t">The Agenda</span><span class="dots"></span><span class="d">the 4-hour daily grade · the week · the arsenal</span></div>
+    <div class="tocrow"><span class="n">13</span><span class="t">The Modern Use Case</span><span class="dots"></span><span class="d">event-driven → lakehouse → serving, cent-validated</span></div>
+    <div class="tocrow"><span class="n">14</span><span class="t">The Legacy Use Case</span><span class="dots"></span><span class="d">NorthWind Pay EDP as it stands — and why it is the oracle</span></div>
+  </div>
+  <div class="note"><div class="lbl">HOW TO READ</div><p>Sections 01–05 explain the boot camp itself: what it is, why it exists, who is in the room, and how the week is shaped. Sections 06–10 walk the five days. Sections 11–12 consolidate the method and the schedule. Sections 13–14 give the two use cases in full — the platform the factory builds, and the platform it migrates away from.</p></div>
+  <div class="pagenum">02</div>
+</section>
+
+<!-- ============ 3 · 01 THE BOOT CAMP ============ -->
+<section class="slide">
+  <div class="runhead">AGENTIC ENGINEERING IN PRACTICE · OSS V3</div>
+  <h1 class="numbered"><span class="passglyph">01</span>The boot camp.</h1>
+  <div class="kicker">FIVE EVENINGS · FOUR HOURS A DAY · LIVE · ONE CONTINUOUS BUILD</div>
+  <p><b>Agentic Engineering in Practice</b> is a five-day, four-hours-a-day live boot camp (19h30–23h30) in which each student builds a complete agentic system on their own laptop: a factory that migrates a legacy payment-processing data platform — the NorthWind Pay EDP — to a modern open-source stack, and proves the migration correct cent by cent against the running legacy. It is not a course about agents. It is the supervised construction of an agentic factory, one evening at a time, until the human steps out of the execution path.</p>
+  <div class="enginebar"><span class="eb-dim">FORMAT ·</span><span class="eb-dark">5 DAYS × 4H LIVE</span><span class="eb-mid">100% OPEN-SOURCE · LOCAL-FIRST</span><span class="eb-green">ZERO → PRODUCTION</span></div>
+  <div class="cards">
+    <div class="card"><div class="lbl">ONE EVOLVING CASE</div><h3>Not scattered topics</h3><p>A single use case runs through the whole week. The student feels the system gain autonomy day by day — from the first tech-spec to a Dark Factory that repairs itself.</p></div>
+    <div class="card"><div class="lbl">A REAL PRODUCTION SCAR</div><h3>Distilled from KurvPay EDP</h3><p>The case distills a real engagement: 32/32 file types onboarded, 26 of 28 matched types golden-signed, ~42× faster than the legacy T-SQL, ~98% infrastructure cost cut.</p></div>
+    <div class="card"><div class="lbl">ENGINEER'S HONESTY</div><h3>Limits taught, not hidden</h3><p>The loop converges to green evals, not to correct outcomes. The boot camp teaches where the factory must not be trusted — the line between authority and hype.</p></div>
+  </div>
+  <h2>The promise</h2>
+  <p>In five days, you will not learn to use agents — you will build a complete agentic system, from zero to production, that migrates a legacy financial platform by itself, validates itself against the past, and repairs itself for the future. When it ends, you will not have watched a course. <b>You will have built the future of engineering.</b></p>
+  <div class="gate"><div class="lbl">WHAT "PRODUCTION" MEANS HERE</div><p>Every component runs locally and open-source — no cloud account, no cost — but the pattern is the production one: the same reference architecture that ran the real engagement, with a real exit ramp (DuckDB → MotherDuck, a local function → any cloud) and no rewrites.</p></div>
+  <div class="pagenum">03</div>
+</section>
+
+<!-- ============ 4 · 02 THE REASON ============ -->
+<section class="slide">
+  <div class="runhead">AGENTIC ENGINEERING IN PRACTICE · OSS V3</div>
+  <h1 class="numbered"><span class="passglyph">02</span>The reason.</h1>
+  <div class="kicker">THE MIGRATION THAT NEVER STARTS · THE QUESTION THAT FREEZES IT · THE RULER THAT SITUATES YOU</div>
+  <p>Every large enterprise runs a NorthWind Pay: a transaction core that works, that nobody fully understands, and that nobody dares to touch. The board wants the migration. The budget — twelve to eighteen months of a full team — has been <b>approved twice and started zero times</b>. It always freezes on the same question: <b>who guarantees the new system's numbers match the old one's, cent by cent?</b></p>
+  <p>The real risk was never the system going down. It is the system <b>working and being wrong</b>: a swapped offset, an inverted sign in a COBOL overpunch byte — and plausible-but-wrong money is born, the kind no test catches and that only surfaces three months later in an audit. <b>Plausible is not correct.</b> The answer to the frozen question is not more people. It is a factory that treats the legacy — with all its defects — as the oracle, and validates every translation against it.</p>
+  <h2>Where the market actually is</h2>
+  <table class="data">
+    <tr><th style="width:34%">SHAPIRO LEVEL (JAN/2026)</th><th>WHAT IT LOOKS LIKE</th></tr>
+    <tr><td>L0 · Manual</td><td>No character reaches disk without your approval. AI as a turbocharged search box.</td></tr>
+    <tr><td>L1 · Discrete delegation</td><td>"Write a unit test for this." Speedups, but the work has not changed.</td></tr>
+    <tr><td>L2 · Flow-state pairing</td><td>Where ~90% of self-described "AI-native" developers live. Feels like done; is not done.</td></tr>
+    <tr><td>L3 · You became a manager</td><td>Several tabs running; your life becomes diffs. Almost everyone parks here.</td></tr>
+    <tr><td>L4 · You became a PM</td><td>You write a spec, argue the spec, plan, review — and leave for 12 hours.</td></tr>
+    <tr><td>L5 · The dark factory</td><td>Specs in, software out — a black box where humans are neither needed nor welcome in execution.</td></tr>
+  </table>
+  <div class="amber"><div class="lbl">WHY THIS BOOT CAMP EXISTS</div><p>Most of the market stalls at L3 — reviewing diffs and feeling slower. Meanwhile the measured evidence is sobering: METR's 2025 RCT found experienced developers <b>19% slower</b> with AI assistance while believing themselves 20% faster. The gap between felt and real productivity is exactly the gap this week closes: it takes the student from L3 to L5 by building the NorthWind Pay Dark Factory with their own hands. <b>Shapiro's ruler is the map; the use case is the journey.</b></p></div>
+  <div class="pagenum">04</div>
+</section>
+
+<!-- ============ 5 · 03 THE COHORT ============ -->
+<section class="slide">
+  <div class="runhead">AGENTIC ENGINEERING IN PRACTICE · OSS V3</div>
+  <h1 class="numbered"><span class="passglyph">03</span>The cohort.</h1>
+  <div class="kicker">A SELECTED ROOM · SNAPSHOT 2026-07-25 · PRODUCT: DARK-FACTORY-V1</div>
+  <p>This is not an open-enrollment webinar. Applicants are scored by an agentic selection pipeline — fittingly, the first agentic system the cohort meets is the one that scored them — and the room is capped so that four live hours a night stay interactive.</p>
+  <div class="statrow" style="margin-top:10px">
+    <div class="stat"><div class="v" style="color:var(--navy)">561</div><div class="k" style="color:var(--muted)">DISTINCT APPLICANTS<br>(703 SUBMISSIONS)</div></div>
+    <div class="stat"><div class="v" style="color:var(--navy)">249</div><div class="k" style="color:var(--muted)">SELECTED · 44%<br>312 TURNED AWAY</div></div>
+    <div class="stat"><div class="v" style="color:var(--navy)">L3+</div><div class="k" style="color:var(--muted)">THE GATE ADMITTED<br>NOBODY BELOW L3</div></div>
+    <div class="stat"><div class="v" style="color:var(--navy)">76%</div><div class="k" style="color:var(--muted)">SENIOR-OR-ABOVE<br>IN THE ROOM</div></div>
+  </div>
+  <h2>The funnel, honestly</h2>
+  <table class="data">
+    <tr><th style="width:30%">POPULATION</th><th>LEVEL MIX (L1 → L4)</th></tr>
+    <tr><td>Applicant pool</td><td>L1 21% · L2 32% · L3 33% · L4 13% — a normal market distribution.</td></tr>
+    <tr><td>The admitted room</td><td><b>L3 70% · L4 30%</b> — the selection inverted the curve: the room starts where the market stalls.</td></tr>
+  </table>
+  <h2>Who each day serves</h2>
+  <table class="data">
+    <tr><th style="width:34%">ROLE</th><th style="width:22%">LEAD DAY</th><th>REINFORCED</th></tr>
+    <tr><td>Solutions Architect</td><td>Day 1</td><td>Day 4</td></tr>
+    <tr><td>AI Engineer</td><td>Days 1 &amp; 4</td><td>Day 3</td></tr>
+    <tr><td>Software Engineer</td><td>Day 2</td><td>Day 5</td></tr>
+    <tr><td>Data Engineer</td><td>Day 3</td><td>Day 5</td></tr>
+    <tr><td>Analytics Engineer</td><td>Day 3</td><td>Day 4</td></tr>
+    <tr><td>DevOps</td><td>Day 4</td><td>Day 5</td></tr>
+    <tr><td>AI-Native Engineer (integrates all)</td><td>Days 4 &amp; 5</td><td>every day</td></tr>
+  </table>
+  <div class="note"><div class="lbl">THE HONEST ANSWER TO "DO I BECOME ALL OF THAT?"</div><p>No — and that is the good news. Over a 2–3 year horizon, nobody hand-executes five disciplines: the SQL, the Terraform, and the positional parser descend to agents. What ascends to the human is solution judgment — what the real problem is, where to cut the seams, where the risks hide, and what "done" verifiably means. The five execution personas become commodity agents; the architecture of the solution and the taste for quality stay human.</p></div>
+  <div class="pagenum">05</div>
+</section>
+
+<!-- ============ 6 · 04 THE SETUP ============ -->
+<section class="slide">
+  <div class="runhead">AGENTIC ENGINEERING IN PRACTICE · OSS V3</div>
+  <h1 class="numbered"><span class="passglyph">04</span>The setup.</h1>
+  <div class="kicker">A LAPTOP, NOT A CLOUD ACCOUNT · THE PRODUCTION PATTERN, LOCALLY · EVERY DAY PRE-STAGED</div>
+  <p>Everything runs local-first and open-source: <b>Docker with Compose, GNU Make, and Python 3.12+</b> are the only requirements. The stack is the production architecture of the real engagement, distilled component-by-component into OSS equivalents that any student can run — with a genuine exit ramp when it is time to scale.</p>
+  <table class="data">
+    <tr><th style="width:22%">LAYER</th><th style="width:36%">REAL PRODUCTION (KURVPAY)</th><th>BOOT CAMP (OPEN-SOURCE, LOCAL)</th></tr>
+    <tr><td>Ingestion</td><td>AWS Lambda</td><td>Local event-driven Python function</td></tr>
+    <tr><td>Lakehouse</td><td>Databricks Lakeflow</td><td>dlt → DuckLake → DuckDB</td></tr>
+    <tr><td>Transformation</td><td>Lakeflow DLT</td><td>dbt Core (medallion)</td></tr>
+    <tr><td>Orchestration</td><td>Databricks</td><td>Dagster (assets)</td></tr>
+    <tr><td>Serving</td><td>Unity Catalog</td><td>FastAPI + MCP</td></tr>
+    <tr><td>Agentic</td><td>Claude Code + KB + MCP</td><td>Claude Code + Codex + Kimi · MCP · Langfuse</td></tr>
+    <tr><td>IaC / CI-CD</td><td>SAM + Azure Pipelines</td><td>Terraform + Terragrunt + GitHub Actions</td></tr>
+  </table>
+  <h2>Semi-ready artifacts — how a day fits in four hours</h2>
+  <p style="font-size:13px">Every evening starts from a prepared initial state, so the class spends its time on the day's discipline instead of on plumbing.</p>
+  <table class="data">
+    <tr><th style="width:14%">DAY</th><th>PRE-STAGED ARTIFACT</th></tr>
+    <tr><td>1</td><td>Installable OntoLayer + populated legacy Postgres + ready meeting transcripts</td></tr>
+    <tr><td>2</td><td>Sketched harness (<code>.claude/</code> + <code>AGENTS.md</code>) + AgentSpec installed</td></tr>
+    <tr><td>3</td><td>DataGen + Postgres + ~300 procedures ready — "the current OLTP"</td></tr>
+    <tr><td>4</td><td>Day-3 task-specs already registered as Linear issues + GitHub Actions configured</td></tr>
+    <tr><td>5</td><td>The surprise 6th file type prepared + production environment (Terraform) pre-provisioned</td></tr>
+  </table>
+  <div class="gate"><div class="lbl">WHY DAGSTER AND NOT AIRFLOW</div><p>Airflow is the market standard with the largest hiring pool — if you already run it, keep it. But for a greenfield, agentic, local-first project, Dagster is objectively superior: asset-centric (every table is an asset with lineage, matching the reference architecture), frictionless on a laptop, and the friendliest surface for AI agents. The right tool for this case — not the most popular one.</p></div>
+  <div class="pagenum">06</div>
+</section>
+
+<!-- ============ 7 · 05 THE DAYS ============ -->
+<section class="slide">
+  <div class="runhead">AGENTIC ENGINEERING IN PRACTICE · OSS V3</div>
+  <h1 class="numbered"><span class="passglyph">05</span>The five days.</h1>
+  <div class="kicker">FIVE PERSONAS · THE RINGS OF AGENTIC ENGINEERING · ONE AUTONOMY CURVE</div>
+  <p>The discipline is made of concentric rings: each day lights one — Prompt, Context Engineering, Harness Engineering, Loop Engineering, Eval Engineering, and finally Multi-Agent Orchestration — and each outer ring contains and depends on every inner one. By Friday, all rings are lit and orchestrated. The personas are the roles the student embodies while lighting them.</p>
+  <table class="data">
+    <tr><th style="width:6%">DAY</th><th style="width:22%">PERSONA</th><th style="width:24%">RINGS LIT</th><th style="width:20%">CONVERGE</th><th>AUTONOMY</th></tr>
+    <tr><td>1</td><td><b>The Archaeologist</b></td><td>Prompt + Context Eng</td><td>P1 Intent · P2 Structure</td><td>Full HITL</td></tr>
+    <tr><td>2</td><td><b>The Translator</b></td><td>Harness Engineering</td><td>P3 · P4 · Fork · P6</td><td>Strong HITL</td></tr>
+    <tr><td>3</td><td><b>The Builder</b></td><td>Harness applied + Loop (seed)</td><td>P3 seams→legs · P5 Tasking</td><td>HITL receding</td></tr>
+    <tr><td>4</td><td><b>The Orchestrator</b></td><td>Loop + Eval Engineering</td><td>P8 The Loop + Manager</td><td>Full Loop</td></tr>
+    <tr><td>5</td><td><b>The Autonomous Factory</b></td><td>Multi-agent orchestration</td><td>Production + brownfield</td><td>Dark Factory</td></tr>
+  </table>
+  <h2>The autonomy curve — the pedagogical heart</h2>
+  <div class="codeblock" style="font-size:11px"><span class="c">human in control ──────────────────────────────────────▶ factory autonomous</span>
+
+ <span class="y">Day 1</span>          <span class="y">Day 2</span>           <span class="y">Day 3</span>            <span class="y">Day 4</span>          <span class="y">Day 5</span>
+ full HITL      strong HITL     HITL receding     full Loop        Dark Factory
+ understand     translate      build while       validate &amp;       you step out
+ the legacy     safely         validating        self-correct     of the loop</div>
+  <div class="note"><div class="lbl">WHY THE LOOP ONLY APPEARS ON DAY 4</div><p>The student earns confidence before letting go of the wheel. The Loop is withheld until the harness and the evals are trusted — each day removes a little more of the human from the execution path, mapping the climb up Shapiro's levels (L3 → L5). Autonomy granted before trust is not engineering; it is gambling.</p></div>
+  <div class="pagenum">07</div>
+</section>
+
+<!-- ============ 8 · DAY 1 ============ -->
+<section class="slide">
+  <div class="runhead">AGENTIC ENGINEERING IN PRACTICE · OSS V3</div>
+  <h1 class="numbered"><span class="passglyph">1</span>Day 1 — The Archaeologist.</h1>
+  <div class="kicker">DECIPHERING A SYSTEM NOBODY UNDERSTANDS ANYMORE · PROMPT + CONTEXT ENGINEERING</div>
+  <div class="enginebar"><span class="eb-dim">ROLE ·</span><span class="eb-mid">SOLUTIONS ARCHITECT &amp; AI ENGINEER</span><span class="eb-dark">CONVERGE P1 + P2</span><span class="eb-green">FULL HITL</span></div>
+  <p>The week begins inside the chaos every legacy migration actually starts with: meeting transcripts, Slack threads, half-true BRDs, scattered documentation. The Archaeologist's job is to turn that chaos into context a machine can reason over — before writing a single line of the new system.</p>
+  <ul class="plain">
+    <li><b>Inject the chaos</b> into Claude Cowork: transcripts, threads, BRDs, loose legacy docs — the real raw material of understanding.</li>
+    <li><b>Build the project's Second Brain</b> — Cowork + Obsidian + MCP automations + Schedules: a living organism that keeps itself updated. The day's "wow": every student leaves with a self-feeding second brain of the project.</li>
+    <li><b>Run OntoLayer over the legacy Postgres</b> — crawl → enrich → serve: ~300 stored procedures plus schema become a navigable knowledge graph instead of illegible DDL, with safe text-to-SQL via sqlglot. Without the ontological base you cannot see how the legacy connects.</li>
+    <li><b>Ask the legacy business questions in natural language</b> over MCP — real joins, real grain, what "paid" actually means.</li>
+    <li><b>Pass 1 · Intent:</b> the material condenses into a tech-spec that answers the brief.</li>
+    <li><b>Pass 2 · Structure (brownfield):</b> OntoLayer answers supply the facts; transcripts endorse each decision; both become ADRs — facts and constraints, never "how to build".</li>
+  </ul>
+  <div class="cards">
+    <div class="card"><div class="lbl">DELIVERABLES</div><h3>What Day 1 leaves behind</h3><p>Second Brain running (Cowork + Obsidian + MCP + Schedules) · OntoLayer indexing Postgres, reachable via MCP · tech-spec (P1) + transcript-endorsed ADRs (P2).</p></div>
+  </div>
+  <div class="gate"><div class="lbl">DAY 1 GATE</div><p><b>The system understands the legacy better than you do.</b></p></div>
+  <div class="pagenum">08</div>
+</section>
+
+<!-- ============ 9 · DAY 2 ============ -->
+<section class="slide">
+  <div class="runhead">AGENTIC ENGINEERING IN PRACTICE · OSS V3</div>
+  <h1 class="numbered"><span class="passglyph">2</span>Day 2 — The Translator.</h1>
+  <div class="kicker">FROM RAW FILE TO PYTHON — THE FIRST WINS, WITH A SAFETY NET · HARNESS ENGINEERING</div>
+  <div class="enginebar"><span class="eb-dim">ROLE ·</span><span class="eb-mid">SOFTWARE ENGINEER</span><span class="eb-dark">CONVERGE P3 + P4 + FORK + P6</span><span class="eb-green">STRONG HITL</span></div>
+  <ul class="plain">
+    <li><b>Create the Git project and run Converge end to end</b> for the first time.</li>
+    <li><b>Pass 3 · Decompose:</b> cut the work at the system's natural seams → swimlanes, reading Day 1's ADRs as ground.</li>
+    <li><b>Pass 4 · Consensus:</b> an adversary from a different model family (Codex) attacks the plans — refutes, points out drift, forces settlement before the owner signs.</li>
+    <li><b>The harness scaffolds in minutes:</b> <code>stack-to-harness</code> generates <code>.claude/</code> + <code>AGENTS.md</code> + KBs + rules. The class never assembles agents by hand — it understands and refines what the skill generates. Curation beats comprehensiveness.</li>
+    <li><b>Two lanes after Consensus:</b> Specify-Driven (AgentSpec: <code>/agentspec:brainstorm → define → design → build → ship</code>, plus <code>/agentspec:migrate</code>) for the first guided translations — the quick wins; and Task-Driven, the seed of the Dark Factory.</li>
+    <li><b>The 4-layer pattern per file type</b> (distilled from the real engagement): <code>model → parser → schema → writer</code>. One type taught to depth: money is <code>Decimal</code>, never float; COBOL overpunch; the −1 from 1-indexed SQL to 0-indexed Python.</li>
+    <li><b>The event-driven Python function is born:</b> raw <code>.dat/.txt</code> in → PII anonymized (the Java dies here) → positional layout parsed (the ingestion procedures die here) → deterministic Parquet out.</li>
+    <li><b>Strong HITL:</b> every translation validated by hand — confidence first, the Loop later. Deliberately.</li>
+  </ul>
+  <div class="cards">
+    <div class="card"><div class="lbl">DELIVERABLES</div><h3>What Day 2 leaves behind</h3><p>Git project with Converge (tech-spec, ADRs, plans, consensus) · full scaffolded harness (the quality moat) · AgentSpec running · first types translated in the 4-layer pattern → Parquet · first atomic task-specs sketched.</p></div>
+  </div>
+  <div class="gate"><div class="lbl">DAY 2 GATE</div><p><b>The system translates legacy and runs isolated, without risk.</b></p></div>
+  <div class="pagenum">09</div>
+</section>
+
+<!-- ============ 10 · DAY 3 ============ -->
+<section class="slide">
+  <div class="runhead">AGENTIC ENGINEERING IN PRACTICE · OSS V3</div>
+  <h1 class="numbered"><span class="passglyph">3</span>Day 3 — The Builder.</h1>
+  <div class="kicker">RAISING THE MODERN PLATFORM, LEG BY LEG · HARNESS APPLIED + THE LOOP'S SEED</div>
+  <div class="enginebar"><span class="eb-dim">ROLE ·</span><span class="eb-mid">DATA &amp; ANALYTICS ENGINEER</span><span class="eb-dark">P3 SEAMS→LEGS · P5 TASKING</span><span class="eb-green">HITL RECEDING</span></div>
+  <p>The OLTP arrives ready — DataGen, Postgres, and the ~300 procedures stand in as "the current system", so the class migrates instead of assembling legacy. The Builder breaks the seams into swimlanes and the large lanes into legs, then learns Task-Spec to depth: the primitive that makes the Dark Factory possible, because the eval — not the agent — defines done.</p>
+  <div class="codeblock" style="font-size:11px"><span class="c">SEAM: transform — the "transform data" joint; too big → split into legs</span>
+  <span class="y">swimlane-transform</span>
+    leg-01-dlt          dlt: Postgres → landing
+    leg-02-ducklake     DuckLake table format
+    leg-03-duckdb       DuckDB analytical engine
+    leg-04-dbt-bronze   dbt: raw → bronze
+    leg-05-dbt-silver   dbt: bronze → silver
+    leg-06-dbt-gold     dbt: silver → gold
+    leg-07-dagster      Dagster: assets + lineage
+
+<span class="c">SEAM: serve — the "serve data" joint; two legs</span>
+  <span class="y">swimlane-serve</span>
+    leg-01-fastapi      REST API over the gold
+    leg-02-mcp-server   MCP server for natural-language query</div>
+  <p class="figcap"><b>FIG —</b> the canonical decomposition: 2 seams → 2 swimlanes → 9 legs. Every leg becomes one or more task-specs at Tasking.</p>
+  <p style="font-size:13px">Construction still runs under HITL — tasks are generated and executed through Claude Code Workflows, or one-by-one with validation — deliberately stepping out of full human control while confidence accumulates. Why Dagster over Airflow: asset-centric matches the reference architecture (every table an asset with lineage), it runs locally without friction, and it is the friendliest surface for agents.</p>
+  <div class="cards">
+    <div class="card"><div class="lbl">DELIVERABLES</div><h3>What Day 3 leaves behind</h3><p>End-to-end local pipeline: bronze → silver → gold serving data · named, traceable legs · FastAPI + MCP over gold · natural-language questions over the data · a per-leg Task-Spec library ready to become the Loop.</p></div>
+  </div>
+  <div class="gate"><div class="lbl">DAY 3 GATE</div><p><b>The system builds the entire pipeline by itself — with you still validating.</b></p></div>
+  <div class="pagenum">10</div>
+</section>
+
+<!-- ============ 11 · DAY 4 ============ -->
+<section class="slide">
+  <div class="runhead">AGENTIC ENGINEERING IN PRACTICE · OSS V3</div>
+  <h1 class="numbered"><span class="passglyph">4</span>Day 4 — The Orchestrator.</h1>
+  <div class="kicker">HANDS OFF THE WHEEL — THE LOOP TAKES OVER, AND THE FACTORY AUDITS THE ORACLE · LOOP + EVAL ENGINEERING</div>
+  <div class="enginebar"><span class="eb-dim">ROLE ·</span><span class="eb-mid">AI-NATIVE ENGINEER &amp; DEVOPS</span><span class="eb-dark">P8 THE LOOP + MANAGER</span><span class="eb-green">FULL LOOP</span></div>
+  <ul class="plain">
+    <li><b>Activate the Loop</b> (<code>task-runner --issue N</code>) — the first time with no HITL: read task-spec + ADRs + harness → branch → code → run the eval. RED feeds the failure back and revises; GREEN opens the PR that closes the issue. <b>Convergence is a green eval, never a number of attempts.</b></li>
+    <li><b>Linear via MCP as the executive control plane:</b> one task-spec = one issue; <code>blocked-by</code> carries the dependency graph; only the loop writes state; only a green eval closes an issue — the board never lies. Kanban-as-EM: the tracker decides what is ready, blocked, or escalated.</li>
+    <li><b>Manager = CI/CD:</b> a GitHub Actions scheduler picks the issue, fans out in parallel, watches PRs, unblocks dependents.</li>
+    <li><b>The Wall:</b> generator and validator never share context — the structural mitigation against sycophancy.</li>
+    <li><b>Cross-cutting concerns:</b> Security (RBAC, PII anonymization, prompt injection) · Cost (model tiering — cheap models for volume, expensive for reasoning) · Observability (Langfuse + OpenTelemetry) · dev deploy with Terraform/Terragrunt.</li>
+  </ul>
+  <div class="amber"><div class="lbl">THE AHA — GOLDEN-MATCH AUDITS THE ORACLE</div><p>The golden-match compares the old PL/pgSQL against the new Python side by side, cent by cent. On one batch the declared control total reads <b>173.44</b> — while the Java, the PostgreSQL SQL, and the new Python <b>all independently compute 173.45</b>. The factory does not "fix" anything: it preserves the declaration byte-exact, classifies the divergence <code>CONFIRMED_SOURCE_DEFECT</code>, quarantines the batch, and lets its neighbors through. <b>The old system was right the whole time — its inputs were not.</b> The golden-match exists because a wrong money number goes unnoticed; this is the moment the room never forgets, and the reason Eval Engineering is not optional in a financial system.</p></div>
+  <div class="cards">
+    <div class="card"><div class="lbl">DELIVERABLES</div><h3>What Day 4 leaves behind</h3><p>Closed loop: issues closing on green evals with no human hand · Linear as the factory's executive dashboard · Manager dispatching with parallel fan-out · golden-match catching the source defect · Security + Cost + Observability applied · dev deploy.</p></div>
+  </div>
+  <div class="gate"><div class="lbl">DAY 4 GATE</div><p><b>The factory validates its own migration — and proves where the error lived.</b></p></div>
+  <div class="pagenum">11</div>
+</section>
+
+<!-- ============ 12 · DAY 5 ============ -->
+<section class="slide">
+  <div class="runhead">AGENTIC ENGINEERING IN PRACTICE · OSS V3</div>
+  <h1 class="numbered"><span class="passglyph">5</span>Day 5 — The Autonomous Factory.</h1>
+  <div class="kicker">CONTINUOUS IMPROVEMENT &amp; DARK FACTORY — THE FACTORY THAT RUNS AND REPAIRS ITSELF</div>
+  <div class="enginebar"><span class="eb-dim">ROLE ·</span><span class="eb-mid">AI-NATIVE ENGINEER (ALL ROLES INTEGRATED)</span><span class="eb-dark">PRODUCTION + BROWNFIELD</span><span class="eb-green">DARK FACTORY</span></div>
+  <ul class="plain">
+    <li><b>The complete brief → deploy recap:</b> every step eval-verified, the human holding only the judgment gates.</li>
+    <li><b>The proven MVP:</b> across four days the factory processed five different file types — the proof of the pattern.</li>
+    <li><b>The GOAT moment:</b> a sixth, never-seen file type is dropped into the queue, live. The factory fires alone: scaffold → understand via OntoLayer → generate the 4-layer parser → test → golden-match against the legacy → deploy. Nobody writes code; the room watches the factory onboard a new type by itself.</li>
+    <li><b>The self-healing flywheel:</b> every processed type harvests lessons into memory, read first on the next run; a lesson that recurs is promoted to a skill. In the real engagement, <b>60 numbered lessons + 9 global ones became 5 skills</b> — money-field, positional-hierarchical, cobol-overpunch, reconciliation, golden-match — plus three deterministic guards with verified negative controls. The factory improving the factory.</li>
+    <li><b>Production ground-truth check:</b> the legacy Postgres's final result compared against the modern output — production golden-match.</li>
+    <li><b>Brownfield continuous improvement:</b> the system is now brownfield; new demand → task-spec → Linear issue → loop → PR. The complete evolution cycle.</li>
+    <li><b>Capstone Demo Day:</b> each student presents their running factory.</li>
+  </ul>
+  <div class="cards">
+    <div class="card"><div class="lbl">DELIVERABLES</div><h3>What Day 5 leaves behind</h3><p>Autonomous Dark Factory onboarding a new type live · demonstrated self-healing flywheel · production deploy (Terraform/Terragrunt) · ground truth validated against the legacy · the brownfield improvement cycle · the capstone.</p></div>
+  </div>
+  <div class="gate"><div class="lbl">FINAL GATE</div><p><b>An agentic system that migrates legacy → modern alone, validates itself, and repairs itself. You became an AI-Native Engineer.</b></p></div>
+  <div class="pagenum">12</div>
+</section>
+
+<!-- ============ 13 · 06 WHAT WE ARE GOING TO DO ============ -->
+<section class="slide">
+  <div class="runhead">AGENTIC ENGINEERING IN PRACTICE · OSS V3</div>
+  <h1 class="numbered"><span class="passglyph">06</span>What we are going to do.</h1>
+  <div class="kicker">THE MISSION · THE CONVERGE SPINE · NINE PASSES, TWO PHASES, ONE BARRIER</div>
+  <p>One sentence: <b>build the agentic factory that understands the legacy, translates the raw files and the Java into Python, raises the modern platform, and validates every cent against the oracle — until it runs alone.</b> The vehicle is Converge: a framework that compiles intent into an eval-gated system. Each pass lowers the altitude, binds an engine or a skill, and ends at a gate. Passes 0–4 are human-led design; the owner's sign-off at Consensus is the last human gate before the machine-led build of Passes 5–8.</p>
+  <div class="codeblock" style="font-size:11px"><span class="c">PHASE I · HUMAN-LED DESIGN (you + the skills)</span>
+  <span class="y">0 · Capture</span>    optional on-ramp: raw idea → signed BRD, or a durable no-go
+  <span class="y">1 · Intent</span>     BRD → tech-spec that answers the brief
+  <span class="y">2 · Structure</span>  tech-spec + live system → ADRs (facts, constraints — never "how")
+  <span class="y">3 · Decompose</span>  ADRs → seams → swimlanes → legs
+  <span class="y">4 · Consensus</span>  a different-family adversary attacks every plan; the owner signs
+  ──────────────────────── <span class="o">THE BARRIER — last human gate</span> ────────────────────────
+<span class="c">PHASE II · MACHINE-LED BUILD (the factory)</span>
+  <span class="y">5 · Tasking</span>    hardened legs → eval-backed task-specs, sealed and signed
+  <span class="y">① · Register</span>   opt-in: 1 spec = 1 tracker issue, board as shared memory
+  <span class="y">7 · Bind</span>       one signed task → one enforceable runtime contract
+  <span class="y">8 · The Loop</span>   read → act → eval → learn → settle — until the eval is green</div>
+  <div class="cards">
+    <div class="card"><div class="lbl">MOAT · OPTIONALITY</div><h3>Task-Spec</h3><p>The eval — not the agent — defines done, so executors become interchangeable commodity slots: Claude, Codex, Kimi, GLM, or a human.</p></div>
+    <div class="card"><div class="lbl">MOAT · QUALITY</div><h3>The harness</h3><p>The control-plane files that make any commodity agent succeed — built over thousands of hours, not downloadable.</p></div>
+    <div class="card"><div class="lbl">THE INVARIANT</div><h3>Altitude + gate</h3><p>Every pass lowers altitude and ends at a gate. Pass 8 is the exception: it does not lower — it closes.</p></div>
+  </div>
+  <div class="pagenum">13</div>
+</section>
+
+<!-- ============ 14 · VOCABULARY + MULTI-MODEL ============ -->
+<section class="slide">
+  <div class="runhead">AGENTIC ENGINEERING IN PRACTICE · OSS V3</div>
+  <h1>The vocabulary and the harness.</h1>
+  <div class="kicker">SEAM → SWIMLANE → LEG → TASK-SPEC · EACH MODEL IN ITS ROLE</div>
+  <div class="protorow"><div class="stepn" style="background:var(--green)">1</div><div class="stepbody"><b>Seam</b><p>The system's natural joint — where it already wants to be cut, like the seams of a shirt, never mid-fabric. Canonical: <i>transform</i> (medallion raw→bronze→silver→gold) vs <i>serve</i> (API/MCP over gold). Cut at the published contract, above implementation detail.</p></div></div>
+  <div class="protorow"><div class="stepn" style="background:var(--green)">2</div><div class="stepbody"><b>Swimlane</b><p>The work lane born from each seam — one lane, one plan, one focus. It passes the deep-lane test: a consumer can say what it does, how to use it, and what it depends on without reading its internals.</p></div></div>
+  <div class="protorow"><div class="stepn" style="background:var(--green)">3</div><div class="stepbody"><b>Leg</b><p>The stretch inside a lane that is too big — named <code>swimlane-{seam}-leg-{NN}-{tech}</code>. "Leg" as in a relay race: each swimmer swims one leg of the lane. Each leg yields 1:N task-specs.</p></div></div>
+  <div class="protorow"><div class="stepn" style="background:var(--green)">4</div><div class="stepbody"><b>Task-Spec</b><p>The atomic unit with an eval — the thing an agent executes. Behavior, contract, guardrails, operations, ≥3 runnable evals, retry policy, dependencies, and a seal. <b>No eval, not a task.</b></p></div></div>
+  <h2>Multi-model harness — each model in its role</h2>
+  <table class="data">
+    <tr><th style="width:20%">MODEL</th><th style="width:18%">ROLE</th><th>WHY</th></tr>
+    <tr><td>Claude Code</td><td>Orchestrator</td><td>Decomposes, routes to sub-agents, synthesizes. Holds write/merge authority; never writes the bulk of the code — it coordinates.</td></tr>
+    <tr><td>Codex</td><td>Reviewer</td><td>Reviews correctness, security, style, performance. A different provider than the executor — cross-vendor review is the structural mitigation against agreeing with yourself. PASS / REVISE / REJECT.</td></tr>
+    <tr><td>Kimi</td><td>Executor</td><td>Writes the code, creates the tests, runs verification in an isolated worktree. Lane advisory until review passes.</td></tr>
+    <tr><td>GLM</td><td>Second executor</td><td>Parallel fan-out of independent translations — several file types at once, each in its own worktree, reconciled at merge.</td></tr>
+  </table>
+  <div class="note"><div class="lbl">OPTIONALITY IN PRACTICE</div><p>When the eval defines done, the executor is interchangeable: Kimi today, GLM tomorrow, whatever is cheapest or most capable next week. Orchestrator and cross-vendor reviewer form the stable control plane; executors are commodity.</p></div>
+  <div class="pagenum">14</div>
+</section>
+
+<!-- ============ 15 · 07 THE AGENDA ============ -->
+<section class="slide">
+  <div class="runhead">AGENTIC ENGINEERING IN PRACTICE · OSS V3</div>
+  <h1 class="numbered"><span class="passglyph">07</span>The agenda.</h1>
+  <div class="kicker">THE WEEK: 24–28/08 · EVERY DAY 19H30–23H30 LIVE · THE 4-HOUR GRADE</div>
+  <table class="data">
+    <tr><th style="width:34%">BLOCK</th><th style="width:22%">TIME</th><th>WHAT HAPPENS</th></tr>
+    <tr><td>Opening + recap</td><td>19h30 – 19h50</td><td>Where we stopped; what the factory already does.</td></tr>
+    <tr><td>Concept + artifact demo</td><td>19h50 – 20h50</td><td>Show the day's semi-ready artifact and explain it.</td></tr>
+    <tr><td>Guided hands-on</td><td>20h50 – 21h40</td><td>The class builds along.</td></tr>
+    <tr><td>Break</td><td>21h40 – 21h50</td><td>—</td></tr>
+    <tr><td>Deep hands-on</td><td>21h50 – 23h00</td><td>Build the day's deliverable.</td></tr>
+    <tr><td>Close + gate check</td><td>23h00 – 23h30</td><td>Validate the day's gate; preview tomorrow.</td></tr>
+  </table>
+  <h2>The week at a glance</h2>
+  <table class="data">
+    <tr><th style="width:10%">DAY</th><th style="width:30%">PERSONA</th><th>THE ONE THING THAT MUST BE TRUE BY 23H30</th></tr>
+    <tr><td>1</td><td>The Archaeologist</td><td>The system understands the legacy better than you do.</td></tr>
+    <tr><td>2</td><td>The Translator</td><td>Legacy translated safely, running isolated.</td></tr>
+    <tr><td>3</td><td>The Builder</td><td>The pipeline builds itself — bronze to gold — with you validating.</td></tr>
+    <tr><td>4</td><td>The Orchestrator</td><td>The loop closes issues on green evals; golden-match catches the defect.</td></tr>
+    <tr><td>5</td><td>The Autonomous Factory</td><td>A never-seen file type is onboarded live, no human code.</td></tr>
+  </table>
+  <div class="gate"><div class="lbl">THE ARSENAL — WHAT THE STUDENT TAKES HOME</div><p>Converge applied end to end (all passes in practice) · OntoLayer running over a real Postgres · the project's Second Brain (Cowork + Obsidian + MCP + Schedules) · the complete open-source factory on GitHub migrating five types + onboarding the sixth · the per-leg Task-Spec library and scaffolded harness · the certificate <b>"AI-Native Engineer — Production Level"</b>.</p></div>
+  <div class="pagenum">15</div>
+</section>
+
+<!-- ============ 16 · 08 THE MODERN USE CASE ============ -->
+<section class="slide">
+  <div class="runhead">AGENTIC ENGINEERING IN PRACTICE · OSS V3</div>
+  <h1 class="numbered"><span class="passglyph">08</span>The modern use case.</h1>
+  <div class="kicker">WHAT THE FACTORY BUILDS · EVENT-DRIVEN → LAKEHOUSE → SERVING · VALIDATED CENT BY CENT</div>
+  <p>The modern platform replaces the Java black box and the ingestion procedures with one data-driven, event-driven Python function per file type, and the black-box business rules with a governed medallion lakehouse. The same approved raw bytes flow through — never re-touched, never reinterpreted at will.</p>
+  <div class="codeblock" style="font-size:11px"><span class="c">raw .dat/.txt arrives → the factory takes over</span>
+
+ <span class="y">EVENT-DRIVEN PYTHON</span>   one function per file type — model → parser → schema → writer
+                    anonymizes PII <span class="c">(kills the Java)</span> · parses the layout <span class="c">(kills ingestion SQL)</span>
+                    deterministic, atomic <span class="g">PARQUET</span> · money is <span class="g">Decimal</span>, never float
+      │
+      ▼
+ <span class="y">dlt → DUCKLAKE + DUCKDB</span>   table format + analytical engine — the local lakehouse
+      │
+      ▼
+ <span class="y">dbt MEDALLION</span>   <span class="g">BRONZE</span> typed, source-aligned, never re-parses
+              ▸ <span class="g">SILVER</span> conforms — <span class="o">changes no monetary value</span>
+              ▸ <span class="g">GOLD</span> governed reconciliation <span class="c">at the legacy reporting grain</span>
+      │
+      ▼
+ <span class="y">DAGSTER</span> assets + lineage   →   <span class="y">FASTAPI + MCP</span> — ask in natural language, the data answers
+      │
+      ▼
+ <span class="y">GOLDEN-MATCH</span>   every number compared cent by cent against the running legacy oracle</div>
+  <h2>Golden-match — the release gate with no tolerance knob</h2>
+  <p style="font-size:13px">Every comparison asks two questions — legacy parity and business correctness — and classifies every difference as exactly one of <code>CONFIRMED_SOURCE_DEFECT</code>, <code>CONFIRMED_LEGACY_DEFECT</code>, <code>MODERN_DEFECT</code>, <code>APPROVED_BEHAVIOR_CHANGE</code>, <code>CONTRACT_AMBIGUITY</code>, or <code>UNRESOLVED</code>. The release gate permits <b>no unexplained financial difference, and no tolerance setting exists anywhere</b> — a configurable tolerance is how an unexplained cent becomes an accepted cent. Rejected batches are compared on terminal behavior — status, stable code, zero output, peer continuation — never on rows.</p>
+  <div class="cards">
+    <div class="card"><div class="lbl">THE RATIO IS THE POINT</div><h3>6,834 vs 29,622 lines</h3><p>The modern side implements the same five types in ~23% of the legacy's line count. The difference is not cleverness — it is the absence of accumulated compensation.</p></div>
+    <div class="card"><div class="lbl">PROOF SHAPE</div><h3>Gates, not vibes</h3><p>20 dbt models · 131 data tests · 87 unit tests · Dagster assets with checks · every model and test tagged per type, because an untagged test silently never runs.</p></div>
+  </div>
+  <div class="pagenum">16</div>
+</section>
+
+<!-- ============ 17 · 09 THE LEGACY USE CASE ============ -->
+<section class="slide">
+  <div class="runhead">AGENTIC ENGINEERING IN PRACTICE · OSS V3</div>
+  <h1 class="numbered"><span class="passglyph">09</span>The legacy use case.</h1>
+  <div class="kicker">NORTHWIND PAY EDP AS IT STANDS · THIRTY FILE TYPES · THREE HUNDRED PROCEDURES · ONE BLACK BOX</div>
+  <p>NorthWind Pay processes transactions: cards clear, instant payments land, slips settle — and each cycle the core drops <b>30+ raw file types</b> onto an SFTP: positional <code>.dat</code>, proprietary-layout <code>.txt</code>, COBOL overpunch, PII in the clear. Between the SFTP and the database sits a Java system nobody wants to touch — it reads the raw file, anonymizes PII, tokenizes cards, and emits a sanitized CSV. Only then do <b>~300 PL/pgSQL stored procedures</b> apply the business rules that close the day. The tangle grew over 3–4 years and 8–12 departing developers; the business rules live inside the procedures; every new file type is risky surgery.</p>
+  <div class="codeblock" style="font-size:11px"><span class="c">the implemented pipeline — every arrow an explicit interface</span>
+ contracts → <span class="y">DataGen</span> → raw SFTP <span class="c">(manifest last = readiness)</span>
+   → intake <span class="c">(atomic claim: rename = lock)</span>
+   → <span class="y">Java 21 privacy boundary</span> <span class="c">(parse · validate · sanitize → CSV)</span>
+   → sanitized SFTP → <span class="y">PostgreSQL COPY + procedures</span>
+   → reconciliation + <span class="g">independent oracle</span> → <span class="g">archive</span>  or  <span class="o">batch-scoped quarantine</span></div>
+  <h2>Five grammars — the types the boot camp implements</h2>
+  <table class="data">
+    <tr><th style="width:8%">TYPE</th><th style="width:30%">NAME</th><th>THE DISTINCT PROBLEM IT STRESSES</th></tr>
+    <tr><td>01</td><td>Card Settlement Detail</td><td>ISO-8859-1 fixed width, COBOL overpunch (sign in the last byte), PAN/CPF privacy, signed money.</td></tr>
+    <tr><td>02</td><td>Instant Payment Events</td><td>UTF-8 escaped-pipe grammar, offsets, document variants, credit/debit direction.</td></tr>
+    <tr><td>03</td><td>Payment Slip Settlement</td><td>Exact 240-byte CRLF records, lots, paired physical segments.</td></tr>
+    <tr><td>04</td><td>TED Transfer Settlement</td><td>Heterogeneous record widths, conditional returns, inherited context.</td></tr>
+    <tr><td>05</td><td>Merchant Fee Assessment</td><td>UTF-8/NFC semicolon CSV, decimal commas, exact <code>HALF_UP</code> rounding.</td></tr>
+  </table>
+  <div class="note"><div class="lbl">THE PRIVACY BOUNDARY IS STRUCTURAL</div><p>The loader is incapable of seeing a raw PAN — not by policy, by <code>chown</code>: four SFTP roles (<code>raw-publisher</code>, <code>processor</code>, <code>loader</code>, <code>operator</code>) hold real Unix group ownership across eight zones. Every batch ends in exactly one of two terminal outcomes — <b>archived</b> or <b>quarantined</b> — and quarantine is batch-scoped: one bad file never takes the night down. Exit code 0 can still mean quarantined; consumers read structured status, never prose.</p></div>
+  <div class="pagenum">17</div>
+</section>
+
+<!-- ============ 18 · THE LEGACY AS ORACLE ============ -->
+<section class="slide">
+  <div class="runhead">AGENTIC ENGINEERING IN PRACTICE · OSS V3</div>
+  <h1>The legacy is the oracle — not the enemy.</h1>
+  <div class="kicker">WHY THE MIGRATION CAN BE PROVEN · THE DOCTRINE THE WHOLE WEEK RESTS ON</div>
+  <p>The factory never "trusts" a translation: it validates every number against the legacy running side by side. And when a divergence appears, the new system is not always wrong — sometimes the legacy's <i>inputs</i> were wrong all along, preserved byte-exact by every faithful implementation downstream. That inversion is the defining moment of Day 4: the factory audits the oracle, classifies what it finds, and never silently repairs.</p>
+  <div class="cards">
+    <div class="card"><div class="lbl">DOCTRINE · 1</div><h3>No oracle, no build</h3><p>A specification that does not ship its expected outputs cannot be adjudicated — the factory refuses it before doing any work.</p></div>
+    <div class="card"><div class="lbl">DOCTRINE · 2</div><h3>A gate that cannot fail is worse than no gate</h3><p>It spends your attention and gives nothing back. Six vacuous gates were found and closed in this estate — four by the autonomous run, two by human review. Prove a new gate red before you accept it green.</p></div>
+    <div class="card"><div class="lbl">DOCTRINE · 3</div><h3>The golden is evidence, not truth</h3><p>The raw bytes plus the specification are truth; the legacy, with all its defects, is the oracle; an oracle is evidence — never license to edit an expected value to force green.</p></div>
+  </div>
+  <h2>Four truth roles, never merged</h2>
+  <table class="data">
+    <tr><th style="width:30%">ROLE</th><th>IN THIS ESTATE</th></tr>
+    <tr><td>System of record</td><td>The simulated source owns its raw file and declared controls; committed PostgreSQL tables own applied legacy state.</td></tr>
+    <tr><td>Source of observation</td><td>Immutable SFTP bytes, hashes, manifests, database observations, per-run evidence — what actually happened.</td></tr>
+    <tr><td>Source of correctness</td><td>Independently reviewed expected outputs, reconciliation, governed rules — what should happen.</td></tr>
+    <tr><td>Executable Git contract</td><td>Versioned YAML, schemas, canonical fixtures, and tests — the currently approved expectation.</td></tr>
+  </table>
+  <div class="amber"><div class="lbl">THE CENTS, ONCE MORE</div><p>On the canonical defect batch, the source declares <b>173.44</b>; the Java, the PostgreSQL SQL, and the new Python each compute <b>173.45</b> independently. All three preserve the wrong declaration byte-exact — and the batch is quarantined with zero rows written: not rolled back, <b>never written</b>, while its neighbors succeed. An agent saying "tests pass" is a claim; an independent oracle saying "byte-identical to the approved answer" is evidence.</p></div>
+  <div class="pagenum">18</div>
+</section>
+
+<!-- ============ 19 · CLOSE ============ -->
+<section class="slide dark" style="padding-top:150px">
+  <div class="kicker" style="color:#7e93a4">AGENTIC ENGINEERING IN PRACTICE · THE CLOSE</div>
+  <div style="font-family:'Playfair Display',serif;font-weight:700;font-size:44px;line-height:1.25;color:#fff;margin-top:22px">In five days you will not learn<br>to use agents. You will build<br><span style="color:var(--greenbright);font-style:italic">the factory that uses them.</span></div>
+  <p style="font-size:15px;line-height:1.75;color:#c9d6df;margin-top:30px;max-width:640px">From a signed brief to a deployed capability, every step eval-verified, the human holding only the judgment gates — the topology review, the leaf sign-off, the merge. A system that migrates a legacy financial platform alone, validates itself against the past, and repairs itself for the future. When it ends, you will not have watched a course. You will have built the future of engineering.</p>
+  <div class="coverrule"></div>
+  <div class="covermeta">
+    <div><div class="lbl">FORMAT</div><p>5 days · 4h/day · 19h30–23h30 · live</p></div>
+    <div><div class="lbl">STACK</div><p>100% open-source · local-first · laptop</p></div>
+    <div><div class="lbl">CERTIFICATE</div><p>AI-Native Engineer — Production Level</p></div>
+  </div>
+  <div style="text-align:center;margin-top:60px;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.2em;color:#5d7488">AGENTIC ENGINEERING IN PRACTICE · OSS V3 · ENGLISH EDITION · 2026-08-18 · NORTHWIND PAY EDP<br><span style="color:var(--green)">"YOU ARE CONVERGED WHEN THE EVAL PASSES — NOT WHEN YOU FEEL DONE."</span></div>
+  <div class="pagenum">19</div>
+</section>
+
+</div>
+</body>
+</html>

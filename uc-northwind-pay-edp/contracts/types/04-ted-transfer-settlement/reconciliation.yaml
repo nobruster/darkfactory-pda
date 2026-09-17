@@ -1,0 +1,120 @@
+version: 1
+type_number: "04"
+
+grain:
+  keys: [batch_id, currency]
+  currency: BRL
+
+procedure_order:
+  - sequence: 1
+    procedure: legacy.apply_ted_transfer_batch
+    arguments: [batch_id]
+    transaction: same_business_transaction
+  - sequence: 2
+    procedure: reporting.refresh_ted_transfer_reconciliation
+    arguments: [batch_id]
+    transaction: same_business_transaction
+
+source_controls:
+  transfer_count: trailer.transfer_count
+  return_count: trailer.return_count
+  gross_amount: trailer.gross_signed_amount
+  return_amount: trailer.returned_signed_amount
+  net_amount: trailer.net_signed_amount
+  persistence: control.type04_ted_transfer_controls
+
+stage_controls:
+  transfer_count: 'count(*) filter (where movement_kind = TRANSFER) from staging.ted_transfer_movement where batch_id = :batch_id'
+  return_count: 'count(*) filter (where movement_kind = RETURN) from staging.ted_transfer_movement where batch_id = :batch_id'
+  gross_amount: 'sum(amount_brl) filter (where movement_kind = TRANSFER) from staging.ted_transfer_movement where batch_id = :batch_id'
+  return_amount: 'sum(amount_brl) filter (where movement_kind = RETURN) from staging.ted_transfer_movement where batch_id = :batch_id'
+  net_amount: 'sum(amount_brl) from staging.ted_transfer_movement where batch_id = :batch_id'
+
+operational_controls:
+  transfer_count: 'count(*) filter (where movement_kind = TRANSFER) from legacy.ted_transfer_movement where batch_id = :batch_id'
+  return_count: 'count(*) filter (where movement_kind = RETURN) from legacy.ted_transfer_movement where batch_id = :batch_id'
+  gross_amount: 'sum(amount_brl) filter (where movement_kind = TRANSFER) from legacy.ted_transfer_movement where batch_id = :batch_id'
+  return_amount: 'sum(amount_brl) filter (where movement_kind = RETURN) from legacy.ted_transfer_movement where batch_id = :batch_id'
+  net_amount: 'sum(amount_brl) from legacy.ted_transfer_movement where batch_id = :batch_id'
+
+report:
+  relation: reporting.ted_transfer_reconciliation
+  required_columns:
+    - batch_id
+    - currency
+    - source_transfer_count
+    - staged_transfer_count
+    - applied_transfer_count
+    - source_return_count
+    - staged_return_count
+    - applied_return_count
+    - source_gross_amount
+    - staged_gross_amount
+    - applied_gross_amount
+    - source_return_amount
+    - staged_return_amount
+    - applied_return_amount
+    - source_net_amount
+    - staged_net_amount
+    - applied_net_amount
+    - transfer_count_delta
+    - return_count_delta
+    - gross_amount_delta
+    - return_amount_delta
+    - net_amount_delta
+    - reject_count
+    - status
+
+tolerances:
+  transfer_count_delta: 0
+  return_count_delta: 0
+  gross_amount_delta: "0.00"
+  return_amount_delta: "0.00"
+  net_amount_delta: "0.00"
+
+semantics:
+  replay: idempotent_by_batch_id_and_movement_id
+  immutable_source_identity: same_batch_id_requires_same_raw_and_manifest_hashes
+  global_batch_id: unique_across_all_file_types
+  global_movement_id: unique_across_accepted_batches
+  operational_apply: insert_missing_rows_without_updating_existing_rows
+  transfer_count_delta: applied_transfer_count_minus_source_transfer_count
+  return_count_delta: applied_return_count_minus_source_return_count
+  gross_amount_delta: applied_gross_amount_minus_source_gross_amount
+  return_amount_delta: applied_return_amount_minus_source_return_amount
+  net_amount_delta: applied_net_amount_minus_source_net_amount
+  reject_count: 'count(*) from control.rejects where batch_id = :batch_id'
+  transaction: staging_load_then_both_procedures_and_oracle_commit_or_rollback_together
+
+success:
+  - No rejected records exist.
+  - Source, staged, and applied transfer and return counts are identical.
+  - Source, staged, and applied gross, returned, and net amounts are identical.
+  - No duplicate natural batch key or global movement ID exists.
+  - Every delta is zero and report status is MATCHED.
+
+approved_example:
+  batch_id: B202607230000301
+  currency: BRL
+  source_transfer_count: 2
+  staged_transfer_count: 2
+  applied_transfer_count: 2
+  source_return_count: 1
+  staged_return_count: 1
+  applied_return_count: 1
+  source_gross_amount: "1250.00"
+  staged_gross_amount: "1250.00"
+  applied_gross_amount: "1250.00"
+  source_return_amount: "-250.00"
+  staged_return_amount: "-250.00"
+  applied_return_amount: "-250.00"
+  source_net_amount: "1000.00"
+  staged_net_amount: "1000.00"
+  applied_net_amount: "1000.00"
+  transfer_count_delta: 0
+  return_count_delta: 0
+  gross_amount_delta: "0.00"
+  return_amount_delta: "0.00"
+  net_amount_delta: "0.00"
+  reject_count: 0
+  status: MATCHED

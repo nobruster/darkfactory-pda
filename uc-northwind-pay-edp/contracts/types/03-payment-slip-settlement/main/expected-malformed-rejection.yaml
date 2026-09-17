@@ -1,0 +1,9 @@
+batch_id: B202607230000203
+scenario: malformed
+expected_stage: java-validation
+expected_status: quarantined
+expected_code: SEGMENT_PAIR_MISMATCH
+source_record_number: 4
+csv_produced: false
+postgres_business_mutation: false
+quarantine_scope: batch

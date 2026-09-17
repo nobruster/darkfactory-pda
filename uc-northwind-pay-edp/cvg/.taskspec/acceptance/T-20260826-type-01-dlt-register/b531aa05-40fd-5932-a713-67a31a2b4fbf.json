@@ -1,0 +1,44 @@
+{
+  "acceptance_tier": 2,
+  "accepted_at": "2026-09-10T19:05:03Z",
+  "accepted_by": "luanmorenomaciel",
+  "contract": "AcceptanceRecord/v1",
+  "gate_outcomes": {
+    "authorization": {
+      "code": "AUTHORIZATION_VALID",
+      "status": "pass"
+    },
+    "evaluation": {
+      "code": "EVAL_PASSED",
+      "status": "pass"
+    },
+    "evidence": {
+      "code": "EVIDENCE_SATISFIED",
+      "proof": [
+        "format v3 or earlier: v4 policy receipts are not required"
+      ],
+      "status": "pass"
+    },
+    "preflight": {
+      "code": "PREFLIGHT_PASSED",
+      "status": "pass",
+      "warnings": []
+    }
+  },
+  "outcome": {
+    "code": "ACCEPTED_TIER_2",
+    "status": "accepted"
+  },
+  "receipts": [],
+  "subject": {
+    "attempt_id": "b531aa05-40fd-5932-a713-67a31a2b4fbf",
+    "authorization_ref": "hmac-sha256-v3:d90e2e61:54a764a63e8ac440c6fdccb9dda68ab814f4077dbe3851f883273a4ef997ee6e",
+    "base_commit": "HEAD",
+    "task_id": "T-20260826-type-01-dlt-register",
+    "task_revision_digest": "sha256:b5d0ae044ad9fec8e6c5738b57ac0c532c7ebd2dbdf35b6d148a7bc4f8c49a4d"
+  },
+  "supervision": {
+    "reason": "Owner-supervised Tier 2 acceptance (luanmorenomaciel). Work predates the Converge loop (Type 01 steel thread); taskspec re-ran the Exit Check on main and it passed.",
+    "supervised_by": "luanmorenomaciel"
+  }
+}

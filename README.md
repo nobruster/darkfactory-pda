@@ -41,25 +41,32 @@ daqui:
 |---|---|---|
 | [`.claude/`](.claude/) | **Ambiente de agentes** — 50 agentes, 18 comandos, 26 skills, KB de 25 domínios | herdado |
 | [`fabrica/`](fabrica/) | **O juiz** — oráculo + golden-match. O núcleo: 6 classificações, zero tolerância. | próprio |
-| [`converge/`](converge/) | Motor de convergência e gates (`cvg`) | **vendorizado** ⚠️ |
-| [`task-spec/`](task-spec/) | Tarefas assinadas (HMAC) e tiers de aceite | submódulo |
-| [`brief-spec/`](brief-spec/) | Especificação de briefings para agentes | submódulo |
-| [`seamwise/`](seamwise/) | Skills e costura entre agentes | submódulo |
-| [`uc-northwind-pay-edp/`](uc-northwind-pay-edp/) | Caso de uso completo de referência (legado × moderno) | submódulo |
+| [`converge/`](converge/) | Motor de convergência e gates (`cvg`) | vendorizado |
+| [`task-spec/`](task-spec/) | Tarefas assinadas (HMAC) e tiers de aceite | vendorizado |
+| [`brief-spec/`](brief-spec/) | Especificação de briefings para agentes | vendorizado |
+| [`seamwise/`](seamwise/) | Skills e costura entre agentes | vendorizado |
+| [`uc-northwind-pay-edp/`](uc-northwind-pay-edp/) | Caso de uso completo de referência (legado × moderno) | vendorizado |
 
-Quatro são **submódulos git** apontando para os repositórios originais de
-[@luanmorenommaciel](https://github.com/luanmorenommaciel). Ficam referenciados
-por URL e commit, não copiados: a autoria permanece correta e dá para puxar
-atualizações do upstream.
+### Não há submódulos
 
-### ⚠️ Converge é a exceção
+Todo o conteúdo está versionado direto aqui. `git clone` traz tudo de uma vez
+— sem `--recurse-submodules`, sem pasta vazia.
 
-O repositório de origem do `converge` **saiu do ar** (HTTP 404). Enquanto era
-submódulo, o clone falhava e a pasta vinha vazia. Por isso os arquivos estão
-copiados direto neste repositório, congelados no commit `f6df8af` (v0.2.0),
-licença MIT preservada.
+As cinco pastas acima vieram de repositórios de
+[@luanmorenommaciel](https://github.com/luanmorenommaciel), congeladas no
+commit indicado no `VENDORED.md` de cada uma:
 
-Detalhes e consequências em [`converge/VENDORED.md`](converge/VENDORED.md).
+| Pasta | Commit | Upstream | Licença |
+|---|---|---|---|
+| [`converge/`](converge/VENDORED.md) | `f6df8af` | ⚠️ fora do ar (404) | MIT |
+| [`brief-spec/`](brief-spec/VENDORED.md) | `93d51b4` | ativo | MIT |
+| [`seamwise/`](seamwise/VENDORED.md) | `a49748e` | ativo | MIT |
+| [`task-spec/`](task-spec/VENDORED.md) | `76ff7b8` | ativo | MIT |
+| [`uc-northwind-pay-edp/`](uc-northwind-pay-edp/VENDORED.md) | `868f1c1` | ativo | ⚠️ sem LICENSE |
+
+**O que isso custa:** não há `git submodule update` — atualizar qualquer uma
+delas é trabalho manual contra o upstream, e o histórico original não veio
+junto.
 
 ### O ambiente de agentes
 
@@ -81,25 +88,12 @@ herança — comece por ele.
 
 ## Clonar
 
-O `--recurse-submodules` não é opcional — sem ele as cinco pastas vêm vazias.
-
 ```bash
-git clone --recurse-submodules https://github.com/nobruster/darkfactory-template.git
+git clone https://github.com/nobruster/darkfactory-template.git
 cd darkfactory-template
 ```
 
-Se já clonou sem a flag:
-
-```bash
-git submodule update --init --recursive
-```
-
-Atualizar os submódulos para o último commit de cada upstream:
-
-```bash
-git submodule update --remote --merge
-git commit -am "chore: atualiza submódulos"
-```
+Só isso. Sem flags, sem passo extra — tudo vem no clone.
 
 ---
 

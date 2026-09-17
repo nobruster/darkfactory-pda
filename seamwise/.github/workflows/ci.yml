@@ -1,0 +1,80 @@
+# Seamwise publishes one credential-free release boundary. CI runs that exact
+# boundary on the two supported platform families; it does not silently replace
+# unavailable host, marketplace, model, or external-service checks.
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  release-gate:
+    name: release gate (${{ matrix.os }}, Python ${{ matrix.python }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    env:
+      TASK_SPEC_REQUIRE_JSONSCHEMA: "1"
+      TASK_SPEC_STRICT_CROSS_ENGINE: "1"
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            python: "3.11"
+    steps:
+      - name: Check out without persisted credentials
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: ${{ matrix.python }}
+
+      - name: Install the pinned build runner
+        run: python -m pip install --disable-pip-version-check uv==0.9.25
+
+      - name: Install the exact released Task-Spec 3.8 engine
+        env:
+          GH_TOKEN: ${{ secrets.RELEASE_STACK_READ_TOKEN }}
+        run: |
+          test -n "$GH_TOKEN" || { echo "::error::RELEASE_STACK_READ_TOKEN is required for the private Task-Spec repository"; exit 5; }
+          engine_dir="$(mktemp -d -t task-spec-engine.XXXXXX)"
+          gh repo clone luanmorenommaciel/task-spec "$engine_dir" -- --quiet
+          git -C "$engine_dir" checkout --quiet --detach 0e6180cfc3009bd4ef9cf7ab050b463e10d4af91
+          test "$("$engine_dir/bin/taskspec" version)" = "3.8.0"
+          printf 'TASKSPEC_BIN=%s/bin/taskspec\n' "$engine_dir" >> "$GITHUB_ENV"
+
+      - name: Install declared host prerequisites
+        shell: bash
+        run: |
+          if command -v shellcheck >/dev/null 2>&1; then
+            shellcheck --version | head -2
+          elif [ "$RUNNER_OS" = "macOS" ]; then
+            brew install shellcheck
+          else
+            sudo apt-get update -qq
+            sudo apt-get install -y -qq shellcheck
+          fi
+          npm install --global \
+            @openai/codex@0.146.0 \
+            @anthropic-ai/claude-code@2.1.220
+          codex --version
+          claude --version
+
+      - name: Lint this workflow
+        if: runner.os == 'Linux'
+        run: go run github.com/rhysd/actionlint/cmd/actionlint@v1.7.12
+
+      - name: Run the complete release boundary
+        run: make check

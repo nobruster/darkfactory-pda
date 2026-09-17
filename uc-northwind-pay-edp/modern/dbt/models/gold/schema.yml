@@ -1,0 +1,40 @@
+version: 2
+
+models:
+  - name: gold_card_settlement_reconciliation
+    description: >-
+      Grain: one row per batch and currency, matching the legacy paid grain
+      so golden-match compares like with like.
+    columns:
+      - name: batch_id
+        tests: [not_null]
+      - name: currency
+        tests:
+          - not_null
+          - accepted_values:
+              values: ["BRL"]
+      - name: status
+        tests:
+          - not_null
+          - accepted_values:
+              values: ["MATCHED", "MISMATCHED"]
+
+  - name: gold_merchant_chargeback_reconciliation
+    description: >-
+      Grain: one Type 06 row per batch and currency, matching the contract
+      paid grain so golden-match compares like with like.
+    columns:
+      - name: batch_id
+        tests: [not_null]
+      - name: currency
+        tests:
+          - not_null
+          - accepted_values:
+              values: ["BRL"]
+      - name: applied_chargeback_amount
+        tests: [not_null]
+      - name: status
+        tests:
+          - not_null
+          - accepted_values:
+              values: ["MATCHED", "MISMATCHED"]

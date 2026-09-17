@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/luanmorenommaciel/brief-spec/schemas/brief-spec-drift.schema.json",
+  "title": "Brief-Spec Chronicle drift record 1.0",
+  "type": "object",
+  "required": [
+    "drift_id", "category", "severity", "expected", "observed", "basis",
+    "source_event_ids", "rule_id", "disposition"
+  ],
+  "properties": {
+    "drift_id": { "type": "string", "minLength": 1 },
+    "category": { "type": "string", "minLength": 1 },
+    "severity": { "enum": ["informational", "notable", "needs-attention", "blocking"] },
+    "expected": { "type": "string", "minLength": 1 },
+    "observed": { "type": "string", "minLength": 1 },
+    "basis": { "enum": ["direct", "derived", "reported"] },
+    "source_event_ids": { "type": "array", "minItems": 1, "items": { "type": "string" } },
+    "rule_id": { "type": "string", "minLength": 1 },
+    "human_action": { "type": ["string", "null"] },
+    "disposition": { "enum": ["open", "resolved", "superseded-by-pivot"] }
+  }
+}

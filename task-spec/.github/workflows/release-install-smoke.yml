@@ -1,0 +1,284 @@
+# Real distribution-door proof. This runs only for a published release or an
+# explicitly selected tag, so it never turns an unpublished ref into evidence.
+name: release-install-smoke
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      release_ref:
+        description: Existing release tag to verify (for example v3.8.0)
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  release-assets:
+    name: checksum-backed release archive
+    runs-on: ubuntu-latest
+    env:
+      RELEASE_REF: ${{ github.event.release.tag_name || inputs.release_ref }}
+    steps:
+      - name: Checkout the exact release
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ env.RELEASE_REF }}
+          persist-credentials: false
+      - name: Install pinned Go toolchain
+        uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version: '1.25.0'
+          cache-dependency-path: go.sum
+      - name: Build deterministic archives, checksum, and SPDX SBOM
+        run: |
+          set -euo pipefail
+          version="$(tr -d '[:space:]' < VERSION)"
+          case "$RELEASE_REF" in
+            "v$version"|"v$version-rc."*) ;;
+            *) echo "release ref $RELEASE_REF does not carry Task-Spec $version" >&2; exit 1 ;;
+          esac
+          echo "RELEASE_VERSION=$version" >> "$GITHUB_ENV"
+          epoch="$(git show -s --format=%ct HEAD)"
+          SOURCE_DATE_EPOCH="$epoch" python3 tools/build-release-archive.py --out-dir dist
+          python3 tools/build-mesh-release.py --out-dir dist
+          python3 tools/build-sbom.py \
+            --archive "dist/task-spec-$(cat VERSION).tar.gz" \
+            --epoch "$epoch" \
+            --out "dist/task-spec-$(cat VERSION).spdx.json"
+          SOURCE_DATE_EPOCH="$epoch" python3 tools/build-release-evidence-archive.py --out-dir dist
+          cp release/evidence.json "dist/task-spec-$(cat VERSION)-release-evidence.json"
+          scorecard="$(python3 -c 'import json; print(json.load(open("release/evidence.json"))["quality_scorecard"]["path"])')"
+          cp "$scorecard" "dist/task-spec-$(cat VERSION)-quality-scorecard.json"
+          cp "release/$(cat VERSION)/reviewer-report.json" "dist/task-spec-$(cat VERSION)-reviewer-report.json"
+          cp "release/$(cat VERSION)/mesh-release-evidence.json" "dist/task-spec-$(cat VERSION)-mesh-release-evidence.json"
+          (cd dist && shasum -a 256 task-spec-* > "task-spec-$(cat ../VERSION)-checksums.txt")
+
+      - name: Attach immutable assets to the existing release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release upload "$RELEASE_REF" dist/* --clobber
+
+  provenance:
+    name: private DSSE and in-toto provenance
+    needs: release-assets
+    runs-on: ubuntu-latest
+    env:
+      RELEASE_REF: ${{ github.event.release.tag_name || inputs.release_ref }}
+      RELEASE_PROVENANCE_KEY: ${{ secrets.TASKSPEC_RELEASE_PROVENANCE_KEY_PEM }}
+    steps:
+      - name: Checkout the exact release
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ env.RELEASE_REF }}
+          persist-credentials: false
+
+      - name: Download the immutable subjects
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          version="$(tr -d '[:space:]' < VERSION)"
+          mkdir -p dist
+          gh release download "$RELEASE_REF" --dir dist \
+            --pattern "task-spec-${version}.tar.gz" \
+            --pattern "task-spec-${version}.spdx.json" \
+            --pattern "taskmesh-checksums.txt"
+          echo "RELEASE_VERSION=$version" >> "$GITHUB_ENV"
+
+      - name: Create and independently verify private release provenance
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          test -n "$RELEASE_PROVENANCE_KEY" || {
+            echo "TASKSPEC_RELEASE_PROVENANCE_KEY_PEM is not configured" >&2
+            exit 1
+          }
+          umask 077
+          key="$RUNNER_TEMP/release-provenance.ed25519.pem"
+          printf '%s' "$RELEASE_PROVENANCE_KEY" > "$key"
+          started_at="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          source_commit="$(git rev-parse HEAD)"
+          python3 tools/release-provenance.py create \
+            --release-version "$RELEASE_VERSION" \
+            --release-ref "$RELEASE_REF" \
+            --source-repository "$GITHUB_REPOSITORY" \
+            --source-commit "$source_commit" \
+            --subject "dist/task-spec-${RELEASE_VERSION}.tar.gz" \
+            --sbom "dist/task-spec-${RELEASE_VERSION}.spdx.json" \
+            --builder-id "https://github.com/${GITHUB_REPOSITORY}/actions/workflows/release-install-smoke.yml" \
+            --invocation-id "https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}" \
+            --started-at "$started_at" \
+            --finished-at "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+            --private-key "$key" \
+            --public-key release/trust/release-provenance.ed25519.pub.pem \
+            --out "dist/task-spec-${RELEASE_VERSION}.provenance.dsse.json"
+          python3 tools/release-provenance.py verify \
+            --release-version "$RELEASE_VERSION" \
+            --release-ref "$RELEASE_REF" \
+            --source-repository "$GITHUB_REPOSITORY" \
+            --source-commit "$source_commit" \
+            --subject "dist/task-spec-${RELEASE_VERSION}.tar.gz" \
+            --sbom "dist/task-spec-${RELEASE_VERSION}.spdx.json" \
+            --envelope "dist/task-spec-${RELEASE_VERSION}.provenance.dsse.json" \
+            --public-key release/trust/release-provenance.ed25519.pub.pem
+          python3 tools/release-provenance.py create \
+            --release-version "$RELEASE_VERSION" \
+            --release-ref "$RELEASE_REF" \
+            --source-repository "$GITHUB_REPOSITORY" \
+            --source-commit "$source_commit" \
+            --subject "dist/taskmesh-checksums.txt" \
+            --sbom "dist/task-spec-${RELEASE_VERSION}.spdx.json" \
+            --builder-id "https://github.com/${GITHUB_REPOSITORY}/actions/workflows/release-install-smoke.yml" \
+            --invocation-id "https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}" \
+            --started-at "$started_at" \
+            --finished-at "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+            --private-key "$key" \
+            --public-key release/trust/release-provenance.ed25519.pub.pem \
+            --out "dist/taskmesh-binaries.provenance.dsse.json"
+          python3 tools/release-provenance.py verify \
+            --release-version "$RELEASE_VERSION" \
+            --release-ref "$RELEASE_REF" \
+            --source-repository "$GITHUB_REPOSITORY" \
+            --source-commit "$source_commit" \
+            --subject "dist/taskmesh-checksums.txt" \
+            --sbom "dist/task-spec-${RELEASE_VERSION}.spdx.json" \
+            --envelope "dist/taskmesh-binaries.provenance.dsse.json" \
+            --public-key release/trust/release-provenance.ed25519.pub.pem
+          cp release/trust/release-provenance.ed25519.pub.pem \
+            "dist/task-spec-${RELEASE_VERSION}-release-provenance.pub.pem"
+          gh release upload "$RELEASE_REF" \
+            "dist/task-spec-${RELEASE_VERSION}.provenance.dsse.json" \
+            "dist/taskmesh-binaries.provenance.dsse.json" \
+            "dist/task-spec-${RELEASE_VERSION}-release-provenance.pub.pem" \
+            --clobber
+
+  install:
+    name: remote install (${{ matrix.os }})
+    needs: release-assets
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    env:
+      GH_TOKEN: ${{ github.token }}
+      RELEASE_REF: ${{ github.event.release.tag_name || inputs.release_ref }}
+    steps:
+      - name: Checkout the exact release
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ env.RELEASE_REF }}
+          persist-credentials: false
+
+      - name: Install pinned Go toolchain
+        uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version: '1.25.0'
+          cache-dependency-path: go.sum
+
+      - name: Install shellcheck (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          set -euo pipefail
+          ver="v0.10.0"
+          arch="$(uname -m)"
+          case "$arch" in
+            arm64)  asset="darwin.aarch64"; sha="bbd2f14826328eee7679da7221f2bc3afb011f6a928b848c80c321f6046ddf81" ;;
+            x86_64) asset="darwin.x86_64";  sha="ef27684f23279d112d8ad84e0823642e43f838993bbb8c0963db9b58a90464c2" ;;
+            *) echo "unsupported arch: $arch" >&2; exit 1 ;;
+          esac
+          curl -fsSL -o /tmp/shellcheck.tar.xz \
+            "https://github.com/koalaman/shellcheck/releases/download/${ver}/shellcheck-${ver}.${asset}.tar.xz"
+          echo "${sha}  /tmp/shellcheck.tar.xz" | shasum -a 256 -c -
+          tar -xJf /tmp/shellcheck.tar.xz -C /tmp
+          sudo install -m 0755 "/tmp/shellcheck-${ver}/shellcheck" /usr/local/bin/shellcheck
+
+      - name: Verify release identity
+        run: |
+          set -euo pipefail
+          version="$(tr -d '[:space:]' < VERSION)"
+          case "$RELEASE_REF" in
+            "v$version"|"v$version-rc."*) ;;
+            *) echo "release ref $RELEASE_REF does not carry Task-Spec $version" >&2; exit 1 ;;
+          esac
+          echo "RELEASE_VERSION=$version" >> "$GITHUB_ENV"
+
+      - name: Prove authenticated release installer and isolated lifecycle
+        run: |
+          set -euo pipefail
+          work="$(mktemp -d)"
+          mkdir -p "$work/home" "$work/project" "$work/bin" "$work/install-root" "$work/assets" release-install-logs
+          gh api \
+            -H "Accept: application/vnd.github.raw+json" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            "repos/${GITHUB_REPOSITORY}/contents/install.sh?ref=${RELEASE_REF}" \
+            > "$work/install.sh"
+          gh release download "$RELEASE_REF" --repo "$GITHUB_REPOSITORY" \
+            --pattern "task-spec-${RELEASE_VERSION}.tar.gz" \
+            --pattern "task-spec-${RELEASE_VERSION}.tar.gz.sha256" \
+            --dir "$work/assets"
+          os="$(uname -s | tr '[:upper:]' '[:lower:]')"
+          arch="$(uname -m)"
+          case "$arch" in x86_64|amd64) arch=amd64 ;; arm64|aarch64) arch=arm64 ;; esac
+          gh release download "$RELEASE_REF" --repo "$GITHUB_REPOSITORY" \
+            --pattern "taskspec-meshd-${os}-${arch}" \
+            --pattern "taskspec-meshd-${os}-${arch}.sha256" \
+            --dir "$work/assets"
+          python3 -m http.server 8765 --bind 127.0.0.1 --directory "$work/assets" \
+            > release-install-logs/asset-server.log 2>&1 &
+          server_pid="$!"
+          trap 'kill "$server_pid" 2>/dev/null || true' EXIT
+          for attempt in 1 2 3 4 5; do
+            curl -fsS "http://127.0.0.1:8765/task-spec-${RELEASE_VERSION}.tar.gz.sha256" >/dev/null && break
+            [[ "$attempt" -lt 5 ]] || exit 1
+            sleep 1
+          done
+          HOME="$work/home" TASKSPEC_INSTALL_ROOT="$work/install-root" \
+            TASKSPEC_RELEASE_BASE_URL="http://127.0.0.1:8765" \
+            TASKSPEC_MESH_ASSET_DIR="$work/assets" \
+            bash "$work/install.sh" --target "$work/project" --bin-dir "$work/bin" --with-mesh \
+            | tee release-install-logs/authenticated-release-install.log
+          test "$("$work/bin/taskspec" version)" = "$RELEASE_VERSION"
+          "$work/bin/taskspec" demo | tee release-install-logs/authenticated-release-demo.log
+          git init -q -b main "$work/project"
+          git -C "$work/project" config user.name taskspec-release
+          git -C "$work/project" config user.email taskspec@example.invalid
+          touch "$work/project/README.md"
+          git -C "$work/project" add README.md
+          git -C "$work/project" commit -qm initial
+          (cd "$work/project" && "$work/bin/taskspec" mesh doctor) \
+            | tee release-install-logs/authenticated-mesh-doctor.log
+          grep -q '^INSTALL=OK$' release-install-logs/authenticated-release-install.log
+          grep -q '^DEMO=READY$' release-install-logs/authenticated-release-demo.log
+          grep -q '^MESH_DOCTOR_READY:' release-install-logs/authenticated-mesh-doctor.log
+
+      - name: Prove npm GitHub installer and isolated lifecycle
+        run: |
+          set -euo pipefail
+          work="$(mktemp -d)"
+          mkdir -p "$work/home" "$work/project" "$work/install-root" release-install-logs
+          HOME="$work/home" gh auth setup-git
+          HOME="$work/home" npm install --global --prefix "$work/npm" \
+            "git+https://github.com/${GITHUB_REPOSITORY}.git#${RELEASE_REF}" \
+            | tee release-install-logs/npm-install.log
+          test "$("$work/npm/bin/taskspec" version)" = "$RELEASE_VERSION"
+          TASKSPEC_INSTALL_ROOT="$work/install-root" \
+            "$work/npm/bin/taskspec-install" --target "$work/project" --bin-dir "$work/npm/bin" --with-mesh \
+            | tee release-install-logs/npm-harness-install.log
+          "$work/npm/bin/taskspec" demo | tee release-install-logs/npm-demo.log
+          grep -q '^INSTALL=OK$' release-install-logs/npm-harness-install.log
+          test -x "$work/npm/bin/taskspec-meshd"
+          grep -q '^DEMO=READY$' release-install-logs/npm-demo.log
+
+      - name: Retain installation evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: release-install-${{ env.RELEASE_REF }}-${{ matrix.os }}
+          path: release-install-logs/
+          if-no-files-found: error
+          retention-days: 90

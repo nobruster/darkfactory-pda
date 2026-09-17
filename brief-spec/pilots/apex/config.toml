@@ -1,0 +1,17 @@
+name = "apex"
+status = "synthetic"
+
+[cohort]
+minimum_sessions = 5
+target_sessions = 10
+
+[success]
+status_action_seconds = 15
+proof_location_seconds = 30
+comprehension_score_minimum = 4
+checkpoint_helpfulness_minimum = 4
+
+[privacy]
+persist_raw_transcripts = false
+persist_raw_prompts = false
+auto_ingest_external_knowledge = false

@@ -1,0 +1,2 @@
+batch_id,source_file,source_record_number,transaction_id,merchant_id,card_token,card_last4,cpf_masked,transaction_ts,amount_brl,movement_code,authorization_code,nsu,terminal_id
+B202402290000001,NW_CARD_SETTLEMENT_20240229_B202402290000001.dat,2,TXN9999999999999,MERCHANT99999999,tok_ee31773f9838e08e7bd507ae,0002,*******7735,2024-02-29T23:59:59-03:00,9999999999.99,P,ZZ9999,999999999999,TERMINAL99999999

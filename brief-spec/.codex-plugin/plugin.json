@@ -1,0 +1,36 @@
+{
+  "name": "brief-spec",
+  "version": "0.5.0",
+  "description": "Type-aware, evidence-backed reading and delivery for AI coding agents.",
+  "author": {
+    "name": "Luan Moreno Maciel",
+    "url": "https://github.com/luanmorenommaciel"
+  },
+  "homepage": "https://github.com/luanmorenommaciel/brief-spec",
+  "repository": "https://github.com/luanmorenommaciel/brief-spec",
+  "license": "MIT",
+  "keywords": [
+    "brief",
+    "checkpoint",
+    "evidence",
+    "developer-productivity"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Brief-Spec",
+    "shortDescription": "Predictable evidence-backed agent handoffs",
+    "longDescription": "Standardize substantive agent handoffs with a concise Outcome Brief and safe-boundary Session Checkpoints in orient, teach, and spoken modes.",
+    "developerName": "Luan Moreno Maciel",
+    "category": "Productivity",
+    "capabilities": [
+      "Interactive"
+    ],
+    "websiteURL": "https://github.com/luanmorenommaciel/brief-spec",
+    "defaultPrompt": [
+      "Close this task with an evidence-backed Outcome Brief",
+      "Orient me with a Session Checkpoint",
+      "Teach me what changed, then give me the next move"
+    ],
+    "brandColor": "#64D8FF"
+  }
+}

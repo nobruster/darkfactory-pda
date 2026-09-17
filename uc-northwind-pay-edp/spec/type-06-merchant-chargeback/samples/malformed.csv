@@ -1,0 +1,2 @@
+chargeback_id;batch_id;merchant_id;merchant_tax_id;reason_code;description;original_amount_brl;rate_percent;chargeback_amount_brl;business_date
+CBK2026072305003;B202607230000503;MER0000000000003;11222333000181;FRAUD;bad;unquoted;10,00;1,000;0,10;23/07/2026

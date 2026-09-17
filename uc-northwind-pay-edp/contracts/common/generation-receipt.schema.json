@@ -1,0 +1,1625 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://northwind-pay.local/contracts/generation-receipt-v1.schema.json",
+  "title": "NorthWind Pay generation receipt v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifacts",
+    "batch_id",
+    "contract",
+    "controls",
+    "expected_contract_result",
+    "fault",
+    "generator",
+    "scenario",
+    "schema_version",
+    "status"
+  ],
+  "properties": {
+    "artifacts": {
+      "$ref": "#/$defs/artifacts"
+    },
+    "batch_id": {
+      "type": "string",
+      "pattern": "^B[0-9]{15}$"
+    },
+    "contract": {
+      "$ref": "#/$defs/contract"
+    },
+    "controls": {
+      "type": "object"
+    },
+    "expected_contract_result": {
+      "type": "object"
+    },
+    "fault": {
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "generator": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "version"
+      ],
+      "properties": {
+        "name": {
+          "const": "northwind-pay-datagen"
+        },
+        "version": {
+          "type": "string"
+        }
+      }
+    },
+    "scenario": {
+      "type": "string"
+    },
+    "schema_version": {
+      "const": 1
+    },
+    "status": {
+      "const": "generated"
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "contract": {
+            "properties": {
+              "type_number": {
+                "const": "01"
+              }
+            }
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "artifacts": {
+            "$ref": "#/$defs/type01Artifacts"
+          },
+          "controls": {
+            "$ref": "#/$defs/type01Controls"
+          },
+          "expected_contract_result": {
+            "$ref": "#/$defs/type01ExpectedResult"
+          },
+          "fault": {
+            "$ref": "#/$defs/type01Fault"
+          },
+          "scenario": {
+            "enum": [
+              "valid-minimal",
+              "valid-boundary",
+              "negative-overpunch",
+              "malformed",
+              "DF-SOURCE-001"
+            ]
+          }
+        },
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "scenario": {
+                  "enum": [
+                    "valid-minimal",
+                    "valid-boundary",
+                    "negative-overpunch"
+                  ]
+                }
+              }
+            },
+            "then": {
+              "properties": {
+                "expected_contract_result": {
+                  "const": {
+                    "status": "ACCEPTED",
+                    "violation": null
+                  }
+                },
+                "fault": {
+                  "type": "null"
+                }
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "scenario": {
+                  "const": "malformed"
+                }
+              }
+            },
+            "then": {
+              "properties": {
+                "expected_contract_result": {
+                  "const": {
+                    "status": "REJECTED",
+                    "violation": "INVALID_OVERPUNCH"
+                  }
+                },
+                "fault": {
+                  "const": {
+                    "code": "INVALID_OVERPUNCH",
+                    "expected_stage": "java-validation",
+                    "injected": true
+                  }
+                }
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "scenario": {
+                  "const": "DF-SOURCE-001"
+                }
+              }
+            },
+            "then": {
+              "properties": {
+                "expected_contract_result": {
+                  "const": {
+                    "status": "REJECTED",
+                    "violation": "SOURCE_CONTROL_TOTAL_MISMATCH"
+                  }
+                },
+                "fault": {
+                  "const": {
+                    "code": "SOURCE_CONTROL_TOTAL_MISMATCH",
+                    "expected_stage": "java-validation",
+                    "injected": true
+                  }
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "contract": {
+            "properties": {
+              "type_number": {
+                "const": "02"
+              }
+            }
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "artifacts": {
+            "$ref": "#/$defs/type02Artifacts"
+          },
+          "controls": {
+            "$ref": "#/$defs/type02Controls"
+          },
+          "expected_contract_result": {
+            "$ref": "#/$defs/type02ExpectedResult"
+          },
+          "fault": {
+            "$ref": "#/$defs/type02Fault"
+          },
+          "scenario": {
+            "enum": [
+              "valid-minimal",
+              "valid-boundary",
+              "escaped-content",
+              "malformed",
+              "DF-SOURCE-002"
+            ]
+          }
+        },
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "scenario": {
+                  "enum": [
+                    "valid-minimal",
+                    "valid-boundary",
+                    "escaped-content"
+                  ]
+                }
+              }
+            },
+            "then": {
+              "properties": {
+                "expected_contract_result": {
+                  "const": {
+                    "status": "ACCEPTED",
+                    "violation": null
+                  }
+                },
+                "fault": {
+                  "type": "null"
+                }
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "scenario": {
+                  "const": "malformed"
+                }
+              }
+            },
+            "then": {
+              "properties": {
+                "expected_contract_result": {
+                  "const": {
+                    "status": "REJECTED",
+                    "violation": "INVALID_FIELD_COUNT"
+                  }
+                },
+                "fault": {
+                  "const": {
+                    "code": "INVALID_FIELD_COUNT",
+                    "expected_stage": "java-validation",
+                    "injected": true
+                  }
+                }
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "scenario": {
+                  "const": "DF-SOURCE-002"
+                }
+              }
+            },
+            "then": {
+              "properties": {
+                "expected_contract_result": {
+                  "const": {
+                    "status": "REJECTED",
+                    "violation": "SOURCE_CONTROL_NET_MISMATCH"
+                  }
+                },
+                "fault": {
+                  "const": {
+                    "code": "SOURCE_CONTROL_NET_MISMATCH",
+                    "expected_stage": "java-validation",
+                    "injected": true
+                  }
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "contract": {
+            "properties": {
+              "type_number": {
+                "const": "03"
+              }
+            }
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "artifacts": {
+            "$ref": "#/$defs/type03Artifacts"
+          },
+          "controls": {
+            "$ref": "#/$defs/type03Controls"
+          },
+          "expected_contract_result": {
+            "$ref": "#/$defs/type03ExpectedResult"
+          },
+          "fault": {
+            "$ref": "#/$defs/type03Fault"
+          },
+          "scenario": {
+            "enum": [
+              "valid-minimal",
+              "valid-boundary",
+              "malformed",
+              "multi-lot",
+              "DF-SOURCE-003"
+            ]
+          }
+        },
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "scenario": {
+                  "enum": [
+                    "valid-minimal",
+                    "valid-boundary",
+                    "multi-lot"
+                  ]
+                }
+              }
+            },
+            "then": {
+              "properties": {
+                "expected_contract_result": {
+                  "const": {
+                    "status": "ACCEPTED",
+                    "violation": null
+                  }
+                },
+                "fault": {
+                  "type": "null"
+                }
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "scenario": {
+                  "const": "malformed"
+                }
+              }
+            },
+            "then": {
+              "properties": {
+                "expected_contract_result": {
+                  "const": {
+                    "status": "REJECTED",
+                    "violation": "SEGMENT_PAIR_MISMATCH"
+                  }
+                },
+                "fault": {
+                  "const": {
+                    "code": "SEGMENT_PAIR_MISMATCH",
+                    "expected_stage": "java-validation",
+                    "injected": true
+                  }
+                }
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "scenario": {
+                  "const": "DF-SOURCE-003"
+                }
+              }
+            },
+            "then": {
+              "properties": {
+                "expected_contract_result": {
+                  "const": {
+                    "status": "REJECTED",
+                    "violation": "SOURCE_CONTROL_NET_MISMATCH"
+                  }
+                },
+                "fault": {
+                  "const": {
+                    "code": "SOURCE_CONTROL_NET_MISMATCH",
+                    "expected_stage": "java-validation",
+                    "injected": true
+                  }
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "contract": {
+            "properties": {
+              "type_number": {
+                "const": "04"
+              }
+            }
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "artifacts": {
+            "$ref": "#/$defs/type04Artifacts"
+          },
+          "controls": {
+            "$ref": "#/$defs/type04Controls"
+          },
+          "expected_contract_result": {
+            "$ref": "#/$defs/type04ExpectedResult"
+          },
+          "fault": {
+            "$ref": "#/$defs/type04Fault"
+          },
+          "scenario": {
+            "enum": [
+              "valid-minimal",
+              "valid-boundary",
+              "malformed",
+              "all-returned-zero-net",
+              "DF-SOURCE-004"
+            ]
+          }
+        },
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "scenario": {
+                  "enum": [
+                    "valid-minimal",
+                    "valid-boundary",
+                    "all-returned-zero-net"
+                  ]
+                }
+              }
+            },
+            "then": {
+              "properties": {
+                "expected_contract_result": {
+                  "const": {
+                    "status": "ACCEPTED",
+                    "violation": null
+                  }
+                },
+                "fault": {
+                  "type": "null"
+                }
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "scenario": {
+                  "const": "malformed"
+                }
+              }
+            },
+            "then": {
+              "properties": {
+                "expected_contract_result": {
+                  "const": {
+                    "status": "REJECTED",
+                    "violation": "INVALID_TRANSPORT"
+                  }
+                },
+                "fault": {
+                  "const": {
+                    "code": "INVALID_TRANSPORT",
+                    "expected_stage": "java-validation",
+                    "injected": true
+                  }
+                }
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "scenario": {
+                  "const": "DF-SOURCE-004"
+                }
+              }
+            },
+            "then": {
+              "properties": {
+                "expected_contract_result": {
+                  "const": {
+                    "status": "REJECTED",
+                    "violation": "SOURCE_CONTROL_NET_MISMATCH"
+                  }
+                },
+                "fault": {
+                  "const": {
+                    "code": "SOURCE_CONTROL_NET_MISMATCH",
+                    "expected_stage": "java-validation",
+                    "injected": true
+                  }
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "contract": {
+            "properties": {
+              "type_number": {
+                "const": "05"
+              }
+            }
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "artifacts": {
+            "$ref": "#/$defs/type05Artifacts"
+          },
+          "controls": {
+            "$ref": "#/$defs/type05Controls"
+          },
+          "expected_contract_result": {
+            "$ref": "#/$defs/type05ExpectedResult"
+          },
+          "fault": {
+            "$ref": "#/$defs/type05Fault"
+          },
+          "scenario": {
+            "enum": [
+              "valid-minimal",
+              "valid-boundary",
+              "malformed",
+              "rounding-half-up",
+              "DF-SOURCE-005"
+            ]
+          }
+        },
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "scenario": {
+                  "enum": [
+                    "valid-minimal",
+                    "valid-boundary",
+                    "rounding-half-up"
+                  ]
+                }
+              }
+            },
+            "then": {
+              "properties": {
+                "expected_contract_result": {
+                  "const": {
+                    "status": "ACCEPTED",
+                    "violation": null
+                  }
+                },
+                "fault": {
+                  "type": "null"
+                }
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "scenario": {
+                  "const": "malformed"
+                }
+              }
+            },
+            "then": {
+              "properties": {
+                "expected_contract_result": {
+                  "const": {
+                    "status": "REJECTED",
+                    "violation": "INVALID_CSV_QUOTING"
+                  }
+                },
+                "fault": {
+                  "const": {
+                    "code": "INVALID_CSV_QUOTING",
+                    "expected_stage": "java-validation",
+                    "injected": true
+                  }
+                }
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "scenario": {
+                  "const": "DF-SOURCE-005"
+                }
+              }
+            },
+            "then": {
+              "properties": {
+                "expected_contract_result": {
+                  "const": {
+                    "status": "REJECTED",
+                    "violation": "SOURCE_CONTROL_ASSESSED_FEE_MISMATCH"
+                  }
+                },
+                "fault": {
+                  "const": {
+                    "code": "SOURCE_CONTROL_ASSESSED_FEE_MISMATCH",
+                    "expected_stage": "java-validation",
+                    "injected": true
+                  }
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "contract": {
+            "properties": {
+              "type_number": {
+                "const": "06"
+              }
+            }
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "artifacts": {
+            "$ref": "#/$defs/type06Artifacts"
+          },
+          "controls": {
+            "$ref": "#/$defs/type06Controls"
+          },
+          "expected_contract_result": {
+            "$ref": "#/$defs/type06ExpectedResult"
+          },
+          "fault": {
+            "$ref": "#/$defs/type06Fault"
+          },
+          "scenario": {
+            "enum": [
+              "valid-minimal",
+              "valid-boundary",
+              "malformed",
+              "legacy-miss"
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "canonicalMoney": {
+      "type": "string",
+      "pattern": "^-?(0|[1-9][0-9]{0,15})\\.[0-9]{2}$",
+      "not": {
+        "const": "-0.00"
+      }
+    },
+    "canonicalUnsignedMoney": {
+      "type": "string",
+      "pattern": "^(0|[1-9][0-9]{0,15})\\.[0-9]{2}$"
+    },
+    "canonicalReturnedMoney": {
+      "oneOf": [
+        {
+          "const": "0.00"
+        },
+        {
+          "type": "string",
+          "pattern": "^-(?:0\\.(?!00$)[0-9]{2}|[1-9][0-9]{0,15}\\.[0-9]{2})$"
+        }
+      ]
+    },
+    "artifacts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "checksum_file",
+        "data_file",
+        "data_sha256",
+        "source_manifest",
+        "source_manifest_sha256"
+      ],
+      "properties": {
+        "checksum_file": {
+          "type": "string"
+        },
+        "data_file": {
+          "type": "string"
+        },
+        "data_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "source_manifest": {
+          "const": "source-manifest.json"
+        },
+        "source_manifest_sha256": {
+          "$ref": "#/$defs/sha256"
+        }
+      }
+    },
+    "type01Artifacts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "checksum_file",
+        "data_file",
+        "data_sha256",
+        "source_manifest",
+        "source_manifest_sha256"
+      ],
+      "properties": {
+        "checksum_file": {
+          "type": "string",
+          "pattern": "^NW_CARD_SETTLEMENT_[0-9]{8}_B[0-9]{15}\\.dat\\.sha256$"
+        },
+        "data_file": {
+          "type": "string",
+          "pattern": "^NW_CARD_SETTLEMENT_[0-9]{8}_B[0-9]{15}\\.dat$"
+        },
+        "data_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "source_manifest": {
+          "const": "source-manifest.json"
+        },
+        "source_manifest_sha256": {
+          "$ref": "#/$defs/sha256"
+        }
+      }
+    },
+    "type02Artifacts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "checksum_file",
+        "data_file",
+        "data_sha256",
+        "source_manifest",
+        "source_manifest_sha256"
+      ],
+      "properties": {
+        "checksum_file": {
+          "type": "string",
+          "pattern": "^NW_INSTANT_PAYMENT_[0-9]{8}_B[0-9]{15}\\.txt\\.sha256$"
+        },
+        "data_file": {
+          "type": "string",
+          "pattern": "^NW_INSTANT_PAYMENT_[0-9]{8}_B[0-9]{15}\\.txt$"
+        },
+        "data_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "source_manifest": {
+          "const": "source-manifest.json"
+        },
+        "source_manifest_sha256": {
+          "$ref": "#/$defs/sha256"
+        }
+      }
+    },
+    "contract": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "layout_sha256",
+        "layout_version",
+        "registry_sha256",
+        "type_number",
+        "version"
+      ],
+      "properties": {
+        "layout_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "layout_version": {
+          "const": "001"
+        },
+        "registry_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "type_number": {
+          "enum": [
+            "01",
+            "02",
+            "03",
+            "04",
+            "05",
+            "06"
+          ]
+        },
+        "version": {
+          "const": 1
+        }
+      }
+    },
+    "type01Controls": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "computed_detail_count",
+        "computed_net_amount",
+        "declared_detail_count",
+        "declared_net_amount"
+      ],
+      "properties": {
+        "computed_detail_count": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "computed_net_amount": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/canonicalMoney"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "declared_detail_count": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "declared_net_amount": {
+          "$ref": "#/$defs/canonicalMoney"
+        }
+      }
+    },
+    "type01ExpectedResult": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "violation"
+      ],
+      "properties": {
+        "status": {
+          "enum": [
+            "ACCEPTED",
+            "REJECTED"
+          ]
+        },
+        "violation": {
+          "enum": [
+            null,
+            "INVALID_OVERPUNCH",
+            "SOURCE_CONTROL_TOTAL_MISMATCH"
+          ]
+        }
+      }
+    },
+    "type01Fault": {
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "code",
+            "expected_stage",
+            "injected"
+          ],
+          "properties": {
+            "code": {
+              "enum": [
+                "INVALID_OVERPUNCH",
+                "SOURCE_CONTROL_TOTAL_MISMATCH"
+              ]
+            },
+            "expected_stage": {
+              "const": "java-validation"
+            },
+            "injected": {
+              "const": true
+            }
+          }
+        }
+      ]
+    },
+    "type02Controls": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "computed_credit_amount",
+        "computed_debit_amount",
+        "computed_event_count",
+        "computed_net_amount",
+        "declared_credit_amount",
+        "declared_debit_amount",
+        "declared_event_count",
+        "declared_net_amount"
+      ],
+      "properties": {
+        "computed_credit_amount": {
+          "$ref": "#/$defs/canonicalUnsignedMoney"
+        },
+        "computed_debit_amount": {
+          "$ref": "#/$defs/canonicalUnsignedMoney"
+        },
+        "computed_event_count": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10000
+        },
+        "computed_net_amount": {
+          "$ref": "#/$defs/canonicalMoney"
+        },
+        "declared_credit_amount": {
+          "$ref": "#/$defs/canonicalUnsignedMoney"
+        },
+        "declared_debit_amount": {
+          "$ref": "#/$defs/canonicalUnsignedMoney"
+        },
+        "declared_event_count": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10000
+        },
+        "declared_net_amount": {
+          "$ref": "#/$defs/canonicalMoney"
+        }
+      }
+    },
+    "type02ExpectedResult": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "violation"
+      ],
+      "properties": {
+        "status": {
+          "enum": [
+            "ACCEPTED",
+            "REJECTED"
+          ]
+        },
+        "violation": {
+          "enum": [
+            null,
+            "INVALID_FIELD_COUNT",
+            "SOURCE_CONTROL_NET_MISMATCH"
+          ]
+        }
+      }
+    },
+    "type02Fault": {
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "code",
+            "expected_stage",
+            "injected"
+          ],
+          "properties": {
+            "code": {
+              "enum": [
+                "INVALID_FIELD_COUNT",
+                "SOURCE_CONTROL_NET_MISMATCH"
+              ]
+            },
+            "expected_stage": {
+              "const": "java-validation"
+            },
+            "injected": {
+              "const": true
+            }
+          }
+        }
+      ]
+    },
+    "type03Artifacts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "checksum_file",
+        "data_file",
+        "data_sha256",
+        "source_manifest",
+        "source_manifest_sha256"
+      ],
+      "properties": {
+        "checksum_file": {
+          "type": "string",
+          "pattern": "^NW_PAYMENT_SLIP_[0-9]{8}_B[0-9]{15}\\.rem\\.sha256$"
+        },
+        "data_file": {
+          "type": "string",
+          "pattern": "^NW_PAYMENT_SLIP_[0-9]{8}_B[0-9]{15}\\.rem$"
+        },
+        "data_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "source_manifest": {
+          "const": "source-manifest.json"
+        },
+        "source_manifest_sha256": {
+          "$ref": "#/$defs/sha256"
+        }
+      }
+    },
+    "type03Controls": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "computed_discount_amount",
+        "computed_face_amount",
+        "computed_fee_amount",
+        "computed_logical_count",
+        "computed_lot_count",
+        "computed_net_amount",
+        "computed_orphan_segment_count",
+        "computed_physical_record_count",
+        "declared_discount_amount",
+        "declared_face_amount",
+        "declared_fee_amount",
+        "declared_logical_count",
+        "declared_lot_count",
+        "declared_net_amount",
+        "declared_physical_record_count"
+      ],
+      "properties": {
+        "computed_discount_amount": {
+          "$ref": "#/$defs/canonicalUnsignedMoney"
+        },
+        "computed_face_amount": {
+          "$ref": "#/$defs/canonicalUnsignedMoney"
+        },
+        "computed_fee_amount": {
+          "$ref": "#/$defs/canonicalUnsignedMoney"
+        },
+        "computed_logical_count": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10000
+        },
+        "computed_lot_count": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1000
+        },
+        "computed_net_amount": {
+          "$ref": "#/$defs/canonicalUnsignedMoney"
+        },
+        "computed_orphan_segment_count": {
+          "const": 0
+        },
+        "computed_physical_record_count": {
+          "type": "integer",
+          "minimum": 6,
+          "maximum": 22002
+        },
+        "declared_discount_amount": {
+          "$ref": "#/$defs/canonicalUnsignedMoney"
+        },
+        "declared_face_amount": {
+          "$ref": "#/$defs/canonicalUnsignedMoney"
+        },
+        "declared_fee_amount": {
+          "$ref": "#/$defs/canonicalUnsignedMoney"
+        },
+        "declared_logical_count": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10000
+        },
+        "declared_lot_count": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1000
+        },
+        "declared_net_amount": {
+          "$ref": "#/$defs/canonicalUnsignedMoney"
+        },
+        "declared_physical_record_count": {
+          "type": "integer",
+          "minimum": 6,
+          "maximum": 22002
+        }
+      }
+    },
+    "type03ExpectedResult": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "violation"
+      ],
+      "properties": {
+        "status": {
+          "enum": [
+            "ACCEPTED",
+            "REJECTED"
+          ]
+        },
+        "violation": {
+          "enum": [
+            null,
+            "SEGMENT_PAIR_MISMATCH",
+            "SOURCE_CONTROL_NET_MISMATCH"
+          ]
+        }
+      }
+    },
+    "type03Fault": {
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "code",
+            "expected_stage",
+            "injected"
+          ],
+          "properties": {
+            "code": {
+              "enum": [
+                "SEGMENT_PAIR_MISMATCH",
+                "SOURCE_CONTROL_NET_MISMATCH"
+              ]
+            },
+            "expected_stage": {
+              "const": "java-validation"
+            },
+            "injected": {
+              "const": true
+            }
+          }
+        }
+      ]
+    },
+    "type04Artifacts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "checksum_file",
+        "data_file",
+        "data_sha256",
+        "source_manifest",
+        "source_manifest_sha256"
+      ],
+      "properties": {
+        "checksum_file": {
+          "type": "string",
+          "pattern": "^NW_TED_SETTLEMENT_[0-9]{8}_B[0-9]{15}\\.dat\\.sha256$"
+        },
+        "data_file": {
+          "type": "string",
+          "pattern": "^NW_TED_SETTLEMENT_[0-9]{8}_B[0-9]{15}\\.dat$"
+        },
+        "data_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "source_manifest": {
+          "const": "source-manifest.json"
+        },
+        "source_manifest_sha256": {
+          "$ref": "#/$defs/sha256"
+        }
+      }
+    },
+    "type04Controls": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "computed_gross_amount",
+        "computed_net_amount",
+        "computed_return_amount",
+        "computed_return_count",
+        "computed_transfer_count",
+        "declared_gross_amount",
+        "declared_net_amount",
+        "declared_return_amount",
+        "declared_return_count",
+        "declared_transfer_count"
+      ],
+      "properties": {
+        "computed_gross_amount": {
+          "$ref": "#/$defs/canonicalUnsignedMoney"
+        },
+        "computed_net_amount": {
+          "$ref": "#/$defs/canonicalUnsignedMoney"
+        },
+        "computed_return_amount": {
+          "$ref": "#/$defs/canonicalReturnedMoney"
+        },
+        "computed_return_count": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 10000
+        },
+        "computed_transfer_count": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10000
+        },
+        "declared_gross_amount": {
+          "$ref": "#/$defs/canonicalUnsignedMoney"
+        },
+        "declared_net_amount": {
+          "$ref": "#/$defs/canonicalUnsignedMoney"
+        },
+        "declared_return_amount": {
+          "$ref": "#/$defs/canonicalReturnedMoney"
+        },
+        "declared_return_count": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 10000
+        },
+        "declared_transfer_count": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10000
+        }
+      }
+    },
+    "type04ExpectedResult": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "violation"
+      ],
+      "properties": {
+        "status": {
+          "enum": [
+            "ACCEPTED",
+            "REJECTED"
+          ]
+        },
+        "violation": {
+          "enum": [
+            null,
+            "INVALID_TRANSPORT",
+            "SOURCE_CONTROL_NET_MISMATCH"
+          ]
+        }
+      }
+    },
+    "type04Fault": {
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "code",
+            "expected_stage",
+            "injected"
+          ],
+          "properties": {
+            "code": {
+              "enum": [
+                "INVALID_TRANSPORT",
+                "SOURCE_CONTROL_NET_MISMATCH"
+              ]
+            },
+            "expected_stage": {
+              "const": "java-validation"
+            },
+            "injected": {
+              "const": true
+            }
+          }
+        }
+      ]
+    },
+    "type05Artifacts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "checksum_file",
+        "data_file",
+        "data_sha256",
+        "source_manifest",
+        "source_manifest_sha256"
+      ],
+      "properties": {
+        "checksum_file": {
+          "type": "string",
+          "pattern": "^NW_MERCHANT_FEES_[0-9]{8}_B[0-9]{15}\\.csv\\.sha256$"
+        },
+        "data_file": {
+          "type": "string",
+          "pattern": "^NW_MERCHANT_FEES_[0-9]{8}_B[0-9]{15}\\.csv$"
+        },
+        "data_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "source_manifest": {
+          "const": "source-manifest.json"
+        },
+        "source_manifest_sha256": {
+          "$ref": "#/$defs/sha256"
+        }
+      }
+    },
+    "type05Controls": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "computed_assessed_fee",
+        "computed_calculated_fee",
+        "computed_gross_amount",
+        "computed_row_count",
+        "declared_assessed_fee",
+        "declared_calculated_fee",
+        "declared_gross_amount",
+        "declared_row_count"
+      ],
+      "properties": {
+        "computed_assessed_fee": {
+          "$ref": "#/$defs/canonicalUnsignedMoney"
+        },
+        "computed_calculated_fee": {
+          "$ref": "#/$defs/canonicalUnsignedMoney"
+        },
+        "computed_gross_amount": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/canonicalUnsignedMoney"
+            },
+            {
+              "not": {
+                "const": "0.00"
+              }
+            }
+          ]
+        },
+        "computed_row_count": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10000
+        },
+        "declared_assessed_fee": {
+          "$ref": "#/$defs/canonicalUnsignedMoney"
+        },
+        "declared_calculated_fee": {
+          "$ref": "#/$defs/canonicalUnsignedMoney"
+        },
+        "declared_gross_amount": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/canonicalUnsignedMoney"
+            },
+            {
+              "not": {
+                "const": "0.00"
+              }
+            }
+          ]
+        },
+        "declared_row_count": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10000
+        }
+      }
+    },
+    "type05ExpectedResult": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "violation"
+      ],
+      "properties": {
+        "status": {
+          "enum": [
+            "ACCEPTED",
+            "REJECTED"
+          ]
+        },
+        "violation": {
+          "enum": [
+            null,
+            "INVALID_CSV_QUOTING",
+            "SOURCE_CONTROL_ASSESSED_FEE_MISMATCH"
+          ]
+        }
+      }
+    },
+    "type05Fault": {
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "code",
+            "expected_stage",
+            "injected"
+          ],
+          "properties": {
+            "code": {
+              "enum": [
+                "INVALID_CSV_QUOTING",
+                "SOURCE_CONTROL_ASSESSED_FEE_MISMATCH"
+              ]
+            },
+            "expected_stage": {
+              "const": "java-validation"
+            },
+            "injected": {
+              "const": true
+            }
+          }
+        }
+      ]
+    },
+    "type06Artifacts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "checksum_file",
+        "data_file",
+        "data_sha256",
+        "source_manifest",
+        "source_manifest_sha256"
+      ],
+      "properties": {
+        "checksum_file": {
+          "type": "string",
+          "pattern": "^NW_MERCHANT_CHARGEBACK_[0-9]{8}_B[0-9]{15}\\.csv\\.sha256$"
+        },
+        "data_file": {
+          "type": "string",
+          "pattern": "^NW_MERCHANT_CHARGEBACK_[0-9]{8}_B[0-9]{15}\\.csv$"
+        },
+        "data_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "source_manifest": {
+          "const": "source-manifest.json"
+        },
+        "source_manifest_sha256": {
+          "$ref": "#/$defs/sha256"
+        }
+      }
+    },
+    "type06Controls": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "computed_calculated_amount",
+        "computed_chargeback_amount",
+        "computed_original_amount",
+        "computed_row_count",
+        "currency",
+        "declared_calculated_amount",
+        "declared_chargeback_amount",
+        "declared_original_amount",
+        "declared_row_count"
+      ],
+      "properties": {
+        "computed_calculated_amount": {
+          "$ref": "#/$defs/canonicalUnsignedMoney"
+        },
+        "computed_chargeback_amount": {
+          "$ref": "#/$defs/canonicalUnsignedMoney"
+        },
+        "computed_original_amount": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/canonicalUnsignedMoney"
+            },
+            {
+              "not": {
+                "const": "0.00"
+              }
+            }
+          ]
+        },
+        "computed_row_count": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10000
+        },
+        "currency": {
+          "const": "BRL"
+        },
+        "declared_calculated_amount": {
+          "$ref": "#/$defs/canonicalUnsignedMoney"
+        },
+        "declared_chargeback_amount": {
+          "$ref": "#/$defs/canonicalUnsignedMoney"
+        },
+        "declared_original_amount": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/canonicalUnsignedMoney"
+            },
+            {
+              "not": {
+                "const": "0.00"
+              }
+            }
+          ]
+        },
+        "declared_row_count": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10000
+        }
+      }
+    },
+    "type06ExpectedResult": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "violation"
+      ],
+      "properties": {
+        "status": {
+          "enum": [
+            "ACCEPTED",
+            "REJECTED"
+          ]
+        },
+        "violation": {
+          "enum": [
+            null,
+            "INVALID_CSV_QUOTING"
+          ]
+        }
+      }
+    },
+    "type06Fault": {
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "code",
+            "expected_stage",
+            "injected"
+          ],
+          "properties": {
+            "code": {
+              "enum": [
+                "INVALID_CSV_QUOTING"
+              ]
+            },
+            "expected_stage": {
+              "const": "java-validation"
+            },
+            "injected": {
+              "const": true
+            }
+          }
+        }
+      ]
+    }
+  }
+}

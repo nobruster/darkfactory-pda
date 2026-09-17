@@ -1,0 +1,4 @@
+interface:
+  display_name: "Project TaskPlan"
+  short_description: "Emit reviewed TaskPlan and lineage"
+  default_prompt: "Use $to-task-specs to project this reviewed Seamwise graph into TaskPlan/v1 and lineage, then stop before Task-Spec materialization."

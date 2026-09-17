@@ -1,0 +1,45 @@
+{
+  "version": 1,
+  "hooks": {
+    "sessionStart": [
+      {
+        "type": "command",
+        "bash": "python3 \"${PLUGIN_ROOT}/scripts/briefspec-hook\" --provider copilot --event sessionStart",
+        "powershell": "python \"${PLUGIN_ROOT}/scripts/briefspec-hook\" --provider copilot --event sessionStart",
+        "timeoutSec": 10
+      }
+    ],
+    "userPromptSubmitted": [
+      {
+        "type": "command",
+        "bash": "python3 \"${PLUGIN_ROOT}/scripts/briefspec-hook\" --provider copilot --event userPromptSubmitted",
+        "powershell": "python \"${PLUGIN_ROOT}/scripts/briefspec-hook\" --provider copilot --event userPromptSubmitted",
+        "timeoutSec": 10
+      }
+    ],
+    "postToolUse": [
+      {
+        "type": "command",
+        "bash": "python3 \"${PLUGIN_ROOT}/scripts/briefspec-hook\" --provider copilot --event postToolUse",
+        "powershell": "python \"${PLUGIN_ROOT}/scripts/briefspec-hook\" --provider copilot --event postToolUse",
+        "timeoutSec": 10
+      }
+    ],
+    "preCompact": [
+      {
+        "type": "command",
+        "bash": "python3 \"${PLUGIN_ROOT}/scripts/briefspec-hook\" --provider copilot --event preCompact",
+        "powershell": "python \"${PLUGIN_ROOT}/scripts/briefspec-hook\" --provider copilot --event preCompact",
+        "timeoutSec": 10
+      }
+    ],
+    "agentStop": [
+      {
+        "type": "command",
+        "bash": "python3 \"${PLUGIN_ROOT}/scripts/briefspec-hook\" --provider copilot --event agentStop",
+        "powershell": "python \"${PLUGIN_ROOT}/scripts/briefspec-hook\" --provider copilot --event agentStop",
+        "timeoutSec": 10
+      }
+    ]
+  }
+}

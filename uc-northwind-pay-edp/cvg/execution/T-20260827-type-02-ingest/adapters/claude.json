@@ -1,0 +1,29 @@
+{
+  "adapter": "claude",
+  "candidate_guard_command": "python3 skills/task-to-runtime-contract/scripts/check-path-policy.py --profile \"cvg/execution/T-20260827-type-02-ingest/execution-profile.yaml\" --candidate \"$CVG_CANDIDATE_PATH\"",
+  "claude_settings_fragment": {
+    "hooks": {
+      "PreToolUse": [
+        {
+          "hooks": [
+            {
+              "command": "CVG_EXECUTION_PROFILE=\"cvg/execution/T-20260827-type-02-ingest/execution-profile.yaml\" python3 skills/task-to-runtime-contract/scripts/guard-tool-input.py",
+              "type": "command"
+            }
+          ],
+          "matcher": "Edit|Write|NotebookEdit"
+        }
+      ]
+    }
+  },
+  "execution_profile": "cvg/execution/T-20260827-type-02-ingest/execution-profile.yaml",
+  "native_control": {
+    "prewrite": "generated PreToolUse settings fragment guards Edit/Write/NotebookEdit when installed",
+    "prewrite_prevention_status": "integration-required; Bash writes remain postflight-detected",
+    "supports_prewrite_prevention": false
+  },
+  "postflight_command": "python3 skills/task-to-runtime-contract/scripts/check-path-policy.py --profile \"cvg/execution/T-20260827-type-02-ingest/execution-profile.yaml\" --base \"$CVG_BASE_REF\"",
+  "schema": "cvg.runtime-adapter.v1",
+  "settlement_policy": "postflight_command is mandatory before PR or success receipt",
+  "tool_input_guard_command": "CVG_EXECUTION_PROFILE=\"cvg/execution/T-20260827-type-02-ingest/execution-profile.yaml\" python3 skills/task-to-runtime-contract/scripts/guard-tool-input.py"
+}

@@ -1,0 +1,25 @@
+[build-system]
+requires = ["setuptools>=75"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "northwind-ontology"
+version = "0.1.0"
+description = "Read-only Postgres catalog crawl for the NorthWind Pay plant"
+requires-python = ">=3.12"
+dependencies = [
+  "pydantic>=2.9.0",
+  "pydantic-settings>=2.5.0",
+  "python-dotenv>=1.0.0",
+  "PyYAML>=6.0",
+  "psycopg2-binary>=2.9.0",
+]
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+py-modules = ["ids", "mcp_stdio", "pipeline", "retrieve", "settings", "sql_only"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["connectors*", "entities*"]
+namespaces = false

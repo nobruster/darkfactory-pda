@@ -1,0 +1,44 @@
+{
+  "acceptance_tier": 2,
+  "accepted_at": "2026-09-10T19:05:17Z",
+  "accepted_by": "luanmorenomaciel",
+  "contract": "AcceptanceRecord/v1",
+  "gate_outcomes": {
+    "authorization": {
+      "code": "AUTHORIZATION_VALID",
+      "status": "pass"
+    },
+    "evaluation": {
+      "code": "EVAL_PASSED",
+      "status": "pass"
+    },
+    "evidence": {
+      "code": "EVIDENCE_SATISFIED",
+      "proof": [
+        "format v3 or earlier: v4 policy receipts are not required"
+      ],
+      "status": "pass"
+    },
+    "preflight": {
+      "code": "PREFLIGHT_PASSED",
+      "status": "pass",
+      "warnings": []
+    }
+  },
+  "outcome": {
+    "code": "ACCEPTED_TIER_2",
+    "status": "accepted"
+  },
+  "receipts": [],
+  "subject": {
+    "attempt_id": "b7d09629-0ebe-5e5f-9ac7-27431eaebf06",
+    "authorization_ref": "hmac-sha256-v3:d90e2e61:da8ae5a6cf1f2ac1b3282f00bde335f63fe2a2863b5c50f22e6af2542df0b5ea",
+    "base_commit": "HEAD",
+    "task_id": "T-20260827-type-03-ingest",
+    "task_revision_digest": "sha256:a5a71cc0011f98c441db602020b68373721248296d81c6e995cd3804cdd95196"
+  },
+  "supervision": {
+    "reason": "Owner-supervised Tier 2 acceptance (luanmorenomaciel). Built by a Converge Task-Loop attempt whose settlement was refused with HANDOFF_STALE; taskspec re-ran the Exit Check on main and it passed.",
+    "supervised_by": "luanmorenomaciel"
+  }
+}

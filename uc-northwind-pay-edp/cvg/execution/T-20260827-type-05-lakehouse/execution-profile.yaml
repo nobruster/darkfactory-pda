@@ -1,0 +1,321 @@
+{
+  "authority": {
+    "closure": {
+      "lingering_authority": "denied",
+      "note": "Authority is bound to this epoch. When the task settles, blocks, exhausts its budget, or the spec hash changes, every grant above is revoked. A new epoch requires a fresh bind.",
+      "revocation_is_mandatory": true,
+      "revoke_on": [
+        "settle",
+        "block",
+        "budget_exhausted",
+        "epoch_change"
+      ]
+    },
+    "epoch": "T-20260827-type-05-lakehouse@4c783cd3e92f",
+    "grants": [
+      {
+        "capability": "fs.read",
+        "granted": true,
+        "phase": "all",
+        "scope": [
+          "<repo>"
+        ]
+      },
+      {
+        "capability": "fs.write",
+        "deny_scope": [
+          "contracts/",
+          "gen/",
+          "infra/",
+          "legacy/",
+          "validation/golden-match/golden_match.py"
+        ],
+        "granted": true,
+        "phase": "implement",
+        "scope": [
+          "modern/scripts/run_type05_gold.py",
+          "modern/validation/attach_type05.py"
+        ]
+      },
+      {
+        "capability": "proc.exec",
+        "granted": true,
+        "phase": "verify",
+        "scope": [
+          "task_spec.evaluations"
+        ]
+      },
+      {
+        "capability": "net.egress",
+        "granted": false,
+        "phase": "none",
+        "scope": []
+      },
+      {
+        "capability": "vcs.commit",
+        "granted": true,
+        "phase": "settle",
+        "scope": [
+          "modern/scripts/run_type05_gold.py",
+          "modern/validation/attach_type05.py"
+        ]
+      },
+      {
+        "capability": "vcs.push",
+        "granted": false,
+        "phase": "none",
+        "scope": []
+      },
+      {
+        "capability": "tracker.write",
+        "granted": false,
+        "phase": "none",
+        "scope": []
+      }
+    ],
+    "model": "task-scoped-capability-envelope"
+  },
+  "canonical_sources": {
+    "budgets": "task_spec.budget_iterations + task_spec.budget_tokens",
+    "evaluations": "task_spec.Success_Criteria + task_spec.Exit_Check",
+    "forbidden_scope": "task_spec.section.Do-Not-Touch",
+    "routing": "task_spec.execution_backend + task_spec.agent",
+    "write_scope": "task_spec.touches_paths + task_spec.creates_paths"
+  },
+  "context": {
+    "approved_project_knowledge": [],
+    "external_docs": [],
+    "required_files": []
+  },
+  "enforcement": {
+    "adapters": [
+      {
+        "path": "cvg/execution/T-20260827-type-05-lakehouse/adapters/generic.json",
+        "resolution": {
+          "controls": {
+            "fs.write": {
+              "enforcement_kind": "detect",
+              "gate_relevant": true,
+              "mechanism": "portable postflight diff guard (check-path-policy.py)",
+              "status": "mapped"
+            },
+            "net.egress": {
+              "enforcement_kind": "unenforced",
+              "gate_relevant": false,
+              "mechanism": "none",
+              "status": "ignored"
+            },
+            "tracker.write": {
+              "enforcement_kind": "detect",
+              "gate_relevant": false,
+              "mechanism": "settlement policy check",
+              "status": "mapped"
+            },
+            "vcs.push": {
+              "enforcement_kind": "detect",
+              "gate_relevant": false,
+              "mechanism": "settlement policy check before push",
+              "status": "mapped"
+            }
+          },
+          "detect_only": [
+            "fs.write"
+          ],
+          "fails_closed": false,
+          "runtime": "generic",
+          "unenforced_required": []
+        },
+        "runtime": "generic"
+      },
+      {
+        "path": "cvg/execution/T-20260827-type-05-lakehouse/adapters/claude.json",
+        "resolution": {
+          "controls": {
+            "fs.write": {
+              "enforcement_kind": "detect",
+              "gate_relevant": true,
+              "mechanism": "portable whole-repo postflight; emitted PreToolUse fragment prevents Edit/Write/NotebookEdit only when a dispatcher installs it, while Bash remains broader",
+              "status": "mapped"
+            },
+            "net.egress": {
+              "enforcement_kind": "prevent",
+              "gate_relevant": false,
+              "mechanism": "sandbox deniedDomains + WebFetch deny rules",
+              "status": "handled"
+            },
+            "tracker.write": {
+              "enforcement_kind": "detect",
+              "gate_relevant": false,
+              "mechanism": "settlement policy check",
+              "status": "mapped"
+            },
+            "vcs.push": {
+              "enforcement_kind": "detect",
+              "gate_relevant": false,
+              "mechanism": "Bash(git push:*) deny rule; still verified at settlement",
+              "status": "mapped"
+            }
+          },
+          "detect_only": [
+            "fs.write"
+          ],
+          "fails_closed": false,
+          "runtime": "claude",
+          "unenforced_required": []
+        },
+        "runtime": "claude"
+      },
+      {
+        "path": "cvg/execution/T-20260827-type-05-lakehouse/adapters/codex.json",
+        "resolution": {
+          "controls": {
+            "fs.write": {
+              "enforcement_kind": "detect",
+              "gate_relevant": true,
+              "mechanism": "workspace sandbox prevents writes outside writable roots; Task-Spec subpaths are enforced by the portable whole-repo postflight",
+              "status": "mapped"
+            },
+            "net.egress": {
+              "enforcement_kind": "prevent",
+              "gate_relevant": false,
+              "mechanism": "seccomp blocks network syscalls unless allowlisted",
+              "status": "handled"
+            },
+            "tracker.write": {
+              "enforcement_kind": "prevent",
+              "gate_relevant": false,
+              "mechanism": "network denied by sandbox unless explicitly allowed",
+              "status": "handled"
+            },
+            "vcs.push": {
+              "enforcement_kind": "prevent",
+              "gate_relevant": false,
+              "mechanism": "network denied by sandbox unless explicitly allowed",
+              "status": "handled"
+            }
+          },
+          "detect_only": [
+            "fs.write"
+          ],
+          "fails_closed": false,
+          "runtime": "codex",
+          "unenforced_required": []
+        },
+        "runtime": "codex"
+      },
+      {
+        "path": "cvg/execution/T-20260827-type-05-lakehouse/adapters/kimi.json",
+        "resolution": {
+          "controls": {
+            "fs.write": {
+              "enforcement_kind": "detect",
+              "gate_relevant": true,
+              "mechanism": "portable postflight diff guard",
+              "status": "mapped"
+            },
+            "net.egress": {
+              "enforcement_kind": "unenforced",
+              "gate_relevant": false,
+              "mechanism": "none",
+              "status": "ignored"
+            },
+            "tracker.write": {
+              "enforcement_kind": "detect",
+              "gate_relevant": false,
+              "mechanism": "settlement policy check",
+              "status": "mapped"
+            },
+            "vcs.push": {
+              "enforcement_kind": "detect",
+              "gate_relevant": false,
+              "mechanism": "settlement policy check",
+              "status": "mapped"
+            }
+          },
+          "detect_only": [
+            "fs.write"
+          ],
+          "fails_closed": false,
+          "runtime": "kimi",
+          "unenforced_required": []
+        },
+        "runtime": "kimi"
+      }
+    ],
+    "assurance": "detect",
+    "candidate_guard": "skills/task-to-runtime-contract/scripts/check-path-policy.py",
+    "path_policy_source": "task_spec",
+    "portable_postflight_required": true,
+    "primary_runtime": "claude",
+    "receipt_writer": "skills/task-to-runtime-contract/scripts/write-execution-receipt.py",
+    "required_controls": [
+      "fs.write"
+    ],
+    "runtime_selection": {
+      "inferred_runtime": "claude",
+      "inferred_source": "task_spec.execution_backend",
+      "source": "task_spec.execution_backend"
+    },
+    "task_brief": "cvg/execution/T-20260827-type-05-lakehouse/AGENTS.task.md",
+    "tool_input_guard": "skills/task-to-runtime-contract/scripts/guard-tool-input.py",
+    "unenforced_waivers": []
+  },
+  "generated": {
+    "by": "task-to-runtime-contract",
+    "format": "JSON subset of YAML 1.2",
+    "version": "1.0.0"
+  },
+  "knowledge": {
+    "candidate_output": "cvg/knowledge/candidates/T-20260827-type-05-lakehouse.md",
+    "promotion": "owner_or_designated_reviewer"
+  },
+  "policy": {
+    "approval_required_for": [
+      "external_writes",
+      "network_policy_expansion",
+      "scope_expansion"
+    ],
+    "external_writes": "deny",
+    "network": "deny",
+    "runtime_escalation": {
+      "action": "pause_and_rebind_or_request_approval",
+      "signals": [
+        "two_identical_eval_failures",
+        "unexpected_dependency",
+        "context_pressure"
+      ]
+    }
+  },
+  "receipt": {
+    "path": "cvg/receipts/T-20260827-type-05-lakehouse.json"
+  },
+  "schema": "cvg.execution-profile.v1",
+  "task": {
+    "authorization": {
+      "requires_tier1": true,
+      "signed_off": true,
+      "trust_tier": 1
+    },
+    "id": "T-20260827-type-05-lakehouse",
+    "spec_ref": {
+      "path": "cvg/tasks/T-20260827-type-05-lakehouse.md",
+      "sha256": "4c783cd3e92faeb9dfeefac41df7b5c1826a832f87de866a773ea6bba71e23b4"
+    }
+  },
+  "topology": {
+    "capabilities": [
+      "diagnose",
+      "implement",
+      "verify"
+    ],
+    "justification": "Single-agent default; no static topology escalation trigger was selected.",
+    "mode": "single",
+    "workers": [
+      {
+        "name": "primary",
+        "ownership_source": "task_spec",
+        "permission_class": "task-scoped-write"
+      }
+    ]
+  }
+}

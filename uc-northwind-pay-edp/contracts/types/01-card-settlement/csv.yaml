@@ -1,0 +1,51 @@
+version: 1
+type_number: "01"
+
+format:
+  encoding: UTF-8
+  line_ending: LF
+  delimiter: comma
+  header: required
+  quote_mode: minimal
+  null_representation: empty
+  decimal_separator: period
+  row_order: source_detail_order
+  final_newline: required
+
+publication:
+  filename_template: 'NW_CARD_SETTLEMENT_<yyyyMMdd>_<batch_id>.csv'
+  filename_regex: '^NW_CARD_SETTLEMENT_[0-9]{8}_B[0-9]{15}\.csv$'
+  checksum_suffix: .sha256
+  manifest_name: sanitized-manifest.json
+  readiness_rule: manifest_renamed_last
+
+columns:
+  - { position: 1, name: batch_id, type: string, nullable: false, source: header.batch_id }
+  - { position: 2, name: source_file, type: string, nullable: false, source: runtime.source_filename }
+  - { position: 3, name: source_record_number, type: integer, nullable: false, source: runtime.physical_record_number }
+  - { position: 4, name: transaction_id, type: string, nullable: false, source: detail.transaction_id }
+  - { position: 5, name: merchant_id, type: string, nullable: false, source: detail.merchant_id }
+  - { position: 6, name: card_token, type: string, nullable: false, source: privacy.pan.token }
+  - { position: 7, name: card_last4, type: string, nullable: false, source: privacy.pan.last4 }
+  - { position: 8, name: cpf_masked, type: string, nullable: false, source: privacy.cpf.masked }
+  - { position: 9, name: transaction_ts, type: offset_datetime, nullable: false, source: detail.transaction_date+detail.transaction_time, timezone: America/Sao_Paulo }
+  - { position: 10, name: amount_brl, type: decimal, precision: 18, scale: 2, nullable: false, source: detail.amount_brl }
+  - { position: 11, name: movement_code, type: string, nullable: false, allowed: [P, R], source: detail.movement_code }
+  - { position: 12, name: authorization_code, type: string, nullable: false, source: detail.authorization_code }
+  - { position: 13, name: nsu, type: string, nullable: false, source: detail.nsu }
+  - { position: 14, name: terminal_id, type: string, nullable: false, source: detail.terminal_id }
+
+database_target:
+  schema: staging
+  table: card_settlement
+  natural_batch_key:
+    - batch_id
+    - source_record_number
+
+validation:
+  - No column may contain the clear-text PAN.
+  - No column may contain the clear-text CPF.
+  - card_token must match '^tok_[0-9a-f]{24}$'.
+  - card_last4 must contain exactly four digits.
+  - cpf_masked must match '^\*{7}[0-9]{4}$'.
+  - amount_brl must use exactly two fractional digits.

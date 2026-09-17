@@ -1,0 +1,53 @@
+version: 1
+type_number: "04"
+
+format:
+  encoding: UTF-8
+  line_ending: LF
+  delimiter: comma
+  header: required
+  quote_mode: minimal
+  null_representation: empty
+  decimal_separator: period
+  row_order: source_movement_order
+  final_newline: required
+  max_rows: 20000
+  max_file_bytes: 10000000
+
+normalization:
+  transfer: one_output_row
+  return: one_output_row_inheriting_preceding_transfer_context
+  incomplete_or_unexpected_return: reject_entire_batch_without_output
+  source_timezone: America/Sao_Paulo
+  timestamp_output: ISO-8601_seconds_with_explicit_numeric_offset
+
+columns:
+  - { position: 1, name: batch_id, type: string, regex: '^B[0-9]{15}$' }
+  - { position: 2, name: source_file, type: string, regex: '^NW_TED_SETTLEMENT_[0-9]{8}_B[0-9]{15}\.dat$' }
+  - { position: 3, name: source_record_number, type: integer, minimum: 2, maximum: 20001 }
+  - { position: 4, name: movement_id, type: string, regex: '^[A-Z][A-Z0-9]{15}$' }
+  - { position: 5, name: original_transfer_id, type: string, regex: '^[A-Z][A-Z0-9]{15}$', nullable: true }
+  - { position: 6, name: movement_kind, type: enum, values: [TRANSFER, RETURN] }
+  - { position: 7, name: movement_ts, type: offset_datetime, canonical: ISO-8601_seconds_with_explicit_numeric_offset }
+  - { position: 8, name: amount_brl, type: canonical_signed_decimal, precision: 16, scale: 2, negative_zero: forbidden }
+  - { position: 9, name: payer_account_token, type: string, regex: '^tedacct_[0-9a-f]{24}$' }
+  - { position: 10, name: payer_tax_id_masked, type: string, regex: '^(\*{7}|\*{10})[0-9]{4}$' }
+  - { position: 11, name: beneficiary_account_token, type: string, regex: '^tedacct_[0-9a-f]{24}$' }
+  - { position: 12, name: beneficiary_tax_id_masked, type: string, regex: '^(\*{7}|\*{10})[0-9]{4}$' }
+  - { position: 13, name: beneficiary_ispb, type: string, regex: '^[0-9]{8}$' }
+  - { position: 14, name: purpose_code, type: string, regex: '^[A-Z][A-Z0-9_]{1,9}$' }
+  - { position: 15, name: status_code, type: enum, values: [OK, RT] }
+  - { position: 16, name: return_reason_code, type: string, regex: '^[A-Z][A-Z0-9]{4}$', nullable: true }
+
+row_rules:
+  - TRANSFER has empty original_transfer_id and return_reason_code, positive amount, and its source D context.
+  - RETURN has both fields populated, negative amount, and inherits the immediately preceding D account, tax-mask, ISPB, purpose, and status context.
+  - source_file date and batch agree with the row batch and raw header.
+  - row count and signed controls equal sanitized-manifest stage controls.
+  - Complete output is scanned for raw accounts, tax IDs, beneficiary names, and return reason text.
+
+database_target:
+  schema: staging
+  table: ted_transfer_movement
+  natural_batch_key: [batch_id, movement_id]
+  global_unique_key: movement_id

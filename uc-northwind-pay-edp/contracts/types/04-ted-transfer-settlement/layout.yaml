@@ -1,0 +1,172 @@
+version: 1
+file_type:
+  number: "04"
+  name: TED Transfer Settlement
+  code: TED_SETTLE04
+  layout_version: "001"
+  filename_regex: '^NW_TED_SETTLEMENT_[0-9]{8}_B[0-9]{15}\.dat$'
+  encoding: US-ASCII
+  decoding: strict
+  bom: forbidden
+  line_ending: CRLF
+  final_line_ending: required
+  blank_lines: forbidden
+  bare_cr_or_lf: forbidden
+  max_transfers: 10000
+  max_returns: 10000
+  max_movements: 20000
+  max_physical_records: 20002
+  max_source_file_bytes: 2570142
+
+record_sequence:
+  grammar: 'H (D | D R)+ T'
+  branch_rule: 'D.status_code=OK selects D; D.status_code=RT selects D R'
+  transfer_to_return_cardinality: zero_or_one_by_status
+
+padding:
+  visible_character: '~'
+  purpose_code: right_tilde_padded
+  beneficiary_name: right_tilde_padded
+  return_reason_text: right_tilde_padded
+
+records:
+  header:
+    discriminator: H
+    length_bytes: 56
+    fields:
+      - { name: record_type, start: 1, end: 1, type: literal, value: H }
+      - { name: file_date, start: 2, end: 9, type: date, format: yyyyMMdd }
+      - { name: batch_id, start: 10, end: 25, type: string, regex: '^B[0-9]{15}$' }
+      - { name: file_type_code, start: 26, end: 37, type: literal, value: TED_SETTLE04 }
+      - { name: layout_version, start: 38, end: 40, type: literal, value: "001" }
+      - { name: settlement_date, start: 41, end: 48, type: date, format: yyyyMMdd }
+      - { name: origin_ispb, start: 49, end: 56, type: digits, regex: '^[0-9]{8}$' }
+
+  transfer:
+    discriminator: D
+    length_bytes: 162
+    fields:
+      - { name: record_type, start: 1, end: 1, type: literal, value: D }
+      - { name: transfer_id, start: 2, end: 17, type: safe_ascii_identifier, regex: '^[A-Z][A-Z0-9]{15}$' }
+      - { name: amount_sign, start: 18, end: 18, type: literal, value: '+' }
+      - { name: amount_magnitude, start: 19, end: 32, type: implied_decimal, scale: 2, minimum_exclusive: "0.00" }
+      - { name: currency, start: 33, end: 35, type: literal, value: BRL }
+      - { name: transfer_date, start: 36, end: 43, type: date, format: yyyyMMdd }
+      - { name: transfer_time, start: 44, end: 49, type: time, format: HHmmss }
+      - { name: payer_ispb, start: 50, end: 57, type: digits, regex: '^[0-9]{8}$' }
+      - { name: payer_branch, start: 58, end: 61, type: digits, regex: '^[0-9]{4}$' }
+      - { name: payer_account, start: 62, end: 73, type: digits, regex: '^[0-9]{12}$', privacy: tokenize }
+      - { name: payer_tax_id, start: 74, end: 87, type: digits, validation: party_type_padding_length_and_mod11, privacy: mask }
+      - { name: payer_party_type, start: 88, end: 88, type: enum, values: [F, J] }
+      - { name: beneficiary_ispb, start: 89, end: 96, type: digits, regex: '^[0-9]{8}$' }
+      - { name: beneficiary_branch, start: 97, end: 100, type: digits, regex: '^[0-9]{4}$' }
+      - { name: beneficiary_account, start: 101, end: 112, type: digits, regex: '^[0-9]{12}$', privacy: tokenize }
+      - { name: beneficiary_tax_id, start: 113, end: 126, type: digits, validation: party_type_padding_length_and_mod11, privacy: mask }
+      - { name: beneficiary_party_type, start: 127, end: 127, type: enum, values: [F, J] }
+      - { name: purpose_code, start: 128, end: 137, type: right_tilde_padded_safe_ascii_identifier, regex_after_right_trim: '^[A-Z][A-Z0-9_]{1,9}$' }
+      - { name: status_code, start: 138, end: 139, type: enum, values: [OK, RT] }
+      - { name: beneficiary_name, start: 140, end: 162, type: right_tilde_padded_uppercase_ascii, regex_after_right_trim: '^[A-Z][A-Z0-9 .&/-]{0,22}$', privacy: prohibited_output }
+
+  return:
+    discriminator: R
+    length_bytes: 91
+    fields:
+      - { name: record_type, start: 1, end: 1, type: literal, value: R }
+      - { name: return_id, start: 2, end: 17, type: safe_ascii_identifier, regex: '^[A-Z][A-Z0-9]{15}$' }
+      - { name: original_transfer_id, start: 18, end: 33, type: safe_ascii_identifier, regex: '^[A-Z][A-Z0-9]{15}$' }
+      - { name: amount_sign, start: 34, end: 34, type: literal, value: '-' }
+      - { name: amount_magnitude, start: 35, end: 48, type: implied_decimal, scale: 2, minimum_exclusive: "0.00" }
+      - { name: return_date, start: 49, end: 56, type: date, format: yyyyMMdd }
+      - { name: return_time, start: 57, end: 62, type: time, format: HHmmss }
+      - { name: reason_code, start: 63, end: 67, type: safe_ascii_identifier, regex: '^[A-Z][A-Z0-9]{4}$' }
+      - { name: reason_text, start: 68, end: 91, type: right_tilde_padded_uppercase_ascii, regex_after_right_trim: '^[A-Z][A-Z0-9 .&/-]{0,23}$', privacy: prohibited_output }
+
+  trailer:
+    discriminator: T
+    length_bytes: 82
+    fields:
+      - { name: record_type, start: 1, end: 1, type: literal, value: T }
+      - { name: file_date, start: 2, end: 9, type: date, format: yyyyMMdd }
+      - { name: transfer_count, start: 10, end: 15, type: unsigned_integer, minimum: 1, maximum: 10000 }
+      - { name: return_count, start: 16, end: 21, type: unsigned_integer, minimum: 0, maximum: 10000 }
+      - { name: gross_sign, start: 22, end: 22, type: literal, value: '+' }
+      - { name: gross_magnitude, start: 23, end: 36, type: implied_decimal, scale: 2, minimum_exclusive: "0.00" }
+      - { name: returned_sign, start: 37, end: 37, type: enum, values: ['+', '-'] }
+      - { name: returned_magnitude, start: 38, end: 51, type: implied_decimal, scale: 2, minimum: "0.00" }
+      - { name: net_sign, start: 52, end: 52, type: literal, value: '+' }
+      - { name: net_magnitude, start: 53, end: 66, type: implied_decimal, scale: 2, minimum: "0.00" }
+      - { name: batch_id, start: 67, end: 82, type: string, regex: '^B[0-9]{15}$' }
+
+document_rules:
+  party_type_F:
+    transport: '000<11-digit-CPF>'
+    validation: CPF_two_Mod11_check_digits
+    repeated_digit_document: forbidden
+  party_type_J:
+    transport: 14_digit_CNPJ
+    validation: CNPJ_two_Mod11_check_digits
+    repeated_digit_document: forbidden
+
+timestamp_semantics:
+  source_zone: America/Sao_Paulo
+  zone_database: IANA
+  invalid_local_time_gap: reject
+  ambiguous_local_time_overlap: earlier_valid_offset
+  output: ISO-8601_seconds_with_explicit_numeric_offset
+  transfer_date_rule: equals_header_settlement_date
+  return_rule: instant_strictly_after_preceding_transfer
+
+cross_record_rules:
+  - Header file date and settlement date equal the filename date.
+  - Header and trailer batch IDs equal the filename batch ID.
+  - A transfer amount is strictly positive and its signed value is positive.
+  - Status OK forbids a following return.
+  - Status RT requires exactly one immediately following return.
+  - Return original_transfer_id equals the preceding transfer_id.
+  - Return magnitude equals the full preceding transfer magnitude.
+  - Return timestamp is strictly after the preceding transfer timestamp.
+  - Transfer, return, and movement IDs are unique within the batch.
+  - Movement IDs are globally unique across accepted batches.
+  - Purpose code is a structured safe identifier; beneficiary name and return reason text are never emitted.
+  - Trailer transfer and return counts equal parsed records.
+  - Trailer gross equals transfer magnitudes.
+  - No-return canonical returned value is plus zero; any return requires a negative returned sign.
+  - Trailer returned value equals the negative sum of return magnitudes.
+  - Trailer net equals gross plus returned and cannot be negative.
+  - Negative zero is forbidden; every zero uses a plus sign.
+  - All arithmetic uses arbitrary-precision decimals; binary floating point is forbidden.
+
+validation_order:
+  - source_size_and_ascii
+  - exact_crlf_transport_and_final_crlf
+  - discriminator_and_exact_variant_length
+  - conditional_record_grammar
+  - literals_dates_times_and_visible_padding
+  - field_lexical_and_numeric_rules
+  - CPF_CNPJ_Mod11
+  - safe_identifier_and_text_rules
+  - conditional_return_linkage
+  - uniqueness_and_timestamp_rules
+  - source_count_controls
+  - source_gross_control
+  - source_returned_control
+  - source_net_control
+
+canonical_rejection_codes:
+  source_size: INVALID_SOURCE_SIZE
+  invalid_ascii: INVALID_ASCII
+  invalid_transport: INVALID_TRANSPORT
+  invalid_record_length: INVALID_RECORD_LENGTH
+  invalid_record_sequence: INVALID_RECORD_SEQUENCE
+  invalid_padding: INVALID_PADDING
+  invalid_field: INVALID_FIELD
+  invalid_document: INVALID_DOCUMENT
+  invalid_identifier_or_text: INVALID_IDENTIFIER
+  return_link_mismatch: RETURN_LINK_MISMATCH
+  invalid_timestamp: INVALID_TIMESTAMP
+  duplicate_identifier: DUPLICATE_IDENTIFIER
+  source_control_transfer_count_mismatch: SOURCE_CONTROL_TRANSFER_COUNT_MISMATCH
+  source_control_return_count_mismatch: SOURCE_CONTROL_RETURN_COUNT_MISMATCH
+  source_control_gross_mismatch: SOURCE_CONTROL_GROSS_MISMATCH
+  source_control_returned_mismatch: SOURCE_CONTROL_RETURNED_MISMATCH
+  source_control_net_mismatch: SOURCE_CONTROL_NET_MISMATCH

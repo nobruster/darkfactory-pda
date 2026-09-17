@@ -1,0 +1,1194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Converge — Complete System Travel Reference</title>
+<!-- GENERATED:FONT_LINK -->
+<style>
+  :root {
+    --black: #070A0F;
+    --carbon: #111720;
+    --graphite: #29313A;
+    --steel: #8D99A6;
+    --ivory: #F5F2EA;
+    --paper: #FBF9F3;
+    --gold: #F3B64C;
+    --mint: #73E2C3;
+    --coral: #FF6B64;
+    --ink: #1A212B;
+    --muted: #5D6873;
+    --rule: #E2DCCD;
+    --gold-deep: #9C6B12;
+    --mint-deep: #0F6E55;
+    --coral-deep: #A32A24;
+    --sans: 'Inter', 'Avenir Next', Arial, sans-serif;
+    --mono: 'IBM Plex Mono', 'Menlo', monospace;
+  }
+  @page {
+    size: A4;
+    margin: 17mm 16mm 15mm;
+    background: var(--paper);
+    @top-right {
+      content: "Converge · Complete System Travel Reference";
+      font-family: var(--sans);
+      font-size: 7.5pt;
+      color: #8b8574;
+    }
+    @bottom-center {
+      content: counter(page);
+      font-family: var(--sans);
+      font-size: 7.5pt;
+      color: #9a9484;
+    }
+  }
+  @page cover {
+    margin: 0;
+    background: radial-gradient(130% 90% at 14% 88%, #1B2430 0%, #0D1219 47%, #070A0F 100%);
+    @top-right { content: none; }
+    @bottom-center { content: none; }
+  }
+  @page opener {
+    margin: 0;
+    background: radial-gradient(120% 80% at 85% 12%, #18202B 0%, #0D1219 55%, #070A0F 100%);
+    @top-right { content: none; }
+    @bottom-center { content: none; }
+  }
+  * { box-sizing: border-box; }
+  html { -weasy-hyphens: none; }
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 9.4pt;
+    line-height: 1.48;
+  }
+  section.page { break-after: page; }
+  section.page:last-child { break-after: auto; }
+  h1, h2, h3, p, ul, ol { orphans: 2; widows: 2; }
+  h1 {
+    margin: 0 0 12px;
+    color: var(--carbon);
+    font-size: 24pt;
+    font-weight: 600;
+    letter-spacing: -0.03em;
+    line-height: 1.08;
+    bookmark-level: 1;
+  }
+  h2 {
+    margin: 15px 0 6px;
+    color: var(--graphite);
+    font-size: 13.5pt;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    bookmark-level: 2;
+  }
+  h3 {
+    margin: 12px 0 5px;
+    color: var(--gold-deep);
+    font-size: 8.8pt;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  p { margin: 0 0 8px; }
+  ul, ol { margin: 4px 0 10px; padding-left: 18px; }
+  li { margin-bottom: 4px; }
+  li::marker { color: var(--gold-deep); }
+  strong { color: var(--black); }
+  code, .path, .paths {
+    font-family: var(--mono);
+    color: var(--carbon);
+    font-size: 0.86em;
+  }
+  code { background: #EFEAD9; border-radius: 3px; padding: 1px 3px; }
+  a { color: var(--gold-deep); }
+  table { width: 100%; border-collapse: collapse; margin: 7px 0 12px; font-size: 8.6pt; }
+  thead { display: table-header-group; }
+  tr { break-inside: avoid; }
+  th { background: var(--carbon); color: var(--ivory); padding: 6px 8px; text-align: left; font-weight: 600; }
+  td { border-bottom: 1px solid var(--rule); padding: 5px 8px; vertical-align: top; }
+  tbody tr:nth-child(even) { background: #F3EFE2; }
+  table.compact { font-size: 7.7pt; }
+  table.compact td, table.compact th { padding: 3px 6px; }
+
+  /* ---------- cover ---------- */
+  .cover {
+    page: cover;
+    height: 297mm;
+    padding: 22mm 20mm 16mm;
+    color: var(--ivory);
+    position: relative;
+    background: radial-gradient(130% 90% at 14% 88%, #1B2430 0%, #0D1219 47%, #070A0F 100%);
+  }
+  .cover .lockup { height: 15mm; margin-bottom: 34mm; }
+  .cover .eyebrow, .folio-label, .part-label {
+    color: var(--gold-deep);
+    font-size: 7.5pt;
+    font-weight: 700;
+    letter-spacing: 0.17em;
+    text-transform: uppercase;
+  }
+  .cover .eyebrow { color: var(--gold); }
+  .cover h1 {
+    color: var(--ivory);
+    font-size: 46pt;
+    font-weight: 600;
+    line-height: 1.0;
+    letter-spacing: -0.035em;
+    margin: 12px 0 16px;
+  }
+  .cover h1 em { color: var(--gold); font-weight: 300; font-style: normal; }
+  .cover .subtitle { color: #C7CDD6; font-size: 12.5pt; font-weight: 300; line-height: 1.55; max-width: 152mm; }
+  .cover .cutoff { color: #7E8894; font-family: var(--mono); font-size: 7.6pt; margin-top: 16px; }
+  .cover-stats { display: flex; gap: 13mm; margin-top: 16mm; }
+  .cover-stat b { display: block; color: var(--ivory); font-size: 26pt; font-weight: 600; letter-spacing: -0.02em; }
+  .cover-stat span { color: var(--gold); font-size: 6.8pt; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; }
+  .cover-foot { position: absolute; left: 20mm; right: 20mm; bottom: 16mm; color: #7E8894; font-size: 10pt; font-weight: 300; font-style: italic; }
+
+  /* ---------- shared furniture ---------- */
+  .folio-label { margin-bottom: 7px; }
+  .lede { color: #3A424D; font-size: 11.5pt; font-weight: 300; line-height: 1.5; }
+  .thesis {
+    margin: 10px 0 14px;
+    padding: 12px 15px;
+    border-left: 4px solid var(--gold);
+    border-radius: 5px;
+    background: #FBF3DE;
+    color: #4A3A12;
+    font-size: 11pt;
+    font-weight: 500;
+    line-height: 1.5;
+  }
+  .dark-box {
+    break-inside: avoid;
+    margin: 10px 0 14px;
+    padding: 13px 16px;
+    border-radius: 7px;
+    background: var(--carbon);
+    color: #CBD3DC;
+  }
+  .dark-box strong { color: var(--ivory); }
+  .dark-box code { background: rgba(255,255,255,0.08); color: var(--gold); }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .card { break-inside: avoid; border: 1px solid var(--rule); border-left: 3px solid var(--gold); border-radius: 6px; padding: 10px 12px; background: #FFFFFF; }
+  .card h3 { margin-top: 0; }
+  .card p { color: #39414C; }
+  .metric-strip { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin: 8px 0 13px; }
+  .metric-strip div { background: var(--carbon); border-radius: 5px; padding: 8px 9px; color: white; }
+  .metric-strip b { color: var(--ivory); display: block; font-size: 15pt; font-weight: 600; letter-spacing: -0.01em; }
+  .metric-strip span { color: var(--steel); display: block; font-size: 6.7pt; letter-spacing: 0.04em; text-transform: uppercase; }
+  .source, .evidence-note {
+    color: var(--muted);
+    font-size: 7.6pt;
+    font-style: italic;
+    margin-top: 10px;
+  }
+  .evidence-note { border-top: 1px solid var(--rule); padding-top: 7px; }
+  .callout { border: 1px solid var(--rule); border-radius: 6px; margin: 9px 0; padding: 9px 11px; background: #FFFFFF; }
+  .callout.warning { border-left: 4px solid var(--gold); background: #FBF3DE; }
+  .callout.gap { border-left: 4px solid var(--coral); background: #FDEBEA; }
+  .callout.proof { border-left: 4px solid var(--mint); background: #E9F8F2; }
+  .recap { border-top: 2px solid var(--carbon); margin-top: 16px; padding-top: 8px; }
+  .recap strong { color: var(--carbon); }
+
+  /* ---------- chapter openers (dark) ---------- */
+  .part-opener {
+    page: opener;
+    height: 297mm;
+    padding: 30mm 20mm 18mm;
+    color: var(--ivory);
+    position: relative;
+    background: radial-gradient(120% 80% at 85% 12%, #18202B 0%, #0D1219 55%, #070A0F 100%);
+  }
+  .part-opener .part-label { color: var(--gold); }
+  .part-opener .chapter-no { color: #2E3947; font-size: 96pt; font-weight: 700; letter-spacing: -0.04em; line-height: 1; margin-top: 8mm; }
+  .part-opener h1 { color: var(--ivory); font-size: 34pt; font-weight: 600; line-height: 1.05; margin-top: 6mm; max-width: 160mm; }
+  .part-opener .promise { color: #B8C0CB; font-size: 12.5pt; font-weight: 300; line-height: 1.55; max-width: 145mm; margin-top: 8mm; }
+  .part-opener .beat { color: var(--gold); font-size: 8pt; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; margin-top: 10mm; }
+  .part-opener .route { border-top: 1px solid #2E3947; color: #7E8894; margin-top: 16mm; padding-top: 8px; font-size: 8.5pt; }
+  .part-opener .opener-mark { position: absolute; left: 20mm; bottom: 16mm; height: 8mm; opacity: 0.85; }
+
+  /* ---------- TOC ---------- */
+  .toc-row { display: grid; grid-template-columns: 14mm 1fr 62mm; gap: 6px; border-bottom: 1px solid var(--rule); padding: 7px 0; align-items: baseline; }
+  .toc-row b { color: var(--gold-deep); font-size: 12.5pt; font-weight: 600; }
+  .toc-row span { color: var(--carbon); font-weight: 600; }
+  .toc-row em { color: var(--muted); font-style: normal; font-size: 8pt; text-align: right; }
+
+  /* ---------- diagrams (pure CSS, no JS) ---------- */
+  .flow { break-inside: avoid; background: var(--black); border-radius: 8px; padding: 14px 16px; margin: 10px 0 14px; }
+  .flow-title { color: var(--steel); font-size: 6.8pt; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; margin-bottom: 10px; }
+  .frow { display: flex; align-items: center; justify-content: center; gap: 6px; margin: 5px 0; flex-wrap: wrap; }
+  .fnode {
+    border-radius: 6px;
+    padding: 6px 10px;
+    font-size: 8pt;
+    font-weight: 600;
+    text-align: center;
+    line-height: 1.3;
+    border: 1.5px solid var(--steel);
+    background: #12181F;
+    color: var(--ivory);
+  }
+  .fnode small { display: block; font-weight: 400; font-size: 6.6pt; color: #A7B1BC; letter-spacing: 0.02em; }
+  .fnode.human { border-color: var(--gold); background: #1C1710; }
+  .fnode.human small { color: #D8C08A; }
+  .fnode.engine { border-color: var(--steel); background: #131B24; }
+  .fnode.converge { border-color: var(--gold); background: #1A1E26; box-shadow: inset 0 0 0 1px rgba(243,182,76,0.25); }
+  .fnode.proof { border-color: var(--mint); background: #10201B; }
+  .fnode.proof small { color: #9ADCC6; }
+  .fnode.fail { border-color: var(--coral); background: #241313; }
+  .fnode.fail small { color: #E2A19D; }
+  .fnode.observer { border-color: #4A545F; border-style: dashed; background: #10141A; color: #B9C1CA; }
+  .farrow { color: var(--gold); font-size: 10pt; font-weight: 700; }
+  .farrow.steel { color: var(--steel); }
+  .farrow.coral { color: var(--coral); }
+  .farrow.mint { color: var(--mint); }
+  .farrow.down { display: block; text-align: center; margin: 2px 0; }
+  .fnote { color: #8E99A6; font-size: 7pt; text-align: center; margin-top: 8px; line-height: 1.5; }
+  .fnote b { color: var(--gold); }
+  .fnote code { background: rgba(255,255,255,0.08); color: var(--gold); }
+  .dotted-note { color: #6E7885; font-size: 6.6pt; text-align: center; margin-top: 4px; }
+
+  /* ---------- state chips ---------- */
+  .chip { display: inline-block; border-radius: 999px; font-size: 6.8pt; font-weight: 700; letter-spacing: 0.08em; padding: 3px 8px; text-transform: uppercase; }
+  .chip.bound { background: var(--gold); color: var(--black); }
+  .chip.settled { background: var(--mint); color: var(--black); }
+  .chip.red { background: var(--coral); color: var(--black); }
+  .chip.steel { background: var(--steel); color: var(--black); }
+
+  /* ---------- rank badges for the evidence ladder ---------- */
+  .rank { display: inline-block; width: 5.2mm; text-align: center; border-radius: 3px; background: var(--carbon); color: var(--gold); font-family: var(--mono); font-size: 7.5pt; font-weight: 700; padding: 1px 0; margin-right: 4px; }
+</style>
+</head>
+<body>
+
+<!-- ============================== COVER ============================== -->
+<section class="cover">
+  <img class="lockup" src="{{ICON_LOCKUP_LIGHT}}" alt="Converge — Settlement Fold">
+  <div class="eyebrow">Factory coordinator &amp; assurance layer · Source-backed engineering reference</div>
+  <h1>Converge<br><em>Travel Reference</em></h1>
+  <p class="subtitle">The complete system travel reference: why agentic delivery fails when authority goes ambient, the nine-pass descent from raw intent to sealed work, the human barrier, bounded execution, settlement with receipts, and the exact truth about what is released, current, and only in the working tree.</p>
+  <div class="cover-stats">
+    <div class="cover-stat"><b>9</b><span>passes, one barrier</span></div>
+    <div class="cover-stat"><b>5</b><span>separated jobs</span></div>
+    <div class="cover-stat"><b>8</b><span>terminal landings</span></div>
+    <div class="cover-stat"><b>16</b><span>uncommitted files</span></div>
+  </div>
+  <p class="cutoff">Converge 0.2.0 · Task-Spec compatibility 3.8.x · Seamwise pairing 0.2.0<br>
+  Immutable release v0.2.0 = 3de9f0b5f83f1bb62475308317c58e53f851b0db (2026-08-17)<br>
+  Audited main HEAD 58b1ddb73e31a2b03426ab9ad25f02b9a166f559 (2026-08-19) · audit re-run 2026-08-26</p>
+  <p class="cover-foot">Read it quickly for orientation, or follow every trail into the repository. The referee never scores its own goal.</p>
+</section>
+
+<!-- ============================== EXECUTIVE ORIENTATION ============================== -->
+<section class="page">
+  <div class="folio-label">Executive orientation</div>
+  <h1>One intent, one authority chain, one settlement</h1>
+  <p class="lede">Converge is the factory coordinator and assurance layer around independent decomposition and task-contract engines. It sequences authority without duplicating it, binds one authorized task to a bounded runtime, and settles only after inspectable evidence. It is the referee, not the player.</p>
+  <div class="metric-strip">
+    <div><b>9</b><span>method passes</span></div>
+    <div><b>2</b><span>phases, one barrier</span></div>
+    <div><b>0.2.0</b><span>immutable release</span></div>
+    <div><b>508</b><span>audited tracked paths</span></div>
+  </div>
+  <div class="grid-2">
+    <div class="card"><h3>The coordinator</h3><p>Converge owns cross-engine sequence, composition receipts, runtime binding, the bounded loop, and settlement. It does not own seam discovery, Task-Spec rendering, HMAC authorization, or acceptance internals.</p></div>
+    <div class="card"><h3>The engines</h3><p>Seamwise turns reviewed evidence into seams, swimlanes, capability legs, and a versioned TaskPlan with lineage. Task-Spec materializes atomic tasks, seals them under an HMAC key, runs evals, and performs independent acceptance.</p></div>
+    <div class="card"><h3>The humans</h3><p>A named reviewer accepts the adversarially reviewed topology and owns residual risk. A human key holder authorizes one exact task revision. Neither decision transfers to changed bytes.</p></div>
+    <div class="card"><h3>The boundary</h3><p>A reviewed topology is not a task. A materialized task is not authorized. A green eval is not acceptance. A local settlement is not a merge. Every chapter keeps those evidence layers separate.</p></div>
+  </div>
+  <div class="thesis">The shortest useful mental model is: intent &rarr; reviewed topology &rarr; unsigned tasks &rarr; sealed revision &rarr; bound runtime &rarr; finite loop &rarr; independent acceptance &rarr; scoped settlement. Everything else exists to keep that chain honest.</div>
+  <p class="source">Sources: <code>brf-converge.md</code> &sect;1 (north star, authority chain, emotional arc); underlying <code>OPERATING.md</code>, <code>docs/concepts/authority.md</code>, <code>README.md</code>, <code>VERSION</code>, <code>bin/cvg</code>.</p>
+</section>
+
+<!-- ============================== TOC ============================== -->
+<section class="page">
+  <div class="folio-label">Navigation · contents</div>
+  <h1>Read the story in the right order</h1>
+  <div class="toc-row"><b>01</b><span>Travel Guide</span><em>Reading routes and the evidence language</em></div>
+  <div class="toc-row"><b>02</b><span>Unease — Why Converge Exists</span><em>Many agents can act; authority becomes ambiguous</em></div>
+  <div class="toc-row"><b>03</b><span>Separation — Five Different Jobs</span><em>Topology, authorization, execution, acceptance, observation</em></div>
+  <div class="toc-row"><b>04</b><span>Descent — Nine Passes</span><em>Intent becomes progressively falsifiable</em></div>
+  <div class="toc-row"><b>05</b><span>The Barrier — Hashed Consent</span><em>A human accepts the reviewed bytes before build authority</em></div>
+  <div class="toc-row"><b>06</b><span>Bounded Motion — Compose and Bind</span><em>One sealed revision, one runtime contract, one finite loop</em></div>
+  <div class="toc-row"><b>07</b><span>Settlement — Proof, Not Victory</span><em>Green evals, path policy, independent acceptance, receipts</em></div>
+  <div class="toc-row"><b>08</b><span>Honesty — Three Corridors</span><em>Release, current main, working tree, and roadmap stay distinct</em></div>
+  <div class="toc-row"><b>09</b><span>Traveler's Field Guide</span><em>Safe routes for running the pipeline end to end</em></div>
+  <div class="toc-row"><b>10</b><span>Source Index and Claim Map</span><em>Every surface this reference relies on, by rank</em></div>
+  <div class="dark-box"><strong>Navigation promise.</strong> Every part opens with a dark divider that names its emotional beat, continues into mechanism on light pages, and ends with a boundary. Per-page <em>Sources</em> lines cite the construction brief section and the underlying repository surfaces, so a claim can always be followed back to code, contract, or dated evidence.</div>
+  <p class="source">Sources: <code>brf-converge.md</code> &sect;4 (story map) and &sect;5 (slide-by-slide blueprint, acts I&ndash;VII).</p>
+</section>
+
+<!-- ============================== PART 01 · TRAVEL GUIDE ============================== -->
+<section class="page part-opener">
+  <div class="part-label">Part 01 · Travel guide</div>
+  <div class="chapter-no">01</div>
+  <h1>Travel Guide</h1>
+  <p class="promise">Choose the depth of the journey and learn the evidence language before trusting any number printed in this book.</p>
+  <div class="beat">Orientation · how to read</div>
+  <p class="route">Next: four reading routes &rarr; the nine-rank claim ladder &rarr; the audit and validation snapshots this edition rests on.</p>
+  <img class="opener-mark" src="{{ICON_MARK_LIGHT}}" alt="">
+</section>
+
+<section class="page">
+  <div class="folio-label">Travel guide · reading routes</div>
+  <h1>Four ways to carry the system</h1>
+  <div class="grid-2">
+    <div class="card"><h3>15 minutes · orientation</h3><p>Read the executive orientation, the authority-chain diagram in Part 03, the evidence legend below, and the honesty corridors in Part 08. You will know what Converge is and what it refuses to claim.</p></div>
+    <div class="card"><h3>45 minutes · method map</h3><p>Add the nine-pass descent, the Pass 4 barrier, and the compose state machine. You will be able to explain how raw intent becomes unsigned, then authorized, work.</p></div>
+    <div class="card"><h3>Two hours · operating model</h3><p>Add bind fences, the loop kernel, terminal states, settlement receipts, and the field guide. You will be able to run the pipeline end to end and recover from any named stop.</p></div>
+    <div class="card"><h3>Complete journey</h3><p>Read in order, then use the claim map and source index as a field reference when a specific token, gate, or receipt is in question.</p></div>
+  </div>
+  <h2>The recurring questions</h2>
+  <ol>
+    <li>Who owns this decision — and is any other layer claiming it too?</li>
+    <li>Which artifact grants authority, and which artifacts merely record progress?</li>
+    <li>Is this claim released, committed on main, or only true in an audited working tree?</li>
+    <li>Which gate, token, or receipt proves this step — and was it observed directly?</li>
+    <li>Where must a human decide, and can any automation widen that authority?</li>
+    <li>What is proven, what is reported, and what is still open?</li>
+  </ol>
+  <div class="recap"><strong>Travel rule:</strong> when a count or status matters, follow the cited canonical path instead of memorizing the printed number. This edition is frozen evidence about one audited checkout, not a promise that the repository will stand still.</div>
+  <p class="source">Sources: <code>brf-converge.md</code> &sect;9 (presenter routes) and &sect;12 (final editorial rules); underlying <code>docs/guides/descent.md</code>.</p>
+</section>
+
+<section class="page">
+  <div class="folio-label">Travel guide · evidence legend</div>
+  <h1>Nine claim ranks that must never collapse</h1>
+  <p>A polished README, a green leaf test, and an immutable release receipt are not interchangeable evidence. Every page of this reference labels its claims with the rank they rest on.</p>
+  <table>
+    <thead><tr><th style="width:8mm">Rank</th><th style="width:30mm">Label · surface</th><th>What it establishes</th></tr></thead>
+    <tbody>
+      <tr><td><span class="rank">A</span></td><td><strong>Authority</strong> · <code>OPERATING.md</code>, <code>AGENTS.md</code>, <code>docs/concepts/authority.md</code></td><td>Ownership, non-authority, merge and factory/everyday boundaries.</td></tr>
+      <tr><td><span class="rank">C</span></td><td><strong>Contract</strong> · <code>contracts/</code>, schemas, <code>VERSION</code>, CLI matrix</td><td>Machine-visible shapes, commands, tokens, versions, mutation flags.</td></tr>
+      <tr><td><span class="rank">I</span></td><td><strong>Implemented</strong> · <code>bin/</code>, <code>skills/*/scripts/</code>, <code>apps/cockpit/</code></td><td>Executable behavior at the audited committed HEAD.</td></tr>
+      <tr><td><span class="rank">T</span></td><td><strong>Tested</strong> · <code>tests/</code>, skill suites, direct 2026-08-26 runs</td><td>Claims directly discriminated by observed checks.</td></tr>
+      <tr><td><span class="rank">E</span></td><td><strong>Evidence</strong> · <code>evidence/releases/</code>, immutable receipts</td><td>Retained execution proof; invalidated corridors remain invalid.</td></tr>
+      <tr><td><span class="rank">R</span></td><td><strong>Release</strong> · tag <code>v0.2.0</code>, release workflow, archived assets</td><td>Frozen release claims only; never import later-main behavior.</td></tr>
+      <tr><td><span class="rank">D</span></td><td><strong>Documentary</strong> · <code>README.md</code>, <code>docs/</code>, <code>CHANGELOG.md</code></td><td>Explanation and reported hosted evidence; reconcile against code and tests.</td></tr>
+      <tr><td><span class="rank">W</span></td><td><strong>Working tree</strong> · 16 modified + 1 untracked guided-chat file</td><td>Audited but uncommitted behavior; always labelled <code>CHECKOUT ONLY</code>.</td></tr>
+      <tr><td><span class="rank">F</span></td><td><strong>Future</strong> · explicit exclusions, Manager/fleet references</td><td>Roadmap or absent behavior; never rendered as a current capability.</td></tr>
+    </tbody>
+  </table>
+  <div class="callout proof"><strong>Example.</strong> <code>cvg compose materialize</code> writing unsigned leaves is an implemented, tested behavior [I, T]. The composition receipt recording <code>dispatch_authorized: false</code> is a contract fact [C]. The retained <code>v0.2.0/live-codex</code> receipt chain is release evidence [E, R]. None of them, alone or together, authorizes a dispatch.</div>
+  <div class="callout warning"><strong>Human authority.</strong> Topology acceptance, objection resolution, HMAC sealing, external writes, and merges into shared branches require explicit human decisions. Automation never expands that authority.</div>
+  <div class="callout gap"><strong>Honest gaps.</strong> The red aggregate <code>make check</code>, the tier-2 holdout exposure, and adapter prevent/detect variation remain visible throughout. This document never converts absence of evidence into success.</div>
+  <p class="source">Sources: <code>brf-converge.md</code> &sect;2 (evidence and claim policy); underlying <code>OPERATING.md</code>, <code>docs/trust/index.md</code>, <code>contracts/</code>.</p>
+</section>
+
+<section class="page">
+  <div class="folio-label">Travel guide · audit snapshot</div>
+  <h1>What this edition is built on</h1>
+  <p class="lede">The source audit covered 508 tracked paths of the Converge repository at committed main, then ran the current checkout against the pinned engines on 2026-08-26.</p>
+  <table class="compact">
+    <thead><tr><th>Area</th><th style="width:18mm">Tracked paths</th><th>What was inspected</th></tr></thead>
+    <tbody>
+      <tr><td><code>skills/</code></td><td>220</td><td>11 packaged skills, 55 scripts, 108 skill-test files, prompts, templates, fixtures</td></tr>
+      <tr><td><code>apps/</code></td><td>102</td><td>Cockpit client/server, ACP Ask path, schemas, tests, build</td></tr>
+      <tr><td><code>evidence/</code></td><td>72</td><td>Release, invalidated, environment, receipt, acceptance, final-status records</td></tr>
+      <tr><td><code>tests/</code></td><td>22</td><td>Aggregate CLI, compose, install, clean room, loop, package, docs, layout</td></tr>
+      <tr><td><code>assets/</code></td><td>21</td><td>Settlement Fold brand and process assets</td></tr>
+      <tr><td><code>docs/</code></td><td>18</td><td>Authority, trust, descent, bind/loop, recovery, CLI and knowledge map</td></tr>
+      <tr><td><code>scripts/</code></td><td>11</td><td>Bootstrap, docs, evidence, release, demo, asset validation</td></tr>
+      <tr><td><code>bin/</code></td><td>7</td><td>Referee CLI, composition, lane, snapshot, agent-context, UI helper</td></tr>
+      <tr><td><code>.github/</code></td><td>7</td><td>CI, release, dependency and ownership configuration</td></tr>
+      <tr><td><code>contracts/</code></td><td>6</td><td>CLI matrix and versioned JSON Schemas</td></tr>
+    </tbody>
+  </table>
+  <h2>Three revisions, three corridors</h2>
+  <p>The committed baseline is <code>main</code> at <code>58b1ddb</code>, exactly aligned with <code>origin/main</code> on 2026-08-19. The immutable <code>v0.2.0</code> tag is <code>3de9f0b</code>, <strong>42 commits behind</strong> the audited HEAD. The working tree adds guided chat and expands the command matrix from committed <strong>57 forms</strong> to checkout-only <strong>60 forms</strong>.</p>
+  <div class="callout warning"><strong>Load-bearing boundary.</strong> The 16 modified files plus one untracked guided-chat contract were audited but are uncommitted. Nowhere in this reference are they presented as committed or released.</div>
+  <p class="source">Sources: <code>brf-converge.md</code> &sect;2 (audit snapshot); underlying <code>evidence/</code>, <code>contracts/cli-command-matrix.json</code>, Git history.</p>
+</section>
+
+<!-- ============================== PART 02 · UNEASE ============================== -->
+<section class="page part-opener">
+  <div class="part-label">Part 02 · Why it exists</div>
+  <div class="chapter-no">02</div>
+  <h1>Unease — Why Converge Exists</h1>
+  <p class="promise">Understand the failure mode before studying the machinery: when every layer can decompose, authorize, execute, and declare done, no receipt means what it says.</p>
+  <div class="beat">Beat 1 · Unease — many agents can act, but authority becomes ambiguous</div>
+  <p class="route">Next: duplicate authority &rarr; the referee category &rarr; everyday versus factory planes.</p>
+  <img class="opener-mark" src="{{ICON_MARK_LIGHT}}" alt="">
+</section>
+
+<section class="page">
+  <div class="folio-label">Unease · duplicate authority</div>
+  <h1>Agentic delivery fails when authority becomes ambient</h1>
+  <p class="lede">The hard problem is not getting an agent to act. It is deciding who is allowed to decide what.</p>
+  <p>In a typical agentic stack, the planner decomposes, the coordinator schedules, the executor edits, and the observer reports — and each of them can quietly claim the others' verbs. A planner marks work approved. A coordinator dispatches what it merely drafted. An executor declares its own output done. An observer's dashboard becomes the team's memory of truth. Four layers, four overlapping claims of <code>APPROVED</code>.</p>
+  <div class="dark-box"><strong>When every layer can decompose, authorize, execute, and declare done, no receipt means what it says.</strong> The failure is not bad models; it is duplicated authority making every downstream artifact ambiguous.</div>
+  <h2>Four flattenings to refuse</h2>
+  <div class="grid-2">
+    <div class="card"><h3>Model narration &ne; acceptance</h3><p>A fluent summary of what was done is not an acceptance decision. Acceptance belongs to an independent gate applied to the exact handoff and revision.</p></div>
+    <div class="card"><h3>Tracker state &ne; authority</h3><p>An issue board is a projection. It authors no tasks, changes no dependency truth, and never overrides repository files.</p></div>
+    <div class="card"><h3>Materialization &ne; dispatch</h3><p>Writing an unsigned task set proves materialization integrity. It grants no permission to run anything.</p></div>
+    <div class="card"><h3>Observation &ne; control</h3><p>A UI that renders canonical state cannot create, approve, bind, transition, or settle it.</p></div>
+  </div>
+  <div class="callout gap"><strong>Converge's answer is to get thinner, not bigger.</strong> It removes duplicated authority instead of adding another layer that claims it.</div>
+  <p class="source">Sources: <code>brf-converge.md</code> &sect;5 S02; underlying <code>docs/concepts/authority.md</code>, <code>docs/trust/index.md</code>.</p>
+</section>
+
+<section class="page">
+  <div class="folio-label">Unease · the category</div>
+  <h1>It is a referee, not the player</h1>
+  <p>Converge sequences independent engines and verifies boundaries. It does not absorb their authority. Seamwise and Task-Spec remain independently versioned binaries with their own capability contracts; Converge composes them across process boundaries through JSON and CLI bridges, with no shared implementation box.</p>
+  <table>
+    <thead><tr><th>Converge owns</th><th>Converge does not own</th></tr></thead>
+    <tbody>
+      <tr><td>Cross-engine sequence</td><td>Seam discovery</td></tr>
+      <tr><td>Composition receipts</td><td>Task-Spec rendering</td></tr>
+      <tr><td>Runtime binding</td><td>HMAC authorization</td></tr>
+      <tr><td>Bounded loop + settlement</td><td>Independent acceptance internals</td></tr>
+    </tbody>
+  </table>
+  <h2>Everyday work and factory work are different planes</h2>
+  <p><code>OPERATING.md</code> assigns the everyday plane — portfolio triage, nuances, backlog — to WorkHelm. Converge is the dock, factory, and big-bang assurance plane: the route for work that must carry receipts. Neither lane may skip the Task-Spec HMAC seal, and neither merges the user's branch automatically.</p>
+  <div class="callout warning"><strong>Refusal.</strong> Converge is not the everyday portfolio coordinator, and it must never be presented as one. That plane belongs to WorkHelm by explicit operating contract.</div>
+  <div class="recap"><strong>Part 02 recap:</strong> the category is a thin coordinator. Converge exists because agentic delivery needs a referee that sequences authority, binds attempts, and refuses to settle without proof — not another player claiming the ball.</div>
+  <p class="source">Sources: <code>brf-converge.md</code> &sect;5 S03&ndash;S04; underlying <code>OPERATING.md</code>, <code>docs/concepts/authority.md</code>, <code>bin/_cvg_compose.py</code>, <code>bin/cvg</code>.</p>
+</section>
+
+<!-- ============================== PART 03 · SEPARATION ============================== -->
+<section class="page part-opener">
+  <div class="part-label">Part 03 · Separation</div>
+  <div class="chapter-no">03</div>
+  <h1>Separation — Five Different Jobs</h1>
+  <p class="promise">Topology, authorization, execution, acceptance, and observation are different jobs. Duplicate capability is tolerable; duplicate authority is not.</p>
+  <div class="beat">Beat 2 · Separation — the jobs come apart</div>
+  <p class="route">Next: the authority chain &rarr; sole owners &rarr; six receipts that answer six different questions.</p>
+  <img class="opener-mark" src="{{ICON_MARK_LIGHT}}" alt="">
+</section>
+
+<section class="page">
+  <div class="folio-label">Separation · authority chain</div>
+  <h1>One feature travels one chain of authority</h1>
+  <p>Follow the steel-thread specimen — a reviewed health endpoint, <code>T-20260815-health-status</code> — as it becomes one unsigned leaf, one sealed revision, one bounded attempt, and one accepted result. Every stage leaves evidence; not every evidence object grants authority.</p>
+  <div class="flow">
+    <div class="flow-title">The essential authority chain</div>
+    <div class="frow">
+      <div class="fnode engine">Intent + evidence</div>
+      <span class="farrow">&rarr;</span>
+      <div class="fnode engine">Seamwise<small>reviewed topology</small></div>
+      <span class="farrow">&rarr;</span>
+      <div class="fnode engine">TaskPlan/v1<small>+ lineage</small></div>
+      <span class="farrow">&rarr;</span>
+      <div class="fnode converge">Converge<small>sequence + compose</small></div>
+    </div>
+    <span class="farrow down">&darr;</span>
+    <div class="frow">
+      <div class="fnode engine">Task-Spec<small>materialize + seal</small></div>
+      <span class="farrow">&rarr;</span>
+      <div class="fnode converge">Converge<small>bind + bounded loop</small></div>
+      <span class="farrow">&rarr;</span>
+      <div class="fnode engine">Executor<small>scoped product change</small></div>
+    </div>
+    <span class="farrow down">&darr;</span>
+    <div class="frow">
+      <div class="fnode engine">Task-Spec<small>independent acceptance</small></div>
+      <span class="farrow mint">&rarr;</span>
+      <div class="fnode proof">Converge<small>settlement receipts</small></div>
+    </div>
+    <span class="farrow down">&darr;</span>
+    <div class="frow">
+      <div class="fnode human">Human reviewer<small>accept topology + risk</small></div>
+      <span class="farrow">&#8623; into Seamwise review</span>
+      <div class="fnode human">Human key holder<small>seal exact revision</small></div>
+      <span class="farrow">&#8623; into Task-Spec seal</span>
+    </div>
+    <div class="fnote">Color semantics: <b>gold</b> = human authority · steel = engines · gold-rimmed = Converge coordination · <span style="color:#73E2C3">mint</span> = settled proof. Dashed or dotted routes anywhere in this book are optional, opt-in, or non-authoritative observation.</div>
+  </div>
+  <div class="callout warning"><strong>Reading the chain.</strong> Converge appears three times — sequence, bind/loop, settlement — yet never performs decomposition, sealing, or acceptance itself. Presence in the chain is not ownership of the decision.</div>
+  <p class="source">Sources: <code>brf-converge.md</code> &sect;1 (authority chain mermaid), &sect;6.A; underlying <code>docs/concepts/authority.md</code>, <code>bin/_cvg_compose.py</code>.</p>
+</section>
+
+<section class="page">
+  <div class="folio-label">Separation · sole owners</div>
+  <h1>One decision, one owner</h1>
+  <table>
+    <thead><tr><th style="width:30mm">Actor</th><th>Owns</th><th>Explicitly does not own</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Human reviewer</strong></td><td>Topology acceptance, objection decisions, residual risk</td><td>Task sealing, dispatch, acceptance verdicts</td></tr>
+      <tr><td><strong>Human key holder</strong></td><td>Authorization of one exact task revision via the repository key</td><td>Execution policy, loop budgets beyond the signed ceiling</td></tr>
+      <tr><td><strong>Seamwise</strong></td><td>Evidence-backed seams, swimlanes, legs, TaskPlan, lineage</td><td>Task-Spec Markdown, dispatch, acceptance</td></tr>
+      <tr><td><strong>Task-Spec</strong></td><td>Materialization, seal, handoff, eval, acceptance, TaskMesh</td><td>Seam cutting, Converge settlement, user-branch merge</td></tr>
+      <tr><td><strong>Converge</strong></td><td>Factory sequence, compose, bind, bounded loop, settlement</td><td>Everyday coordination, topology reinterpretation, self-acceptance</td></tr>
+      <tr><td><strong>Executor</strong></td><td>Scoped product-code mutation inside the bound attempt</td><td>Choosing work, widening scope, declaring acceptance</td></tr>
+      <tr><td><strong>Cockpit / Ask</strong></td><td>Observation and bounded interpretation</td><td>Create, approve, register, bind, run, transition, settle</td></tr>
+    </tbody>
+  </table>
+  <p>Cockpit sits deliberately outside the write rail. It renders canonical snapshots; no arrow runs from the observer back into state. The same rule holds for <code>cvg next</code>, Ask Converge, and any tracker projection: none is a second source of canonical truth.</p>
+  <div class="callout proof"><strong>Why tolerate duplicate capability?</strong> Two layers may both be <em>able</em> to, say, summarize a diff. What the design forbids is two layers whose <em>verdict counts</em>. Capability is cheap; authority must be singular so receipts keep their meaning.</div>
+  <p class="source">Sources: <code>brf-converge.md</code> &sect;5 S05 and &sect;7 (product authority table); underlying <code>docs/concepts/authority.md</code>, <code>OPERATING.md</code>.</p>
+</section>
+
+<section class="page">
+  <div class="folio-label">Separation · evidence objects</div>
+  <h1>Six receipts, six different claims</h1>
+  <p class="lede">A review record, composition receipt, HMAC seal, runtime contract, execution receipt, and acceptance record answer different questions. Flattening the stack is how ambient authority sneaks back in.</p>
+  <div class="flow">
+    <div class="flow-title">The receipt stack — one verb each</div>
+    <div class="frow">
+      <div class="fnode human">Review record<small>accepted topology</small></div>
+      <span class="farrow">&rarr;</span>
+      <div class="fnode converge">Composition receipt<small>materialized · dispatch=false</small></div>
+      <span class="farrow">&rarr;</span>
+      <div class="fnode human">TaskAuthorization<small>authorized · HMAC</small></div>
+    </div>
+    <span class="farrow down">&darr;</span>
+    <div class="frow">
+      <div class="fnode converge">Runtime contract<small>bounded</small></div>
+      <span class="farrow">&rarr;</span>
+      <div class="fnode engine">Execution receipt<small>executed</small></div>
+      <span class="farrow">&rarr;</span>
+      <div class="fnode proof">AcceptanceRecord<small>accepted</small></div>
+    </div>
+    <div class="fnote"><b>Red rules:</b> composition receipt &ne; authorization · execution receipt &ne; acceptance.</div>
+  </div>
+  <table>
+    <thead><tr><th>Object</th><th>Proves</th><th>Does not prove</th></tr></thead>
+    <tbody>
+      <tr><td>Review record</td><td>Named acceptance of the reviewed topology digest</td><td>Task authorization</td></tr>
+      <tr><td>Composition receipt</td><td>Exact engines/source/plan/task digests materialized</td><td>Dispatch or acceptance</td></tr>
+      <tr><td>HMAC authorization</td><td>One TaskRevision sealed under the repository key</td><td>Identity, secrecy, isolation, wisdom</td></tr>
+      <tr><td>Runtime contract</td><td>Revision mapped to an explicit enforcement policy</td><td>That every adapter prevents violations</td></tr>
+      <tr><td>Execution receipt</td><td>Named attempt/eval/path evidence recorded</td><td>Independent acceptance</td></tr>
+      <tr><td>AcceptanceRecord</td><td>Task-Spec accepted the exact handoff/revision</td><td>Production health or universal correctness</td></tr>
+    </tbody>
+  </table>
+  <div class="recap"><strong>Part 03 recap:</strong> the jobs are separated, the owners are singular, and the evidence objects are deliberately non-interchangeable. Everything downstream inherits this discipline.</div>
+  <p class="source">Sources: <code>brf-converge.md</code> &sect;5 S07 and &sect;7 (evidence objects); underlying <code>contracts/converge-composition-receipt-v1.schema.json</code>, <code>evidence/releases/v0.2.0/live-codex/</code>.</p>
+</section>
+
+<!-- ============================== PART 04 · DESCENT ============================== -->
+<section class="page part-opener">
+  <div class="part-label">Part 04 · The descent</div>
+  <div class="chapter-no">04</div>
+  <h1>Descent — Nine Passes</h1>
+  <p class="promise">Design above the barrier; machine build below it. Intent becomes progressively more falsifiable, one gated pass at a time.</p>
+  <div class="beat">Beat 3 · Descent — intent becomes falsifiable</div>
+  <p class="route">Next: the whole spine &rarr; Capture and Intent &rarr; Structure and Decompose &rarr; Consensus.</p>
+  <img class="opener-mark" src="{{ICON_MARK_LIGHT}}" alt="">
+</section>
+
+<section class="page">
+  <div class="folio-label">Descent · whole spine</div>
+  <h1>Nine passes, two phases, one barrier</h1>
+  <div class="flow">
+    <div class="flow-title">The descent rail — Capture optional · Register opt-in</div>
+    <div class="frow">
+      <div class="fnode observer">0 · Capture<small>optional</small></div>
+      <span class="farrow steel">&rarr;</span>
+      <div class="fnode engine">1 · Intent</div>
+      <span class="farrow steel">&rarr;</span>
+      <div class="fnode engine">2 · Structure</div>
+      <span class="farrow steel">&rarr;</span>
+      <div class="fnode engine">3 · Decompose</div>
+      <span class="farrow steel">&rarr;</span>
+      <div class="fnode engine">4 · Consensus</div>
+    </div>
+    <span class="farrow down">&darr;</span>
+    <div class="frow">
+      <div class="fnode human">THE BARRIER<small>a human accepts the reviewed bytes</small></div>
+    </div>
+    <span class="farrow down">&darr;</span>
+    <div class="frow">
+      <div class="fnode converge">5 · Tasking<small>standalone Task-Spec</small></div>
+      <span class="farrow">&rarr;</span>
+      <div class="fnode observer">6 · Register<small>opt-in tracker projection</small></div>
+      <span class="farrow">&rarr;</span>
+      <div class="fnode converge">7 · Bind</div>
+      <span class="farrow">&rarr;</span>
+      <div class="fnode converge">8 · Loop</div>
+    </div>
+    <div class="fnote">Bypass rails: a usable BRD enters directly at Pass 1; a repo-local queue skips Pass 6 to Pass 7. Optional hops are bypassed, never faded into invisibility. <b>Passes 0&ndash;4 make intent precise; passes 5&ndash;8 turn accepted intent into bounded evidence.</b></div>
+  </div>
+  <p>The router — <code>cvg lane</code> — is not a pass. FAST, NORMAL, and FULL change ceremony, model tier, and verification defaults within hard floors: FAST may enter at Pass 5, NORMAL skips optional ceremony, FULL enables tier 2 by default. No lane can widen a signed budget or waive a gate; sensitive or greenfield work can force a stronger lane.</p>
+  <div class="callout warning"><strong>"Machine-led" below the barrier does not mean self-authorized.</strong> The HMAC seal still belongs to Task-Spec and an explicit key holder, and the loop still spends only signed budgets.</div>
+  <p class="source">Sources: <code>brf-converge.md</code> &sect;5 S08&ndash;S10, &sect;6.B; underlying <code>docs/guides/descent.md</code>, <code>skills/evidence-to-next-pass/scripts/next-pass.sh</code>, <code>bin/cvg-classify-lane.py</code>.</p>
+</section>
+
+<section class="page">
+  <div class="folio-label">Descent · passes 0&ndash;1</div>
+  <h1>Capture asks whether the idea should exist</h1>
+  <p><strong>Pass 0 · Capture (optional).</strong> Raw idea in; owner-voice BRD or durable no-go out. The interview asks every currently unblocked question together — the live frontier — waits once, and recomputes. It covers quantified pain, a KPI-shaped goal, in/out scope, provenance, owner, open questions, and canonical sign-off. Draft mode may explain gaps but never authorizes.</p>
+  <div class="callout proof"><strong>The do-nothing test is a kill switch.</strong> If inaction has no meaningful cost, the correct output is a durable, owned, dated, specific no-go — not a manufactured project. The fastest valid result can be an honest stop.</div>
+  <h2>Pass 1 · Intent converts the brief into a technical contract</h2>
+  <p>Client problem in; falsifiable tech-spec out. BRD claims pass through interrogate and crystallize gates into numbered requirements. Unsigned inputs, pending items, open blockers, invalid dates, and ambiguity fail closed.</p>
+  <table>
+    <thead><tr><th style="width:16mm">Pass</th><th>Input</th><th>Output</th><th>Closing gate</th></tr></thead>
+    <tbody>
+      <tr><td><strong>0</strong></td><td>Raw idea</td><td>BRD or no-go</td><td><code>CHECK_BRD=PASS</code></td></tr>
+      <tr><td><strong>1</strong></td><td>Signed BRD</td><td>Falsifiable tech-spec</td><td><code>CHECK_TECH_SPEC=PASS</code></td></tr>
+    </tbody>
+  </table>
+  <div class="callout warning"><strong>Altitude discipline.</strong> Intent stays above architecture: a tech-spec names observable behavior, constraints, and blockers — not infrastructure preferences disguised as requirements. Implementation leakage may warn; unresolved blockers still block.</div>
+  <p class="source">Sources: <code>brf-converge.md</code> &sect;5 S11&ndash;S15; underlying <code>skills/idea-to-brd/</code> (39/39 Pass 0 rows), <code>skills/brd-docs-to-tech-req/</code> (24/24 rows).</p>
+</section>
+
+<section class="page">
+  <div class="folio-label">Descent · passes 2&ndash;3</div>
+  <h1>Structure names the terrain; Decompose cuts the seams</h1>
+  <p><strong>Pass 2 · Structure.</strong> Tech-spec plus the real repository in; grounding ADRs and a shared context glossary out. Final mode rejects proposed-only ADRs, dangling supersedes, empty evidence, and missing context. The key rule is what an ADR must not become: record what is true about the ground, and leave "build, create, implement, refactor, migrate" to the next pass.</p>
+  <p><strong>Pass 3 · Decompose.</strong> ADRs in; one typed swimlane tree with capability legs out. The grammar has three nouns: a <strong>seam</strong> separates responsibility, a <strong>swimlane</strong> owns it, and a <strong>leg</strong> names an observable capability state. Plans with no seams, no non-goals, no legs, orphan legs, or missing proof all fail.</p>
+  <table>
+    <thead><tr><th style="width:16mm">Pass</th><th>Input</th><th>Output</th><th>Closing gate</th></tr></thead>
+    <tbody>
+      <tr><td><strong>2</strong></td><td>Tech-spec + repository</td><td>ADRs + glossary</td><td><code>CHECK_ADR=OK</code></td></tr>
+      <tr><td><strong>3</strong></td><td>Requirements + terrain</td><td>Swimlane/leg tree</td><td><code>CHECK_PLAN=OK</code></td></tr>
+    </tbody>
+  </table>
+  <div class="callout gap"><strong>Altitude drift is a defect.</strong> A leg is not yet an atomic Task-Spec; real task IDs appearing in Pass 3 output mean the plan collapsed into a task list and must be redone.</div>
+  <p>A coherent plan is still only one model's story. Before topology can be accepted, an adversary has to attack it — that is Pass 4, and the barrier behind it deserves its own part.</p>
+  <p class="source">Sources: <code>brf-converge.md</code> &sect;5 S16&ndash;S19; underlying <code>skills/tech-req-to-adrs/</code> (38/38 rows), <code>skills/reqs-to-swimlane-plans/</code> (33/33 rows), <code>scaffold-adr.sh</code>.</p>
+</section>
+
+<section class="page">
+  <div class="folio-label">Descent · pass 4</div>
+  <h1>Consensus: a different-family model tries to break the plans</h1>
+  <p class="lede">Refutation in. Hardened plans, an objection log, owners, decisions, and residual risk out.</p>
+  <p>Pass 4 sends the primary-family plans into a cross-family adversary chamber. Self-review, no objections, no named decider, and open residual risk all fail the gate. Dispatching the adversary does not close the pass: an objection exists until a human decides it — FIX or ACCEPT — via <code>cvg review --resolve</code>, owning the residual risk by name.</p>
+  <table>
+    <thead><tr><th style="width:16mm">Pass</th><th>Input</th><th>Output</th><th>Closing gate</th></tr></thead>
+    <tbody>
+      <tr><td><strong>4</strong></td><td>Plans</td><td>Hardened plans + decided objections</td><td><code>CHECK_CONSENSUS=OK</code></td></tr>
+    </tbody>
+  </table>
+  <div class="callout warning"><strong>Scrutiny is not consensus.</strong> A fresh review log with unresolved findings is evidence of scrutiny, not agreement. Only a fully decided objection log reaches the barrier.</div>
+  <div class="recap"><strong>Part 04 recap:</strong> the descent converts ambiguity into artifacts that can fail: a BRD that can be refused, requirements that can be tested, terrain that can be checked, a plan that can be attacked, and objections that must be decided. Only then is there anything worth accepting.</div>
+  <p class="source">Sources: <code>brf-converge.md</code> &sect;5 S20&ndash;S21; underlying <code>skills/sketch-plans-adversarial-review/</code> (23/23 rows), <code>cvg review --resolve</code>.</p>
+</section>
+
+<!-- ============================== PART 05 · BARRIER ============================== -->
+<section class="page part-opener">
+  <div class="part-label">Part 05 · The human barrier</div>
+  <div class="chapter-no">05</div>
+  <h1>The Barrier — Hashed Consent</h1>
+  <p class="promise">A named human accepts the adversarially reviewed topology before any build authority begins — and consent binds the exact reviewed bytes.</p>
+  <div class="beat">Beat 4 · Barrier — acceptance before authority</div>
+  <p class="route">Next: hashed consent &rarr; staleness &rarr; what the barrier does and does not authorize.</p>
+  <img class="opener-mark" src="{{ICON_MARK_LIGHT}}" alt="">
+</section>
+
+<section class="page">
+  <div class="folio-label">Barrier · hashed consent</div>
+  <h1>Consent binds the reviewed bytes</h1>
+  <p class="lede">If a reviewed plan changes, the barrier reopens. Consent does not transfer to new text.</p>
+  <div class="flow">
+    <div class="flow-title">The barrier gate</div>
+    <div class="frow">
+      <div class="fnode engine">Reviewed plans<small>+ decided objection log</small></div>
+      <span class="farrow">&rarr;</span>
+      <div class="fnode engine">Plan digest<small>stamped at review</small></div>
+      <span class="farrow">&rarr;</span>
+      <div class="fnode human">Human acceptance<small>named reviewer owns risk</small></div>
+      <span class="farrow mint">&rarr;</span>
+      <div class="fnode proof">Gate opens<small>Pass 5 may begin</small></div>
+    </div>
+    <span class="farrow down">&darr;</span>
+    <div class="frow">
+      <div class="fnode fail">Mutated bytes<small>digest mismatch</small></div>
+      <span class="farrow coral">&rarr;</span>
+      <div class="fnode fail">Gate red<small>route back to re-attack</small></div>
+    </div>
+    <div class="fnote">Conductor tests discriminate matching hashes from post-review changes and <b>refuse Pass 5 behind stale consent</b> (44/44 conductor checkout rows).</div>
+  </div>
+  <h2>What crossing the barrier means</h2>
+  <ul>
+    <li>The topology, objection log, and residual-risk decisions are accepted as reviewed.</li>
+    <li>Passes 5&ndash;8 — machine build — may begin against exactly those bytes.</li>
+    <li>Any later mutation invalidates consent and re-routes to adversarial review.</li>
+  </ul>
+  <h2>What it does not mean</h2>
+  <ul>
+    <li>No task has been authorized. Materialization and sealing are separate, later acts.</li>
+    <li>No execution may begin. Reviewed topology is not dispatch authority.</li>
+    <li>No acceptance has occurred. Acceptance belongs to Task-Spec after execution.</li>
+  </ul>
+  <div class="recap"><strong>Part 05 recap:</strong> the barrier converts design into a frozen, hash-bound agreement. It is the last human gate before machine authority — and it reopens the moment the reviewed bytes move.</div>
+  <p class="source">Sources: <code>brf-converge.md</code> &sect;5 S21&ndash;S22; underlying consensus gate and conductor, <code>skills/sketch-plans-adversarial-review/</code>.</p>
+</section>
+
+<!-- ============================== PART 06 · BOUNDED MOTION ============================== -->
+<section class="page part-opener">
+  <div class="part-label">Part 06 · Bounded motion</div>
+  <div class="chapter-no">06</div>
+  <h1>Bounded Motion — Compose and Bind</h1>
+  <p class="promise">One sealed revision receives one runtime contract and one finite loop. Reviewed topology becomes unsigned tasks, then authorized work, then a bound attempt.</p>
+  <div class="beat">Beat 5 · Bounded motion — authority becomes a contract</div>
+  <p class="route">Next: the compose state machine &rarr; materialize without authority &rarr; bind and the two fences &rarr; adapters and isolation.</p>
+  <img class="opener-mark" src="{{ICON_MARK_LIGHT}}" alt="">
+</section>
+
+<section class="page">
+  <div class="folio-label">Bounded motion · compose</div>
+  <h1>Compose is a small, explicit state machine</h1>
+  <p>Converge composes external engines; it does not vendor them. Seamwise must deny materialization and dispatch authority; Task-Spec must return the supported result contract at version <code>3.8.x</code>. Compose status re-hashes the evidence and emits exactly one <code>NEXT=</code> action.</p>
+  <div class="flow">
+    <div class="flow-title">Compose state machine — status is read-only</div>
+    <div class="frow">
+      <div class="fnode converge">NEEDS_REVIEW<small>after prepare</small></div>
+      <span class="farrow">&rarr;</span>
+      <div class="fnode converge">PREVIEW_READY<small>named review · preview</small></div>
+      <span class="farrow">&rarr;</span>
+      <div class="fnode proof">MATERIALIZED<small>byte-identical rerun</small></div>
+    </div>
+    <span class="farrow down">&darr;</span>
+    <div class="frow">
+      <div class="fnode fail">BLOCKED<small>stale review · plan/task/receipt drift</small></div>
+      <div class="fnode fail">ENGINE_UNAVAILABLE<small>version/capability failure</small></div>
+    </div>
+    <div class="fnote">Status blocks on stale review, changed plan, changed task bytes, stale receipt, or engine incompatibility. Review cannot be skipped; tamper and engine drift fail closed (14/14 compose rows).</div>
+  </div>
+  <table>
+    <thead><tr><th>Verb</th><th>What happens</th><th>What it refuses</th></tr></thead>
+    <tbody>
+      <tr><td><code>prepare</code></td><td>Seamwise produces a delivery plan + lineage; lands at NEEDS_REVIEW</td><td>No Task-Spec involvement, no TaskPlan compile, no leaves</td></tr>
+      <tr><td><code>review</code></td><td>A named reviewer with a substantive reason moves to PREVIEW_READY</td><td>No anonymous reviewer, no empty reason, no compilation</td></tr>
+      <tr><td><code>preview</code></td><td>Seamwise compiles TaskPlan/v1; Task-Spec validates a read-only proposed DAG</td><td>No Task-Spec Markdown is written</td></tr>
+      <tr><td><code>materialize</code></td><td>Task-Spec batches the reviewed plan; Converge writes the receipt last</td><td>Grants no dispatch authority</td></tr>
+    </tbody>
+  </table>
+  <p class="source">Sources: <code>brf-converge.md</code> &sect;5 S23&ndash;S28, &sect;6.C; underlying <code>bin/_cvg_compose.py</code>, <code>docs/concepts/compose-and-settlement.md</code>, <code>docs/guides/recovery.md</code>.</p>
+</section>
+
+<section class="page">
+  <div class="folio-label">Bounded motion · non-authorizing receipt</div>
+  <h1>Materialize writes unsigned tasks — and the receipt says so</h1>
+  <p>Task-Spec batches the reviewed plan into atomic leaves with runnable evals, dependency closure, scope, budgets, and acceptance criteria. Converge writes the composition receipt only after the exact task set exists; interrupted finalization recovers idempotently and an exact rerun is byte-identical.</p>
+  <div class="dark-box"><strong><code>ConvergeCompositionReceipt/v1</code></strong> binds engine versions, source commit, lineage, plan digest, task IDs, and task digests — with <code>"dispatch_authorized": false</code>. A valid receipt proves materialization integrity, not permission to run or acceptance after running.</div>
+  <h2>Creation never grants authority</h2>
+  <p>Open one materialized leaf: both lifecycle booleans remain false — <code>signed_off: false</code>, <code>accepted: false</code>. Seamwise review and Converge materialization are upstream evidence; neither may flip the Task-Spec seal. <code>cvg tasks plan</code> previews proposed units without inventing work for a missing leg, and the compatibility door forwards the standalone TaskPlan unchanged.</p>
+  <h2>The seal is a separate human act</h2>
+  <p><code>taskspec gate --stamp</code> sets <code>signed_off: true</code> only after validating the exact body digest under the repository key — <code>TIER=1</code>. HMAC is tamper evidence under a shared key: not identity, not secrecy, not isolation, not semantic truth.</p>
+  <div class="callout warning"><strong>Pass 6 · Register is opt-in.</strong> One signed Task-Spec becomes one tracker issue with <code>blocked-by</code> mirroring the DAG; repository files remain canonical. Registration is a parity contract — count, identity, edges, receipts, and landed history must agree (145/145 register rows) — and a repo-local queue may skip it entirely.</div>
+  <p class="source">Sources: <code>brf-converge.md</code> &sect;5 S29&ndash;S36; underlying <code>contracts/converge-composition-receipt-v1.schema.json</code>, <code>route_taskspec()</code> in <code>bin/cvg</code>, <code>skills/task-specs-to-issues/</code>.</p>
+</section>
+
+<section class="page">
+  <div class="folio-label">Bounded motion · bind</div>
+  <h1>Pass 7 freezes execution authority behind two fences</h1>
+  <p>One signed Task-Spec becomes one execution profile plus guards, adapters, and a worker brief — <code>CHECK_RUNTIME_CONTRACT=PASS</code>. Bind begins by proving the input is still the revision that was authorized: seal, body digest, backend, evidence, and task identity must still agree.</p>
+  <div class="flow">
+    <div class="flow-title">Binding fences</div>
+    <div class="frow">
+      <div class="fnode human">Sealed TaskRevision<small>TIER=1</small></div>
+      <span class="farrow">&rarr;</span>
+      <div class="fnode converge">Bind<small>freshness re-verified</small></div>
+      <span class="farrow">&rarr;</span>
+      <div class="fnode converge">Execution profile<small>revision · backend · budgets · path policy</small></div>
+    </div>
+    <span class="farrow down">&darr;</span>
+    <div class="frow">
+      <div class="fnode engine">Task write scope<small>candidate set</small></div>
+      <span class="farrow steel">+</span>
+      <div class="fnode converge">Repository gate<small>may narrow · protects itself</small></div>
+      <span class="farrow">&rarr;</span>
+      <div class="fnode engine">Runtime adapter<small>prevent or detect</small></div>
+      <span class="farrow">&rarr;</span>
+      <div class="fnode proof">Whole-Git postflight</div>
+    </div>
+    <div class="fnote">The task authorizes a candidate set; the trusted repository policy may narrow it and protects itself from deletion or weakening. Nested projects inherit the Git-root policy; renames include both endpoints; invalid policy fails closed (48/48 runtime checks).</div>
+  </div>
+  <h2>The profile is deliberately thin</h2>
+  <p>The execution profile pins the task revision, backend, topology, budgets, evidence slice, path policy, capabilities, and authority epoch. It references the task; it does not become a second task contract. The 7B worker brief names identifiers, epoch, scope, proof route, and source contract — not a rewritten implementation plan — and a stale brief fails the gate.</p>
+  <p class="source">Sources: <code>brf-converge.md</code> &sect;5 S37&ndash;S43, &sect;6.D; underlying <code>skills/task-to-runtime-contract/</code>, <code>check-gate.py</code>.</p>
+</section>
+
+<section class="page">
+  <div class="folio-label">Bounded motion · adapters and isolation</div>
+  <h1>Prevent and detect are different control classes</h1>
+  <p>An adapter selects a declared runtime, closes stdin, filters environment, and reports what it can enforce. Codex may prevent some writes before the tool call; Claude and Kimi often detect violations postflight. The resolver manifest records the class — documentation may not upgrade <code>detect</code> to <code>prevent</code>.</p>
+  <div class="grid-2">
+    <div class="callout proof"><strong>Preflight shield.</strong> Where the runtime supports it, out-of-policy writes are refused before the tool call executes.</div>
+    <div class="callout gap"><strong>Postflight tripwire.</strong> Elsewhere, violations are detected by the whole-Git postflight and fail the attempt — detection is not prevention, and this book never blurs the two.</div>
+  </div>
+  <h2>Worktree isolation sees committed state only</h2>
+  <p>Attempts run away from the live tree by default. Commit the sealed task and execution profile before looping, or the isolated checkout cannot see them; committing the contract is not merging product work or opening a PR. One run gets one isolated checkout and a scratch branch while the human's working tree remains untouched. Settled landings clean the duplicate worktree; BLOCKED/STALLED/EXHAUSTED keep inspectable uncommitted work.</p>
+  <h2>The last preflight</h2>
+  <p><code>bind --check</code> re-hashes task, profile, policy, evidence, and runtime capabilities without changing the repository — verified by a direct test that observes zero writes. Only then can Pass 8 spend a budget.</p>
+  <div class="recap"><strong>Part 06 recap:</strong> reviewed topology became unsigned tasks; a human seal made one revision delegable; bind froze that revision into a thin profile behind two fences. Motion is now possible — and bounded.</div>
+  <p class="source">Sources: <code>brf-converge.md</code> &sect;5 S41&ndash;S46, S51; underlying <code>docs/trust/index.md</code>, runtime adapters, <code>docs/guides/bind-and-loop.md</code>, loop kernel.</p>
+</section>
+
+<!-- ============================== PART 07 · SETTLEMENT ============================== -->
+<section class="page part-opener">
+  <div class="part-label">Part 07 · Settlement</div>
+  <div class="chapter-no">07</div>
+  <h1>Settlement — Proof, Not Victory</h1>
+  <p class="promise">The loop stops honestly: green evals, path policy, independent acceptance, and hash-linked receipts must all agree before anything is called settled.</p>
+  <div class="beat">Beat 6 · Settlement — motion becomes evidence</div>
+  <p class="route">Next: the finite loop &rarr; eight terminal landings &rarr; tiers and the receipt chain.</p>
+  <img class="opener-mark" src="{{ICON_MARK_LIGHT}}" alt="">
+</section>
+
+<section class="page">
+  <div class="folio-label">Settlement · the loop</div>
+  <h1>Pass 8 runs one named issue — and stops</h1>
+  <p><code>cvg loop --issue &hellip;</code> receives exactly one assignment. The loop chooses no work, invents no tasks, and never selects the frontier; Manager/fleet scheduling remains outside v0.2.0. Each retry gets a fresh agent process — the spec, diff, Git history, checkpoint, and attempt log carry continuity, not hidden chat memory.</p>
+  <div class="flow">
+    <div class="flow-title">The loop kernel</div>
+    <div class="frow">
+      <div class="fnode converge">Checkpoint</div>
+      <span class="farrow">&rarr;</span>
+      <div class="fnode engine">Fresh attempt</div>
+      <span class="farrow">&rarr;</span>
+      <div class="fnode converge">Tier-1 eval + path gate</div>
+      <span class="farrow mint">&rarr; GREEN</span>
+      <div class="fnode proof">Tier 2 judge<small>if enabled</small></div>
+      <span class="farrow mint">&rarr; UPHELD</span>
+      <div class="fnode proof">Task-Spec POST accept</div>
+    </div>
+    <span class="farrow down">&darr;</span>
+    <div class="frow">
+      <div class="fnode fail">RED + budget<small>learn from bounded evidence &rarr; checkpoint</small></div>
+      <div class="fnode fail">RED + stop<small>named failure landing</small></div>
+      <div class="fnode fail">REFUTED<small>loop back to learn</small></div>
+    </div>
+    <div class="fnote">Kernel order: checkpoint &rarr; attempt &rarr; tier 1 &rarr; path gate &rarr; tier 2 &rarr; acceptance &rarr; receipt. An unobtainable tier-2 verdict never becomes a pass: low-risk documented unavailability may proceed under policy; high-risk work stops.</div>
+  </div>
+  <h2>Three budgets fail differently</h2>
+  <p>Iterations, working time, and tokens are independent ceilings; a CLI flag may tighten but never raise the signed maximum. <code>--resume</code> continues accumulated working time, not wall time spent paused. A missing token budget is reported as unbounded, never guessed. The stagnation breaker lands <code>STALLED</code> after repeated ineffective attempts — an ineffective engine stops at three attempts rather than the declared fifteen.</p>
+  <p class="source">Sources: <code>brf-converge.md</code> &sect;5 S47&ndash;S53, &sect;6.E; underlying <code>skills/task-loop/scripts/loop-kernel.sh</code>, <code>docs/guides/bind-and-loop.md</code> (57/57 loop rows).</p>
+</section>
+
+<section class="page">
+  <div class="folio-label">Settlement · terminal states</div>
+  <h1>Eight terminal states make failure operational</h1>
+  <p class="lede">Success, no work, human dependency, stagnation, exhaustion, cancellation, and coordinator error never collapse into one status. Only three states exit zero.</p>
+  <table>
+    <thead><tr><th style="width:30mm">State</th><th>Meaning</th><th style="width:12mm">Exit</th><th>Work preserved</th></tr></thead>
+    <tbody>
+      <tr><td><span class="chip settled">SETTLED</span></td><td>Accepted; external publication allowed</td><td>0</td><td>Task branch + receipts</td></tr>
+      <tr><td><span class="chip settled">LOCAL_SETTLED</span></td><td>Accepted; external writes denied</td><td>0</td><td>Local task branch + receipts</td></tr>
+      <tr><td><span class="chip steel">NO_OP</span></td><td>Already green at entry</td><td>0</td><td>Existing state</td></tr>
+      <tr><td><span class="chip bound">BLOCKED</span></td><td>Human/upstream/tier-2 decision needed</td><td>1</td><td>Handoff; inspectable worktree when applicable</td></tr>
+      <tr><td><span class="chip bound">STALLED</span></td><td>Stagnation breaker fired</td><td>1</td><td>Handoff + worktree</td></tr>
+      <tr><td><span class="chip bound">EXHAUSTED</span></td><td>Signed budget reached</td><td>1</td><td>Handoff + worktree</td></tr>
+      <tr><td><span class="chip red">CANCELLED</span></td><td>External stop signal</td><td>1</td><td>Written checkpoint/handoff</td></tr>
+      <tr><td><span class="chip red">ERROR</span></td><td>Coordinator cannot continue safely</td><td>nonzero</td><td>Only trustworthy evidence retained</td></tr>
+    </tbody>
+  </table>
+  <div class="callout warning"><strong><code>LOCAL_SETTLED</code> excludes more than it includes.</strong> Without explicit <code>external_writes: allow</code> and capability grants, the loop settles locally and suppresses tracker/remote effects. It does not mean a PR was opened, remote state changed, production is healthy, or a human merged anything. Unauthorized tracker writes report <code>SKIPPED</code>; adapter failure reports <code>FAILED</code> without changing the loop landing.</div>
+  <p class="source">Sources: <code>brf-converge.md</code> &sect;5 S54, S58, &sect;7 (terminal states); underlying <code>docs/guides/descent.md</code>, loop kernel.</p>
+</section>
+
+<section class="page">
+  <div class="folio-label">Settlement · acceptance and receipts</div>
+  <h1>Acceptance belongs to Task-Spec; settlement is a hash chain</h1>
+  <p>A green tier-1 eval proves only the encoded claim on this host — it can be weak or gamed, which is why the whole-Git path policy runs beside it and higher-risk lanes add a different-family judge. Tier 2 sees intent, diff, and holdout criteria and returns <code>UPHELD</code>, <code>REFUTED</code>, or unavailable.</p>
+  <div class="callout gap"><strong>Holdout secrecy is a goal, not a shipped invariant.</strong> The judge is intended to own <code>## Holdout</code>, but the current worker brief still points at the Task-Spec that contains it. Do not claim the worker could not read evaluator criteria.</div>
+  <p>Converge hands the exact revision and attempt back to Task-Spec; only <code>ACCEPTED=1</code> closes acceptance. Converge does not set <code>accepted: true</code> itself; worker narration and the execution receipt are insufficient.</p>
+  <div class="flow">
+    <div class="flow-title">Settlement receipt chain — every link must agree</div>
+    <div class="frow">
+      <div class="fnode engine">Spec</div><span class="farrow steel">&rarr;</span>
+      <div class="fnode engine">Profile</div><span class="farrow steel">&rarr;</span>
+      <div class="fnode engine">Handoff</div><span class="farrow steel">&rarr;</span>
+      <div class="fnode engine">Eval</div><span class="farrow steel">&rarr;</span>
+      <div class="fnode engine">Path policy</div><span class="farrow steel">&rarr;</span>
+      <div class="fnode engine">Execution receipt</div><span class="farrow steel">&rarr;</span>
+      <div class="fnode proof">AcceptanceRecord</div><span class="farrow mint">&rarr;</span>
+      <div class="fnode proof">Settlement receipt<small>LOCAL_SETTLED | SETTLED</small></div>
+    </div>
+    <div class="fnote">Spec, profile, handoff, eval, path policy, execution receipt, acceptance record, lifecycle ledger, commit, and final status must agree. The success receipt is written <b>after</b> settlement; the clean-room test verifies hash chain and ledger agreement (21/21 rows).</div>
+  </div>
+  <div class="recap"><strong>Part 07 recap:</strong> the loop spends a signed budget on one named issue, stops at a named landing, and settles only when independent acceptance joins a hash-linked receipt chain. Proof is scoped — and that is what makes it proof.</div>
+  <p class="source">Sources: <code>brf-converge.md</code> &sect;5 S55&ndash;S60, &sect;6.F; underlying <code>verify-work.py</code>, <code>docs/trust/index.md</code>, <code>evidence/releases/v0.2.0/live-codex/</code>.</p>
+</section>
+
+<!-- ============================== PART 08 · HONESTY ============================== -->
+<section class="page part-opener">
+  <div class="part-label">Part 08 · Honesty</div>
+  <div class="chapter-no">08</div>
+  <h1>Honesty — Three Corridors</h1>
+  <p class="promise">Release, current main, working tree, and roadmap are different evidence corridors. This part keeps them exact — including the gate that is red today.</p>
+  <div class="beat">Beat 7 · Honesty — proof is scoped</div>
+  <p class="route">Next: the three corridors &rarr; what passed and what is red &rarr; claims refused and honest limits.</p>
+  <img class="opener-mark" src="{{ICON_MARK_LIGHT}}" alt="">
+</section>
+
+<section class="page">
+  <div class="folio-label">Honesty · provenance</div>
+  <h1>Release, current main, and working tree are three corridors</h1>
+  <table>
+    <thead><tr><th>Corridor</th><th>Revision</th><th style="width:20mm">CLI forms</th><th>What may be claimed</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Immutable release</strong></td><td><code>v0.2.0</code> / <code>3de9f0b5f83f1bb62475308317c58e53f851b0db</code> (2026-08-17)</td><td>release-owned surface</td><td>Frozen release workflow and assets only</td></tr>
+      <tr><td><strong>Committed main</strong></td><td><code>58b1ddb73e31a2b03426ab9ad25f02b9a166f559</code> (2026-08-19, = <code>origin/main</code>; 42 commits past the tag)</td><td>57</td><td>Current committed code, docs, and tests</td></tr>
+      <tr><td><strong>Audited working tree</strong></td><td><code>58b1ddb</code> + 16 modified files + 1 untracked guided-chat contract</td><td>60</td><td>Local checkout behavior, explicitly uncommitted</td></tr>
+      <tr><td><strong>Future</strong></td><td>no immutable revision</td><td>n/a</td><td>Manager/fleet and named non-promises, as roadmap only</td></tr>
+    </tbody>
+  </table>
+  <div class="callout warning"><strong>Version triple.</strong> Converge <code>0.2.0</code> coordinates a standalone Task-Spec compatibility pin of <code>3.8.x</code> and a Seamwise release pairing of <code>0.2.0</code>. Do not borrow standalone Task-Spec 3.9 behavior into Converge 0.2.0 claims.</div>
+  <p>The README records all eight hosted jobs green on feature SHA <code>1fa0545&hellip;</code> in run <code>32048296517</code>. Treat that as repository-reported evidence [D]: refresh it live before making a current hosted claim, and never let local reruns stand in for remote publication.</p>
+  <div class="callout gap"><strong>Checkout-only surface.</strong> The uncommitted guided chat adds <code>cvg next --guided</code> with CONTINUE / EXPLAIN / INSPECT / PAUSE and grows the machine matrix from 57 committed forms to 60. It is labelled <span class="chip red">W · checkout only</span> everywhere in this book, until it is committed and release evidence is refreshed.</div>
+  <p class="source">Sources: <code>brf-converge.md</code> header (truth boundaries), &sect;5 S62, S70, S72, &sect;7 (release/current/checkout truth); underlying tag <code>v0.2.0</code>, <code>.github/workflows/release.yml</code>, Git status.</p>
+</section>
+
+<section class="page">
+  <div class="folio-label">Honesty · direct validation snapshot</div>
+  <h1>The local evidence is strong, granular — and not green everywhere</h1>
+  <p>On 2026-08-26 the audit ran the current checkout against the pinned engines. Each row below is a direct observation, not a derived claim.</p>
+  <table class="compact">
+    <thead><tr><th style="width:34mm">Surface</th><th style="width:40mm">Direct result</th><th>Honest interpretation</th></tr></thead>
+    <tbody>
+      <tr><td>Runtime contract</td><td>48/48 green</td><td>Pass 7 policy, binding, freshness, topology, adapter, settlement checks</td></tr>
+      <tr><td>Register</td><td>145/145 green</td><td>Offline Pass 6 parity, idempotency, DAG, receipt, identity, projection</td></tr>
+      <tr><td>Loop kernel</td><td>57/57 green</td><td>Brakes, budgets, isolation, tier 2, path policy, external-write policy, terminal states</td></tr>
+      <tr><td>Passes 0&ndash;4</td><td>39+24+38+33+23 rows green</td><td>Structural pass gates discriminate their named fixtures</td></tr>
+      <tr><td>Conductor checkout</td><td>44/44 green</td><td>Guided mode and pre/post routing — uncommitted checkout only</td></tr>
+      <tr><td>Clean-room path</td><td>21/21 green</td><td>Copy install &rarr; init &rarr; seal &rarr; bind &rarr; loop &rarr; accept &rarr; done</td></tr>
+      <tr><td>Compose</td><td>14/14 green</td><td>Review cannot be skipped; tamper and engine drift fail closed; rerun idempotent</td></tr>
+      <tr><td>JSON envelope</td><td>25/25 green</td><td>Position independence, exit preservation, mutation truth, snapshot contract</td></tr>
+      <tr><td>JSON matrix</td><td>60 forms / 239 calls green</td><td>Checkout-only 60-form machine surface is serializable and usage-complete</td></tr>
+      <tr><td>Docs / package</td><td><code>DOCS=READY files=22 commands=60</code>; <code>PACKAGE=READY files=244 skills=11</code></td><td>Checkout documentation and package manifests internally aligned</td></tr>
+      <tr><td>Cockpit</td><td>40 server + 62 client tests green; production build green</td><td>Read-only bridge, bounded Ask, snapshots, artifacts, SSE, UI compile</td></tr>
+      <tr><td>Retained evidence</td><td>20 files green</td><td>Named live evidence validates; not a production-duration claim</td></tr>
+      <tr><td>Archived assets</td><td>6/6 resolve on <code>v0.1.0</code></td><td>Historical binaries remain recoverable from their owning tag</td></tr>
+      <tr><td>Composed demo</td><td><code>LOCAL_SETTLED</code>, <code>ACCEPTED=1</code>, <code>DEMO_COMPOSED=READY</code></td><td>Deterministic local composed path with default external-write denial</td></tr>
+      <tr><td><strong>Aggregate <code>make check</code></strong></td><td><span class="chip red">FAIL</span></td><td><code>tests/test-repo-layout.sh</code> rejects tracked <code>AGENTS.md</code> and <code>OPERATING.md</code> as undeclared top-level files</td></tr>
+    </tbody>
+  </table>
+  <div class="callout gap"><strong>The aggregate failure is load-bearing.</strong> This reference may say the observed subsystems above passed. It may not say current-main <code>make check</code> is green or that the checkout is release-ready. Avoid summing overlapping suites into a fake universal test count.</div>
+  <p class="source">Sources: <code>brf-converge.md</code> &sect;2 (direct validation snapshot 2026-08-26), &sect;5 S73&ndash;S74; underlying <code>Makefile</code>, <code>tests/</code>.</p>
+</section>
+
+<section class="page">
+  <div class="folio-label">Honesty · the red gate and the limits</div>
+  <h1>Current-main <code>make check</code> fails at repository layout</h1>
+  <p>The tracked root gained <code>AGENTS.md</code> and <code>OPERATING.md</code>; the layout allowlist did not. <code>tests/test-repo-layout.sh</code> reports both as undeclared top-level files and <code>make check</code> exits 2 before the JSON, docs, compose, and package phases — phases that pass when run independently. The safe remediation is an explicit repository decision: update the declared layout contract or relocate the files, then rerun the full aggregate gate.</p>
+  <h2>Verified versus still open</h2>
+  <table>
+    <thead><tr><th>Strong local proof</th><th>Explicit remaining limit</th></tr></thead>
+    <tbody>
+      <tr><td>Composed single-task path</td><td>No Manager/fleet scheduling</td></tr>
+      <tr><td>HMAC revision authorization</td><td>Shared-key identity/secrecy not proven</td></tr>
+      <tr><td>Repository gate + postflight</td><td>Prevent class varies by adapter</td></tr>
+      <tr><td>Optional different-family judge</td><td>Holdout not filesystem-separated from the worker</td></tr>
+      <tr><td>Local settlement + independent acceptance</td><td>Production health not proven</td></tr>
+      <tr><td>Cockpit snapshot/Ask boundaries</td><td>No operational write control, by design</td></tr>
+      <tr><td>Subsystem and extended gates</td><td>Aggregate <code>make check</code> red at layout</td></tr>
+    </tbody>
+  </table>
+  <h2>What v0.2.0 proves — and does not</h2>
+  <p>Reproducible composed execution is real: <code>LOCAL_SETTLED</code>, <code>ACCEPTED=1</code>, <code>DEMO_COMPOSED=READY</code> on the retained receipt chain. Production reliability, autonomous approval, live-tracker reliability, and Manager scheduling are not promised. Additional named limits: private repository access, the Task-Spec 3.8.x pin, Bash 4 for lint, HMAC key readability under weak confinement, holdout exposure, prevent/detect variation, and NORMAL/FAST defaulting to local settlement without tier 2.</p>
+  <div class="recap"><strong>Part 08 recap:</strong> the immutable release, the committed main, the dirty checkout, and the roadmap each carry exactly their own evidence. Converge can prove conformity to an encoded contract; it cannot prove the original business decision was wise.</div>
+  <p class="source">Sources: <code>brf-converge.md</code> &sect;5 S74&ndash;S76, &sect;7 (verified and still open); underlying <code>tests/test-repo-layout.sh</code>, <code>README.md</code> scope, <code>CHANGELOG.md</code>.</p>
+</section>
+
+<!-- ============================== PART 09 · FIELD GUIDE ============================== -->
+<section class="page part-opener">
+  <div class="part-label">Part 09 · Field use</div>
+  <div class="chapter-no">09</div>
+  <h1>Traveler's Field Guide</h1>
+  <p class="promise">Safe routes for a human running the pipeline end to end: compose, seal, bind, loop, accept — plus recovery and observation without inventing authority.</p>
+  <div class="beat">Field use · safe routes</div>
+  <p class="route">Next: the composed path &rarr; authorize, bind, run, accept &rarr; recovery by token &rarr; observation surfaces.</p>
+  <img class="opener-mark" src="{{ICON_MARK_LIGHT}}" alt="">
+</section>
+
+<section class="page">
+  <div class="folio-label">Field guide · the composed path</div>
+  <h1>From recipe to materialized task set</h1>
+  <p>Point Converge at the pinned engines, then walk the compose state machine. Each command lands at a named state; <code>status</code> re-hashes evidence and names the single safe next action.</p>
+  <div class="dark-box"><code>export CVG_TASKSPEC_BIN=/absolute/path/to/task-spec/bin/taskspec</code><br>
+<code>export CVG_SEAMWISE_BIN=/absolute/path/to/seamwise/bin/seamwise</code><br><br>
+<code>cvg compose prepare --source recipe.yaml</code><br>
+<code>cvg compose review --reviewer owner --reason "Topology and rollback accepted."</code><br>
+<code>cvg compose preview</code><br>
+<code>cvg compose materialize</code><br>
+<code>cvg compose status</code></div>
+  <table>
+    <thead><tr><th>Checkpoint</th><th>What to verify before moving on</th></tr></thead>
+    <tbody>
+      <tr><td>After <code>prepare</code></td><td>State is NEEDS_REVIEW; delivery plan and lineage exist; Task-Spec untouched</td></tr>
+      <tr><td>After <code>review</code></td><td>Named reviewer and substantive reason recorded; compiler still locked</td></tr>
+      <tr><td>After <code>preview</code></td><td>Read-only proposed DAG matches the reviewed plan; no Markdown written</td></tr>
+      <tr><td>After <code>materialize</code></td><td>Receipt carries <code>dispatch_authorized: false</code>; leaves have both lifecycle booleans false</td></tr>
+    </tbody>
+  </table>
+  <div class="callout warning"><strong>Route rule.</strong> If status reports BLOCKED on stale review or drift, re-run prepare/review against the changed bytes. Never hand-edit receipts or task digests to force a state.</div>
+  <p class="source">Sources: <code>brf-converge.md</code> &sect;8 (code specimen bank); underlying <code>bin/_cvg_compose.py</code>, <code>docs/concepts/compose-and-settlement.md</code>.</p>
+</section>
+
+<section class="page">
+  <div class="folio-label">Field guide · authorize, bind, run, accept</div>
+  <h1>One sealed revision, one bounded attempt</h1>
+  <div class="dark-box"><code>taskspec gate --stamp cvg/tasks/T-20260815-health-status.md</code><br>
+<code>cvg bind --task cvg/tasks/T-20260815-health-status.md</code><br>
+<code>cvg bind --check --task cvg/tasks/T-20260815-health-status.md</code><br>
+<code>git add cvg/tasks cvg/execution</code><br>
+<code>git commit -m "authorize and bind health status task"</code><br>
+<code>cvg loop --issue T-20260815-health-status --agent codex</code></div>
+  <h2>Why the commit sits between bind and loop</h2>
+  <p>The loop runs in an isolated worktree that sees committed state only. The sealed task and execution profile must be committed first — that commit authorizes nothing beyond visibility; it is not a product merge and opens no PR.</p>
+  <h2>Spend nothing to preview</h2>
+  <p>Use <code>cvg loop --estimate --issue &hellip;</code> and <code>cvg loop --gate-only --issue &hellip;</code> to inspect budgets and gate state without spending a live model budget. External writes default to deny:</p>
+  <div class="dark-box"><code>policy:</code><br>
+<code>&nbsp;&nbsp;external_writes: deny</code><br>
+<code>capabilities:</code><br>
+<code>&nbsp;&nbsp;grants: []</code><br>
+<code>budgets:</code><br>
+<code>&nbsp;&nbsp;iterations: 15</code><br>
+<code>&nbsp;&nbsp;wall_seconds: 5400</code><br>
+<code>&nbsp;&nbsp;tokens: 120000</code><br>
+<code>isolation: worktree</code></div>
+  <div class="callout proof"><strong>Settlement check.</strong> After the loop lands, confirm the landing token first: <code>LOCAL_SETTLED</code>/<code>SETTLED</code>/<code>NO_OP</code> exit 0. Then verify Task-Spec returned <code>ACCEPTED=1</code> for the exact handoff and revision before calling anything done.</div>
+  <p class="source">Sources: <code>brf-converge.md</code> &sect;8 (authorize/bind/run, default-deny policy); underlying <code>docs/guides/bind-and-loop.md</code>, <code>skills/task-loop/</code>.</p>
+</section>
+
+<section class="page">
+  <div class="folio-label">Field guide · recovery and diagnosis</div>
+  <h1>Recovery follows tokens, not optimism</h1>
+  <p>Compose status emits one <code>NEXT=</code>. Loop landings preserve the handoff and work a human needs. Branch on the token, exit code, <code>changed</code>, and <code>dry_run</code> — never convert BLOCKED/STALLED/EXHAUSTED into success.</p>
+  <table>
+    <thead><tr><th style="width:38mm">Observed state</th><th>Safe next action</th></tr></thead>
+    <tbody>
+      <tr><td>Stale review</td><td>Prepare and review again against current bytes</td></tr>
+      <tr><td>Interrupted materialize</td><td>Rerun idempotently; an exact rerun is byte-identical</td></tr>
+      <tr><td><code>EXHAUSTED</code></td><td>Raise the signed budget or split the task — a human decision</td></tr>
+      <tr><td><code>REFUTED</code> (tier 2)</td><td>Fix the work; do not argue the judge down</td></tr>
+      <tr><td><code>CANCELLED</code></td><td>Resume from the written handoff</td></tr>
+    </tbody>
+  </table>
+  <div class="callout gap"><strong>Resume limitation.</strong> Under worktree isolation, current <code>--resume</code> starts a fresh tree at attempt 1. Do not imply continuation of uncommitted work.</div>
+  <h2>Doctors name the broken hop</h2>
+  <p>Host, evidence, plugin, runtime-contract, and setup checks turn distant symptoms into one actionable upstream cause: <code>missing shellcheck &rarr; gate blocked &rarr; unsigned task &rarr; bind refused &rarr; loop error</code>, with the doctor pointing at the first cause. Tokens: <code>DOCTOR_HOST</code>, <code>DOCTOR_EVIDENCE</code>, <code>DOCTOR_PLUGIN</code>, plus the runtime-contract result.</p>
+  <h2>Install without embedding engines</h2>
+  <p><code>install.sh</code> copy-mode pins 11 skills and the CLI into Codex/Kimi, Claude Code, and Grok destinations; Task-Spec and Seamwise remain external. Local config is <code>0600</code>, symlink-safe, idempotent, and Git-excluded (17 install + 21 clean-room checks green).</p>
+  <p class="source">Sources: <code>brf-converge.md</code> &sect;5 S64&ndash;S66, S69, &sect;8 (recovery by token); underlying <code>docs/guides/recovery.md</code>, <code>install.sh</code>, doctor scripts.</p>
+</section>
+
+<section class="page">
+  <div class="folio-label">Field guide · observation surfaces</div>
+  <h1>Look all you want — observation never writes</h1>
+  <p><code>cvg next</code> reads the floor: artifacts reveal the current boundary, the conductor names the owning skill and gate, and the gate still decides. Evidence presence is not verdict; a stale Pass 4 hash displays <code>[!]</code> and blocks later passes.</p>
+  <div class="flow">
+    <div class="flow-title">The observation boundary — one-way only</div>
+    <div class="frow">
+      <div class="fnode converge">Canonical workspace</div>
+      <span class="farrow">&rarr;</span>
+      <div class="fnode engine">cvg snapshot<small>WorkspaceSnapshot 3.0</small></div>
+      <span class="farrow">&rarr;</span>
+      <div class="fnode observer">Cockpit<small>read-only UI</small></div>
+      <span class="farrow steel">&rarr;</span>
+      <div class="fnode observer">Ask Converge<small>ephemeral ACP turn</small></div>
+    </div>
+    <div class="fnote">No mutation arrow returns to the workspace. Cockpit: loopback only, explicit roots, token/exact-origin transport, GET-only observation, snapshot+SHA artifact allowlist, traversal/symlink/binary/credential rejection (40 server + 62 client tests green). Ask: fixed executable/argv/cwd/env, permission denial, unsafe-tool refusal, bounded history, stale-turn rejection, credential redaction.</div>
+  </div>
+  <div class="callout warning"><strong>Interpretation is not proof.</strong> One snapshot-bound Ask turn can explain artifacts; it cannot create, approve, bind, transition, or settle them. The checkout-only guided chat adds conversation to the conductor — but persists no chat state, and silence never means continue.</div>
+  <div class="recap"><strong>Part 09 recap:</strong> the safe route is compose &rarr; review &rarr; materialize &rarr; seal &rarr; bind &rarr; commit &rarr; loop &rarr; accept, with token-driven recovery and read-only observation throughout.</div>
+  <p class="source">Sources: <code>brf-converge.md</code> &sect;5 S61&ndash;S63, S67&ndash;S68, &sect;6.G; underlying <code>apps/cockpit/</code>, <code>bin/cvg-snapshot.py</code>, <code>contracts/ui/v3/workspace-snapshot.schema.json</code>.</p>
+</section>
+
+<!-- ============================== PART 10 · SOURCE INDEX ============================== -->
+<section class="page part-opener">
+  <div class="part-label">Part 10 · Reference</div>
+  <div class="chapter-no">10</div>
+  <h1>Source Index and Claim Map</h1>
+  <p class="promise">Every surface this travel reference relies on, by evidence rank — and the claims a careful traveler may and may not repeat.</p>
+  <div class="beat">Reference · follow every claim home</div>
+  <p class="route">Next: claims permitted &rarr; claims refused &rarr; the canonical source index.</p>
+  <img class="opener-mark" src="{{ICON_MARK_LIGHT}}" alt="">
+</section>
+
+<section class="page">
+  <div class="folio-label">Source index · claims permitted</div>
+  <h1>Claims a careful traveler may make</h1>
+  <ul>
+    <li>Converge <code>0.2.0</code> is a thin factory coordinator around independently versioned Seamwise and Task-Spec binaries.</li>
+    <li>Each decision has one authority; duplicate capability is tolerated, duplicate authority is not.</li>
+    <li>The method has nine passes, two phases, one human barrier, optional Capture, and opt-in Register.</li>
+    <li>Materialization never authorizes dispatch; the composition receipt records <code>dispatch_authorized: false</code>.</li>
+    <li>Task-Spec <code>gate --stamp</code> is the only engine action that seals a leaf for delegation.</li>
+    <li>Bind adds a repository fence that may be stricter than the Task-Spec write scope.</li>
+    <li>The loop chooses no work; it runs one named issue under finite iteration, time, token, and path budgets.</li>
+    <li>Default isolation is a Git worktree; settled work survives on a task branch while disposable loop state is cleaned up.</li>
+    <li><code>LOCAL_SETTLED</code>, <code>SETTLED</code>, <code>NO_OP</code>, <code>BLOCKED</code>, <code>STALLED</code>, <code>EXHAUSTED</code>, <code>CANCELLED</code>, and <code>ERROR</code> are distinct terminal outcomes.</li>
+    <li>Task-Spec performs independent acceptance of the exact handoff and revision; Converge does not reimplement it.</li>
+    <li>Cockpit and Ask Converge are observation/interpretation surfaces and cannot authorize or settle work.</li>
+    <li>The immutable v0.2.0 release and current main are different evidence corridors.</li>
+  </ul>
+  <p class="source">Sources: <code>brf-converge.md</code> &sect;2 (claims the deck may make).</p>
+</section>
+
+<section class="page">
+  <div class="folio-label">Source index · claims refused</div>
+  <h1>Claims this reference refuses to make</h1>
+  <ul>
+    <li>Converge is the everyday portfolio coordinator — <code>OPERATING.md</code> assigns that plane to WorkHelm.</li>
+    <li>Converge owns Seamwise decomposition or Task-Spec authorization/acceptance internals.</li>
+    <li>A reviewed topology, materialized task, green model narration, or composition receipt authorizes execution.</li>
+    <li>HMAC proves human identity, hides the signing key from any repository-capable worker, or provides sandbox isolation.</li>
+    <li>Bind prevents every out-of-scope write — some adapters detect after the fact rather than prevent at the OS layer.</li>
+    <li>Tier-2 holdouts are secret from the worker — the current brief still points the worker at the Task-Spec.</li>
+    <li><code>LOCAL_SETTLED</code> means a PR was opened, remote state changed, production is healthy, or a human merged anything.</li>
+    <li>Cockpit, Ask, <code>cvg next</code>, or a tracker projection is a second source of canonical state.</li>
+    <li>Manager fleet scheduling, autonomous fan-out, live-tracker reliability, or production reliability ships in v0.2.0.</li>
+    <li>Checkout-only guided chat and the 60-form CLI changes are committed, released, or hosted.</li>
+    <li>Current <code>make check</code> passes — the layout gate is red.</li>
+  </ul>
+  <div class="callout gap"><strong>Standing rule.</strong> Preserve failure tokens and exit semantics; an error or an exhausted budget is never success. The referee never scores its own goal.</div>
+  <p class="source">Sources: <code>brf-converge.md</code> &sect;2 (claims the deck must refuse), &sect;12 (final editorial rules).</p>
+</section>
+
+<section class="page">
+  <div class="folio-label">Source index · canonical surfaces</div>
+  <h1>The canonical source index</h1>
+  <h3><span class="rank">A</span> Authority and operating model</h3>
+  <ul>
+    <li><code>OPERATING.md</code> — everyday/factory split, ownership, merge rule, fail-closed hop rule.</li>
+    <li><code>AGENTS.md</code> — read-order and non-negotiable entry rules.</li>
+    <li><code>docs/concepts/authority.md</code> — sole-authority table and executable boundary enforcement.</li>
+    <li><code>docs/trust/index.md</code> — what each mechanism proves and refuses. [D]</li>
+  </ul>
+  <h3><span class="rank">C</span> Product and machine contracts</h3>
+  <ul>
+    <li><code>VERSION</code>, <code>package.json</code>, <code>.claude-plugin/</code> — package identity and install surface.</li>
+    <li><code>contracts/cli-command-matrix.json</code> — command names, pass mapping, mutation flags, tokens.</li>
+    <li><code>contracts/converge-cli-result-v1.schema.json</code> — universal CLI result.</li>
+    <li><code>contracts/converge-composition-receipt-v1.schema.json</code> — non-authorizing composition receipt.</li>
+    <li><code>contracts/ui/v3/workspace-snapshot.schema.json</code> — observer read model.</li>
+  </ul>
+  <h3><span class="rank">I</span> CLI, composition, and pass implementation</h3>
+  <ul>
+    <li><code>bin/cvg</code>, <code>bin/_cvg_compose.py</code>, <code>bin/cvg-classify-lane.py</code>, <code>bin/cvg-snapshot.py</code> — referee CLI, composer, lane router, snapshot.</li>
+    <li><code>skills/idea-to-brd/</code>, <code>brd-docs-to-tech-req/</code>, <code>tech-req-to-adrs/</code>, <code>reqs-to-swimlane-plans/</code>, <code>sketch-plans-adversarial-review/</code> — passes 0&ndash;4.</li>
+    <li>External Task-Spec <code>3.8.x</code> — Tasking, HMAC seal, handoff, eval, acceptance.</li>
+    <li><code>skills/task-specs-to-issues/</code>, <code>task-to-runtime-contract/</code>, <code>task-loop/</code> — Register, Bind, Loop.</li>
+    <li><code>apps/cockpit/</code>, <code>install.sh</code>, <code>templates/</code> — observation and consumer projection.</li>
+  </ul>
+  <p class="source">Sources: <code>brf-converge.md</code> &sect;11 (canonical source index).</p>
+</section>
+
+<section class="page">
+  <div class="folio-label">Source index · direct proof and release</div>
+  <h1>Tests, evidence, and the frozen release</h1>
+  <h3><span class="rank">T</span> Direct proof</h3>
+  <ul>
+    <li><code>Makefile</code> — local and release gate composition.</li>
+    <li><code>tests/test-compose.sh</code> — review/materialization/receipt state machine.</li>
+    <li><code>tests/test-clean-room-install-e2e.sh</code> — install-to-acceptance steel thread.</li>
+    <li><code>tests/test-loop-kernel.sh</code> — budgets, isolation, refutation, external writes, terminal states.</li>
+    <li><code>skills/task-to-runtime-contract/tests/run-tests.sh</code> — binding and policy boundary.</li>
+    <li><code>skills/task-specs-to-issues/tests/test-register.sh</code> — tracker projection parity.</li>
+    <li><code>tests/test-cvg-json-envelope.sh</code>, <code>tests/test-cvg-json-matrix.py</code> — machine surface.</li>
+    <li><code>tests/test-repo-layout.sh</code> — the current aggregate blocker.</li>
+    <li>Cockpit server/Vitest suites — read-only bridge, Ask, transport, UI.</li>
+  </ul>
+  <h3><span class="rank">R</span> <span class="rank">E</span> Release and retained evidence</h3>
+  <ul>
+    <li>Tag <code>v0.2.0</code> at <code>3de9f0b5f83f1bb62475308317c58e53f851b0db</code> (2026-08-17); <code>.github/workflows/release.yml</code> — immutable tag verification and publication route.</li>
+    <li><code>evidence/releases/v0.2.0/live-codex/</code> — retained valid composed execution.</li>
+    <li>Invalidated alpha corridors — proof that dirty-engine and pipe-hang attempts are not silently upgraded.</li>
+    <li><code>README.md</code> release truth — reported hosted run; refresh live before a current hosted claim. [D]</li>
+  </ul>
+  <div class="thesis">The through-line: make every transition inspectable, every authority singular, every loop finite, and every gap explicit. <code>CHECK_CONSENSUS=OK &rarr; TIER=1 &rarr; CHECK_RUNTIME_CONTRACT=PASS &rarr; TASK_LOOP=LOCAL_SETTLED|SETTLED &rarr; ACCEPTED=1</code>. Converge can prove conformity to the encoded contract — not the wisdom of the original decision.</div>
+  <p class="source">Sources: <code>brf-converge.md</code> &sect;11 (canonical source index), &sect;5 S76 (the Converge rule).</p>
+</section>
+
+</body>
+</html>

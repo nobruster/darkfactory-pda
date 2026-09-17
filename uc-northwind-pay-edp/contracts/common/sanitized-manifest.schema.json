@@ -1,0 +1,962 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://northwind-pay.local/contracts/sanitized-manifest-v1.schema.json",
+  "title": "NorthWind Pay sanitized CSV manifest v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "batch_id",
+    "csv_file",
+    "file_type",
+    "schema_version",
+    "source_lineage",
+    "stage_controls"
+  ],
+  "properties": {
+    "batch_id": {
+      "type": "string",
+      "pattern": "^B[0-9]{15}$"
+    },
+    "csv_file": {
+      "type": "object"
+    },
+    "file_type": {
+      "type": "object",
+      "required": [
+        "number"
+      ],
+      "properties": {
+        "number": {
+          "enum": [
+            "01",
+            "02",
+            "03",
+            "04",
+            "05",
+            "06"
+          ]
+        }
+      }
+    },
+    "schema_version": {
+      "const": 1
+    },
+    "source_lineage": {
+      "type": "object"
+    },
+    "stage_controls": {
+      "type": "object"
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "file_type": {
+            "properties": {
+              "number": {
+                "const": "01"
+              }
+            }
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "csv_file": {
+            "$ref": "#/$defs/type01CsvFile"
+          },
+          "file_type": {
+            "$ref": "#/$defs/type01FileType"
+          },
+          "source_lineage": {
+            "$ref": "#/$defs/type01SourceLineage"
+          },
+          "stage_controls": {
+            "$ref": "#/$defs/type01StageControls"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "file_type": {
+            "properties": {
+              "number": {
+                "const": "02"
+              }
+            }
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "csv_file": {
+            "$ref": "#/$defs/type02CsvFile"
+          },
+          "file_type": {
+            "$ref": "#/$defs/type02FileType"
+          },
+          "source_lineage": {
+            "$ref": "#/$defs/type02SourceLineage"
+          },
+          "stage_controls": {
+            "$ref": "#/$defs/type02StageControls"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "file_type": {
+            "properties": {
+              "number": {
+                "const": "03"
+              }
+            }
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "csv_file": {
+            "$ref": "#/$defs/type03CsvFile"
+          },
+          "file_type": {
+            "$ref": "#/$defs/type03FileType"
+          },
+          "source_lineage": {
+            "$ref": "#/$defs/type03SourceLineage"
+          },
+          "stage_controls": {
+            "$ref": "#/$defs/type03StageControls"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "file_type": {
+            "properties": {
+              "number": {
+                "const": "04"
+              }
+            }
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "csv_file": {
+            "$ref": "#/$defs/type04CsvFile"
+          },
+          "file_type": {
+            "$ref": "#/$defs/type04FileType"
+          },
+          "source_lineage": {
+            "$ref": "#/$defs/type04SourceLineage"
+          },
+          "stage_controls": {
+            "$ref": "#/$defs/type04StageControls"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "file_type": {
+            "properties": {
+              "number": {
+                "const": "05"
+              }
+            }
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "csv_file": {
+            "$ref": "#/$defs/type05CsvFile"
+          },
+          "file_type": {
+            "$ref": "#/$defs/type05FileType"
+          },
+          "source_lineage": {
+            "$ref": "#/$defs/type05SourceLineage"
+          },
+          "stage_controls": {
+            "$ref": "#/$defs/type05StageControls"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "file_type": {
+            "properties": {
+              "number": {
+                "const": "06"
+              }
+            }
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "csv_file": {
+            "$ref": "#/$defs/type06CsvFile"
+          },
+          "file_type": {
+            "$ref": "#/$defs/type06FileType"
+          },
+          "source_lineage": {
+            "$ref": "#/$defs/type06SourceLineage"
+          },
+          "stage_controls": {
+            "$ref": "#/$defs/type06StageControls"
+          }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "canonicalMoney": {
+      "type": "string",
+      "pattern": "^-?(0|[1-9][0-9]{0,15})\\.[0-9]{2}$",
+      "not": {
+        "const": "-0.00"
+      }
+    },
+    "canonicalUnsignedMoney": {
+      "type": "string",
+      "pattern": "^(0|[1-9][0-9]{0,15})\\.[0-9]{2}$"
+    },
+    "canonicalReturnedMoney": {
+      "oneOf": [
+        {
+          "const": "0.00"
+        },
+        {
+          "type": "string",
+          "pattern": "^-(?:0\\.(?!00$)[0-9]{2}|[1-9][0-9]{0,15}\\.[0-9]{2})$"
+        }
+      ]
+    },
+    "type01SourceLineage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "manifest_sha256",
+        "raw_file",
+        "raw_sha256"
+      ],
+      "properties": {
+        "manifest_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "raw_file": {
+          "type": "string",
+          "pattern": "^NW_CARD_SETTLEMENT_[0-9]{8}_B[0-9]{15}\\.dat$"
+        },
+        "raw_sha256": {
+          "$ref": "#/$defs/sha256"
+        }
+      }
+    },
+    "type02SourceLineage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "manifest_sha256",
+        "raw_file",
+        "raw_sha256"
+      ],
+      "properties": {
+        "manifest_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "raw_file": {
+          "type": "string",
+          "pattern": "^NW_INSTANT_PAYMENT_[0-9]{8}_B[0-9]{15}\\.txt$"
+        },
+        "raw_sha256": {
+          "$ref": "#/$defs/sha256"
+        }
+      }
+    },
+    "type01CsvFile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "encoding",
+        "name",
+        "row_count",
+        "sha256",
+        "size_bytes"
+      ],
+      "properties": {
+        "encoding": {
+          "const": "UTF-8"
+        },
+        "name": {
+          "type": "string",
+          "pattern": "^NW_CARD_SETTLEMENT_[0-9]{8}_B[0-9]{15}\\.csv$"
+        },
+        "row_count": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "size_bytes": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    },
+    "type01FileType": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "code",
+        "contract_version",
+        "layout_version",
+        "number"
+      ],
+      "properties": {
+        "code": {
+          "const": "CRD_SETTLE01"
+        },
+        "contract_version": {
+          "const": 1
+        },
+        "layout_version": {
+          "const": "001"
+        },
+        "number": {
+          "const": "01"
+        }
+      }
+    },
+    "type01StageControls": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "currency",
+        "net_amount",
+        "row_count"
+      ],
+      "properties": {
+        "currency": {
+          "const": "BRL"
+        },
+        "net_amount": {
+          "$ref": "#/$defs/canonicalMoney"
+        },
+        "row_count": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    },
+    "type02CsvFile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "encoding",
+        "name",
+        "row_count",
+        "sha256",
+        "size_bytes"
+      ],
+      "properties": {
+        "encoding": {
+          "const": "UTF-8"
+        },
+        "name": {
+          "type": "string",
+          "pattern": "^NW_INSTANT_PAYMENT_[0-9]{8}_B[0-9]{15}\\.csv$"
+        },
+        "row_count": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10000
+        },
+        "sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "size_bytes": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 6000000
+        }
+      }
+    },
+    "type02FileType": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "code",
+        "contract_version",
+        "layout_version",
+        "number"
+      ],
+      "properties": {
+        "code": {
+          "const": "PIX_EVENTS01"
+        },
+        "contract_version": {
+          "const": 1
+        },
+        "layout_version": {
+          "const": "001"
+        },
+        "number": {
+          "const": "02"
+        }
+      }
+    },
+    "type02StageControls": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "credit_amount",
+        "currency",
+        "debit_amount",
+        "net_amount",
+        "returned_count",
+        "row_count"
+      ],
+      "properties": {
+        "credit_amount": {
+          "$ref": "#/$defs/canonicalUnsignedMoney"
+        },
+        "currency": {
+          "const": "BRL"
+        },
+        "debit_amount": {
+          "$ref": "#/$defs/canonicalUnsignedMoney"
+        },
+        "net_amount": {
+          "$ref": "#/$defs/canonicalMoney"
+        },
+        "returned_count": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 10000
+        },
+        "row_count": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10000
+        }
+      }
+    },
+    "type03SourceLineage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "manifest_sha256",
+        "raw_file",
+        "raw_sha256"
+      ],
+      "properties": {
+        "manifest_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "raw_file": {
+          "type": "string",
+          "pattern": "^NW_PAYMENT_SLIP_[0-9]{8}_B[0-9]{15}\\.rem$"
+        },
+        "raw_sha256": {
+          "$ref": "#/$defs/sha256"
+        }
+      }
+    },
+    "type03CsvFile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "encoding",
+        "name",
+        "row_count",
+        "sha256",
+        "size_bytes"
+      ],
+      "properties": {
+        "encoding": {
+          "const": "UTF-8"
+        },
+        "name": {
+          "type": "string",
+          "pattern": "^NW_PAYMENT_SLIP_[0-9]{8}_B[0-9]{15}\\.csv$"
+        },
+        "row_count": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10000
+        },
+        "sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "size_bytes": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 8000000
+        }
+      }
+    },
+    "type03FileType": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "code",
+        "contract_version",
+        "layout_version",
+        "number"
+      ],
+      "properties": {
+        "code": {
+          "const": "PAYSLIPSET03"
+        },
+        "contract_version": {
+          "const": 1
+        },
+        "layout_version": {
+          "const": "001"
+        },
+        "number": {
+          "const": "03"
+        }
+      }
+    },
+    "type03StageControls": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "currency",
+        "discount_amount",
+        "face_amount",
+        "fee_amount",
+        "net_amount",
+        "orphan_segment_count",
+        "row_count"
+      ],
+      "properties": {
+        "currency": {
+          "const": "BRL"
+        },
+        "discount_amount": {
+          "$ref": "#/$defs/canonicalUnsignedMoney"
+        },
+        "face_amount": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/canonicalUnsignedMoney"
+            },
+            {
+              "not": {
+                "const": "0.00"
+              }
+            }
+          ]
+        },
+        "fee_amount": {
+          "$ref": "#/$defs/canonicalUnsignedMoney"
+        },
+        "net_amount": {
+          "$ref": "#/$defs/canonicalUnsignedMoney"
+        },
+        "orphan_segment_count": {
+          "const": 0
+        },
+        "row_count": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10000
+        }
+      }
+    },
+    "type04SourceLineage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "manifest_sha256",
+        "raw_file",
+        "raw_sha256"
+      ],
+      "properties": {
+        "manifest_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "raw_file": {
+          "type": "string",
+          "pattern": "^NW_TED_SETTLEMENT_[0-9]{8}_B[0-9]{15}\\.dat$"
+        },
+        "raw_sha256": {
+          "$ref": "#/$defs/sha256"
+        }
+      }
+    },
+    "type04CsvFile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "encoding",
+        "name",
+        "row_count",
+        "sha256",
+        "size_bytes"
+      ],
+      "properties": {
+        "encoding": {
+          "const": "UTF-8"
+        },
+        "name": {
+          "type": "string",
+          "pattern": "^NW_TED_SETTLEMENT_[0-9]{8}_B[0-9]{15}\\.csv$"
+        },
+        "row_count": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 20000
+        },
+        "sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "size_bytes": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10000000
+        }
+      }
+    },
+    "type04FileType": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "code",
+        "contract_version",
+        "layout_version",
+        "number"
+      ],
+      "properties": {
+        "code": {
+          "const": "TED_SETTLE04"
+        },
+        "contract_version": {
+          "const": 1
+        },
+        "layout_version": {
+          "const": "001"
+        },
+        "number": {
+          "const": "04"
+        }
+      }
+    },
+    "type04StageControls": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "currency",
+        "gross_amount",
+        "net_amount",
+        "return_amount",
+        "return_count",
+        "row_count",
+        "transfer_count"
+      ],
+      "properties": {
+        "currency": {
+          "const": "BRL"
+        },
+        "gross_amount": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/canonicalUnsignedMoney"
+            },
+            {
+              "not": {
+                "const": "0.00"
+              }
+            }
+          ]
+        },
+        "net_amount": {
+          "$ref": "#/$defs/canonicalUnsignedMoney"
+        },
+        "return_amount": {
+          "$ref": "#/$defs/canonicalReturnedMoney"
+        },
+        "return_count": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 10000
+        },
+        "row_count": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 20000
+        },
+        "transfer_count": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10000
+        }
+      }
+    },
+    "type05SourceLineage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "manifest_sha256",
+        "raw_file",
+        "raw_sha256"
+      ],
+      "properties": {
+        "manifest_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "raw_file": {
+          "type": "string",
+          "pattern": "^NW_MERCHANT_FEES_[0-9]{8}_B[0-9]{15}\\.csv$"
+        },
+        "raw_sha256": {
+          "$ref": "#/$defs/sha256"
+        }
+      }
+    },
+    "type05CsvFile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "encoding",
+        "name",
+        "row_count",
+        "sha256",
+        "size_bytes",
+        "unicode_normalization"
+      ],
+      "properties": {
+        "encoding": {
+          "const": "UTF-8"
+        },
+        "name": {
+          "type": "string",
+          "pattern": "^NW_MERCHANT_FEES_[0-9]{8}_B[0-9]{15}_SANITIZED\\.csv$"
+        },
+        "row_count": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10000
+        },
+        "sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "size_bytes": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10000000
+        },
+        "unicode_normalization": {
+          "const": "NFC"
+        }
+      }
+    },
+    "type05FileType": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "code",
+        "contract_version",
+        "layout_version",
+        "number"
+      ],
+      "properties": {
+        "code": {
+          "const": "MER_FEESET05"
+        },
+        "contract_version": {
+          "const": 1
+        },
+        "layout_version": {
+          "const": "001"
+        },
+        "number": {
+          "const": "05"
+        }
+      }
+    },
+    "type05StageControls": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "assessed_fee",
+        "calculated_fee",
+        "currency",
+        "gross_amount",
+        "row_count"
+      ],
+      "properties": {
+        "assessed_fee": {
+          "$ref": "#/$defs/canonicalUnsignedMoney"
+        },
+        "calculated_fee": {
+          "$ref": "#/$defs/canonicalUnsignedMoney"
+        },
+        "currency": {
+          "const": "BRL"
+        },
+        "gross_amount": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/canonicalUnsignedMoney"
+            },
+            {
+              "not": {
+                "const": "0.00"
+              }
+            }
+          ]
+        },
+        "row_count": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10000
+        }
+      }
+    },
+    "type06SourceLineage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "manifest_sha256",
+        "raw_file",
+        "raw_sha256"
+      ],
+      "properties": {
+        "manifest_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "raw_file": {
+          "type": "string",
+          "pattern": "^NW_MERCHANT_CHARGEBACK_[0-9]{8}_B[0-9]{15}\\.csv$"
+        },
+        "raw_sha256": {
+          "$ref": "#/$defs/sha256"
+        }
+      }
+    },
+    "type06CsvFile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "encoding",
+        "name",
+        "row_count",
+        "sha256",
+        "size_bytes",
+        "unicode_normalization"
+      ],
+      "properties": {
+        "encoding": {
+          "const": "UTF-8"
+        },
+        "name": {
+          "type": "string",
+          "pattern": "^NW_MERCHANT_CHARGEBACK_[0-9]{8}_B[0-9]{15}_SANITIZED\\.csv$"
+        },
+        "row_count": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10000
+        },
+        "sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "size_bytes": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10000000
+        },
+        "unicode_normalization": {
+          "const": "NFC"
+        }
+      }
+    },
+    "type06FileType": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "code",
+        "contract_version",
+        "layout_version",
+        "number"
+      ],
+      "properties": {
+        "code": {
+          "const": "MER_CHGBK06"
+        },
+        "contract_version": {
+          "const": 1
+        },
+        "layout_version": {
+          "const": "001"
+        },
+        "number": {
+          "const": "06"
+        }
+      }
+    },
+    "type06StageControls": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "calculated_amount",
+        "chargeback_amount",
+        "currency",
+        "original_amount",
+        "row_count"
+      ],
+      "properties": {
+        "calculated_amount": {
+          "$ref": "#/$defs/canonicalUnsignedMoney"
+        },
+        "chargeback_amount": {
+          "$ref": "#/$defs/canonicalUnsignedMoney"
+        },
+        "currency": {
+          "const": "BRL"
+        },
+        "original_amount": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/canonicalUnsignedMoney"
+            },
+            {
+              "not": {
+                "const": "0.00"
+              }
+            }
+          ]
+        },
+        "row_count": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10000
+        }
+      }
+    }
+  }
+}

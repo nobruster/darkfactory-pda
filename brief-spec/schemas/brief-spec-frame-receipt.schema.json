@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://briefspec.dev/schemas/brief-spec-frame-receipt.schema.json",
+  "title": "BriefSpecFrameReceipt/v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["contract", "renderer_version", "request_sha256", "body_sha256", "output", "output_sha256", "classification", "approval_authority", "dispatch_authority"],
+  "properties": {
+    "contract": {"const": "BriefSpecFrameReceipt/v1"},
+    "renderer_version": {"const": "1.0"},
+    "request_sha256": {"$ref": "#/$defs/digest"},
+    "body_sha256": {"$ref": "#/$defs/digest"},
+    "output": {"type": "string", "minLength": 1},
+    "output_sha256": {"$ref": "#/$defs/digest"},
+    "classification": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["work_type", "subject", "confidence", "origin", "classified_at", "profile_version", "decision_id"]
+    },
+    "approval_authority": {"const": false},
+    "dispatch_authority": {"const": false}
+  },
+  "$defs": {
+    "digest": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+  }
+}
