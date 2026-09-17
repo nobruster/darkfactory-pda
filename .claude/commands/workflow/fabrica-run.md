@@ -48,21 +48,29 @@ converge/bin/cvg doctor host      # esta máquina consegue assinar, bind, loop?
 converge/bin/cvg next --guided    # em que passe o projeto está?
 ```
 
-### ⚠️ `doctor host` provavelmente vai acusar falta
+### ⚠️ Rode de dentro do WSL, não do Git Bash
 
-Verificado nesta máquina: falta **`shellcheck`**. O `cvg` explica a cadeia de
-consequências melhor do que qualquer resumo:
+O motor é bash de Linux. Do Git Bash no Windows ele falha por falta de
+`shellcheck` — e sem ele **nada é assinável**, logo nada chega ao Pass 8:
 
 ```
-MISSING  shellcheck  not on PATH
-         blocks: cvg tasks gate (always passes --shellcheck-evals) → so no spec
-         can be SIGNED → so cvg bind refuses it → so cvg loop has no runtime
-         contract
+MISSING  shellcheck  → cvg tasks gate → no spec SIGNED
+                     → cvg bind refuses → cvg loop has no runtime contract
 ```
 
-Ou seja: **sem `shellcheck`, nada é assinável — e nada chega ao Pass 8.**
-Instale (`apt install shellcheck` / `brew install shellcheck`) e rode
-`doctor host` de novo até sair `DOCTOR_HOST=OK`.
+Dentro do WSL, com o `shellcheck` presente, o resultado é:
+
+```console
+$ cd ~/darkfactory-template/converge
+$ CVG_TASKSPEC_BIN=~/darkfactory-template/task-spec-3.8.1/bin/taskspec \
+    ./bin/cvg doctor host
+  ok  git 2.43.0 · bash 5.2.21 · python3 3.12.3 · shellcheck 0.9.0 · sha256
+GATE: OK — this host can sign, bind, loop and settle.
+DOCTOR_HOST=OK
+```
+
+Se `doctor host` acusar falta, ele nomeia **quais verbos ficam bloqueados** —
+resolva antes de seguir.
 
 `cvg next` é **read-only**: nomeia o próximo passo, não o executa
 (`converge/skills/evidence-to-next-pass/SKILL.md:3`).

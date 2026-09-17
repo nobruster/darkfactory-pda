@@ -1,0 +1,67 @@
+# Quebra de linha — por que este arquivo existe
+#
+# Este repositório vive num caminho WSL (\\wsl.localhost\...) mas costuma ser
+# clonado pelo Git do Windows, que tem core.autocrlf=true por padrão. Sem as
+# regras abaixo, todo script era gravado no disco com CRLF — e o bash do Linux
+# não executa isso:
+#
+#   $ bash converge/bin/cvg doctor host
+#   bin/cvg: line 17: $'\r': command not found
+#   bin/cvg: line 18: set: pipefail: invalid option name
+#
+# Os 395 scripts do repositório ficavam inúteis dentro do WSL, que é
+# justamente onde a fábrica roda. No git o conteúdo sempre esteve correto (LF);
+# o estrago acontecia ao gravar a cópia de trabalho.
+
+# Padrão: o git decide, mas nunca converte o que estiver marcado abaixo.
+* text=auto
+
+# Executáveis e scripts — SEMPRE LF, em qualquer sistema.
+*.sh            text eol=lf
+*.bash          text eol=lf
+*.py            text eol=lf
+*.pl            text eol=lf
+*.rb            text eol=lf
+*.mjs           text eol=lf
+*.js            text eol=lf
+*.ts            text eol=lf
+
+# Binários sem extensão (bin/cvg, bin/taskspec, bin/seamwise...)
+bin/*           text eol=lf
+*/bin/*         text eol=lf
+**/scripts/*    text eol=lf
+**/hooks/*      text eol=lf
+
+# Config e dados lidos por ferramenta Unix
+*.yaml          text eol=lf
+*.yml           text eol=lf
+*.json          text eol=lf
+*.toml          text eol=lf
+Makefile        text eol=lf
+*.mk            text eol=lf
+.gitattributes  text eol=lf
+.gitignore      text eol=lf
+
+# Documentação
+*.md            text eol=lf
+
+# Scripts do Windows — esses PRECISAM de CRLF
+*.cmd           text eol=crlf
+*.bat           text eol=crlf
+*.ps1           text eol=crlf
+
+# Binários — nunca tocar
+*.png           binary
+*.jpg           binary
+*.jpeg          binary
+*.gif           binary
+*.ico           binary
+*.pdf           binary
+*.zip           binary
+*.gz            binary
+*.tar           binary
+*.woff          binary
+*.woff2         binary
+*.ttf           binary
+*.parquet       binary
+*.xlsx          binary
