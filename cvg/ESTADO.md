@@ -94,9 +94,31 @@ DOCTOR=FAIL
 
 O Pass 4 exige **≥ 2 engines, ≥ 1 de família diferente** da autora
 (anthropic). O `dispatch-review.sh` chama a **CLI própria** do engine, que
-se autentica sozinha — a sessão do Claude Code **não serve**: ela não é um
-binário no PATH. Nenhum `node` de Linux nesta máquina (o `npm` visível é o
-do Windows, em `/mnt/c`), então instalar uma CLI via npm exige passo extra.
+se autentica sozinha.
+
+**Existe um binário Linux do Claude nesta máquina**, fora do PATH, dentro da
+extensão do VSCode:
+
+```
+~/.vscode-server/extensions/anthropic.claude-code-2.1.275-linux-x64/resources/native-binary/claude
+```
+
+Ele roda e responde `2.1.275`. Ligado pelo override documentado
+(`CVG_CLAUDE_CMD`), o doctor muda de contagem e **não** de veredito:
+
+```
+  PASS  claude  (anthropic) 2.1.275 (Claude Code)
+engines ready: 1   cross-family: 0
+DOCTOR=FAIL
+```
+
+Porque `claude` é **da mesma família da autora**. O check [1] do gate recusa
+como self-review, e o próprio dispatcher avisa. O binário que faltava achar
+é justamente o que não pode ser o adversário — o que falta é um engine
+**cross-family** (`codex` ou `kimi`).
+
+Nenhum `node` de Linux nesta máquina (o `npm` visível é o do Windows, em
+`/mnt/c`), então instalar uma CLI via npm exige passo extra.
 
 Sem engine, `cvg review --adversary` devolve `REVIEW=SKIP` e não escreve
 log. Sem log, o gate para:
@@ -145,8 +167,9 @@ ainda não se chamam"*. Aqui ela tem um custo concreto e reproduzível.
 
 ### Para destravar
 
-1. Instalar uma CLI cross-family (`codex` ou `kimi`) no **Linux/WSL**, não no
-   Windows. `cvg doctor` precisa dizer `DOCTOR=OK`.
+1. Instalar uma CLI **cross-family** (`codex` ou `kimi`) no **Linux/WSL**, não
+   no Windows. `cvg doctor` precisa dizer `DOCTOR=OK`. O `claude` da extensão
+   não substitui isso: conta como engine, mas não como adversário.
 2. Decidir a ponte de layout — e **registrar em ADR**, porque é decisão
    vinculante entre duas ferramentas de terceiros:
    - adaptador em `fabrica/` que projeta as lanes planas do seamwise na
