@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+# wrapper local: roda o seamwise vendorizado sem instalar no sistema
+_here="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+PYTHONPATH="$_here/seamwise/src:${PYTHONPATH:-}" exec python3 -c "import sys;from seamwise.cli import main;sys.exit(main())" "$@"

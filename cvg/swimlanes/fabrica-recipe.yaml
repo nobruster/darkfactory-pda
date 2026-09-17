@@ -1,0 +1,477 @@
+schema_version: 1
+intent:
+  id: DI-FABRICA-COMPETENCIA
+  title: Conferir uma competência contra âncora medida antes de publicar
+  summary: >-
+    Ler o arquivo de uma competência, produzir o agregado, compará-lo contra a
+    âncora medida na origem, classificar toda diferença encontrada e deixar um
+    pacote de evidência — recusando publicar quando não houver prova.
+  claim: proposed
+  source:
+    uri: cvg/docs/tech-spec/tech-spec-exemplo-fabrica.md
+    captured_at: "2026-09-17T00:00:00Z"
+    sha256: "c820a57d632bf5b05dac362f1df7c4a251d27e215aab4b85d1a55ab95cf207c1"
+  success:
+    - Sem âncora medida o veredito é ACEITO_SEM_ANCORA e não autoriza publicar.
+    - Toda diferença recebe exatamente uma de seis classificações.
+    - Um valor de ponto flutuante em campo monetário é recusado na entrada.
+    - Uma divergência de um centavo é recusada antes da publicação.
+    - Cada execução deixa evidência que reconstrói o veredito sem reexecutar.
+  out_of_scope:
+    - Corrigir defeitos da origem — a fábrica classifica, nunca corrige.
+    - Substituir o sistema atual, que segue rodando em paralelo.
+    - Interface visual ou painel.
+system_map:
+  claim: proposed
+  components:
+    - Contrato e âncora
+    - Leitura da competência
+    - Agregação monetária
+    - Juízo do agregado
+    - Pacote de evidência
+  external_dependencies:
+    - Arquivo da competência publicado pela origem, imutável
+    - Âncora medida na origem por fora do pipeline
+  unknowns: []
+evidence:
+  - id: E-ANCORA-202603
+    claim: external
+    source:
+      uri: cvg/docs/adrs/0002-the-first-anchor-is-competencia-2026-03-measured-at-source.md
+      captured_at: "2026-09-16T00:00:00Z"
+      sha256: "f2a12e31911ddd46863e80ea2fcc18d8c7820c08b457d5632522df1dae9d0f9b"
+    confidence: 1.0
+    summary: >-
+      Competência 2026-03 medida na origem em 46s por totais_controle.py,
+      independente do pipeline — 41719140 linhas, soma 78771556568.72.
+  - id: E-ADR-ARREDONDAMENTO
+    claim: derived
+    source:
+      uri: cvg/docs/adrs/0001-money-rounds-half-to-even-at-two-decimals.md
+      captured_at: "2026-09-17T00:00:00Z"
+      sha256: "04aa9a6c1e696ae77305cd3191c3a7828dbf3bcde3d27d5e8f0edca554cbbaea"
+    confidence: 1.0
+    summary: >-
+      Arredondamento meio-para-par a 2 casas; dois de três empates testados
+      divergem em um centavo contra meio-para-cima.
+decisions:
+  - id: ADR-0001-HALF-EVEN
+    status: accepted
+    owner: Bruno Nunes
+    rationale: >-
+      Meio-para-par não enviesa o acumulado; meio-para-cima empurra todo
+      empate na mesma direção e vira tendência em volume.
+  - id: ADR-0002-ANCORA-2026-03
+    status: accepted
+    owner: Bruno Nunes
+    rationale: >-
+      A âncora é medida na origem por fora do pipeline. Medi-la com o
+      pipeline seria o pipeline conferindo a si mesmo.
+seams:
+  - id: SEAM-CONTRATO-ANCORA
+    name: Contrato e âncora
+    description: Separa a verdade declarada do código que a consome.
+    evidence: [E-ANCORA-202603]
+    responsibility: Guardar a âncora medida e recusar construir sem ela.
+    consumes: [âncora medida na origem]
+    produces: [contrato validado]
+    owner: contrato
+    independent_proof: >-
+      Um contrato sem âncora para a competência pedida retorna NAO_MEDIDO e
+      o processo termina em código diferente de zero.
+    decision_ids: [ADR-0002-ANCORA-2026-03]
+    rejected_alternatives:
+      - alternative: Gerar a âncora rodando o pipeline na competência
+        reason: >-
+          Seria o pipeline conferindo a si mesmo; defeito comum às duas
+          execuções ficaria invisível.
+    swimlane:
+      id: LANE-CONTRATO
+      name: Contrato lane
+      owner: contrato
+      legs:
+        - id: LEG-CONTRATO-RECUSA-SEM-ANCORA
+          observable_state: A fábrica recusa construir sem âncora medida
+          proof: >-
+            Competência sem âncora no contrato produz NAO_MEDIDO e exit
+            diferente de zero, antes de qualquer leitura de dado.
+          requires: []
+          produces: [contrato validado]
+          tasks:
+            - id: T-20260917-contrato-ancora
+              title: Carregar o contrato e recusar competência sem âncora
+              goal: Fazer a ausência de prova bloquear, em vez de virar verde.
+              done_condition: >-
+                Competência com âncora carrega os cinco valores; sem âncora
+                retorna NAO_MEDIDO e exit 1.
+              effort: S
+              profile: standard
+              execution_backend: any
+              required_tools: [git, bash, python3, pytest]
+              depends_on: []
+              touches_paths: []
+              creates_paths:
+                - src/fabrica/contrato.py
+                - tests/test_contrato.py
+              behavior:
+                - id: B-1
+                  given: uma competência com âncora medida no contrato
+                  when: o contrato é carregado
+                  then: os cinco valores da âncora são devolvidos
+                - id: B-2
+                  given: uma competência sem âncora no contrato
+                  when: o contrato é carregado
+                  then: o resultado é NAO_MEDIDO e o processo sai com código 1
+              evals:
+                - id: eval_1
+                  description: Competência ancorada carrega os cinco valores
+                  bash: pytest -q tests/test_contrato.py -k ancorada
+                  verifies: [B-1]
+                - id: eval_2
+                  description: Competência sem âncora recusa construir
+                  bash: pytest -q tests/test_contrato.py -k nao_medido
+                  verifies: [B-2]
+                - id: eval_3
+                  description: A âncora carregada bate com o contrato em disco
+                  bash: pytest -q tests/test_contrato.py -k integridade
+                  verifies: [B-1, B-2]
+              anti_patterns:
+                - action: gerar a âncora automaticamente quando ela falta
+                  reason: um número que ninguém viu medir é um palpite
+                  instead: retornar NAO_MEDIDO e parar
+                - action: tratar âncora ausente como zero
+                  reason: o gate compararia contra nada e publicaria ACEITO
+                  instead: distinguir ausência de valor
+                - action: editar a âncora para um veredito passar
+                  reason: falsifica a verdade contra a qual tudo é medido
+                  instead: investigar; âncora revista exige nova aprovação
+              do_not_touch: [cvg/docs/adrs]
+              rollback: Remover o carregador de contrato e seus testes.
+              observability: contagem de competências ancoradas no contrato
+  - id: SEAM-LEITURA
+    name: Leitura da competência
+    description: Separa a extração dos bytes da interpretação monetária.
+    evidence: [E-ANCORA-202603]
+    responsibility: Ler os registros da competência preservando os bytes originais.
+    consumes: [arquivo da competência]
+    produces: [registros lidos]
+    owner: leitura
+    independent_proof: >-
+      O hash do arquivo antes e depois da leitura é idêntico, e a contagem de
+      registros lidos bate com a contagem da âncora.
+    decision_ids: [ADR-0002-ANCORA-2026-03]
+    rejected_alternatives:
+      - alternative: Normalizar valores durante a leitura
+        reason: >-
+          Normalizar apaga o defeito da origem antes que alguém possa
+          classificá-lo.
+    swimlane:
+      id: LANE-LEITURA
+      name: Leitura lane
+      owner: leitura
+      legs:
+        - id: LEG-LEITURA-NAO-ALTERA-FONTE
+          observable_state: A leitura não altera a fonte e conta o esperado
+          proof: >-
+            sha256 do arquivo inalterado após a leitura; contagem de
+            registros igual a 41719140 para 2026-03.
+          requires: [contrato validado]
+          produces: [registros lidos]
+          tasks:
+            - id: T-20260917-leitura-competencia
+              title: Ler a competência sem alterar a fonte
+              goal: Extrair registros preservando os bytes originais.
+              done_condition: >-
+                O sha256 do arquivo é idêntico antes e depois, e a contagem
+                de registros bate com a âncora.
+              effort: M
+              profile: standard
+              execution_backend: any
+              required_tools: [git, bash, python3, pytest]
+              depends_on: [T-20260917-contrato-ancora]
+              touches_paths: []
+              creates_paths:
+                - src/fabrica/leitura.py
+                - tests/test_leitura.py
+              behavior:
+                - id: B-1
+                  given: o arquivo de uma competência
+                  when: a leitura termina
+                  then: o sha256 do arquivo é idêntico ao de antes
+                - id: B-2
+                  given: o arquivo de 2026-03
+                  when: os registros são contados
+                  then: a contagem é 41719140
+              evals:
+                - id: eval_1
+                  description: A fonte permanece byte-idêntica
+                  bash: pytest -q tests/test_leitura.py -k sha256
+                  verifies: [B-1]
+                - id: eval_2
+                  description: A contagem bate com a âncora
+                  bash: pytest -q tests/test_leitura.py -k contagem
+                  verifies: [B-2]
+                - id: eval_3
+                  description: Registro malformado é preservado, não corrigido
+                  bash: pytest -q tests/test_leitura.py -k preserva_defeito
+                  verifies: [B-1, B-2]
+              anti_patterns:
+                - action: escrever no arquivo de origem
+                  reason: destrói a prova de que a origem publicou aquilo
+                  instead: tratar a origem como somente leitura
+                - action: corrigir valor malformado durante a leitura
+                  reason: apaga o defeito antes da classificação
+                  instead: preservar e deixar o juízo classificar
+                - action: ler colunas por nome de cabeçalho
+                  reason: cabeçalho com nome repetido faz perder a coluna em silêncio
+                  instead: ler por posição declarada no contrato
+              do_not_touch: [_raw]
+              rollback: Remover o leitor e seus testes.
+              observability: contagem de registros lidos por competência
+  - id: SEAM-AGREGACAO
+    name: Agregação monetária
+    description: Separa a soma exata da comparação contra a âncora.
+    evidence: [E-ADR-ARREDONDAMENTO]
+    responsibility: Somar valores monetários com aritmética exata declarada.
+    consumes: [registros lidos]
+    produces: [agregado da competência]
+    owner: agregacao
+    independent_proof: >-
+      Ponto flutuante em campo monetário é recusado na entrada, e o mesmo
+      dado arredondado meio-para-cima produz total diferente.
+    decision_ids: [ADR-0001-HALF-EVEN]
+    rejected_alternatives:
+      - alternative: Usar ponto flutuante e arredondar no final
+        reason: >-
+          0.1 + 0.2 != 0.3 em binário; o centavo some sem nada acusar.
+    swimlane:
+      id: LANE-AGREGACAO
+      name: Agregação lane
+      owner: agregacao
+      legs:
+        - id: LEG-AGREGADO-EXATO
+          observable_state: O agregado é exato e recusa float
+          proof: >-
+            Float em campo monetário é recusado; HALF_EVEN e HALF_UP
+            produzem totais diferentes no mesmo dado.
+          requires: [registros lidos]
+          produces: [agregado da competência]
+          tasks:
+            - id: T-20260917-agregacao-exata
+              title: Somar valores monetários com meio-para-par
+              goal: Tornar a regra de arredondamento explícita e verificável.
+              done_condition: >-
+                Float é recusado na entrada e o total usa meio-para-par a
+                duas casas.
+              effort: M
+              profile: standard
+              execution_backend: any
+              required_tools: [git, bash, python3, pytest]
+              depends_on: [T-20260917-leitura-competencia]
+              touches_paths: []
+              creates_paths:
+                - src/fabrica/agregacao.py
+                - tests/test_agregacao.py
+              behavior:
+                - id: B-1
+                  given: um valor de ponto flutuante em campo monetário
+                  when: o agregado é calculado
+                  then: a entrada é recusada com erro explícito
+                - id: B-2
+                  given: valores em empate exato de arredondamento
+                  when: o total é calculado com meio-para-par
+                  then: o resultado difere do calculado com meio-para-cima
+              evals:
+                - id: eval_1
+                  description: Float em campo monetário é recusado
+                  bash: pytest -q tests/test_agregacao.py -k recusa_float
+                  verifies: [B-1]
+                - id: eval_2
+                  description: Meio-para-par difere de meio-para-cima
+                  bash: pytest -q tests/test_agregacao.py -k half_even
+                  verifies: [B-2]
+                - id: eval_3
+                  description: O total de 2026-03 reproduz a âncora medida
+                  bash: pytest -q tests/test_agregacao.py -k total_ancora
+                  verifies: [B-1, B-2]
+              anti_patterns:
+                - action: herdar o arredondamento padrão da linguagem
+                  reason: defaults divergem e o erro fica estruturalmente verde
+                  instead: declarar a regra no contrato e testá-la
+                - action: converter float para decimal silenciosamente
+                  reason: o centavo já se perdeu antes da conversão
+                  instead: recusar float na entrada
+                - action: arredondar a cada soma parcial
+                  reason: o erro de arredondamento acumula linha a linha
+                  instead: somar exato e arredondar uma vez no final
+              do_not_touch: [cvg/docs/adrs]
+              rollback: Remover o agregador e seus testes.
+              observability: total agregado por competência
+  - id: SEAM-JUIZO
+    name: Juízo do agregado
+    description: Separa a decisão de aceitar da produção do número.
+    evidence: [E-ANCORA-202603]
+    responsibility: Comparar agregado contra âncora e classificar toda diferença.
+    consumes: [agregado da competência, contrato validado]
+    produces: [veredito classificado]
+    owner: juizo
+    independent_proof: >-
+      Uma divergência de um centavo introduzida de propósito é recusada, e
+      diferença não classificada bloqueia.
+    decision_ids: [ADR-0001-HALF-EVEN, ADR-0002-ANCORA-2026-03]
+    rejected_alternatives:
+      - alternative: Aceitar diferença abaixo de um limite configurável
+        reason: >-
+          Tolerância configurável é como um centavo inexplicado vira um
+          centavo aceito.
+    swimlane:
+      id: LANE-JUIZO
+      name: Juízo lane
+      owner: juizo
+      legs:
+        - id: LEG-JUIZO-ACUSA-CENTAVO
+          observable_state: O juiz recusa um centavo de divergência
+          proof: >-
+            Teste que corrompe uma linha em um centavo exige recusa; o teste
+            falha se o juiz aceitar.
+          requires: [agregado da competência, contrato validado]
+          produces: [veredito classificado]
+          tasks:
+            - id: T-20260917-juizo-classifica
+              title: Comparar contra a âncora e classificar a diferença
+              goal: Fazer o juiz acusar, não apenas aprovar.
+              done_condition: >-
+                Um centavo alterado é recusado, e diferença sem
+                classificação bloqueia a publicação.
+              effort: M
+              profile: standard
+              execution_backend: any
+              required_tools: [git, bash, python3, pytest]
+              depends_on: [T-20260917-agregacao-exata]
+              touches_paths: []
+              creates_paths:
+                - src/fabrica/juizo.py
+                - tests/test_juizo.py
+              behavior:
+                - id: B-1
+                  given: um agregado com um centavo alterado
+                  when: o juízo compara contra a âncora
+                  then: o veredito é recusado e o processo sai com código 1
+                - id: B-2
+                  given: uma diferença sem classificação atribuída
+                  when: o veredito é calculado
+                  then: o resultado é UNRESOLVED e bloqueia
+              evals:
+                - id: eval_1
+                  description: Um centavo de divergência é recusado
+                  bash: pytest -q tests/test_juizo.py -k um_centavo
+                  verifies: [B-1]
+                - id: eval_2
+                  description: Diferença não classificada bloqueia
+                  bash: pytest -q tests/test_juizo.py -k unresolved
+                  verifies: [B-2]
+                - id: eval_3
+                  description: As seis classificações são exaustivas e exclusivas
+                  bash: pytest -q tests/test_juizo.py -k classificacoes
+                  verifies: [B-1, B-2]
+              anti_patterns:
+                - action: introduzir parâmetro de tolerância
+                  reason: um centavo inexplicado viraria um centavo aceito
+                  instead: classificar a diferença ou consertar o pipeline
+                - action: editar a âncora para o veredito passar
+                  reason: falsifica a prova em vez de investigar
+                  instead: investigar; âncora revista exige nova aprovação
+                - action: classificar como UNRESOLVED para destravar
+                  reason: UNRESOLVED bloqueia; usá-lo como atalho esconde a causa
+                  instead: medir a diferença e atribuir a classificação certa
+              do_not_touch: [cvg/docs/adrs, contracts]
+              rollback: Remover o juízo e seus testes.
+              observability: vereditos por classificação
+  - id: SEAM-EVIDENCIA
+    name: Pacote de evidência
+    description: Separa o registro da prova da decisão que a produziu.
+    evidence: [E-ANCORA-202603]
+    responsibility: Gravar o veredito e os números de forma reconstruível.
+    consumes: [veredito classificado]
+    produces: [pacote de evidência]
+    owner: evidencia
+    independent_proof: >-
+      O veredito é reconstruído a partir do pacote sem reexecutar o
+      pipeline, e ACEITO_SEM_ANCORA nunca aparece como ACEITO.
+    decision_ids: [ADR-0002-ANCORA-2026-03]
+    rejected_alternatives:
+      - alternative: Registrar apenas o veredito final
+        reason: >-
+          Sem os números, ninguém consegue responder meses depois por que
+          aquele número foi aceito.
+    swimlane:
+      id: LANE-EVIDENCIA
+      name: Evidência lane
+      owner: evidencia
+      legs:
+        - id: LEG-EVIDENCIA-RECONSTROI
+          observable_state: O pacote reconstrói o veredito sem reexecutar
+          proof: >-
+            Ler o pacote reproduz o mesmo veredito; ACEITO_SEM_ANCORA é
+            distinguível de ACEITO no arquivo.
+          requires: [veredito classificado]
+          produces: [pacote de evidência]
+          tasks:
+            - id: T-20260917-evidencia-packet
+              title: Gravar o pacote de evidência por execução
+              goal: Tornar o veredito auditável sem reexecutar o pipeline.
+              done_condition: >-
+                O pacote contém veredito, âncora, agregado e classificações,
+                e distingue ACEITO de ACEITO_SEM_ANCORA.
+              effort: S
+              profile: standard
+              execution_backend: any
+              required_tools: [git, bash, python3, pytest]
+              depends_on: [T-20260917-juizo-classifica]
+              touches_paths: []
+              creates_paths:
+                - src/fabrica/evidencia.py
+                - tests/test_evidencia.py
+              behavior:
+                - id: B-1
+                  given: uma execução com âncora medida
+                  when: o pacote é lido de volta
+                  then: o veredito é reconstruído sem reexecutar o pipeline
+                - id: B-2
+                  given: uma execução sem âncora
+                  when: o pacote é gravado
+                  then: o veredito registrado é ACEITO_SEM_ANCORA
+              evals:
+                - id: eval_1
+                  description: O pacote reconstrói o veredito
+                  bash: pytest -q tests/test_evidencia.py -k reconstroi
+                  verifies: [B-1]
+                - id: eval_2
+                  description: Sem âncora nunca vira ACEITO
+                  bash: pytest -q tests/test_evidencia.py -k sem_ancora
+                  verifies: [B-2]
+                - id: eval_3
+                  description: O pacote registra âncora, agregado e classificações
+                  bash: pytest -q tests/test_evidencia.py -k campos_obrigatorios
+                  verifies: [B-1, B-2]
+              anti_patterns:
+                - action: gravar ACEITO com gate de âncora falso dentro
+                  reason: foi a objeção 28 — 82 milhões de linhas sem conferência
+                  instead: publicar ACEITO_SEM_ANCORA de forma visível
+                - action: editar um pacote antigo para corrigir o histórico
+                  reason: falsifica evidência
+                  instead: gravar evidência nova e manter a antiga
+                - action: gravar só o veredito, sem os números
+                  reason: ninguém consegue reconstruir por que aquilo foi aceito
+                  instead: registrar âncora, agregado e cada classificação
+              do_not_touch: [evidence]
+              rollback: Remover o gravador de evidência e seus testes.
+              observability: pacotes gravados por competência
+steel_thread:
+  - LEG-CONTRATO-RECUSA-SEM-ANCORA
+  - LEG-LEITURA-NAO-ALTERA-FONTE
+  - LEG-AGREGADO-EXATO
+  - LEG-JUIZO-ACUSA-CENTAVO
+  - LEG-EVIDENCIA-RECONSTROI
+objections: []
+contentions: []

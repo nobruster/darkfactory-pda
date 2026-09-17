@@ -1,0 +1,65 @@
+schema_version: 1
+status: DELIVERY_PLAN=NEEDS_REVIEW
+seam_map_sha256: c1f4cc99ea03720b7b737dece55d02b878fa36c00b0e8d75dddd15d9cac39204
+swimlanes:
+- id: LANE-CONTRATO
+  seam_id: SEAM-CONTRATO-ANCORA
+  owner: contrato
+  path: seamwise/swimlanes/LANE-CONTRATO.md
+  sha256: c0e58f2dec22aa50f74fe3084c31728f869fae439a9944133dbef807d4b9dd5e
+- id: LANE-LEITURA
+  seam_id: SEAM-LEITURA
+  owner: leitura
+  path: seamwise/swimlanes/LANE-LEITURA.md
+  sha256: 7fde99aaa9bdf788ca8c737cfd47cb5577649207fd4e8a2886b59d2b3be9c358
+- id: LANE-AGREGACAO
+  seam_id: SEAM-AGREGACAO
+  owner: agregacao
+  path: seamwise/swimlanes/LANE-AGREGACAO.md
+  sha256: b02057e4fd5316a90facf22aacecfed90e60914fbc906104742e97edc4515f03
+- id: LANE-JUIZO
+  seam_id: SEAM-JUIZO
+  owner: juizo
+  path: seamwise/swimlanes/LANE-JUIZO.md
+  sha256: e30dc1f24c3e458bccde2e4143bc97422f2375f8606f89d8896a91b45dec8d73
+- id: LANE-EVIDENCIA
+  seam_id: SEAM-EVIDENCIA
+  owner: evidencia
+  path: seamwise/swimlanes/LANE-EVIDENCIA.md
+  sha256: 9f77b5eb11ea3757052d358e05379a03eb4ad1a743ece1dc569df24e85b0ee8c
+legs:
+- id: LEG-CONTRATO-RECUSA-SEM-ANCORA
+  seam_id: SEAM-CONTRATO-ANCORA
+  swimlane_id: LANE-CONTRATO
+  path: seamwise/legs/LEG-CONTRATO-RECUSA-SEM-ANCORA.md
+  sha256: b1caeef9e62ca5af70eb7a197a2344b3ce96b2b16b01466af407c62be3e5fafa
+- id: LEG-LEITURA-NAO-ALTERA-FONTE
+  seam_id: SEAM-LEITURA
+  swimlane_id: LANE-LEITURA
+  path: seamwise/legs/LEG-LEITURA-NAO-ALTERA-FONTE.md
+  sha256: cfe7e2c6aa749c54e66c354df3a34a55223bd7620cdfe85458a82c8250f419c1
+- id: LEG-AGREGADO-EXATO
+  seam_id: SEAM-AGREGACAO
+  swimlane_id: LANE-AGREGACAO
+  path: seamwise/legs/LEG-AGREGADO-EXATO.md
+  sha256: f95dee42cf6a9c82613a255924f445e3a76bab52dc22acb08cdf2b87c7145d53
+- id: LEG-JUIZO-ACUSA-CENTAVO
+  seam_id: SEAM-JUIZO
+  swimlane_id: LANE-JUIZO
+  path: seamwise/legs/LEG-JUIZO-ACUSA-CENTAVO.md
+  sha256: 2f8a6409af2455fbf2b0308b4872bca0e7a78ae352672b647bfc01f036c0ca77
+- id: LEG-EVIDENCIA-RECONSTROI
+  seam_id: SEAM-EVIDENCIA
+  swimlane_id: LANE-EVIDENCIA
+  path: seamwise/legs/LEG-EVIDENCIA-RECONSTROI.md
+  sha256: 2a9a7f9331b49518cf5539c18023aba0b01257100a4f3893d26d5ced2f2cb63a
+steel_thread:
+- LEG-CONTRATO-RECUSA-SEM-ANCORA
+- LEG-LEITURA-NAO-ALTERA-FONTE
+- LEG-AGREGADO-EXATO
+- LEG-JUIZO-ACUSA-CENTAVO
+- LEG-EVIDENCIA-RECONSTROI
+objections: []
+contentions: []
+steel_thread_path: seamwise/steel-thread.md
+steel_thread_sha256: 7bf8287daa939642e1b5b039f612f99d98203a1280919ccd775a7928e2795420
