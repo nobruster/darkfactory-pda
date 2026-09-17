@@ -11,45 +11,41 @@ Atualizado em 17/09/2026.
 | Passe | Gate | Veredito |
 |---|---|---|
 | 0 · Capture | `cvg capture` | 🟢 `CHECK_BRD=PASS` |
-| 1 · Intent | `cvg intent` | 🔴 `CHECK_TECH_SPEC=FAIL` — **parado aqui** |
-| 2 · Structure | `cvg structure` | 🟢 `CHECK_ADR=OK` |
-| 3 · Decompose | `seamwise plan` | ⬜ |
+| 1 · Intent | `cvg intent` | 🟢 `CHECK_TECH_SPEC=PASS` |
+| 2 · Structure | `cvg structure --final` | 🟢 `CHECK_ADR=OK` |
+| 3 · Decompose | `seamwise plan` | ⬜ **próximo** |
 | 4 · Consensus | `cvg review` | ⬜ 🛑 barreira |
 | 5 · Tasking | `taskspec gate --stamp` | ⬜ |
 | 7 · Bind | `cvg bind` | ⬜ |
 | 8 · Loop | `cvg loop` | ⬜ |
 
-⚠️ `cvg next --guided` mostra `[+] pass 1` e `PASS_PRE=OK` para o Pass 2.
-**Isso não quer dizer aprovado** — o conductor só vê que o arquivo existe.
-Quem decide é `cvg intent`, e ele reprovou.
+Os três vereditos acima vêm dos **gates**, não do `[+]` do conductor — o
+conductor só confere que o arquivo existe.
 
-## O que trava
+## Os dois gaps, resolvidos
 
-`cvg intent` acusa dois blockers em
-[`docs/tech-spec/tech-spec-exemplo-fabrica.md`](docs/tech-spec/tech-spec-exemplo-fabrica.md):
+Ambos os blockers do Pass 1 foram decididos por Bruno Nunes em 17/09/2026:
 
-### GAP-001 — a âncora · **parcial**
+### GAP-001 — a âncora ✅ resolvido
 
-Uma âncora tem três partes. Duas estão respondidas:
+**Competência 2026-03**, medida na fonte em 2026-09-16 —
+[ADR 0002](docs/adrs/0002-the-first-anchor-is-competencia-2026-03-measured-at-source.md):
 
-| Parte | Estado |
+| Campo | Valor |
 |---|---|
-| Competência | ✅ 2026-08 (mês fechado anterior) |
-| Aprovador | ✅ Bruno Nunes |
-| Total | ⚠️ **declarado, não medido** — R$ 78.771.556.568,72 |
+| `count_linhas` | 41.719.140 |
+| `sum_vl_liquido` | `78771556568.72` |
+| `max_vl_liquido` | `60588.24` |
+| `linhas_invalidas` | 0 |
 
-Registrado no [ADR 0002](docs/adrs/0002-the-first-anchor-is-competencia-2026-08-approved-by-bruno-nunes.md),
-com status `proposed` — e é por isso que `cvg structure --final` reprova.
+Medida por `totais_controle.py` (~46s), **independente do pipeline**.
+Evidência: `darkfactory-inss/evidence/_totais-202603.json`.
 
-**Por que ainda não fecha.** O número foi *declarado*, não *medido*: não há
-comando que releia a origem e o reproduza, porque nenhuma fonte está
-conectada (`_raw/` vazio). Declaração e medição não são a mesma prova.
-
-🔴 **Divergência a resolver antes de aceitar.** Esse mesmo valor aparece no
-`darkfactory-inss` como total da competência **2026-03**, não 2026-08
-(`darkfactory-inss/CLAUDE.md:33` — verificado). Uma das duas leituras está
-errada. **Meça antes de escolher** — pegar a mais conveniente é exatamente o
-que a Regra 7 proíbe.
+**Uma divergência foi resolvida medindo, não escolhendo.** A primeira
+resposta indicou a competência 2026-08 com este total. O contrato do
+`darkfactory-inss` mostrou que o número pertence a **2026-03**, e que não
+existe âncora medida para 2026-08. A leitura descartada está registrada no
+ADR 0002 — para ninguém re-litigar depois.
 
 ### ~~GAP-002 — o arredondamento~~ ✅ resolvido em 17/09/2026
 
@@ -60,24 +56,30 @@ Registrado em
 evidência verificada: dos três empates testados, dois divergem em um centavo
 entre as duas regras.
 
-## Como destravar
+## Próximo passo: Pass 3 · Decompose
 
-Falta **medir** o total da competência 2026-08 na origem:
+```bash
+cvg next --guided     # aponta: pass 3 · Decompose (skill reqs-to-swimlane-plans)
+```
 
-1. Conectar a fonte — o arquivo da competência 2026-08 em `_raw/`, imutável
-   (chmod 444 + sha256)
-2. Medir o total **por fora do pipeline**, com um comando que releia o
-   arquivo e imprima o número. Esse comando vira a seção `Evidence` do
-   ADR 0002
-3. Resolver a divergência 2026-08 × 2026-03 — o que a medição mostrar, vale
-4. Promover o ADR 0002 de `proposed` para `accepted`
-5. No `tech-spec-exemplo-fabrica.md`: `resolution:` substantiva no GAP-001 e
-   veredito `canonical`
-6. Fechar: `cvg structure --final` e depois `cvg intent`
+Aqui a stack finalmente é decidida — até o Pass 2 tudo ficou acima dela. Só o
+**Seamwise** decompõe (token `COMPOSE`), e ele para em
+`DELIVERY_PLAN=NEEDS_REVIEW`.
 
-⚠️ **O passo 2 não pode ser o pipeline.** Medir com o pipeline é o pipeline
-conferindo a si mesmo — o gate passa a comparar o resultado contra o próprio
-resultado, e o defeito comum às duas execuções fica invisível.
+🛑 **Barreira B** — a decomposição exige revisor nomeado:
+
+```bash
+seamwise review --accept --reviewer <nome> --reason <motivo>
+```
+
+Depois vem a **Barreira C (Pass 4 · Consenso)**, a mais dura: um modelo
+adversário ataca o plano, e **cada objeção precisa de decisão humana** —
+corrigir ou aceitar o risco conscientemente. O `cvg` recusa se não conseguir
+atribuir `decided_by`.
+
+⚠️ **Esta âncora veio de outro repositório.** Uma fábrica nova mede a sua
+própria: copiar número entre projetos é herdar um fato sem a evidência que o
+sustenta.
 
 Precisa rodar **de dentro do WSL**, com:
 

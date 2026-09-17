@@ -89,8 +89,7 @@ número e quando.
   question: "Qual competência do passado será a primeira âncora, e quem do negócio confirma que aquele número foi conferido e fechado?"
   blocks: "R-1 — sem âncora medida não há o que comparar"
   owner: "Bruno Nunes"
-  resolution: "open"
-  note: "PARCIAL 2026-09-17 — Bruno Nunes definiu a competência (2026-08, o mês fechado anterior) e assumiu o papel de aprovador. FALTA o número: o total conferido e fechado daquela competência, medido na origem por fora do pipeline. Sem ele o oráculo não tem aggregate e o juiz não tem contra o que comparar. O contrato segue NAO_MEDIDO — não gerar a âncora rodando o pipeline, que seria o pipeline conferindo a si mesmo."
+  resolution: "RESOLVIDO 2026-09-17 por Bruno Nunes: competência 2026-03, medida na fonte em 2026-09-16 por totais_controle.py (~46s, independente do pipeline) — 41.719.140 linhas, sum_vl_liquido 78771556568.72, max 60588.24, 0 inválidas. Evidência em darkfactory-inss/evidence/_totais-202603.json e contrato em contracts/layout.yaml:146. Registrado no ADR 0002."
 
 - id: GAP-002
   type: decision
@@ -103,5 +102,5 @@ número e quando.
 
 ## Sign-off
 
-- **Owner/decider:** Bruno Nunes — verdict: **pending — GAP-001 e GAP-002 abertos**
+- **Owner/decider:** Bruno Nunes — verdict: **approved — canonical**
 - **Date:** 2026-09-17
