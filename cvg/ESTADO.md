@@ -28,17 +28,28 @@ Quem decide é `cvg intent`, e ele reprovou.
 `cvg intent` acusa dois blockers em
 [`docs/tech-spec/tech-spec-exemplo-fabrica.md`](docs/tech-spec/tech-spec-exemplo-fabrica.md):
 
-### GAP-001 — a âncora
+### GAP-001 — a âncora · **parcial**
 
-> Qual competência do passado será a primeira âncora, e quem do negócio
-> confirma que aquele número foi conferido e fechado?
+Uma âncora tem três partes. Duas estão respondidas:
 
-Bloqueia **R-1**: sem âncora medida, não há o que comparar. O contrato nasce
-`NAO_MEDIDO` e a fábrica recusa construir.
+| Parte | Estado |
+|---|---|
+| Competência | ✅ 2026-08 (mês fechado anterior) |
+| Aprovador | ✅ Bruno Nunes |
+| Total | ⚠️ **declarado, não medido** — R$ 78.771.556.568,72 |
 
-**Não gere a âncora automaticamente para desbloquear.** Um número que ninguém
-viu ser medido é indistinguível de um palpite — e palpite no lugar do total
-faz o gate comparar contra nada e publicar `ACEITO`.
+Registrado no [ADR 0002](docs/adrs/0002-the-first-anchor-is-competencia-2026-08-approved-by-bruno-nunes.md),
+com status `proposed` — e é por isso que `cvg structure --final` reprova.
+
+**Por que ainda não fecha.** O número foi *declarado*, não *medido*: não há
+comando que releia a origem e o reproduza, porque nenhuma fonte está
+conectada (`_raw/` vazio). Declaração e medição não são a mesma prova.
+
+🔴 **Divergência a resolver antes de aceitar.** Esse mesmo valor aparece no
+`darkfactory-inss` como total da competência **2026-03**, não 2026-08
+(`darkfactory-inss/CLAUDE.md:33` — verificado). Uma das duas leituras está
+errada. **Meça antes de escolher** — pegar a mais conveniente é exatamente o
+que a Regra 7 proíbe.
 
 ### ~~GAP-002 — o arredondamento~~ ✅ resolvido em 17/09/2026
 
@@ -51,17 +62,22 @@ entre as duas regras.
 
 ## Como destravar
 
-Falta **só o GAP-001**:
+Falta **medir** o total da competência 2026-08 na origem:
 
-1. Responda: qual competência do passado é a primeira âncora, e quem do
-   negócio confirma que aquele número foi conferido e fechado?
-2. Em `tech-spec-exemplo-fabrica.md`, troque `resolution: "open"` do GAP-001
-   pela resposta (substantiva — ver a armadilha no
-   [README do Pass 1](docs/tech-spec/README.md))
-3. Mude o veredito de sign-off para `canonical`
-4. Registre a âncora como ADR novo no Pass 2 (`scaffold-adr.sh`), e rode
-   `cvg structure --final` para exigir todos os ADRs em `accepted`
-5. `converge/bin/cvg intent cvg/docs/tech-spec/tech-spec-exemplo-fabrica.md`
+1. Conectar a fonte — o arquivo da competência 2026-08 em `_raw/`, imutável
+   (chmod 444 + sha256)
+2. Medir o total **por fora do pipeline**, com um comando que releia o
+   arquivo e imprima o número. Esse comando vira a seção `Evidence` do
+   ADR 0002
+3. Resolver a divergência 2026-08 × 2026-03 — o que a medição mostrar, vale
+4. Promover o ADR 0002 de `proposed` para `accepted`
+5. No `tech-spec-exemplo-fabrica.md`: `resolution:` substantiva no GAP-001 e
+   veredito `canonical`
+6. Fechar: `cvg structure --final` e depois `cvg intent`
+
+⚠️ **O passo 2 não pode ser o pipeline.** Medir com o pipeline é o pipeline
+conferindo a si mesmo — o gate passa a comparar o resultado contra o próprio
+resultado, e o defeito comum às duas execuções fica invisível.
 
 Precisa rodar **de dentro do WSL**, com:
 

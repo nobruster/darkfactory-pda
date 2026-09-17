@@ -90,7 +90,7 @@ número e quando.
   blocks: "R-1 — sem âncora medida não há o que comparar"
   owner: "Bruno Nunes"
   resolution: "open"
-  note: "O contrato nasce NAO_MEDIDO e a fábrica recusa construir até alguém medir a origem. Não gerar a âncora automaticamente para desbloquear."
+  note: "PARCIAL 2026-09-17 — Bruno Nunes definiu a competência (2026-08, o mês fechado anterior) e assumiu o papel de aprovador. FALTA o número: o total conferido e fechado daquela competência, medido na origem por fora do pipeline. Sem ele o oráculo não tem aggregate e o juiz não tem contra o que comparar. O contrato segue NAO_MEDIDO — não gerar a âncora rodando o pipeline, que seria o pipeline conferindo a si mesmo."
 
 - id: GAP-002
   type: decision
