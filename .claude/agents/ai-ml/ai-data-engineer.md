@@ -93,7 +93,7 @@ TYPE: [ ] CRITICAL  [ ] IMPORTANT  [ ] STANDARD  [ ] ADVISORY
 THRESHOLD: _____
 
 VALIDATION
-├─ KB: .claude/kb/_______________  (cross-domain: loads relevant KB per task)
+├─ KB: .claude/kb/data-engineering/_______________
 │     Result: [ ] FOUND  [ ] NOT FOUND
 │     Summary: ________________________________
 │
@@ -127,7 +127,7 @@ Load context based on task needs. Skip what isn't relevant.
 | Context Source | When to Load | Skip If |
 |----------------|--------------|---------|
 | `.claude/CLAUDE.md` | Always recommended | Task is trivial |
-| `.claude/kb/` (project KB) | Pipeline work | Not data-related |
+| `.claude/kb/data-engineering/` | Pipeline work | Not data-related |
 | Existing pipelines | Modifying architecture | Greenfield project |
 | Cloud service configs | Deployment work | Local development |
 | Observability setup | Monitoring needs | Code-only tasks |
@@ -139,38 +139,6 @@ What engineering task?
 ├─ Pipeline design → Load KB + pipeline patterns + cloud patterns
 ├─ Serverless → Load KB + function patterns + cold start strategies
 └─ Data quality → Load KB + validation patterns + monitoring
-```
-
----
-
-## Knowledge Sources
-
-### Primary: Internal KB
-
-```text
-.claude/kb/python/           # Clean code patterns
-.claude/kb/supabase/         # The Ledger (Postgres)
-.claude/kb/qdrant/           # The Memory (Vector DB)
-.claude/kb/langfuse/         # LLMOps observability
-.claude/kb/testing/          # pytest patterns
-```
-
-### Secondary: MCP Validation
-
-**For official documentation:**
-```
-mcp__upstash-context-7-mcp__query-docs({
-  libraryId: "{library-id}",
-  query: "{specific question about data pipeline architecture}"
-})
-```
-
-**For production examples:**
-```
-mcp__exa__get_code_context_exa({
-  query: "GCP data pipeline serverless optimization production example",
-  tokensNum: 5000
-})
 ```
 
 ---
@@ -259,17 +227,7 @@ class DataPipeline:
 - {rationale for approach}
 - {pattern applied}
 
-**Confidence:** {score} | **Sources:** KB: {domain}/{file}, MCP: {query}
-```
-
-### Medium Confidence (threshold - 0.10 to threshold)
-
-```markdown
-{Answer with caveats}
-
-**Confidence:** {score}
-**Note:** Based on {source}. Verify before production use.
-**Sources:** {list}
+**Confidence:** {score} | **Sources:** KB: data-engineering/{file}, MCP: {query}
 ```
 
 ### Low Confidence (< threshold - 0.10)
@@ -280,27 +238,10 @@ class DataPipeline:
 **What I know:**
 - {partial information}
 
-**What I'm uncertain about:**
+**Gaps:**
 - {what I couldn't validate}
 
 Would you like me to research further or proceed with caveats?
-```
-
-### Conflict Detected
-
-```markdown
-**Confidence:** CONFLICT DETECTED
-
-**KB says:** {kb recommendation}
-**MCP says:** {mcp recommendation}
-
-**Analysis:** {evaluation of both approaches}
-
-**Options:**
-1. {option 1 with trade-offs}
-2. {option 2 with trade-offs}
-
-Which approach should I use?
 ```
 
 ---

@@ -1,190 +1,187 @@
 # Cost Alerting
 
-> **Purpose**: Monitor LLM costs and set up budget alerts using Langfuse metrics
-> **MCP Validated**: 2026-02-17
+> **Purpose**: Monitor LLM costs and alert on threshold breaches
+> **MCP Validated**: 2026-01-25
 
 ## When to Use
 
-- Preventing unexpected LLM cost spikes in production
-- Setting per-user, per-model, or per-feature cost budgets
-- Building cost anomaly detection into your pipeline
-- Generating cost reports for stakeholders
+- Monitoring production LLM spend
+- Alerting when per-request cost exceeds budget
+- Tracking cost trends over time
+- Implementing cost guardrails
 
 ## Implementation
 
 ```python
-"""Cost monitoring and alerting with Langfuse."""
-
+"""
+Cost Alerting Pattern
+Monitor and alert on LLM costs with $0.003/invoice target
+"""
 import os
-from datetime import datetime, timedelta
-from langfuse import get_client, observe
+from langfuse import get_client
+from dataclasses import dataclass
 
 langfuse = get_client()
 
-# ── Cost Tracking Per Request ─────────────────────────────────
-COST_BUDGET_PER_REQUEST = float(
-    os.getenv("COST_BUDGET_PER_REQUEST", "0.05")
-)
-DAILY_BUDGET = float(os.getenv("DAILY_BUDGET", "50.00"))
+
+@dataclass
+class CostThresholds:
+    """Cost thresholds for invoice processing."""
+    per_invoice_target: float = 0.003  # $0.003 per invoice
+    per_invoice_warning: float = 0.005  # $0.005 warning level
+    per_invoice_critical: float = 0.010  # $0.010 critical level
+    daily_budget: float = 100.0  # $100/day
+    monthly_budget: float = 3000.0  # $3000/month
 
 
-@observe()
-def tracked_llm_call(
-    prompt: str,
-    model: str = "gemini-2.0-flash",
-    user_id: str = "system"
-) -> dict:
-    """LLM call with cost tracking and budget check."""
-
-    with langfuse.start_as_current_observation(
-        as_type="generation",
-        name="cost-tracked-call",
-        model=model
-    ) as gen:
-        result = call_llm(prompt, model=model)
-
-        # Calculate cost from response metadata
-        input_tokens = result.get("input_tokens", 0)
-        output_tokens = result.get("output_tokens", 0)
-        cost = calculate_cost(model, input_tokens, output_tokens)
-
-        gen.update(
-            output=result.get("text"),
-            usage_details={
-                "input": input_tokens,
-                "output": output_tokens,
-                "total": input_tokens + output_tokens
-            },
-            cost_details={
-                "input": cost["input"],
-                "output": cost["output"],
-                "total": cost["total"]
-            },
-            metadata={
-                "user_id": user_id,
-                "budget_limit": COST_BUDGET_PER_REQUEST
-            }
-        )
-
-        # Budget check
-        if cost["total"] > COST_BUDGET_PER_REQUEST:
-            gen.score(
-                name="over_budget",
-                value=1,
-                data_type="BOOLEAN",
-                comment=(
-                    f"Cost ${cost['total']:.4f} exceeds "
-                    f"budget ${COST_BUDGET_PER_REQUEST:.4f}"
-                )
-            )
-            alert_over_budget(user_id, model, cost["total"])
-
-    langfuse.flush()
-    return result
+THRESHOLDS = CostThresholds()
 
 
-# ── Cost Calculation Helper ───────────────────────────────────
-MODEL_PRICING = {
-    "gemini-2.0-flash": {"input": 0.075 / 1_000_000,
-                         "output": 0.30 / 1_000_000},
-    "gpt-4o": {"input": 2.50 / 1_000_000,
-               "output": 10.00 / 1_000_000},
-    "gpt-4o-mini": {"input": 0.15 / 1_000_000,
-                    "output": 0.60 / 1_000_000},
-    "claude-sonnet-4-20250514": {"input": 3.00 / 1_000_000,
-                          "output": 15.00 / 1_000_000},
-}
+# ============================================
+# COST CALCULATION
+# ============================================
 
-
-def calculate_cost(
-    model: str, input_tokens: int, output_tokens: int
-) -> dict:
-    """Calculate cost based on model pricing."""
-    pricing = MODEL_PRICING.get(model, MODEL_PRICING["gpt-4o-mini"])
-    input_cost = input_tokens * pricing["input"]
-    output_cost = output_tokens * pricing["output"]
-    return {
-        "input": input_cost,
-        "output": output_cost,
-        "total": input_cost + output_cost
+def calculate_generation_cost(usage_details: dict, model: str) -> float:
+    """
+    Calculate cost based on token usage.
+    Prices per 1K tokens (as of 2026).
+    """
+    pricing = {
+        "gemini-1.5-pro": {"input": 0.00125, "output": 0.005},
+        "gemini-1.5-flash": {"input": 0.000075, "output": 0.0003},
+        "gpt-4o": {"input": 0.005, "output": 0.015},
+        "claude-3.5-sonnet": {"input": 0.003, "output": 0.015}
     }
 
+    if model not in pricing:
+        return 0.0
 
-# ── Alerting ──────────────────────────────────────────────────
-def alert_over_budget(user_id: str, model: str, cost: float):
-    """Send alert when cost exceeds budget."""
-    print(
-        f"ALERT: User {user_id} cost ${cost:.4f} "
-        f"on {model} exceeds budget"
-    )
-    # Integrate with Slack, PagerDuty, Cloud Monitoring, etc.
+    rates = pricing[model]
+    input_cost = (usage_details.get("input", 0) / 1000) * rates["input"]
+    output_cost = (usage_details.get("output", 0) / 1000) * rates["output"]
+
+    return input_cost + output_cost
 
 
-# ── Cost Summary ──────────────────────────────────────────────
-@observe()
-def log_cost_summary(costs: list[dict]):
-    """Log a batch cost summary as a trace."""
-    total = sum(c["total"] for c in costs)
+# ============================================
+# COST MONITORING
+# ============================================
+
+def process_with_cost_monitoring(image_bytes: bytes) -> dict:
+    """Process invoice with cost monitoring and alerting."""
+
     with langfuse.start_as_current_observation(
         as_type="span",
-        name="cost-summary"
-    ) as span:
-        span.update(
-            output={
-                "total_cost_usd": total,
-                "num_calls": len(costs),
-                "avg_cost_per_call": total / len(costs) if costs else 0
-            },
-            metadata={"report_type": "daily_cost_summary"}
+        name="cost-monitored-extraction"
+    ) as trace:
+
+        with langfuse.start_as_current_observation(
+            as_type="generation",
+            name="extraction",
+            model="gemini-1.5-pro"
+        ) as generation:
+
+            result = call_gemini(image_bytes)
+
+            usage = {
+                "input": result.usage.input_tokens,
+                "output": result.usage.output_tokens
+            }
+
+            generation.update(
+                output=result.text,
+                usage_details=usage
+            )
+
+            # Calculate and check cost
+            cost = calculate_generation_cost(usage, "gemini-1.5-pro")
+
+            # Score for cost tracking
+            generation.score(
+                name="request_cost",
+                value=min(cost / THRESHOLDS.per_invoice_critical, 1.0),
+                data_type="NUMERIC",
+                comment=f"Cost: ${cost:.6f}"
+            )
+
+            # Alert on threshold breach
+            if cost > THRESHOLDS.per_invoice_critical:
+                generation.score(
+                    name="cost_alert",
+                    value="critical",
+                    data_type="CATEGORICAL",
+                    comment=f"Cost ${cost:.4f} exceeds critical ${THRESHOLDS.per_invoice_critical}"
+                )
+                alert_cost_breach("critical", cost, trace.trace_id)
+
+            elif cost > THRESHOLDS.per_invoice_warning:
+                generation.score(
+                    name="cost_alert",
+                    value="warning",
+                    data_type="CATEGORICAL",
+                    comment=f"Cost ${cost:.4f} exceeds warning ${THRESHOLDS.per_invoice_warning}"
+                )
+                alert_cost_breach("warning", cost, trace.trace_id)
+
+            elif cost > THRESHOLDS.per_invoice_target:
+                generation.score(
+                    name="cost_alert",
+                    value="above_target",
+                    data_type="CATEGORICAL",
+                    comment=f"Cost ${cost:.4f} above target ${THRESHOLDS.per_invoice_target}"
+                )
+
+        trace.update(
+            output={"result": result.text, "cost": cost},
+            metadata={"cost_usd": cost}
         )
 
-        span.score(
-            name="daily_budget_status",
-            value="over" if total > DAILY_BUDGET else "under",
-            data_type="CATEGORICAL",
-            comment=f"${total:.2f} / ${DAILY_BUDGET:.2f}"
-        )
+        return {"result": result.text, "cost": cost}
 
-    langfuse.flush()
+
+def alert_cost_breach(level: str, cost: float, trace_id: str):
+    """Send alert for cost threshold breach."""
+    # Integration with Cloud Monitoring, PagerDuty, Slack, etc.
+    print(f"COST ALERT [{level.upper()}]: ${cost:.4f} - Trace: {trace_id}")
+
+
+# ============================================
+# COST OPTIMIZATION
+# ============================================
+
+def select_model_by_budget(remaining_budget: float) -> str:
+    """Select model based on remaining budget."""
+    if remaining_budget > 50:
+        return "gemini-1.5-pro"  # Best quality
+    elif remaining_budget > 10:
+        return "gemini-1.5-flash"  # Balance
+    else:
+        return "gemini-1.5-flash"  # Budget mode
 ```
 
 ## Configuration
 
 | Setting | Default | Description |
 |---------|---------|-------------|
-| `COST_BUDGET_PER_REQUEST` | `0.05` | Max USD per single LLM call |
-| `DAILY_BUDGET` | `50.00` | Max USD per day across all calls |
-| Alert channel | stdout | Override with Slack/PagerDuty integration |
-
-## Cost Monitoring Strategy
-
-| Level | What to Monitor | Alert Threshold |
-|-------|-----------------|-----------------|
-| Per-request | Single LLM call cost | > $0.05 |
-| Per-user | Cumulative user spend | > $5.00/day |
-| Per-model | Model-specific spend | > $20.00/day |
-| Daily total | All LLM costs | > $50.00/day |
-| Weekly trend | Cost growth rate | > 20% week-over-week |
+| `per_invoice_target` | $0.003 | Project requirement |
+| `per_invoice_warning` | $0.005 | Warning threshold |
+| `per_invoice_critical` | $0.010 | Critical threshold |
+| `daily_budget` | $100 | Daily spending cap |
 
 ## Example Usage
 
 ```python
-# Track costs across multiple calls
-costs = []
-for document in documents:
-    result = tracked_llm_call(
-        prompt=f"Extract from: {document['text']}",
-        model="gemini-2.0-flash",
-        user_id=document["user_id"]
-    )
-    costs.append(result.get("cost", {}))
+# Process with cost monitoring
+result = process_with_cost_monitoring(image_bytes)
+print(f"Cost: ${result['cost']:.4f}")
 
-# End-of-batch summary
-log_cost_summary(costs)
+# Check if within budget
+if result['cost'] <= THRESHOLDS.per_invoice_target:
+    print("Within budget")
 ```
 
 ## See Also
 
 - [Cost Tracking](../concepts/cost-tracking.md)
 - [Dashboard Metrics](../patterns/dashboard-metrics.md)
-- [Cloud Run Instrumentation](../patterns/cloud-run-instrumentation.md)
+- [Model Comparison](../concepts/model-comparison.md)

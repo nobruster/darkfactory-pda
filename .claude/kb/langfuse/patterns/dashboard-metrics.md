@@ -1,170 +1,103 @@
 # Dashboard Metrics
 
-> **Purpose**: Set up Langfuse dashboards and export metrics for monitoring LLM applications
-> **MCP Validated**: 2026-02-17
+> **Purpose**: Key metrics and monitoring setup for LLM observability
+> **MCP Validated**: 2026-01-25
 
 ## When to Use
 
-- Building operational dashboards for LLM pipeline monitoring
-- Tracking cost, latency, quality, and volume trends over time
-- Exporting Langfuse metrics to external analytics platforms
-- Creating alerting rules based on metric thresholds
+- Setting up production monitoring dashboards
+- Defining SLIs/SLOs for LLM applications
+- Tracking project targets (cost, latency, quality)
 
 ## Implementation
 
 ```python
-"""Dashboard-ready metric instrumentation with Langfuse."""
-
+"""Dashboard Metrics Pattern - Key metrics for Invoice Processing Pipeline"""
+from langfuse import get_client
+from dataclasses import dataclass
 import time
-from langfuse import get_client, observe, propagate_attributes
 
 langfuse = get_client()
 
+@dataclass
+class ProjectTargets:
+    cost_per_invoice: float = 0.003  # $0.003
+    latency_p95_seconds: float = 3.0  # P95 < 3s
+    accuracy_percent: float = 90.0   # 90% accuracy
 
-# ── Instrumented Pipeline with Dashboard Tags ─────────────────
-@observe()
-def process_document(
-    document: dict,
-    pipeline: str = "invoice-extraction",
-    environment: str = "production"
-) -> dict:
-    """Fully instrumented pipeline for dashboard visibility."""
+TARGETS = ProjectTargets()
+
+def record_pipeline_metrics(trace_id: str, latency_ms: float, cost_usd: float, accuracy: float, success: bool):
+    """Record all key metrics for a single invoice processing."""
+    langfuse.create_score(trace_id=trace_id, name="latency_ms",
+        value=min(latency_ms / (TARGETS.latency_p95_seconds * 1000), 1.0),
+        data_type="NUMERIC", comment=f"Latency: {latency_ms:.0f}ms")
+
+    langfuse.create_score(trace_id=trace_id, name="cost_normalized",
+        value=min(cost_usd / (TARGETS.cost_per_invoice * 3), 1.0),
+        data_type="NUMERIC", comment=f"Cost: ${cost_usd:.4f}")
+
+    langfuse.create_score(trace_id=trace_id, name="accuracy",
+        value=accuracy, data_type="NUMERIC", comment=f"Accuracy: {accuracy * 100:.1f}%")
+
+    langfuse.create_score(trace_id=trace_id, name="success", value=success, data_type="BOOLEAN")
+
+    # SLO compliance flags
+    langfuse.create_score(trace_id=trace_id, name="slo_latency_met",
+        value=latency_ms <= TARGETS.latency_p95_seconds * 1000, data_type="BOOLEAN")
+    langfuse.create_score(trace_id=trace_id, name="slo_cost_met",
+        value=cost_usd <= TARGETS.cost_per_invoice, data_type="BOOLEAN")
+    langfuse.create_score(trace_id=trace_id, name="slo_accuracy_met",
+        value=accuracy >= TARGETS.accuracy_percent / 100, data_type="BOOLEAN")
+
+def process_with_metrics(image_bytes: bytes, user_id: str) -> dict:
+    """Full pipeline with comprehensive metrics."""
+    start_time = time.time()
 
     with langfuse.start_as_current_observation(
-        as_type="span",
-        name=pipeline
+        as_type="span", name="invoice-pipeline", user_id=user_id,
+        metadata={"pipeline_version": "1.0"}
     ) as trace:
-        with propagate_attributes(
-            user_id=document.get("user_id", "system"),
-            session_id=document.get("session_id"),
-            tags=[
-                pipeline,
-                environment,
-                f"model:{document.get('model', 'gemini-2.0-flash')}"
-            ],
-            metadata={
-                "pipeline": pipeline,
-                "environment": environment,
-                "document_type": document.get("type", "unknown"),
-                "source": document.get("source", "api")
-            }
-        ):
-            trace.update(input=document)
-
-            # Track preprocessing latency
-            start = time.time()
+        try:
             with langfuse.start_as_current_observation(
-                as_type="span",
-                name="preprocess"
-            ) as preprocess:
-                cleaned = preprocess_doc(document)
-                preprocess.update(
-                    output={"status": "done"},
-                    metadata={
-                        "latency_ms": int(
-                            (time.time() - start) * 1000
-                        )
-                    }
-                )
-
-            # Track LLM call with full metrics
-            model = document.get("model", "gemini-2.0-flash")
-            with langfuse.start_as_current_observation(
-                as_type="generation",
-                name="extract",
-                model=model
+                as_type="generation", name="extraction", model="gemini-1.5-pro"
             ) as gen:
-                result = call_llm(cleaned, model=model)
-                gen.update(
-                    output=result,
-                    usage_details={
-                        "input": result.get("input_tokens", 0),
-                        "output": result.get("output_tokens", 0)
-                    },
-                    cost_details={
-                        "total": result.get("cost", 0.0)
-                    }
-                )
+                result = extract_invoice(image_bytes)
+                usage = {"input": result.input_tokens, "output": result.output_tokens}
+                gen.update(output=result.text, usage_details=usage)
 
-            # Quality score for dashboard aggregation
-            quality = evaluate_quality(result)
-            langfuse.create_score(
-                name="extraction_quality",
-                value=quality,
-                trace_id=trace.trace_id,
-                data_type="NUMERIC",
-                comment="Automated quality check"
-            )
+            latency_ms = (time.time() - start_time) * 1000
+            cost_usd = calculate_cost(usage, "gemini-1.5-pro")
+            accuracy = evaluate_accuracy(result.text)
 
-            # Categorical outcome for funnel analysis
-            langfuse.create_score(
-                name="outcome",
-                value="success" if quality > 0.8 else "review",
-                trace_id=trace.trace_id,
-                data_type="CATEGORICAL"
-            )
+            record_pipeline_metrics(trace.trace_id, latency_ms, cost_usd, accuracy, True)
+            trace.update(output=result.text, metadata={"latency_ms": latency_ms, "cost_usd": cost_usd})
 
-            trace.update(output=result)
+            return {"result": result.text, "metrics": {"latency_ms": latency_ms, "cost_usd": cost_usd, "accuracy": accuracy}}
 
-    langfuse.flush()
-    return result
+        except Exception as e:
+            record_pipeline_metrics(trace.trace_id, (time.time()-start_time)*1000, 0, 0, False)
+            raise
 ```
 
-## Dashboard Metrics Overview
+## Configuration
 
-| Metric | Source | Aggregation |
-|--------|--------|-------------|
-| **Cost** | `cost_details.total` | Sum by model/user/day |
-| **Latency** | Observation duration | p50, p95, p99 |
-| **Token Usage** | `usage_details.total` | Sum, avg per request |
-| **Quality Scores** | Score values | Avg by model/prompt |
-| **Volume** | Trace count | Count per time window |
-| **Error Rate** | Failed observations | Percentage |
-| **Success Rate** | Outcome scores | success / total |
+| Metric | Target | Alert Threshold |
+|--------|--------|-----------------|
+| Cost/invoice | $0.003 | > $0.005 |
+| Latency P95 | 3s | > 5s |
+| Accuracy | 90% | < 85% |
 
-## Tagging Strategy for Dashboards
+## Dashboard Queries
 
-| Tag Pattern | Purpose | Example |
-|-------------|---------|---------|
-| `pipeline:{name}` | Filter by feature | `pipeline:invoice-extraction` |
-| `model:{name}` | Compare models | `model:gemini-2.0-flash` |
-| `environment` | Separate prod/staging | `production`, `staging` |
-| `source:{origin}` | Track request origin | `source:api`, `source:pubsub` |
-
-## External Integrations
-
-| Platform | Integration Method |
-|----------|--------------------|
-| **PostHog** | Native Langfuse integration |
-| **Mixpanel** | Native Langfuse integration |
-| **Grafana** | Metrics API + custom dashboard |
-| **Cloud Monitoring** | Export via API, alert with Cloud Functions |
-| **BigQuery** | Export traces via API for custom analytics |
-
-## Key Dashboard Views
-
-| View | What It Shows | Filters |
-|------|---------------|---------|
-| **Cost Overview** | Spend by model, user, day | Date range, model, tags |
-| **Latency Distribution** | p50/p95/p99 response times | Pipeline, model |
-| **Quality Trends** | Score averages over time | Score name, model |
-| **Trace Explorer** | Individual trace details | Tags, user, session |
-| **Prompt Analytics** | Performance per prompt version | Prompt name, version |
-
-## Example Usage
-
-```python
-# Instrument all pipelines with consistent tagging
-for doc in batch:
-    process_document(
-        document=doc,
-        pipeline="invoice-extraction",
-        environment=os.getenv("ENVIRONMENT", "staging")
-    )
-```
+| View | Filter | Group By |
+|------|--------|----------|
+| Cost trend | score.name = "cost_normalized" | Day |
+| Latency P95 | score.name = "latency_ms" | Hour |
+| Accuracy | score.name = "accuracy" | Model |
+| SLO compliance | score.name contains "slo_" | Week |
 
 ## See Also
 
 - [Cost Tracking](../concepts/cost-tracking.md)
 - [Scoring](../concepts/scoring.md)
-- [Cost Alerting](../patterns/cost-alerting.md)

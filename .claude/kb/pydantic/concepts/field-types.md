@@ -1,113 +1,141 @@
 # Field Types
 
-> **Purpose**: Type annotations, Optional, Annotated, Field constraints in Pydantic v2
+> **Purpose**: Type hints, Enums, Literals, and Optional fields for schema definition
 > **Confidence**: 0.95
-> **MCP Validated**: 2026-02-17
+> **MCP Validated**: 2026-01-25
 
 ## Overview
 
-Pydantic v2 uses Python type annotations to define field types and applies validation
-automatically. The `Field()` function adds metadata, constraints, and descriptions.
-The `Annotated` type allows attaching validators and constraints directly to types,
-making them reusable across models.
+Pydantic uses Python type hints to define field types. It supports primitives,
+complex types, Enums, Literals for constrained values, and Optional for nullable
+fields. Type coercion happens automatically where possible.
 
 ## The Pattern
 
 ```python
-from typing import Annotated, Literal, Optional
 from pydantic import BaseModel, Field
+from typing import Optional, Literal
+from enum import Enum
 from datetime import date
+from decimal import Decimal
 
-
-# Reusable annotated types
-NonEmptyStr = Annotated[str, Field(min_length=1, strip_whitespace=True)]
-PositiveFloat = Annotated[float, Field(gt=0)]
-CurrencyCode = Annotated[str, Field(pattern=r"^[A-Z]{3}$")]
-
+class VendorType(str, Enum):
+    UBEREATS = "ubereats"
+    DOORDASH = "doordash"
+    GRUBHUB = "grubhub"
+    OTHER = "other"
 
 class LineItem(BaseModel):
-    description: NonEmptyStr = Field(..., description="Item description")
-    quantity: Annotated[int, Field(ge=1)] = 1
-    unit_price: PositiveFloat
-    category: Optional[str] = None
+    description: str
+    quantity: int = Field(..., ge=1)
+    unit_price: Decimal = Field(..., ge=0)
+    amount: Decimal = Field(..., ge=0)
 
-
-class ExtractionResult(BaseModel):
-    confidence: Annotated[float, Field(ge=0.0, le=1.0)]
-    source: Literal["invoice", "receipt", "contract"]
-    extracted_date: Optional[date] = None
-    items: list[LineItem] = Field(default_factory=list)
-    tags: set[str] = Field(default_factory=set)
+class Invoice(BaseModel):
+    invoice_id: str
+    vendor_name: str
+    vendor_type: VendorType
+    invoice_date: date
+    due_date: Optional[date] = None
+    currency: Literal["USD", "EUR", "GBP"] = "USD"
+    line_items: list[LineItem] = Field(default_factory=list)
 ```
 
 ## Quick Reference
 
-| Type Annotation | Meaning | Example Value |
-|-----------------|---------|---------------|
-| `str` | Required string | `"hello"` |
-| `Optional[str]` | String or None (must set `= None`) | `None` |
-| `int` | Required integer | `42` |
-| `float` | Required float (accepts int too) | `3.14` |
-| `bool` | Boolean | `True` |
-| `list[str]` | List of strings | `["a", "b"]` |
-| `dict[str, Any]` | Dictionary | `{"key": "val"}` |
-| `set[str]` | Unique set of strings | `{"a", "b"}` |
-| `Literal["a", "b"]` | Constrained choices | `"a"` |
-| `date` / `datetime` | Date objects | `"2026-01-15"` |
-| `Annotated[str, Field()]` | String with constraints | `"constrained"` |
+| Input | Output | Notes |
+|-------|--------|-------|
+| `"ubereats"` | `VendorType.UBEREATS` | Enum coercion |
+| `"2024-01-15"` | `date(2024, 1, 15)` | ISO date string |
+| `"123.45"` | `Decimal("123.45")` | String to Decimal |
+| `None` | `None` | Optional field |
 
-## Field() Constraints
+## Primitive Types
 
-| Parameter | Types | Purpose | Example |
-|-----------|-------|---------|---------|
-| `min_length` | str, list | Minimum length | `Field(min_length=1)` |
-| `max_length` | str, list | Maximum length | `Field(max_length=100)` |
-| `pattern` | str | Regex pattern | `Field(pattern=r"^\d+$")` |
-| `gt` / `ge` | int, float | Greater than / or equal | `Field(gt=0)` |
-| `lt` / `le` | int, float | Less than / or equal | `Field(le=100)` |
-| `multiple_of` | int, float | Must be multiple of | `Field(multiple_of=5)` |
-| `description` | Any | Field description for schema | `Field(description="...")` |
-| `alias` | Any | Alternative name for parsing | `Field(alias="fieldName")` |
-| `default` | Any | Default value | `Field(default="USD")` |
-| `default_factory` | Any | Factory for mutable defaults | `Field(default_factory=list)` |
-| `exclude` | Any | Exclude from serialization | `Field(exclude=True)` |
+```python
+name: str                    # Required string
+count: int                   # Coerces "123" to 123
+amount: float                # Coerces int and string
+active: bool                 # Coerces 1/0, "true"/"false"
+price: Decimal               # Precise decimal math
+```
+
+## Optional and Default
+
+```python
+from typing import Optional
+
+# Optional with None default
+notes: Optional[str] = None
+
+# Optional with value default
+currency: str = "USD"
+
+# Required (no default)
+invoice_id: str
+
+# Factory default for mutable types
+items: list[str] = Field(default_factory=list)
+```
+
+## Enum Types
+
+```python
+from enum import Enum
+
+class VendorType(str, Enum):
+    """Inherit from str for JSON serialization."""
+    UBEREATS = "ubereats"
+    DOORDASH = "doordash"
+    OTHER = "other"
+
+# Usage in model
+vendor_type: VendorType
+
+# Accepts: "ubereats", VendorType.UBEREATS
+```
+
+## Literal Types
+
+```python
+from typing import Literal
+
+# Constrained to specific values
+status: Literal["pending", "paid", "cancelled"]
+currency: Literal["USD", "EUR", "GBP"] = "USD"
+```
 
 ## Common Mistakes
 
-### Wrong (implicit None default removed in v2)
+### Wrong
 
 ```python
-class Model(BaseModel):
-    # In v2, Optional does NOT auto-set default to None
-    name: Optional[str]  # REQUIRED field that accepts None
+# Mutable default - shared between instances!
+items: list[str] = []
 ```
 
-### Correct (explicit default)
+### Correct
 
 ```python
-class Model(BaseModel):
-    name: Optional[str] = None  # Optional with explicit default
-    label: str = "default"      # Has default value
-    value: str                   # Truly required
+# Factory creates new list per instance
+items: list[str] = Field(default_factory=list)
 ```
 
-## LLM Schema Generation
+## Type Coercion Examples
 
 ```python
-import json
+# All valid inputs for int field:
+# 123 (int), "123" (str), 123.0 (float)
 
-class Entity(BaseModel):
-    name: NonEmptyStr = Field(..., description="Entity name")
-    entity_type: Literal["person", "org", "location"]
-    confidence: Annotated[float, Field(ge=0, le=1, description="Extraction confidence")]
+# All valid for date field:
+# date(2024, 1, 15), "2024-01-15", datetime(2024, 1, 15)
 
-# Field descriptions appear in JSON Schema for LLM prompts
-schema = Entity.model_json_schema()
-# {"properties": {"name": {"description": "Entity name", ...}}}
+# Enum accepts string value:
+# "ubereats" -> VendorType.UBEREATS
 ```
 
 ## Related
 
-- [BaseModel](../concepts/base-model.md)
-- [Validators](../concepts/validators.md)
-- [Extraction Schema](../patterns/extraction-schema.md)
+- [base-model.md](base-model.md)
+- [nested-models.md](nested-models.md)
+- [extraction-schema.md](../patterns/extraction-schema.md)

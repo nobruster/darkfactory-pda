@@ -1,82 +1,70 @@
 # CrewAI Quick Reference
 
 > Fast lookup tables. For code examples, see linked files.
-> **MCP Validated:** 2026-02-17
+> **MCP Validated**: 2026-01-25
 
-## Installation
+## Agent Configuration
 
-| Command | Purpose |
-|---------|---------|
-| `pip install crewai` | Core framework |
-| `pip install 'crewai[tools]'` | Framework + built-in tools |
-| `crewai create crew my_project` | Scaffold new project |
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `role` | str | required | Agent's job title/function |
+| `goal` | str | required | What the agent aims to achieve |
+| `backstory` | str | required | Context shaping agent behavior |
+| `tools` | list | `[]` | Tools available to the agent |
+| `llm` | LLM | GPT-4 | Language model to use |
+| `allow_delegation` | bool | `False` | Can delegate to other agents |
+| `max_iter` | int | `20` | Maximum reasoning iterations |
+| `max_retry_limit` | int | `2` | Retries on error |
 
-## Core Components
+## Task Configuration
 
-| Component | Class | Key Parameters |
-|-----------|-------|----------------|
-| Agent | `Agent` | `role`, `goal`, `backstory`, `tools`, `llm`, `memory` |
-| Task | `Task` | `description`, `expected_output`, `agent`, `tools`, `context` |
-| Crew | `Crew` | `agents`, `tasks`, `process`, `memory`, `verbose` |
-
-## ShopAgent Crew
-
-| Agent | Tool | Store |
-|-------|------|-------|
-| AnalystAgent | `supabase_execute_sql` | Postgres (The Ledger) |
-| ResearchAgent | `qdrant_semantic_search` | Qdrant (The Memory) |
-| ReporterAgent | (none — synthesis) | Both via task context |
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `description` | str | required | What needs to be done |
+| `expected_output` | str | required | Format/content of result |
+| `agent` | Agent | required | Who performs the task |
+| `context` | list | `[]` | Dependent tasks for context |
+| `human_input` | bool | `False` | Require human approval |
+| `async_execution` | bool | `False` | Run asynchronously |
 
 ## Process Types
 
-| Process | Use Case | Manager Required |
-|---------|----------|------------------|
-| `Process.sequential` | ShopAgent default (Analyst → Researcher → Reporter) | No |
-| `Process.hierarchical` | Manager delegates to agents dynamically | Yes (`manager_llm`) |
+| Process | Use Case | Manager |
+|---------|----------|---------|
+| `sequential` | Linear workflows, predictable | No |
+| `hierarchical` | Complex projects, dynamic | Yes (auto/manual) |
 
 ## Memory Types
 
-| Type | Storage | Scope |
-|------|---------|-------|
-| Short-Term | ChromaDB + RAG | Current session |
-| Long-Term | SQLite3 | Cross-session persistence |
-| Entity | ChromaDB + RAG | Products, customers, segments |
+| Memory | Storage | Purpose |
+|--------|---------|---------|
+| Short-term | ChromaDB (RAG) | Current context within execution |
+| Long-term | SQLite3 | Learning across sessions |
+| Entity | ChromaDB (RAG) | People, places, concepts tracking |
 
-## Key Decorators
+## Severity Classification (DataOps)
 
-| Decorator | Target | Purpose |
-|-----------|--------|---------|
-| `@CrewBase` | Class | Auto-load YAML config |
-| `@agent` | Method | Define agent from config |
-| `@task` | Method | Define task from config |
-| `@crew` | Method | Define crew assembly |
-| `@tool` | Function | Create custom tool |
-
-## Decision Matrix
-
-| Use Case | Choose |
-|----------|--------|
-| ShopAgent standard report | Sequential, single crew |
-| Complex open-ended investigation | Hierarchical with manager |
-| Need agents to remember past queries | `memory=True` on Crew |
-| Custom Supabase/Qdrant integration | `@tool` or `BaseTool` |
+| Level | Action | SLA |
+|-------|--------|-----|
+| CRITICAL | Immediate escalation | < 5 min |
+| ERROR | Root cause analysis | < 15 min |
+| WARNING | Log and monitor | < 1 hour |
+| INFO | Archive only | N/A |
 
 ## Common Pitfalls
 
 | Don't | Do |
 |-------|-----|
-| Skip `expected_output` on tasks | Always define structured output |
-| Use hierarchical without `manager_llm` | Set `manager_llm` or `manager_agent` |
-| Give all tools to all agents | Register tools to specialist agents only |
-| Enable memory without embedder config | Set embedder when using non-OpenAI LLMs |
-| Hardcode LLM in agents | Use env vars or YAML config |
+| Use `allow_delegation=True` on all agents | Enable only when needed |
+| Skip `expected_output` | Always define output format |
+| Ignore `max_iter` limits | Set appropriate bounds |
+| Use hierarchical for simple tasks | Use sequential for linear flows |
 
 ## Related Documentation
 
 | Topic | Path |
 |-------|------|
-| ShopAgent Crew | `patterns/shopagent-crew.md` |
-| MCP Tools | `patterns/shopagent-tools.md` |
-| YAML Config | `patterns/yaml-configuration.md` |
-| Chainlit Integration | `patterns/chainlit-crewai.md` |
-| Evaluation + Observability | `patterns/evaluation-observability.md` |
+| Agent Concepts | `concepts/agents.md` |
+| Custom Tools | `concepts/tools.md` |
+| Three-Agent Pattern | `patterns/triage-investigation-report.md` |
+| Full Index | `index.md` |

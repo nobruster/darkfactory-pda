@@ -1,187 +1,144 @@
-# Error Handling
+# Error Handling Pattern
 
-> **Purpose**: Handle Pydantic ValidationError gracefully in LLM extraction pipelines
-> **MCP Validated**: 2026-02-17
+> **Purpose**: Handle ValidationError and recover from malformed LLM responses
+> **MCP Validated**: 2026-01-25
 
 ## When to Use
 
-- LLM returns malformed or partial JSON that fails validation
-- Building retry logic when extraction fails schema validation
-- Logging structured error information for monitoring
-- Providing actionable feedback to retry with corrected prompts
+- Catching and processing Pydantic ValidationError exceptions
+- Logging validation failures for debugging
+- Graceful degradation when LLM output is partially valid
 
 ## Implementation
 
 ```python
+from pydantic import BaseModel, Field, ValidationError
+from typing import Optional
+from datetime import date
+from decimal import Decimal
 import json
 import logging
-from typing import Optional, TypeVar
-from pydantic import BaseModel, ValidationError
 
 logger = logging.getLogger(__name__)
-T = TypeVar("T", bound=BaseModel)
 
+class InvoiceSchema(BaseModel):
+    invoice_id: str
+    vendor_name: str
+    invoice_date: date
+    total_amount: Decimal = Field(..., ge=0)
 
-class ExtractionResult(BaseModel):
-    """Wrapper for extraction results with error metadata."""
-    success: bool
-    data: Optional[dict] = None
-    errors: Optional[list[dict]] = None
-    error_summary: Optional[str] = None
-    attempts: int = 1
+class ValidationResult:
+    def __init__(self, success: bool, data: Optional[BaseModel] = None,
+                 errors: Optional[list[dict]] = None, raw_input: Optional[str] = None):
+        self.success = success
+        self.data = data
+        self.errors = errors or []
+        self.raw_input = raw_input
 
+    @property
+    def error_summary(self) -> str:
+        if not self.errors:
+            return ""
+        return "; ".join(f"{'.'.join(map(str, e['loc']))}: {e['msg']}" for e in self.errors)
 
-def parse_validation_errors(error: ValidationError) -> list[dict]:
-    """Convert ValidationError to structured error list."""
-    return [
-        {
-            "field": " -> ".join(str(loc) for loc in err["loc"]),
-            "message": err["msg"],
-            "type": err["type"],
-            "input": err.get("input"),
-        }
-        for err in error.errors()
-    ]
+def validate_with_recovery(
+    json_input: str,
+    model_class: type[BaseModel],
+    fallback_values: Optional[dict] = None
+) -> ValidationResult:
+    fallback_values = fallback_values or {}
 
+    # Step 1: Parse JSON
+    try:
+        data = json.loads(json_input)
+    except json.JSONDecodeError as e:
+        logger.error(f"JSON parse error: {e}")
+        return ValidationResult(
+            success=False,
+            errors=[{"loc": ("__root__",), "msg": f"Invalid JSON: {e}", "type": "json_invalid"}],
+            raw_input=json_input
+        )
 
-def format_error_for_retry(error: ValidationError) -> str:
-    """Format validation errors as LLM retry instructions."""
-    lines = ["The previous response had validation errors. Fix these issues:"]
-    for err in error.errors():
-        field_path = " -> ".join(str(loc) for loc in err["loc"])
-        lines.append(f"  - Field '{field_path}': {err['msg']}")
-    lines.append("\nReturn corrected JSON only.")
+    # Step 2: Validate
+    try:
+        validated = model_class.model_validate(data)
+        return ValidationResult(success=True, data=validated)
+    except ValidationError as e:
+        errors = e.errors()
+        logger.warning(f"Validation failed: {errors}")
+
+        # Step 3: Attempt recovery
+        if fallback_values:
+            recovered = _apply_fallbacks(data, errors, fallback_values)
+            try:
+                validated = model_class.model_validate(recovered)
+                return ValidationResult(success=True, data=validated, errors=errors)
+            except ValidationError as e2:
+                errors = e2.errors()
+
+        return ValidationResult(success=False, errors=errors, raw_input=json_input)
+
+def _apply_fallbacks(data: dict, errors: list[dict], fallbacks: dict) -> dict:
+    result = data.copy()
+    error_fields = {e["loc"][0] for e in errors if e["loc"]}
+    for field, default in fallbacks.items():
+        if field in error_fields or field not in result:
+            result[field] = default
+    return result
+
+def format_errors_for_logging(errors: list[dict]) -> dict:
+    return {
+        "error_count": len(errors),
+        "fields": [{"location": ".".join(map(str, e["loc"])), "message": e["msg"],
+                    "type": e["type"]} for e in errors]
+    }
+
+def format_errors_for_user(errors: list[dict]) -> str:
+    if not errors:
+        return "No errors"
+    lines = ["Validation failed:"]
+    for e in errors:
+        loc = ".".join(map(str, e["loc"]))
+        lines.append(f"  - {loc}: {e['msg']}")
     return "\n".join(lines)
-
-
-def validate_with_retry(
-    call_llm_fn,
-    prompt: str,
-    model_class: type[T],
-    max_retries: int = 2,
-    temperature: float = 0.0,
-) -> ExtractionResult:
-    """Validate LLM output with automatic retry on failure.
-
-    Args:
-        call_llm_fn: Callable that takes (prompt, temperature) and returns str.
-        prompt: Initial extraction prompt.
-        model_class: Pydantic model to validate against.
-        max_retries: Maximum retry attempts after first failure.
-        temperature: LLM temperature setting.
-
-    Returns:
-        ExtractionResult with success status and data or errors.
-    """
-    current_prompt = prompt
-
-    for attempt in range(1, max_retries + 2):
-        try:
-            raw_response = call_llm_fn(current_prompt, temperature)
-            cleaned = _extract_json(raw_response)
-            result = model_class.model_validate_json(cleaned)
-
-            logger.info("Validation succeeded on attempt %d", attempt)
-            return ExtractionResult(
-                success=True,
-                data=result.model_dump(),
-                attempts=attempt,
-            )
-
-        except ValidationError as e:
-            error_details = parse_validation_errors(e)
-            logger.warning(
-                "Attempt %d/%d failed: %d errors",
-                attempt, max_retries + 1, e.error_count(),
-            )
-
-            if attempt <= max_retries:
-                retry_instruction = format_error_for_retry(e)
-                current_prompt = f"{prompt}\n\n{retry_instruction}"
-            else:
-                return ExtractionResult(
-                    success=False,
-                    errors=error_details,
-                    error_summary=f"{e.error_count()} validation errors after {attempt} attempts",
-                    attempts=attempt,
-                )
-
-        except (ValueError, json.JSONDecodeError) as e:
-            logger.error("JSON parse error on attempt %d: %s", attempt, str(e))
-            if attempt > max_retries:
-                return ExtractionResult(
-                    success=False,
-                    errors=[{"field": "root", "message": str(e), "type": "json_invalid"}],
-                    error_summary=f"Invalid JSON after {attempt} attempts",
-                    attempts=attempt,
-                )
-            current_prompt = (
-                f"{prompt}\n\nYour previous response was not valid JSON. "
-                "Return ONLY a valid JSON object, no markdown or text."
-            )
-
-    # Should not reach here, but safety fallback
-    return ExtractionResult(success=False, error_summary="Unexpected failure")
-
-
-def _extract_json(text: str) -> str:
-    """Strip markdown code fences from LLM response."""
-    text = text.strip()
-    if text.startswith("```"):
-        lines = text.split("\n")
-        lines = [l for l in lines[1:] if l.strip() != "```"]
-        text = "\n".join(lines)
-    return text.strip()
 ```
 
 ## Configuration
 
 | Setting | Default | Description |
 |---------|---------|-------------|
-| `max_retries` | `2` | Number of retry attempts after first failure |
-| `temperature` | `0.0` | Lower temperature for more deterministic retries |
-| `log_level` | `WARNING` | Log level for validation failures |
+| `fallback_values` | `None` | Dict of field defaults for recovery |
+| Logging level | `WARNING` | Log level for validation failures |
 
 ## Example Usage
 
 ```python
-from pydantic import BaseModel, Field
-
-
-class Receipt(BaseModel):
-    merchant: str = Field(..., min_length=1)
-    total: float = Field(..., gt=0)
-    date: str = Field(..., pattern=r"^\d{4}-\d{2}-\d{2}$")
-
-
-# With retry logic
-result = validate_with_retry(
-    call_llm_fn=my_llm_client.generate,
-    prompt="Extract receipt data from: ...",
-    model_class=Receipt,
-    max_retries=2,
-)
+# Basic validation
+result = validate_with_recovery(json_input=llm_response, model_class=InvoiceSchema)
 
 if result.success:
-    print(f"Extracted: {result.data}")
+    invoice = result.data
 else:
-    print(f"Failed: {result.error_summary}")
-    for err in result.errors or []:
-        print(f"  {err['field']}: {err['message']}")
+    logger.error("Validation failed", extra=format_errors_for_logging(result.errors))
+
+# With fallback recovery
+result = validate_with_recovery(
+    json_input=llm_response,
+    model_class=InvoiceSchema,
+    fallback_values={"vendor_name": "Unknown Vendor", "total_amount": Decimal("0")}
+)
+
+# Direct ValidationError handling
+try:
+    invoice = InvoiceSchema.model_validate_json(llm_response)
+except ValidationError as e:
+    for error in e.errors():
+        print(f"Field: {error['loc']}, Error: {error['msg']}")
+    error_json = e.json()
 ```
-
-## Error Type Reference
-
-| Error Type | Cause | Fix Strategy |
-|------------|-------|-------------|
-| `missing` | Required field not in JSON | Retry with explicit field list |
-| `string_type` | Wrong type for string field | Retry with type instruction |
-| `greater_than` | Number below minimum | Retry with constraint reminder |
-| `json_invalid` | Not valid JSON at all | Retry asking for JSON only |
-| `string_pattern_mismatch` | Regex pattern failed | Retry with format example |
 
 ## See Also
 
-- [LLM Output Validation](../patterns/llm-output-validation.md)
-- [Validators](../concepts/validators.md)
-- [Custom Validators](../patterns/custom-validators.md)
+- [llm-output-validation.md](llm-output-validation.md)
+- [validators.md](../concepts/validators.md)
+- [custom-validators.md](custom-validators.md)

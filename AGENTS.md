@@ -56,7 +56,7 @@ Ver [`converge/VENDORED.md`](converge/VENDORED.md).
 
 ## Regra 1.5 — Use o que existe antes de improvisar
 
-O repositório traz 19 agentes, 8 comandos, 26 skills e 20 domínios de KB em
+O repositório traz 50 agentes, 18 comandos, 26 skills e 25 domínios de KB em
 `.claude/`. Antes de escrever solução do zero, **procure**:
 
 ```bash
@@ -65,7 +65,8 @@ grep -ril "<termo>" .claude/
 ```
 
 Índice comentado em [`.claude/README.md`](.claude/README.md) — ele separa o
-núcleo de fábrica da herança do curso ShopAgent (slides, CrewAI, Chainlit).
+núcleo de fábrica da herança dos projetos de origem (slides, CrewAI, produto
+BTC). Para pipeline, comece pelos agentes de `data-engineering/`.
 
 **Se não existe recurso para a demanda, crie** — não improvise um
 atalho descartável. O agente

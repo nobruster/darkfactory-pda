@@ -39,7 +39,7 @@ daqui:
 
 | Componente | O que é | Origem |
 |---|---|---|
-| [`.claude/`](.claude/) | **Ambiente de agentes** — 19 agentes, 8 comandos, 26 skills, KB de 20 domínios | herdado |
+| [`.claude/`](.claude/) | **Ambiente de agentes** — 50 agentes, 18 comandos, 26 skills, KB de 25 domínios | herdado |
 | [`fabrica/`](fabrica/) | **O juiz** — oráculo + golden-match. O núcleo: 6 classificações, zero tolerância. | próprio |
 | [`converge/`](converge/) | Motor de convergência e gates (`cvg`) | **vendorizado** ⚠️ |
 | [`task-spec/`](task-spec/) | Tarefas assinadas (HMAC) e tiers de aceite | submódulo |
@@ -63,14 +63,19 @@ Detalhes e consequências em [`converge/VENDORED.md`](converge/VENDORED.md).
 
 ### O ambiente de agentes
 
-`.claude/` traz o ferramental que vem junto do template: agentes de revisão e
-exploração, skills de auditoria, comandos e base de conhecimento. Fica ativo
-assim que o Claude Code abre na raiz do repositório.
+`.claude/` traz o ferramental que vem junto do template, ativo assim que o
+Claude Code abre na raiz do repositório. Os mais relevantes para uma fábrica:
 
-Veio inteiro do projeto Semana AI Data Engineer, e **parte dele é específica
-daquele curso** (slides, CrewAI, Chainlit). O índice em
-[`.claude/README.md`](.claude/README.md) separa o que é núcleo de fábrica do
-que é herança — comece por ele.
+- **`medallion-architect`** — bronze → silver → gold, o padrão de camadas
+- **Spark e Lakeflow** (7 agentes) — pipeline, performance, troubleshooting
+- **Ciclo SDD** — `/brainstorm` → `/define` → `/design` → `/build` →
+  `/iterate` → `/ship`
+- **`fabrica-architect`** — usa o que existe, cria o que falta
+
+Reúne dois projetos (btc-zero e Semana AI Data Engineer), e **parte é
+específica deles** (slides, CrewAI, produto BTC). O índice em
+[`.claude/README.md`](.claude/README.md) separa o núcleo de fábrica da
+herança — comece por ele.
 
 ---
 

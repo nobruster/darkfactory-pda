@@ -1,190 +1,97 @@
 # Quality Feedback Loops
 
-> **Purpose**: Build automated and human-in-the-loop quality evaluation pipelines
-> **MCP Validated**: 2026-02-17
+> **Purpose**: Implement user feedback and automated evaluation for LLM quality
+> **MCP Validated**: 2026-01-25
 
 ## When to Use
 
-- Implementing LLM-as-a-Judge for automated quality scoring
-- Building human annotation workflows for ground truth
-- Creating feedback loops that improve prompt quality over time
-- Detecting quality regressions across model or prompt changes
+- Collecting user feedback on LLM outputs
+- Implementing LLM-as-Judge automated evaluation
+- Tracking accuracy against the 90% target
 
 ## Implementation
 
 ```python
-"""Quality feedback loop with automated and human scoring."""
-
+"""Quality Feedback Loop Pattern - User feedback + automated scoring"""
+from langfuse import get_client
 import json
-from langfuse import get_client, observe
 
 langfuse = get_client()
 
+def record_user_feedback(trace_id: str, feedback_type: str, feedback_value, comment: str = None):
+    """Record user feedback as score. Types: thumbs (bool), rating (1-5), correction (dict)"""
+    if feedback_type == "thumbs":
+        langfuse.create_score(trace_id=trace_id, name="user_thumbs",
+            value=feedback_value, data_type="BOOLEAN", comment=comment)
+    elif feedback_type == "rating":
+        langfuse.create_score(trace_id=trace_id, name="user_rating",
+            value=feedback_value / 5.0, data_type="NUMERIC", comment=comment)
+    elif feedback_type == "correction":
+        langfuse.create_score(trace_id=trace_id, name="user_correction",
+            value="corrected", data_type="CATEGORICAL", comment=json.dumps(feedback_value))
 
-# ── Automated LLM-as-a-Judge ─────────────────────────────────
-@observe()
-def evaluate_extraction(
-    extraction_result: dict,
-    original_text: str,
-    trace_id: str
-) -> dict:
-    """Use a judge LLM to evaluate extraction quality."""
-
-    judge_prompt = f"""Evaluate this extraction result for accuracy.
-
-Original text:
-{original_text}
-
-Extracted fields:
-{json.dumps(extraction_result, indent=2)}
-
-Score each dimension from 0.0 to 1.0:
-- accuracy: Are the extracted values correct?
-- completeness: Are all expected fields present?
-- formatting: Is the output properly structured?
-
-Return JSON: {{"accuracy": float, "completeness": float, "formatting": float}}
-"""
-
+def evaluate_extraction_quality(trace_id: str, extraction_result: dict, ground_truth: dict = None):
+    """Automated quality evaluation using LLM-as-Judge."""
     with langfuse.start_as_current_observation(
-        as_type="generation",
-        name="quality-judge",
-        model="gpt-4o-mini"
-    ) as gen:
-        judge_result = call_judge_llm(judge_prompt)
-        gen.update(
-            input=judge_prompt,
-            output=judge_result,
-            metadata={"evaluation_type": "llm-as-judge"}
-        )
+        as_type="generation", name="llm-judge-evaluation",
+        model="gemini-1.5-flash", metadata={"purpose": "evaluation"}
+    ) as judge:
+        eval_prompt = f"""Evaluate invoice extraction accuracy.
+        Result: {json.dumps(extraction_result)}
+        {"Ground Truth:" + json.dumps(ground_truth) if ground_truth else ""}
+        Score 0-1: completeness, accuracy, format, overall. Return JSON."""
 
-    # Parse scores and attach to original trace
-    scores = json.loads(judge_result)
+        result = call_gemini(eval_prompt)
+        scores = json.loads(result.text)
+        judge.update(input=eval_prompt, output=scores,
+            usage_details={"input": result.usage.input_tokens, "output": result.usage.output_tokens})
 
-    for dimension, value in scores.items():
-        langfuse.create_score(
-            name=dimension,
-            value=value,
-            trace_id=trace_id,
-            data_type="NUMERIC",
-            comment=f"LLM-as-Judge: {dimension}"
-        )
+        for dimension, value in scores.items():
+            langfuse.create_score(trace_id=trace_id, name=f"judge_{dimension}",
+                value=value, data_type="NUMERIC", comment="LLM-as-Judge evaluation")
+        return scores
 
-    langfuse.flush()
-    return scores
+def calculate_field_accuracy(extraction: dict, ground_truth: dict) -> float:
+    """Calculate field-level accuracy for invoice extraction."""
+    fields = ["vendor_name", "invoice_date", "total_amount", "invoice_id"]
+    return sum(1 for f in fields if extraction.get(f) == ground_truth.get(f)) / len(fields)
 
-
-# ── Ground Truth Comparison ───────────────────────────────────
-@observe()
-def compare_with_ground_truth(
-    extraction: dict,
-    ground_truth: dict,
-    trace_id: str
-) -> dict:
-    """Compare extraction against known-good ground truth."""
-    scores = {}
-
-    # Field-level accuracy
-    correct_fields = 0
-    total_fields = len(ground_truth)
-
-    for field, expected in ground_truth.items():
-        actual = extraction.get(field)
-        if actual == expected:
-            correct_fields += 1
-
-    accuracy = correct_fields / total_fields if total_fields > 0 else 0
-
-    langfuse.create_score(
-        name="field_accuracy",
-        value=accuracy,
-        trace_id=trace_id,
-        data_type="NUMERIC",
-        comment=f"{correct_fields}/{total_fields} fields correct"
-    )
-
-    # Completeness check
-    missing = [f for f in ground_truth if f not in extraction]
-    langfuse.create_score(
-        name="completeness",
-        value="complete" if not missing else "incomplete",
-        trace_id=trace_id,
-        data_type="CATEGORICAL",
-        comment=f"Missing: {missing}" if missing else "All fields present"
-    )
-
-    langfuse.flush()
-    return {"accuracy": accuracy, "missing_fields": missing}
-
-
-# ── End-to-End Pipeline with Evaluation ───────────────────────
-@observe()
-def extract_and_evaluate(document: dict) -> dict:
-    """Full pipeline: extract, score, and track quality."""
-    with langfuse.start_as_current_observation(
-        as_type="span",
-        name="extract-and-evaluate"
-    ) as trace:
-        # Step 1: Extract
+def process_with_quality_tracking(image_bytes: bytes, ground_truth: dict = None):
+    """Full pipeline with quality tracking."""
+    with langfuse.start_as_current_observation(as_type="span", name="quality-tracked-extraction") as trace:
         with langfuse.start_as_current_observation(
-            as_type="generation",
-            name="extract",
-            model="gemini-2.0-flash"
+            as_type="generation", name="extraction", model="gemini-1.5-pro"
         ) as gen:
-            result = call_extraction_llm(document["text"])
+            result = extract_invoice(image_bytes)
             gen.update(output=result)
 
-        # Step 2: Auto-evaluate
-        trace_id = trace.trace_id
-        scores = evaluate_extraction(result, document["text"], trace_id)
+        if ground_truth:
+            accuracy = calculate_field_accuracy(result, ground_truth)
+            trace.score(name="field_accuracy", value=accuracy, data_type="NUMERIC")
+            if accuracy < 0.90:
+                trace.score(name="below_target", value=True, data_type="BOOLEAN",
+                    comment="Below 90% accuracy target")
 
-        # Step 3: Flag for human review if quality is low
-        avg_score = sum(scores.values()) / len(scores)
-        if avg_score < 0.8:
-            langfuse.create_score(
-                name="needs_human_review",
-                value=1,
-                trace_id=trace_id,
-                data_type="BOOLEAN",
-                comment=f"Avg quality {avg_score:.2f} below threshold"
-            )
-
-        trace.update(output=result)
-
-    langfuse.flush()
-    return result
+        judge_scores = evaluate_extraction_quality(trace.trace_id, result, ground_truth)
+        trace.update(output={"result": result, "scores": judge_scores})
+        return result, judge_scores
 ```
 
 ## Configuration
 
 | Setting | Default | Description |
 |---------|---------|-------------|
-| Quality threshold | 0.8 | Below this triggers human review |
-| Judge model | gpt-4o-mini | Cost-effective evaluation model |
-| Score dimensions | 3 | accuracy, completeness, formatting |
+| Judge model | gemini-1.5-flash | Cheaper model for evaluation |
+| Accuracy target | 0.90 | Project requirement |
 
-## Evaluation Flow
+## Example Usage
 
-```text
-Extraction Trace
-    |
-    v
-LLM-as-Judge ── scores ──> accuracy (NUMERIC)
-    |                       completeness (NUMERIC)
-    |                       formatting (NUMERIC)
-    v
-Threshold Check
-    |
-    +-- avg >= 0.8 --> Dashboard (automated pass)
-    |
-    +-- avg < 0.8 --> Human Review Queue
-                          |
-                          v
-                      Manual Score --> Updated metrics
+```python
+record_user_feedback(trace_id="trace-123", feedback_type="thumbs", feedback_value=True)
+scores = evaluate_extraction_quality("trace-123", {"vendor": "UberEats", "total": 42.50})
 ```
 
 ## See Also
 
 - [Scoring](../concepts/scoring.md)
-- [Model Comparison](../concepts/model-comparison.md)
 - [Dashboard Metrics](../patterns/dashboard-metrics.md)

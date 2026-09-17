@@ -1,154 +1,149 @@
-# Custom Validators
+# Custom Validators Pattern
 
-> **Purpose**: Build reusable custom validation logic for LLM extraction schemas
-> **MCP Validated**: 2026-02-17
+> **Purpose**: Business rule validation for invoice extraction with custom logic
+> **MCP Validated**: 2026-01-25
 
 ## When to Use
 
-- Enforcing domain-specific business rules on extracted data
-- Creating reusable validation types across multiple models
-- Normalizing LLM output (case, whitespace, format inconsistencies)
-- Validating cross-field dependencies in extraction results
+- Enforcing business rules beyond type validation
+- Cross-field validation (e.g., date ranges, total calculations)
+- Normalizing and transforming extracted data
 
 ## Implementation
 
 ```python
-from typing import Annotated, Any
-from pydantic import BaseModel, Field, field_validator, model_validator
-from pydantic.functional_validators import AfterValidator, BeforeValidator
+from pydantic import BaseModel, Field, field_validator, model_validator, ValidationInfo
+from typing import Optional, Any
 from datetime import date, timedelta
+from decimal import Decimal
+from enum import Enum
+from typing_extensions import Self
 import re
 
+class VendorType(str, Enum):
+    UBEREATS = "ubereats"
+    DOORDASH = "doordash"
+    OTHER = "other"
 
-# --- Reusable Annotated Validators ---
+VENDOR_PATTERNS = {
+    VendorType.UBEREATS: [r"uber\s*eats", r"uber"],
+    VendorType.DOORDASH: [r"door\s*dash", r"doordash"],
+}
 
-def strip_and_title(v: str) -> str:
-    """Normalize names: strip whitespace, title case."""
-    return " ".join(v.split()).title()
+class InvoiceWithValidation(BaseModel):
+    invoice_id: str
+    vendor_name: str
+    vendor_type: VendorType = VendorType.OTHER
+    invoice_date: date
+    due_date: Optional[date] = None
+    subtotal: Decimal = Field(..., ge=0)
+    tax_amount: Decimal = Field(default=Decimal("0"), ge=0)
+    total_amount: Decimal = Field(..., ge=0)
+    currency: str = "USD"
 
+    @field_validator("invoice_id", mode="after")
+    @classmethod
+    def normalize_invoice_id(cls, v: str) -> str:
+        v = v.strip().upper()
+        v = re.sub(r"^(INVOICE|INV|#)\s*[-:]?\s*", "INV-", v)
+        return v
 
-def normalize_currency_code(v: str) -> str:
-    """Ensure 3-letter uppercase currency code."""
-    v = v.strip().upper()
-    if len(v) != 3 or not v.isalpha():
-        raise ValueError(f"Invalid currency code: {v}")
-    return v
+    @field_validator("vendor_name", mode="before")
+    @classmethod
+    def clean_vendor_name(cls, v: Any) -> Any:
+        if isinstance(v, str):
+            v = " ".join(v.split()).title()
+        return v
 
+    @field_validator("currency", mode="after")
+    @classmethod
+    def validate_currency(cls, v: str) -> str:
+        v = v.upper().strip()
+        if v not in {"USD", "EUR", "GBP", "CAD"}:
+            raise ValueError(f"Unsupported currency: {v}")
+        return v
 
-def validate_date_not_future(v: date) -> date:
-    """Ensure date is not in the future."""
-    if v > date.today():
-        raise ValueError(f"Date {v} is in the future")
-    return v
+    @field_validator("subtotal", "tax_amount", "total_amount", mode="after")
+    @classmethod
+    def round_money(cls, v: Decimal) -> Decimal:
+        return round(v, 2)
 
+    @model_validator(mode="after")
+    def auto_classify_vendor(self) -> Self:
+        if self.vendor_type == VendorType.OTHER:
+            name_lower = self.vendor_name.lower()
+            for vtype, patterns in VENDOR_PATTERNS.items():
+                if any(re.search(p, name_lower) for p in patterns):
+                    self.vendor_type = vtype
+                    break
+        return self
 
-def validate_email(v: str) -> str:
-    """Basic email format validation."""
-    v = v.strip().lower()
-    if not re.match(r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$", v):
-        raise ValueError(f"Invalid email: {v}")
-    return v
+    @model_validator(mode="after")
+    def validate_dates(self) -> Self:
+        today = date.today()
+        if self.invoice_date > today:
+            raise ValueError("Invoice date cannot be in the future")
+        if self.invoice_date < today - timedelta(days=365):
+            raise ValueError("Invoice date is more than 1 year old")
+        if self.due_date and self.due_date < self.invoice_date:
+            raise ValueError("Due date must be after invoice date")
+        return self
 
-
-def coerce_to_float(v: Any) -> float:
-    """Coerce string numbers, removing currency symbols."""
-    if isinstance(v, (int, float)):
-        return float(v)
-    if isinstance(v, str):
-        cleaned = re.sub(r"[^\d.\-]", "", v.strip())
-        if cleaned:
-            return float(cleaned)
-    raise ValueError(f"Cannot convert to float: {v}")
-
-
-# --- Reusable Annotated Types ---
-PersonName = Annotated[str, AfterValidator(strip_and_title)]
-CurrencyCode = Annotated[str, AfterValidator(normalize_currency_code)]
-PastDate = Annotated[date, AfterValidator(validate_date_not_future)]
-Email = Annotated[str, AfterValidator(validate_email)]
-CoercedFloat = Annotated[float, BeforeValidator(coerce_to_float)]
+    @model_validator(mode="after")
+    def validate_totals(self) -> Self:
+        expected = self.subtotal + self.tax_amount
+        if abs(self.total_amount - expected) > Decimal("0.02"):
+            pass  # Log warning but allow
+        return self
 ```
 
 ## Configuration
 
-| Validator Type | When to Use | Performance |
-|---------------|-------------|-------------|
-| `AfterValidator` | Post-coercion rules | Fast (runs after type check) |
-| `BeforeValidator` | Pre-coercion normalization | Runs on raw input |
-| `@field_validator` | Model-specific logic | Tied to specific model |
-| `@model_validator` | Cross-field rules | Access to all fields |
+| Setting | Default | Description |
+|---------|---------|-------------|
+| `tolerance` | `0.02` | Allowed difference in monetary calculations |
+| `max_invoice_age` | `365 days` | Maximum age for valid invoices |
 
 ## Example Usage
 
 ```python
-class ContactExtraction(BaseModel):
-    """Extract contact information from documents."""
-    name: PersonName = Field(..., description="Person's full name")
-    email: Email = Field(..., description="Email address")
-    company: PersonName = Field(..., description="Company name")
-    revenue: CoercedFloat = Field(..., description="Annual revenue")
+data = {
+    "invoice_id": "invoice #12345",
+    "vendor_name": "uber eats restaurant",
+    "vendor_type": "other",
+    "invoice_date": "2024-01-15",
+    "subtotal": "100.005",
+    "tax_amount": "8.00",
+    "total_amount": "108.01",
+}
 
-    @field_validator("name")
+invoice = InvoiceWithValidation.model_validate(data)
+print(invoice.invoice_id)   # "INV-12345"
+print(invoice.vendor_name)  # "Uber Eats Restaurant"
+print(invoice.vendor_type)  # VendorType.UBEREATS
+
+# Context-aware validation
+class ContextAwareInvoice(BaseModel):
+    vendor_name: str
+
+    @field_validator("vendor_name", mode="after")
     @classmethod
-    def name_must_have_parts(cls, v: str) -> str:
-        if len(v.split()) < 2:
-            raise ValueError("Full name must have at least first and last name")
+    def validate_known_vendor(cls, v: str, info: ValidationInfo) -> str:
+        context = info.context or {}
+        known = context.get("known_vendors", [])
+        if known and v not in known:
+            raise ValueError(f"Unknown vendor: {v}")
         return v
 
-
-# LLM might return messy data -- validators clean it up
-data = {
-    "name": "  john   DOE  ",       # -> "John Doe"
-    "email": " John@ACME.com ",     # -> "john@acme.com"
-    "company": "acme corp",          # -> "Acme Corp"
-    "revenue": "$1,500,000.00",      # -> 1500000.0
-}
-contact = ContactExtraction.model_validate(data)
-print(contact.name)     # "John Doe"
-print(contact.email)    # "john@acme.com"
-print(contact.revenue)  # 1500000.0
-
-
-# --- Cross-field validator example ---
-class DateRange(BaseModel):
-    """Validated date range extracted from documents."""
-    start_date: PastDate = Field(..., description="Start date")
-    end_date: date = Field(..., description="End date")
-    duration_days: int = Field(default=0, description="Duration in days")
-
-    @model_validator(mode="after")
-    def validate_range(self) -> "DateRange":
-        if self.end_date < self.start_date:
-            raise ValueError("end_date must be after start_date")
-        self.duration_days = (self.end_date - self.start_date).days
-        return self
-
-
-# --- Composing validators on a single field ---
-CleanUpperStr = Annotated[
-    str,
-    BeforeValidator(lambda v: str(v).strip()),
-    AfterValidator(lambda v: v.upper()),
-]
-
-
-class DocumentCode(BaseModel):
-    code: CleanUpperStr = Field(..., description="Document reference code")
-    # Input: "  abc-123  " -> "ABC-123"
+# Usage with context
+invoice = ContextAwareInvoice.model_validate(
+    {"vendor_name": "UberEats"},
+    context={"known_vendors": ["UberEats", "DoorDash"]}
+)
 ```
-
-## Validator Composition Rules
-
-| Rule | Example |
-|------|---------|
-| BeforeValidator runs first | Raw input normalization |
-| Multiple validators chain | `Annotated[str, Before(...), After(...)]` |
-| AfterValidator gets typed value | Already coerced to declared type |
-| Raise ValueError to reject | `raise ValueError("reason")` |
-| Return value to accept | `return transformed_value` |
 
 ## See Also
 
-- [Validators](../concepts/validators.md)
-- [Field Types](../concepts/field-types.md)
-- [Error Handling](../patterns/error-handling.md)
+- [validators.md](../concepts/validators.md)
+- [llm-output-validation.md](llm-output-validation.md)
+- [error-handling.md](error-handling.md)

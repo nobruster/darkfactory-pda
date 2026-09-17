@@ -1,129 +1,85 @@
 # Agents
 
-> **Purpose**: Define autonomous AI agents with roles, goals, and tools for ShopAgent e-commerce workflows
+> **Purpose**: Autonomous AI units with roles, goals, backstories, and tools
 > **Confidence**: 0.95
-> **MCP Validated**: 2026-02-17
+> **MCP Validated**: 2026-01-25
 
 ## Overview
 
-A CrewAI Agent is an LLM-powered autonomous unit defined by a role, goal, and backstory. Each agent can execute tasks, call external tools, query memory, make decisions, and delegate work to other agents. Agents are the building blocks of every crew.
+Agents are the fundamental building blocks of CrewAI. Each agent is a role-playing autonomous entity with a specific job function, goal, and backstory that shapes its decision-making. Agents can use tools, collaborate with other agents, and work toward completing assigned tasks.
 
 ## The Pattern
 
 ```python
 from crewai import Agent
 
-analyst = Agent(
-    role="E-Commerce Data Analyst",
-    goal="Extract precise revenue, order, and customer metrics via SQL queries",
-    backstory=(
-        "You are an expert SQL analyst specialized in e-commerce data. "
-        "You query Supabase Postgres for exact numbers: revenue, order counts, "
-        "payment distributions, and customer segment metrics. You never guess "
-        "numbers — every figure comes from a SQL query result."
-    ),
-    tools=[supabase_tool],
-    llm="anthropic/claude-sonnet-4-20250514",
-    memory=True,
-    verbose=True,
-    max_iter=5,
+# DataOps Triage Agent Example
+triage_agent = Agent(
+    role="Log Triage Specialist",
+    goal="Classify and prioritize log events by severity",
+    backstory="""You are an expert DevOps engineer with 10 years
+    of experience monitoring cloud infrastructure. You excel at
+    quickly identifying critical issues from log noise.""",
+    tools=[log_reader_tool, gcs_tool],
+    llm="gemini/gemini-1.5-flash",
     allow_delegation=False,
+    max_iter=15,
+    max_retry_limit=2,
+    verbose=True
 )
 ```
 
 ## Quick Reference
 
-| Parameter | Type | Default | Notes |
-| --------- | ---- | ------- | ----- |
-| `role` | str | required | Agent's job title / function |
-| `goal` | str | required | What the agent aims to achieve |
-| `backstory` | str | required | Context for persona consistency |
-| `tools` | list | `[]` | Tools available to the agent |
-| `llm` | str/LLM | default | Model identifier or LLM instance |
-| `memory` | bool | `False` | Enable agent-level memory |
-| `verbose` | bool | `False` | Enable detailed logging |
-| `max_iter` | int | `20` | Max reasoning iterations |
-| `max_rpm` | int | `None` | Rate limit for API calls |
-| `allow_delegation` | bool | `True` | Can delegate to other agents |
-| `step_callback` | callable | `None` | Hook after each reasoning step |
-| `function_calling_llm` | str | `None` | Separate LLM for tool calls |
-
-## YAML Configuration
-
-```yaml
-# config/agents.yaml
-analyst:
-  role: "E-Commerce Data Analyst"
-  goal: "Extract precise revenue, order, and customer metrics via SQL queries"
-  backstory: >
-    You are an expert SQL analyst specialized in e-commerce data.
-    You query Supabase Postgres for exact numbers and never guess figures.
-  max_iter: 5
-  verbose: true
-
-researcher:
-  role: "Customer Experience Researcher"
-  goal: "Surface customer sentiment and complaint themes from review vectors"
-  backstory: >
-    You search Qdrant for review embeddings and synthesize sentiment patterns,
-    recurring complaints, and satisfaction drivers from customer feedback.
-  max_iter: 5
-  verbose: true
-```
-
-```python
-from crewai import Agent, CrewBase, agent
-
-@CrewBase
-class ShopAgentCrew:
-    agents_config = "config/agents.yaml"
-
-    @agent
-    def analyst(self) -> Agent:
-        return Agent(
-            config=self.agents_config["analyst"],
-            tools=[supabase_tool],
-        )
-
-    @agent
-    def researcher(self) -> Agent:
-        return Agent(
-            config=self.agents_config["researcher"],
-            tools=[qdrant_tool],
-        )
-```
+| Parameter | Required | Description |
+|-----------|----------|-------------|
+| `role` | Yes | Job title (e.g., "Log Triage Specialist") |
+| `goal` | Yes | What agent aims to achieve |
+| `backstory` | Yes | Context shaping behavior |
+| `tools` | No | List of available tools |
+| `llm` | No | LLM to use (default: GPT-4) |
+| `allow_delegation` | No | Can delegate tasks (default: False) |
+| `max_iter` | No | Max iterations (default: 20) |
 
 ## Common Mistakes
 
 ### Wrong
 
 ```python
-# Missing backstory leads to generic, unfocused responses
+# Too vague - agent won't know what to do
 agent = Agent(
-    role="Analyst",
-    goal="Analyze things",
+    role="Helper",
+    goal="Help with stuff",
+    backstory="You help."
 )
 ```
 
 ### Correct
 
 ```python
-# Specific role, goal, and backstory produce focused behavior
+# Specific role, clear goal, detailed backstory
 agent = Agent(
-    role="E-Commerce Data Analyst",
-    goal="Return exact revenue totals and order counts from Supabase Postgres",
-    backstory=(
-        "You specialize in e-commerce SQL. You query orders, customers, and "
-        "products tables to return precise figures — never estimates."
-    ),
-    tools=[supabase_tool],
-    max_iter=5,
+    role="Root Cause Analyst",
+    goal="Identify the root cause of pipeline failures and suggest fixes",
+    backstory="""You are a senior SRE specializing in data pipelines.
+    You've debugged hundreds of Cloud Run, Pub/Sub, and BigQuery issues.
+    You approach problems methodically, checking logs, metrics, and
+    recent deployments to find the underlying cause.""",
+    tools=[log_reader_tool, metrics_tool],
+    max_iter=10  # Prevent runaway analysis
 )
 ```
 
+## Agent Types for DataOps
+
+| Agent | Role | Goal |
+|-------|------|------|
+| Triage | Log Triage Specialist | Classify severity, filter noise |
+| Root Cause | Root Cause Analyst | Find patterns, suggest fixes |
+| Reporter | Alert Reporter | Format reports, notify Slack |
+
 ## Related
 
-- [Tasks](../concepts/tasks.md)
 - [Crews](../concepts/crews.md)
-- [Tools](../concepts/tools.md)
-- [ShopAgent Crew Pattern](../patterns/shopagent-crew.md)
+- [Tasks](../concepts/tasks.md)
+- [Triage Pattern](../patterns/triage-investigation-report.md)

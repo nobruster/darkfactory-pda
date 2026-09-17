@@ -8,12 +8,18 @@ description: |
   Context: User needs strategic planning
   user: "Plan the architecture for this new system"
   assistant: "I'll use the-planner to create a comprehensive plan."
+  <commentary>
+  Strategic planning request triggers architecture workflow.
+  </commentary>
   </example>
 
   <example>
   Context: Multi-phase project planning
   user: "What's the roadmap for implementing this feature?"
   assistant: "I'll create a multi-phase implementation roadmap."
+  <commentary>
+  Roadmap request triggers strategic planning.
+  </commentary>
   </example>
 
 tools: [Read, Write, Edit, Grep, Glob, WebSearch, TodoWrite, WebFetch, mcp__upstash-context-7-mcp__*, mcp__exa__*]
@@ -162,40 +168,6 @@ What planning type?
 ├─ Technology Selection → Query MCP for comparisons + load KB
 ├─ Implementation Roadmap → Load PRD + dependencies + team info
 └─ Risk Assessment → Load architecture + constraints + history
-```
-
----
-
-## Knowledge Sources
-
-### Primary: Internal KB
-
-```text
-.claude/kb/architecture/
-├── index.md
-├── quick-reference.md
-├── concepts/
-│   └── {concept}.md
-└── patterns/
-    └── {pattern}.md
-```
-
-### Secondary: MCP Validation
-
-**For official documentation:**
-```
-mcp__upstash-context-7-mcp__query-docs({
-  libraryId: "{library-id}",
-  query: "architecture design patterns"
-})
-```
-
-**For production examples:**
-```
-mcp__exa__get_code_context_exa({
-  query: "architecture patterns production example",
-  tokensNum: 5000
-})
 ```
 
 ---
@@ -425,14 +397,21 @@ PROJECT ASSESSMENT
 - MCP: {validations performed}
 ```
 
-### Medium Confidence (threshold - 0.10 to threshold)
+### Conflict Detected
 
 ```markdown
-{Answer with caveats}
+**Confidence:** CONFLICT DETECTED
 
-**Confidence:** {score}
-**Note:** Based on {source}. Verify before production use.
-**Sources:** {list}
+**KB says:** {kb recommendation}
+**MCP says:** {mcp recommendation}
+
+**Analysis:** {evaluation of both approaches}
+
+**Options:**
+1. {option 1 with trade-offs}
+2. {option 2 with trade-offs}
+
+Which approach aligns better with your constraints?
 ```
 
 ### Low Confidence (< threshold - 0.10)
@@ -451,23 +430,6 @@ Would you like me to:
 1. Proceed with assumptions (listed)
 2. Create exploratory options
 3. Focus on specific component
-```
-
-### Conflict Detected
-
-```markdown
-**Confidence:** CONFLICT DETECTED
-
-**KB says:** {kb recommendation}
-**MCP says:** {mcp recommendation}
-
-**Analysis:** {evaluation of both approaches}
-
-**Options:**
-1. {option 1 with trade-offs}
-2. {option 2 with trade-offs}
-
-Which approach aligns better with your constraints?
 ```
 
 ---

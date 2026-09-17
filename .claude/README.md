@@ -1,11 +1,21 @@
 # Ambiente de agentes — o que tem aqui e o que usar
 
-453 arquivos: 19 agentes, 8 comandos, 26 skills e uma base de conhecimento com
-20 domínios.
+630 arquivos: **50 agentes**, 18 comandos, 26 skills, base de conhecimento com
+**25 domínios**, mais o loop de desenvolvimento (`dev/`) e o registro de
+sessões (`telemetry/`).
 
-Veio inteiro do projeto **Semana AI Data Engineer (ShopAgent)**. Nada foi
-removido — mas nem tudo serve para uma fábrica de dados. Este índice separa o
-que é núcleo do que é herança, para você não perder tempo procurando.
+Reunião de dois projetos:
+
+| Origem | O que trouxe |
+|---|---|
+| **btc-zero-prd-claude-code** | 28 agentes (data engineering, workflow SDD, AWS), 9 comandos, KB de infra, `dev/`, `telemetry/` |
+| **Semana AI Data Engineer** | 19 agentes, 26 skills, KB do stack de RAG/multi-agente |
+
+Nada foi removido — mas nem tudo serve para uma fábrica de dados. Este índice
+separa o que é núcleo do que é herança, para você não perder tempo procurando.
+
+> Onde os dois projetos tinham o mesmo agente, **a versão do btc-zero
+> prevaleceu** (projeto mais recente, voltado a engenharia de dados).
 
 > Regras de conduta da fábrica: [`../AGENTS.md`](../AGENTS.md).
 > Este arquivo é só o mapa do ferramental.
@@ -25,11 +35,46 @@ Se a demanda não tem recurso correspondente, é o `fabrica-architect` que
 decide entre usar, estender ou criar — e cria seguindo os padrões deste
 repositório, em vez de improvisar.
 
-### Agentes
+### Agentes — engenharia de dados
+
+Os mais diretamente aplicáveis a uma fábrica.
+
+| Agente | Para quê |
+|---|---|
+| [`data-engineering/medallion-architect`](agents/data-engineering/medallion-architect.md) | **Bronze → Silver → Gold.** O padrão de camadas da fábrica |
+| [`data-engineering/spark-specialist`](agents/data-engineering/spark-specialist.md) | Spark em geral |
+| [`data-engineering/spark-performance-analyzer`](agents/data-engineering/spark-performance-analyzer.md) | Gargalos e custo |
+| [`data-engineering/spark-troubleshooter`](agents/data-engineering/spark-troubleshooter.md) | Job que falha ou trava |
+| [`data-engineering/spark-streaming-architect`](agents/data-engineering/spark-streaming-architect.md) | Ingestão contínua |
+| [`data-engineering/lakeflow-architect`](agents/data-engineering/lakeflow-architect.md) | Desenho de pipeline declarativo |
+| [`data-engineering/lakeflow-pipeline-builder`](agents/data-engineering/lakeflow-pipeline-builder.md) | Construção do pipeline |
+| [`domain/pipeline-architect`](agents/domain/pipeline-architect.md) | Arquitetura de pipeline ponta a ponta |
+| [`domain/extraction-specialist`](agents/domain/extraction-specialist.md) | Extração de fonte difícil |
+| [`domain/dataops-builder`](agents/domain/dataops-builder.md) | Operação e automação |
+
+### Agentes — fluxo de trabalho (SDD)
+
+Ciclo completo, com comando próprio para cada etapa:
+
+| Etapa | Agente | Comando |
+|---|---|---|
+| 1. Explorar | [`brainstorm-agent`](agents/workflow/brainstorm-agent.md) | `/brainstorm` |
+| 2. Definir | [`define-agent`](agents/workflow/define-agent.md) | `/define` |
+| 3. Desenhar | [`design-agent`](agents/workflow/design-agent.md) | `/design` |
+| 4. Construir | [`build-agent`](agents/workflow/build-agent.md) | `/build` |
+| 5. Iterar | [`iterate-agent`](agents/workflow/iterate-agent.md) | `/iterate` |
+| 6. Entregar | [`ship-agent`](agents/workflow/ship-agent.md) | `/ship` |
+
+Artefatos em `sdd/`. O `dev/` guarda o loop de desenvolvimento (prompts, logs,
+progresso) e o `telemetry/` registra as sessões.
+
+### Agentes — qualidade e código
 
 | Agente | Para quê |
 |---|---|
 | [`code-quality/code-reviewer`](agents/code-quality/code-reviewer.md) | Revisão de qualidade, segurança e manutenibilidade |
+| [`code-quality/dual-reviewer`](agents/code-quality/dual-reviewer.md) | Revisão dupla (estática + arquitetural) |
+| [`code-quality/test-generator`](agents/code-quality/test-generator.md) | Gerar testes — **útil para provar que o juiz acusa** |
 | [`code-quality/python-developer`](agents/code-quality/python-developer.md) | Escrever e refatorar Python |
 | [`code-quality/code-cleaner`](agents/code-quality/code-cleaner.md) | Remover código morto e duplicação |
 | [`code-quality/code-documenter`](agents/code-quality/code-documenter.md) | Docstrings e documentação de repo |
@@ -45,6 +90,11 @@ repositório, em vez de improvisar.
 | Comando | Para quê |
 |---|---|
 | [`/nova-fabrica`](commands/core/nova-fabrica.md) | Monta o ferramental de uma fábrica nova |
+| [`/brainstorm`](commands/workflow/brainstorm.md) · [`/define`](commands/workflow/define.md) · [`/design`](commands/workflow/design.md) | Ciclo SDD: explorar → definir → desenhar |
+| [`/build`](commands/workflow/build.md) · [`/iterate`](commands/workflow/iterate.md) · [`/ship`](commands/workflow/ship.md) | Ciclo SDD: construir → iterar → entregar |
+| [`/dev`](commands/dev/dev.md) | Loop de desenvolvimento com prompt e log |
+| [`/create-pr`](commands/workflow/create-pr.md) | Abrir pull request |
+| [`/telemetry`](commands/core/telemetry.md) | Registro da sessão |
 | [`/review`](commands/review/review.md) | Revisão de código |
 | [`/memory`](commands/core/memory.md) | Gerenciar memória do projeto |
 | [`/sync-context`](commands/core/sync-context.md) | Sincronizar contexto do repositório |
@@ -68,6 +118,8 @@ repositório, em vez de improvisar.
 
 | Domínio | Conteúdo |
 |---|---|
+| [`kb/terraform`](kb/terraform/) · [`kb/terragrunt`](kb/terragrunt/) | Infraestrutura como código |
+| [`kb/gcp`](kb/gcp/) | Google Cloud |
 | [`kb/python`](kb/python/) | Padrões e idiomas |
 | [`kb/testing`](kb/testing/) | Estratégia e padrões de teste |
 | [`kb/architecture`](kb/architecture/) | Design de sistemas, trade-offs, escalabilidade |
@@ -93,11 +145,24 @@ de exemplo de como o ferramental foi construído.
 | Comandos de slides | `/build-slides`, `/review-slides`, `/meeting` | — |
 | Skills de design visual | `banner-design`, `slides`, `colorize`, `typeset`, `animate`, `layout`, `polish`, `brand`, `design`, `design-system`, `frontend-design`, `ui-styling`, `ui-ux-pro-max`, `bolder`, `quieter`, `delight`, `impeccable`, `overdrive` | ~18 skills de UI |
 | KB do stack do curso | `kb/chainlit`, `kb/crewai`, `kb/langchain`, `kb/llamaindex`, `kb/qdrant`, `kb/langfuse`, `kb/deepeval`, `kb/supabase`, `kb/shadowtraffic`, `kb/genai`, `kb/aide-slides` | Stack de RAG/multi-agente |
-| Specs do ShopAgent | `sdd/` (8 arquivos) | Day 3 e Day 4 |
+| Specs do ShopAgent | `sdd/features/*SHOPAGENT*`, `sdd/reports/*SHOPAGENT*` | Day 3 e Day 4 |
+| Specs do BTC-Zero | `sdd/` (45 arquivos) | Produto do curso btc-zero |
+| Agentes AWS | `agents/aws/` (4) | Úteis se a fábrica rodar em AWS |
+| Agentes de extração BTC | `agents/domain/function-developer`, `infra-deployer` | Do produto btc-zero |
+| KB de LLM/API | `kb/gemini`, `kb/openrouter` | Se a fábrica não usa LLM, ignore |
 
-⚠️ **[`CLAUDE.md`](CLAUDE.md) ainda descreve o ShopAgent**, não a darkfactory.
-Foi mantido como veio. Ao usar este template num projeto novo, reescreva-o
-para o projeto — ou aponte para o [`../AGENTS.md`](../AGENTS.md).
+### ⚠️ Os dois CLAUDE.md herdados
+
+Nenhum dos dois descreve a darkfactory:
+
+| Arquivo | Descreve |
+|---|---|
+| [`CLAUDE.md`](CLAUDE.md) | ShopAgent (Semana AI Data Engineer) |
+| [`CLAUDE-btc-zero.md`](CLAUDE-btc-zero.md) | Produto BTC-Zero |
+
+Foram mantidos como vieram, por referência. **Ao usar este template num
+projeto novo, reescreva o `CLAUDE.md` para o projeto** — ou aponte para o
+[`../AGENTS.md`](../AGENTS.md), que tem as regras da fábrica.
 
 ---
 

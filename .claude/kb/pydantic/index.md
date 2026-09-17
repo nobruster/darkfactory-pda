@@ -1,7 +1,7 @@
 # Pydantic Knowledge Base
 
-> **Purpose**: Python data validation for LLM output parsing and structured extraction
-> **MCP Validated**: 2026-02-17
+> **Purpose**: Python data validation library for LLM output parsing and structured extraction
+> **MCP Validated**: 2026-01-25
 
 ## Quick Navigation
 
@@ -9,25 +9,25 @@
 
 | File | Purpose |
 |------|---------|
-| [concepts/base-model.md](concepts/base-model.md) | BaseModel fundamentals, model methods, serialization |
-| [concepts/field-types.md](concepts/field-types.md) | Field types, Optional, Annotated, constraints |
-| [concepts/validators.md](concepts/validators.md) | field_validator, model_validator, modes |
-| [concepts/nested-models.md](concepts/nested-models.md) | Nested model composition, recursive structures |
+| [concepts/base-model.md](concepts/base-model.md) | BaseModel fundamentals and Field configuration |
+| [concepts/field-types.md](concepts/field-types.md) | Type hints, Enums, Literals, and Optional fields |
+| [concepts/validators.md](concepts/validators.md) | field_validator and model_validator decorators |
+| [concepts/nested-models.md](concepts/nested-models.md) | Composing models for complex structures |
 
 ### Patterns (< 200 lines each)
 
 | File | Purpose |
 |------|---------|
-| [patterns/llm-output-validation.md](patterns/llm-output-validation.md) | Validate and parse LLM JSON responses |
-| [patterns/extraction-schema.md](patterns/extraction-schema.md) | Build schemas for document data extraction |
-| [patterns/error-handling.md](patterns/error-handling.md) | Handle ValidationError, retries, fallbacks |
-| [patterns/custom-validators.md](patterns/custom-validators.md) | Reusable custom validation logic |
+| [patterns/llm-output-validation.md](patterns/llm-output-validation.md) | Validating LLM JSON responses |
+| [patterns/extraction-schema.md](patterns/extraction-schema.md) | Invoice extraction schema definition |
+| [patterns/error-handling.md](patterns/error-handling.md) | ValidationError handling and recovery |
+| [patterns/custom-validators.md](patterns/custom-validators.md) | Business rule validation logic |
 
 ### Specs (Machine-Readable)
 
 | File | Purpose |
 |------|---------|
-| [specs/invoice-schema.yaml](specs/invoice-schema.yaml) | Invoice extraction Pydantic schema spec |
+| [specs/invoice-schema.yaml](specs/invoice-schema.yaml) | Invoice extraction JSON schema |
 
 ---
 
@@ -41,10 +41,10 @@
 
 | Concept | Description |
 |---------|-------------|
-| **BaseModel** | Core class for defining data schemas with automatic validation |
-| **Field Types** | Type annotations with Optional, Annotated, and Field constraints |
-| **Validators** | Decorators for custom field-level and model-level validation |
-| **Nested Models** | Composable hierarchical data structures |
+| **BaseModel** | Core class for data models with automatic validation |
+| **Field** | Configure defaults, constraints, and metadata |
+| **Validators** | Custom validation logic via decorators |
+| **Type Coercion** | Automatic conversion (e.g., "123" to int) |
 
 ---
 
@@ -53,8 +53,8 @@
 | Level | Files |
 |-------|-------|
 | **Beginner** | concepts/base-model.md, concepts/field-types.md |
-| **Intermediate** | concepts/validators.md, patterns/llm-output-validation.md |
-| **Advanced** | patterns/extraction-schema.md, patterns/custom-validators.md |
+| **Intermediate** | patterns/extraction-schema.md, patterns/error-handling.md |
+| **Advanced** | patterns/llm-output-validation.md, patterns/custom-validators.md |
 
 ---
 
@@ -62,4 +62,15 @@
 
 | Agent | Primary Files | Use Case |
 |-------|---------------|----------|
-| ai-prompt-specialist | patterns/llm-output-validation.md, patterns/extraction-schema.md | Define Pydantic schemas for LLM structured output |
+| python-developer | patterns/extraction-schema.md | Define invoice models |
+| test-generator | patterns/error-handling.md | Test validation edge cases |
+
+---
+
+## Project Context
+
+This KB supports the GenAI Invoice Processing Pipeline:
+- Validating Gemini's JSON extraction output
+- Defining invoice extraction schema
+- Type coercion and default values
+- Error handling for malformed LLM responses

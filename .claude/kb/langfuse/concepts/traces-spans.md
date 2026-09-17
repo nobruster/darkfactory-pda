@@ -1,12 +1,12 @@
 # Traces and Spans
 
-> **Purpose**: Understand the Langfuse trace hierarchy and observation nesting model
+> **Purpose**: Hierarchical structure for observability data in Langfuse
 > **Confidence**: 0.95
-> **MCP Validated**: 2026-02-17
+> **MCP Validated**: 2026-01-25
 
 ## Overview
 
-A Langfuse trace represents a single request or operation in your LLM application. Traces contain observations (spans, generations, events) that can be nested to form a tree structure. Sessions group related traces from the same user interaction. The hierarchy is: Session > Trace > Observations (nested).
+A trace represents a single request or operation in your LLM application. Traces contain observations (spans, generations, events) that form a hierarchical tree showing the execution flow. Sessions optionally group multiple traces together, useful for multi-turn conversations.
 
 ## The Pattern
 
@@ -18,95 +18,73 @@ langfuse = get_client()
 # Create a trace with context manager
 with langfuse.start_as_current_observation(
     as_type="span",
-    name="process-document"
+    name="process-invoice",
+    user_id="user-123",
+    session_id="session-456",
+    metadata={"source": "cloud-run"}
 ) as root_span:
-    root_span.update(
-        input={"document_id": "doc-123"},
-        metadata={"pipeline": "extraction"}
-    )
 
-    # Nested span for a sub-step
+    # Nested span for preprocessing
     with langfuse.start_as_current_observation(
         as_type="span",
         name="preprocess"
-    ) as child_span:
-        child_span.update(output={"pages": 5, "status": "cleaned"})
+    ) as preprocess_span:
+        preprocess_span.update(output="Preprocessed invoice image")
 
-    # Nested generation for an LLM call
+    # Nested generation for LLM call
     with langfuse.start_as_current_observation(
         as_type="generation",
         name="extract-fields",
-        model="gemini-2.0-flash"
+        model="gemini-1.5-pro"
     ) as gen:
-        gen.update(
-            input={"prompt": "Extract invoice fields..."},
-            output={"vendor": "Acme Corp", "total": 1500.00},
-            usage_details={"input": 250, "output": 80}
-        )
+        gen.update(output={"vendor": "UberEats", "total": 42.50})
 
-    root_span.update(output={"status": "completed"})
-
-langfuse.flush()
+    root_span.update(output="Invoice processed successfully")
 ```
 
-## Data Model
+## Quick Reference
 
-| Level | Description | Key Attributes |
-|-------|-------------|----------------|
-| **Session** | Groups related traces | `session_id` |
-| **Trace** | Single request/operation | `trace_id`, `user_id`, `tags`, `release` |
-| **Span** | Duration-based sub-step | `name`, `input`, `output`, `metadata` |
-| **Generation** | LLM call observation | `model`, `usage_details`, `cost_details` |
-| **Event** | Point-in-time marker | `name`, `input`, `metadata` |
-
-## Trace Attributes
-
-| Attribute | Type | Purpose |
-|-----------|------|---------|
-| `name` | string | Identify the trace type (e.g., "invoice-extraction") |
-| `user_id` | string | Associate trace with a user |
-| `session_id` | string | Group traces into sessions |
-| `tags` | list | Filterable labels (e.g., ["production", "v2"]) |
-| `release` | string | Application version |
-| `metadata` | dict | Arbitrary key-value data |
-| `input` | any | Trace input payload |
-| `output` | any | Trace output payload |
-
-## Propagating Attributes
-
-```python
-from langfuse import observe, propagate_attributes
-
-@observe()
-def my_pipeline(user_id: str, session_id: str):
-    with propagate_attributes(
-        user_id=user_id,
-        session_id=session_id,
-        tags=["production"],
-        metadata={"pipeline": "extraction"}
-    ):
-        result = process_step()
-    return result
-```
+| Component | Description | Use Case |
+|-----------|-------------|----------|
+| `trace` | Root container | Single request lifecycle |
+| `span` | Generic observation | Function calls, I/O operations |
+| `generation` | LLM-specific span | Model calls with tokens/cost |
+| `event` | Point-in-time marker | Logging discrete events |
+| `session` | Trace grouping | Chat threads, user sessions |
 
 ## Common Mistakes
 
 ### Wrong
 
 ```python
-# Missing flush - data lost in serverless environments
-with langfuse.start_as_current_observation(as_type="span", name="task") as span:
-    span.update(output="done")
-# Application exits without sending buffered traces
+# Creating orphan spans without context
+span = langfuse.start_span(name="my-span")
+# Forgetting to end it or losing the hierarchy
 ```
 
 ### Correct
 
 ```python
-with langfuse.start_as_current_observation(as_type="span", name="task") as span:
-    span.update(output="done")
-langfuse.flush()  # Always flush in short-lived / serverless apps
+# Using context manager ensures proper hierarchy and cleanup
+with langfuse.start_as_current_observation(
+    as_type="span",
+    name="my-span"
+) as span:
+    # Automatic parent-child relationship
+    # Automatic end() on exit
+    span.update(output="Done")
 ```
+
+## Key Attributes
+
+| Attribute | Type | Description |
+|-----------|------|-------------|
+| `trace_id` | string | Unique identifier for the trace |
+| `user_id` | string | End-user identifier |
+| `session_id` | string | Groups related traces |
+| `metadata` | dict | Custom key-value pairs |
+| `input` | any | Operation input data |
+| `output` | any | Operation output data |
 
 ## Related
 

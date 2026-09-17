@@ -1,12 +1,12 @@
 # Generations
 
-> **Purpose**: Track LLM calls with model info, token usage, cost, and prompt/completion pairs
+> **Purpose**: Specialized observation type for tracking LLM calls with token usage and costs
 > **Confidence**: 0.95
-> **MCP Validated**: 2026-02-17
+> **MCP Validated**: 2026-01-25
 
 ## Overview
 
-A generation is a specialized observation type in Langfuse designed for LLM calls. It extends the basic span with fields for model name, model parameters, token usage (usage_details), and cost (cost_details). Generations are the primary unit for cost tracking, latency measurement, and quality scoring of LLM interactions.
+A generation is a specialized observation type designed for LLM calls. It extends the basic span with additional fields for model name, parameters, token counts (input/output/cached), and cost calculations. Langfuse automatically tracks tokens and costs for supported models.
 
 ## The Pattern
 
@@ -17,91 +17,92 @@ langfuse = get_client()
 
 with langfuse.start_as_current_observation(
     as_type="generation",
-    name="extract-invoice",
-    model="gemini-2.0-flash"
+    name="invoice-extraction",
+    model="gemini-1.5-pro",
+    model_parameters={
+        "temperature": 0.1,
+        "max_tokens": 1024
+    },
+    input=[
+        {"role": "system", "content": "Extract invoice fields..."},
+        {"role": "user", "content": "Invoice image attached"}
+    ]
 ) as generation:
+
+    # Call your LLM
+    response = call_gemini_api(prompt)
+
+    # Update with output and usage
     generation.update(
-        input=[
-            {"role": "system", "content": "Extract invoice fields as JSON."},
-            {"role": "user", "content": "Invoice #1234 from Acme Corp..."}
-        ],
-        output={"vendor": "Acme Corp", "total": 1500.00},
-        model_parameters={"temperature": 0.0, "max_tokens": 1024},
-        usage_details={"input": 320, "output": 85, "total": 405},
-        cost_details={"input": 0.00016, "output": 0.000085, "total": 0.000245}
+        output=response.text,
+        usage_details={
+            "input": response.usage.prompt_tokens,
+            "output": response.usage.completion_tokens,
+            "total": response.usage.total_tokens
+        }
     )
-
-langfuse.flush()
-```
-
-## Generation-Specific Fields
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `model` | string | Model identifier (e.g., "gemini-2.0-flash") |
-| `model_parameters` | dict | Temperature, max_tokens, top_p, etc. |
-| `usage_details` | dict | Token counts by type (input, output, total) |
-| `cost_details` | dict | Cost in USD by type (input, output, total) |
-| `input` | any | Prompt sent to the model |
-| `output` | any | Model response / completion |
-| `metadata` | dict | Arbitrary key-value metadata |
-
-## Using the Decorator
-
-```python
-from langfuse import observe
-
-@observe(as_type="generation")
-def call_llm(prompt: str, model: str = "gemini-2.0-flash"):
-    """Decorator automatically captures input/output and timing."""
-    # Your LLM call logic here
-    response = my_llm_client.generate(prompt, model=model)
-    return response.text
 ```
 
 ## Quick Reference
 
-| Scenario | as_type | Why |
-|----------|---------|-----|
-| LLM text generation | `"generation"` | Tracks tokens, cost, model |
-| Embedding call | `"embedding"` | Tracks embedding token usage |
-| Non-LLM processing | `"span"` | No token/cost fields needed |
-| Tool/function call | `"tool"` | Semantic clarity |
+| Field | Type | Description |
+|-------|------|-------------|
+| `model` | string | Model identifier (e.g., "gemini-1.5-pro") |
+| `model_parameters` | dict | Temperature, max_tokens, etc. |
+| `input` | list/string | Prompt or message array |
+| `output` | string/dict | Model response |
+| `usage_details` | dict | Token counts by type |
+| `cost_details` | dict | Calculated costs |
 
-## Usage Details Keys
+## Token Usage Types
 
-| Key | Description |
-|-----|-------------|
-| `input` | Input/prompt tokens |
-| `output` | Output/completion tokens |
-| `total` | Total tokens (auto-summed if omitted) |
-| `cached_tokens` | Tokens served from cache |
-| `reasoning_tokens` | Tokens used for chain-of-thought |
-| `audio_tokens` | Tokens for audio modalities |
-| `image_tokens` | Tokens for image modalities |
+| Type | Description |
+|------|-------------|
+| `input` | Prompt/input tokens |
+| `output` | Completion/output tokens |
+| `total` | Sum of all tokens |
+| `cache_read_input_tokens` | Cached prompt tokens |
+| `audio_tokens` | Audio input tokens |
+| `image_tokens` | Image input tokens |
 
 ## Common Mistakes
 
 ### Wrong
 
 ```python
-# Using span for LLM calls - loses token/cost tracking
-@observe(as_type="span")
-def call_llm(prompt):
-    return llm.generate(prompt)
+# Missing model name - no auto cost calculation
+with langfuse.start_as_current_observation(
+    as_type="generation",
+    name="llm-call"
+) as gen:
+    gen.update(output="response")
 ```
 
 ### Correct
 
 ```python
-# Use generation for LLM calls to get full observability
-@observe(as_type="generation")
-def call_llm(prompt):
-    return llm.generate(prompt)
+# Include model for automatic cost tracking
+with langfuse.start_as_current_observation(
+    as_type="generation",
+    name="llm-call",
+    model="gemini-1.5-pro"  # Required for auto-cost
+) as gen:
+    gen.update(
+        output="response",
+        usage_details={"input": 100, "output": 50}
+    )
 ```
+
+## Auto-Supported Models
+
+| Provider | Models | Tokenizer |
+|----------|--------|-----------|
+| OpenAI | gpt-4o, gpt-4, gpt-3.5-turbo | o200k_base, cl100k_base |
+| Anthropic | claude-3.5-sonnet, claude-3-opus | Anthropic tokenizer |
+| Google | gemini-1.5-pro, gemini-1.5-flash | Google tokenizer |
 
 ## Related
 
-- [Traces and Spans](../concepts/traces-spans.md)
 - [Cost Tracking](../concepts/cost-tracking.md)
+- [Traces and Spans](../concepts/traces-spans.md)
 - [Python SDK Integration](../patterns/python-sdk-integration.md)

@@ -23,7 +23,7 @@ Generates a professional README.md by combining codebase exploration with docume
 
 1. **Explores** codebase using codebase-explorer patterns
 2. **Analyzes** project structure, tech stack, and patterns
-3. **Generates** README.md following documentation best practices
+3. **Generates** README.md following code-documenter standards
 4. **Validates** all examples and links before saving
 
 ---
@@ -49,7 +49,7 @@ Generates a professional README.md by combining codebase exploration with docume
 │  ├─ Find installation/setup commands                        │
 │  └─ Identify environment variables                          │
 │                                                             │
-│  Phase 3: GENERATE (documentation patterns)                  │
+│  Phase 3: GENERATE (code-documenter patterns)               │
 │  ├─ Create compelling project description                   │
 │  ├─ Build Quick Start with tested commands                  │
 │  ├─ Document features with examples                         │
@@ -351,10 +351,12 @@ This command leverages:
 | Agent | Purpose |
 | ----- | ------- |
 | **codebase-explorer** | Comprehensive codebase analysis |
+| **code-documenter** | Documentation generation patterns |
 
 The command combines:
 - Explorer's systematic analysis workflow
-- Documentation quality checklist and templates
+- Documenter's quality checklist and templates
+- Both agents' validation requirements
 
 ---
 

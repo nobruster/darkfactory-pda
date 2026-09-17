@@ -1,140 +1,107 @@
 # Tools
 
-> **Purpose**: Integrate external capabilities into agents via BaseTool and @tool decorator
+> **Purpose**: Capabilities for agents to interact with external systems
 > **Confidence**: 0.95
-> **MCP Validated**: 2026-02-17
+> **MCP Validated**: 2026-01-25
 
 ## Overview
 
-CrewAI Tools are external capabilities registered to agents at runtime. Tools give agents deterministic access to APIs, databases, file systems, and services. There are two ways to create tools: the `@tool` decorator for simple functions and subclassing `BaseTool` for complex integrations. The `crewai-tools` package provides built-in tools.
+Tools extend agent capabilities by providing functions to read files, call APIs, query databases, or interact with services like Slack. CrewAI supports two approaches: the `@tool` decorator for simple functions and `BaseTool` subclassing for complex implementations.
 
 ## The Pattern
 
 ```python
-from crewai.tools import tool
-import psycopg2
-import os
+from crewai.tools import tool, BaseTool
+from pydantic import BaseModel, Field
+from typing import Type
 
-@tool("Supabase SQL Executor")
-def supabase_execute_sql(query: str) -> str:
-    """Execute a SQL query against the Supabase Postgres Ledger and return results.
-    Use this when you need exact revenue totals, order counts, customer segments,
-    or any structured e-commerce metric that requires a SQL query."""
-    conn = psycopg2.connect(os.environ["SUPABASE_DB_URL"])
-    with conn.cursor() as cur:
-        cur.execute(query)
-        rows = cur.fetchall()
-        columns = [desc[0] for desc in cur.description]
-    conn.close()
-    return str([dict(zip(columns, row)) for row in rows])
+# Simple approach: @tool decorator
+@tool("Read GCS Log File")
+def read_gcs_logs(bucket: str, file_path: str) -> str:
+    """Read log file from GCS bucket. Use for analyzing Cloud Logging exports."""
+    from google.cloud import storage
+    client = storage.Client()
+    bucket_obj = client.bucket(bucket)
+    blob = bucket_obj.blob(file_path)
+    return blob.download_as_text()
+
+# Advanced approach: BaseTool subclass
+class SlackNotifyInput(BaseModel):
+    channel: str = Field(description="Slack channel ID or name")
+    message: str = Field(description="Alert message to send")
+    severity: str = Field(description="CRITICAL, ERROR, WARNING")
+
+class SlackNotifyTool(BaseTool):
+    name: str = "Send Slack Alert"
+    description: str = "Send alert notification to Slack channel"
+    args_schema: Type[BaseModel] = SlackNotifyInput
+
+    def _run(self, channel: str, message: str, severity: str) -> str:
+        import requests
+        webhook_url = os.environ["SLACK_WEBHOOK_URL"]
+        emoji = {"CRITICAL": ":red_circle:", "ERROR": ":warning:"}
+        payload = {
+            "channel": channel,
+            "text": f"{emoji.get(severity, ':info:')} {message}"
+        }
+        requests.post(webhook_url, json=payload)
+        return f"Alert sent to {channel}"
 ```
 
 ## Quick Reference
 
-| Approach | Best For | Complexity |
-|----------|----------|------------|
+| Approach | When to Use | Complexity |
+|----------|-------------|------------|
 | `@tool` decorator | Simple stateless functions | Low |
-| `BaseTool` subclass | Stateful, validated inputs | Medium |
-| Built-in tools | Common operations | None |
+| `BaseTool` subclass | State, validation, async | High |
 
-## BaseTool Pattern
+## Tool Parameters
 
-```python
-from crewai.tools import BaseTool
-from pydantic import BaseModel, Field
-from qdrant_client import QdrantClient
-from qdrant_client.models import Filter
-import os
-
-class QdrantSearchInput(BaseModel):
-    query: str = Field(description="Natural language query to search review vectors")
-    top_k: int = Field(default=5, description="Number of top results to return")
-
-class QdrantSemanticSearch(BaseTool):
-    name: str = "Qdrant Semantic Search"
-    description: str = (
-        "Search customer review vectors in Qdrant (The Memory) using semantic similarity. "
-        "Returns the most relevant reviews for a given topic, complaint, or sentiment query."
-    )
-    args_schema: type[BaseModel] = QdrantSearchInput
-
-    def _run(self, query: str, top_k: int = 5) -> str:
-        client = QdrantClient(url=os.environ["QDRANT_URL"])
-        results = client.query(
-            collection_name="reviews",
-            query_text=query,
-            limit=top_k,
-        )
-        return str([
-            {"score": r.score, "comment": r.document, "sentiment": r.metadata.get("sentiment")}
-            for r in results
-        ])
-```
-
-## Built-in Tools
-
-| Tool | Package | Purpose |
-|------|---------|---------|
-| `SerperDevTool` | crewai-tools | Web search |
-| `ScrapeWebsiteTool` | crewai-tools | Web scraping |
-| `FileReadTool` | crewai-tools | Read files |
-| `DirectoryReadTool` | crewai-tools | List directory |
-| `CodeInterpreterTool` | crewai-tools | Execute code |
-| `JSONSearchTool` | crewai-tools | Search JSON/RAG |
-
-## Registering Tools to Agents
-
-```python
-from crewai import Agent
-
-# AnalystAgent: SQL access to The Ledger
-analyst = Agent(
-    role="E-Commerce Data Analyst",
-    goal="Query Supabase for exact revenue and order metrics",
-    backstory="...",
-    tools=[supabase_execute_sql],
-)
-
-# ResearchAgent: semantic search in The Memory
-researcher = Agent(
-    role="Customer Experience Researcher",
-    goal="Surface sentiment and complaint themes from review vectors",
-    backstory="...",
-    tools=[QdrantSemanticSearch()],
-)
-
-# Tools can also be set at task level (overrides agent tools)
-task = Task(
-    description="Query total revenue for the last 30 days",
-    expected_output="Revenue total from Supabase SQL",
-    agent=analyst,
-    tools=[supabase_execute_sql],  # Only this tool available
-)
-```
+| Parameter | Description |
+|-----------|-------------|
+| `name` | Tool name agents see |
+| `description` | When/how to use (agents read this) |
+| `args_schema` | Pydantic model for validation |
 
 ## Common Mistakes
 
 ### Wrong
 
 ```python
-# Missing docstring means agents cannot decide when to use the tool
-@tool("My Tool")
-def my_tool(x: str) -> str:
-    return x.upper()
+# Poor description - agent won't know when to use
+@tool("log tool")
+def read_logs(path):
+    """Reads logs."""
+    return open(path).read()
 ```
 
 ### Correct
 
 ```python
-@tool("Supabase SQL Executor")
-def supabase_execute_sql(query: str) -> str:
-    """Execute a SQL query against Supabase Postgres and return row results as a list of dicts.
-    Use this when you need exact figures: revenue totals, order counts, or segment breakdowns."""
-    ...
+# Clear description helps agent decide when to use
+@tool("Read Pipeline Logs")
+def read_pipeline_logs(log_path: str) -> str:
+    """Read Cloud Run or Pub/Sub logs from local path.
+    Use when analyzing pipeline failures or errors.
+    Input: Full path to log file (e.g., /tmp/logs/run_123.log)
+    Returns: Raw log content as string."""
+    with open(log_path) as f:
+        return f.read()
 ```
+
+## Built-in Tools
+
+CrewAI provides 100+ tools. Install with: `pip install crewai[tools]`
+
+| Category | Examples |
+|----------|----------|
+| Web | SerperDevTool, ScrapeWebsiteTool |
+| Files | FileReadTool, DirectoryReadTool |
+| Code | CodeInterpreterTool |
+| RAG | RagTool (vector search) |
 
 ## Related
 
 - [Agents](../concepts/agents.md)
-- [Tasks](../concepts/tasks.md)
-- [ShopAgent Crew Pattern](../patterns/shopagent-crew.md)
+- [Log Analysis Pattern](../patterns/log-analysis-agent.md)
+- [Slack Integration](../patterns/slack-integration.md)

@@ -1,10 +1,3 @@
----
-name: review
-description: |
-  Dual AI code review combining CodeRabbit CLI (static analysis, security)
-  with Claude Code (architecture, logic, GenAI patterns) for maximum coverage.
----
-
 # Review Command
 
 > Dual AI code review with CodeRabbit + Claude Code for maximum coverage
@@ -116,7 +109,7 @@ SEVERITY MAPPING
 
 ### Step 3: Run Claude Deep Analysis
 
-Use Claude deep analysis capabilities:
+Use the code-reviewer agent capabilities:
 
 **Focus Areas:**
 
@@ -297,6 +290,22 @@ Claude only — for thorough analysis:
 
 ## Integration
 
+### Before PR Creation
+
+```bash
+# Review first, then create PR
+/review
+# If all good:
+/create-pr
+```
+
+### With create-pr Command
+
+```bash
+# Automatically runs review before PR
+/create-pr --review
+```
+
 ### In Development Loop
 
 ```bash
@@ -370,10 +379,12 @@ Comparing: HEAD vs develop
 2. **Fix Critical First** — Always address critical and error issues before PR
 3. **Learn from Feedback** — Both AIs provide educational explanations
 4. **Use Quick Mode** — For rapid iteration, `/review --quick` is your friend
-5. **Pre-PR Habit** — Always `/review` before creating a PR
+5. **Pre-PR Habit** — Always `/review` before `/create-pr`
 
 ---
 
 ## Related
 
+- Agent: `.claude/agents/code-quality/dual-reviewer.md`
 - Config: `.coderabbit.yaml`
+- Create PR: `.claude/commands/workflow/create-pr.md`

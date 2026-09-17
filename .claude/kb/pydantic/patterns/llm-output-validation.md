@@ -1,147 +1,177 @@
-# LLM Output Validation
+# LLM Output Validation Pattern
 
-> **Purpose**: Validate and parse LLM JSON responses into typed Pydantic models
-> **MCP Validated**: 2026-02-17
+> **Purpose**: Robust validation of JSON responses from LLMs like Gemini
+> **MCP Validated**: 2026-01-25
 
 ## When to Use
 
-- Parsing structured JSON output from any LLM (Gemini, GPT, Claude)
-- Enforcing schema compliance on non-deterministic LLM responses
-- Building reliable extraction pipelines that fail gracefully on malformed output
-- Generating format instructions from Pydantic schemas to embed in prompts
+- Parsing structured JSON from LLM responses
+- Validating extraction results from document processing
+- Ensuring type safety before database insertion
+- Handling malformed or partial LLM outputs
 
 ## Implementation
 
 ```python
+from pydantic import BaseModel, Field, ValidationError, field_validator
+from typing import Optional
+from datetime import date
+from decimal import Decimal
+from enum import Enum
 import json
 import logging
-from typing import Optional, TypeVar
-from pydantic import BaseModel, Field, ValidationError
 
 logger = logging.getLogger(__name__)
-T = TypeVar("T", bound=BaseModel)
+
+
+class VendorType(str, Enum):
+    UBEREATS = "ubereats"
+    DOORDASH = "doordash"
+    GRUBHUB = "grubhub"
+    OTHER = "other"
+
+
+class LineItem(BaseModel):
+    description: str = Field(..., min_length=1)
+    quantity: int = Field(default=1, ge=1)
+    unit_price: Decimal = Field(..., ge=0)
+    amount: Decimal = Field(..., ge=0)
+
+
+class InvoiceExtraction(BaseModel):
+    """Schema for LLM invoice extraction output."""
+
+    invoice_id: str
+    vendor_name: str
+    vendor_type: VendorType = VendorType.OTHER
+    invoice_date: date
+    due_date: Optional[date] = None
+    subtotal: Decimal = Field(..., ge=0)
+    tax_amount: Decimal = Field(default=Decimal("0"), ge=0)
+    commission_rate: Optional[Decimal] = Field(default=None, ge=0, le=1)
+    commission_amount: Optional[Decimal] = Field(default=None, ge=0)
+    total_amount: Decimal = Field(..., ge=0)
+    currency: str = Field(default="USD", max_length=3)
+    line_items: list[LineItem] = Field(default_factory=list)
+
+    @field_validator("currency", mode="after")
+    @classmethod
+    def normalize_currency(cls, v: str) -> str:
+        return v.upper().strip()
+
+    @field_validator("vendor_name", mode="before")
+    @classmethod
+    def clean_vendor_name(cls, v):
+        if isinstance(v, str):
+            return v.strip()
+        return v
 
 
 def validate_llm_output(
-    raw_response: str,
-    model_class: type[T],
-    strict: bool = False,
-) -> T:
-    """Parse and validate LLM JSON output against a Pydantic model.
+    llm_response: str,
+    strict: bool = True
+) -> tuple[Optional[InvoiceExtraction], list[dict]]:
+    """
+    Validate LLM JSON output against invoice schema.
 
     Args:
-        raw_response: Raw string from LLM (may contain markdown fences).
-        model_class: Pydantic model class to validate against.
-        strict: If True, disallow type coercion.
+        llm_response: Raw JSON string from LLM
+        strict: If False, attempt recovery from partial data
 
     Returns:
-        Validated model instance.
-
-    Raises:
-        ValidationError: If the output does not match the schema.
-        ValueError: If the output is not valid JSON.
+        Tuple of (validated_model or None, list of errors)
     """
-    cleaned = _extract_json(raw_response)
-    return model_class.model_validate_json(cleaned, strict=strict)
+    errors = []
 
+    # Step 1: Clean potential markdown formatting
+    json_str = llm_response.strip()
+    if json_str.startswith("```"):
+        # Remove markdown code blocks
+        lines = json_str.split("\n")
+        json_str = "\n".join(
+            line for line in lines
+            if not line.startswith("```")
+        )
 
-def validate_llm_output_safe(
-    raw_response: str,
-    model_class: type[T],
-) -> tuple[Optional[T], Optional[list[dict]]]:
-    """Non-raising version that returns (result, errors)."""
+    # Step 2: Parse JSON
     try:
-        result = validate_llm_output(raw_response, model_class)
-        return result, None
+        data = json.loads(json_str)
+    except json.JSONDecodeError as e:
+        errors.append({"type": "json_parse", "msg": str(e)})
+        return None, errors
+
+    # Step 3: Validate with Pydantic
+    try:
+        invoice = InvoiceExtraction.model_validate(data)
+        return invoice, []
     except ValidationError as e:
-        logger.warning("Validation failed: %s", e.error_count())
-        return None, e.errors()
-    except (ValueError, json.JSONDecodeError) as e:
-        logger.warning("JSON parse failed: %s", str(e))
-        return None, [{"type": "json_invalid", "msg": str(e)}]
+        errors = e.errors()
+        if strict:
+            return None, errors
+
+        # Attempt partial recovery with defaults
+        logger.warning(f"Validation errors, attempting recovery: {errors}")
+        return _attempt_recovery(data, errors), errors
 
 
-def _extract_json(text: str) -> str:
-    """Strip markdown code fences and whitespace from LLM output."""
-    text = text.strip()
-    if text.startswith("```"):
-        lines = text.split("\n")
-        # Remove first line (```json) and last line (```)
-        lines = [l for l in lines[1:] if l.strip() != "```"]
-        text = "\n".join(lines)
-    return text.strip()
+def _attempt_recovery(data: dict, errors: list) -> Optional[InvoiceExtraction]:
+    """Attempt to recover by applying defaults for missing/invalid fields."""
+    # Set defaults for non-critical fields
+    defaults = {
+        "vendor_type": "other",
+        "tax_amount": "0",
+        "currency": "USD",
+        "line_items": [],
+    }
 
+    for key, default in defaults.items():
+        if key not in data or data[key] is None:
+            data[key] = default
 
-def build_format_instruction(model_class: type[BaseModel]) -> str:
-    """Generate LLM prompt instructions from a Pydantic model schema."""
-    schema = model_class.model_json_schema()
-    return (
-        "You must respond with valid JSON matching this schema. "
-        "Do not include any text outside the JSON object.\n\n"
-        f"```json\n{json.dumps(schema, indent=2)}\n```"
-    )
+    try:
+        return InvoiceExtraction.model_validate(data)
+    except ValidationError:
+        return None
 ```
 
 ## Configuration
 
 | Setting | Default | Description |
 |---------|---------|-------------|
-| `strict` | `False` | When True, disables type coercion (string "5" won't become int 5) |
-| `strip_fences` | `True` | Remove markdown code fences from LLM output |
-| `temperature` | `0.0` | Recommended LLM temperature for structured output |
+| `strict` | `True` | Fail on any validation error |
+| `currency` | `"USD"` | Default currency if missing |
+| `vendor_type` | `"other"` | Default vendor classification |
 
 ## Example Usage
 
 ```python
-from pydantic import BaseModel, Field
-from typing import Optional
+# Raw LLM response (may include markdown)
+llm_response = '''```json
+{
+    "invoice_id": "INV-2024-001",
+    "vendor_name": "UberEats",
+    "vendor_type": "ubereats",
+    "invoice_date": "2024-01-15",
+    "subtotal": 125.50,
+    "tax_amount": 10.04,
+    "total_amount": 135.54,
+    "line_items": [
+        {"description": "Food delivery", "quantity": 1, "unit_price": 125.50, "amount": 125.50}
+    ]
+}
+```'''
 
+invoice, errors = validate_llm_output(llm_response)
 
-class ExtractedEntity(BaseModel):
-    name: str = Field(..., description="Entity name")
-    entity_type: str = Field(..., description="One of: person, org, location")
-    confidence: float = Field(..., ge=0, le=1, description="Extraction confidence")
-    context: Optional[str] = Field(None, description="Surrounding text snippet")
-
-
-# 1. Generate prompt instructions
-instructions = build_format_instruction(ExtractedEntity)
-
-# 2. Send to LLM (example with Gemini)
-prompt = f"Extract entities from: 'John works at Acme in NYC'\n\n{instructions}"
-llm_response = call_llm(prompt)  # returns JSON string
-
-# 3. Validate the response
-entity, errors = validate_llm_output_safe(llm_response, ExtractedEntity)
-if entity:
-    print(f"Found: {entity.name} ({entity.entity_type})")
+if invoice:
+    print(f"Validated: {invoice.invoice_id} - ${invoice.total_amount}")
+    # Safe to insert into BigQuery
 else:
-    print(f"Validation errors: {errors}")
-
-
-# 4. Batch validation for list outputs
-class EntityList(BaseModel):
-    entities: list[ExtractedEntity]
-
-batch_result, errors = validate_llm_output_safe(llm_response, EntityList)
-```
-
-## Partial JSON Parsing (Pydantic v2.7+)
-
-```python
-from pydantic_core import from_json
-
-# Useful for streaming LLM responses
-partial_json = '{"name": "John", "entity_type": "pers'
-try:
-    data = from_json(partial_json, allow_partial=True)
-    # data = {"name": "John", "entity_type": "pers"}
-except ValueError:
-    pass
+    print(f"Validation failed: {errors}")
 ```
 
 ## See Also
 
-- [Error Handling](../patterns/error-handling.md)
-- [Extraction Schema](../patterns/extraction-schema.md)
-- [BaseModel](../concepts/base-model.md)
+- [extraction-schema.md](extraction-schema.md)
+- [error-handling.md](error-handling.md)
+- [validators.md](../concepts/validators.md)

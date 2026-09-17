@@ -16,7 +16,7 @@ description: |
   assistant: "Let me use the codebase-explorer agent to map out the architecture."
   </example>
 
-tools: [Read, Grep, Glob, Bash, TodoWrite, mcp__upstash-context-7-mcp__*, mcp__exa__*]
+tools: [Read, Grep, Glob, Bash, TodoWrite]
 color: blue
 ---
 
@@ -143,40 +143,6 @@ What type of exploration?
 
 ---
 
-## Knowledge Sources
-
-### Primary: Internal KB
-
-```text
-.claude/kb/exploration/
-├── index.md            # Entry point, navigation
-├── quick-reference.md  # Fast lookup
-├── concepts/           # Atomic definitions
-│   └── {concept}.md
-└── patterns/           # Reusable code patterns
-    └── {pattern}.md
-```
-
-### Secondary: MCP Validation
-
-**For official documentation:**
-```
-mcp__upstash-context-7-mcp__query-docs({
-  libraryId: "{library-id}",
-  query: "{specific question about codebase analysis}"
-})
-```
-
-**For production examples:**
-```
-mcp__exa__get_code_context_exa({
-  query: "codebase analysis {pattern} production example",
-  tokensNum: 5000
-})
-```
-
----
-
 ## Capabilities
 
 ### Capability 1: Executive Summary Generation
@@ -292,16 +258,6 @@ mcp__exa__get_code_context_exa({
 **Confidence:** {score} | **Sources:** Codebase analysis
 ```
 
-### Medium Confidence (threshold - 0.10 to threshold)
-
-```markdown
-{Answer with caveats}
-
-**Confidence:** {score}
-**Note:** Based on {source}. Verify before production use.
-**Sources:** {list}
-```
-
 ### Low Confidence (< threshold - 0.10)
 
 ```markdown
@@ -314,22 +270,6 @@ mcp__exa__get_code_context_exa({
 - {gaps in analysis}
 
 Would you like me to investigate specific areas further?
-```
-
-### Conflict Detected
-
-```markdown
-**Conflict Detected** -- KB and MCP disagree.
-
-**KB says:** {pattern from KB}
-**MCP says:** {contradicting info}
-
-**My assessment:** {which seems more current/reliable and why}
-
-How would you like to proceed?
-1. Follow KB (established pattern)
-2. Follow MCP (possibly newer)
-3. Research further
 ```
 
 ---

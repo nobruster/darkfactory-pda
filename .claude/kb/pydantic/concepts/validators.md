@@ -1,138 +1,147 @@
 # Validators
 
-> **Purpose**: field_validator, model_validator decorators and validation modes in Pydantic v2
+> **Purpose**: Custom validation logic using field_validator and model_validator
 > **Confidence**: 0.95
-> **MCP Validated**: 2026-02-17
+> **MCP Validated**: 2026-01-25
 
 ## Overview
 
-Pydantic v2 provides two decorator-based validators: `@field_validator` for single-field
-validation and `@model_validator` for cross-field logic. Each supports `mode="before"` (raw
-input), `mode="after"` (validated data), and `mode="wrap"` (control flow). Validators raise
-`ValueError` or `AssertionError` to reject data and return the value to accept it.
+Pydantic provides `@field_validator` for single-field validation and `@model_validator`
+for cross-field validation. Validators run in modes: `before` (pre-coercion), `after`
+(post-coercion), or `wrap` (full control). Raise `ValueError` for validation failures.
 
 ## The Pattern
 
 ```python
-from pydantic import BaseModel, field_validator, model_validator, Field
-from typing import Optional
+from pydantic import BaseModel, Field, field_validator, model_validator
+from typing_extensions import Self
 from datetime import date
 
+class Invoice(BaseModel):
+    invoice_id: str
+    invoice_date: date
+    due_date: date
+    subtotal: float
+    tax_amount: float
+    total_amount: float
 
-class InvoiceExtraction(BaseModel):
-    invoice_number: str
-    vendor_name: str
-    issue_date: date
-    due_date: Optional[date] = None
-    subtotal: float = Field(gt=0)
-    tax: float = Field(ge=0)
-    total: float = Field(gt=0)
-
-    @field_validator("invoice_number")
+    @field_validator("invoice_id", mode="after")
     @classmethod
-    def validate_invoice_number(cls, v: str) -> str:
-        v = v.strip().upper()
-        if len(v) < 3:
-            raise ValueError("Invoice number must be at least 3 characters")
-        return v
-
-    @field_validator("vendor_name", mode="before")
-    @classmethod
-    def coerce_vendor_name(cls, v) -> str:
-        if isinstance(v, list):
-            return " ".join(str(item) for item in v)
-        return str(v).strip()
+    def validate_invoice_id(cls, v: str) -> str:
+        if not v.startswith("INV-"):
+            raise ValueError("Invoice ID must start with 'INV-'")
+        return v.upper()
 
     @model_validator(mode="after")
-    def check_dates_and_totals(self) -> "InvoiceExtraction":
-        if self.due_date and self.due_date < self.issue_date:
-            raise ValueError("due_date cannot be before issue_date")
-        expected_total = round(self.subtotal + self.tax, 2)
-        if abs(self.total - expected_total) > 0.01:
-            raise ValueError(
-                f"total ({self.total}) != subtotal + tax ({expected_total})"
-            )
+    def validate_dates_and_totals(self) -> Self:
+        if self.due_date < self.invoice_date:
+            raise ValueError("Due date cannot be before invoice date")
+        expected = round(self.subtotal + self.tax_amount, 2)
+        if abs(self.total_amount - expected) > 0.01:
+            raise ValueError(f"Total mismatch: {self.total_amount} != {expected}")
         return self
 ```
 
-## Validator Modes
-
-| Decorator | Mode | Input Type | When It Runs | Use Case |
-|-----------|------|------------|-------------|----------|
-| `@field_validator` | `"before"` | Raw input (Any) | Before type coercion | Coerce/normalize data |
-| `@field_validator` | `"after"` | Validated type | After coercion (default) | Business rules |
-| `@field_validator` | `"wrap"` | value + handler | Wraps inner validation | Conditional validation |
-| `@model_validator` | `"before"` | Raw dict (Any) | Before all field validation | Pre-process payload |
-| `@model_validator` | `"after"` | Model instance | After all fields validated | Cross-field logic |
-
 ## Quick Reference
 
-| Pattern | Syntax |
-|---------|--------|
-| Validate one field | `@field_validator("field_name")` |
-| Validate multiple fields | `@field_validator("field_a", "field_b")` |
-| Access all fields | `@model_validator(mode="after")` |
-| Pre-process raw input | `@model_validator(mode="before")` |
-| Must be classmethod | `@classmethod` (required for field_validator) |
-| Reject value | `raise ValueError("message")` |
-| Accept value | `return value` |
+| Decorator | Mode | Input Type | Use Case |
+|-----------|------|------------|----------|
+| `@field_validator` | `after` | Parsed type | Validate coerced value |
+| `@field_validator` | `before` | `Any` | Transform raw input |
+| `@field_validator` | `wrap` | `Any` | Control flow |
+| `@model_validator` | `after` | `Self` | Cross-field checks |
+| `@model_validator` | `before` | `dict` | Pre-process input |
 
-## Common Mistakes
-
-### Wrong (v1 syntax)
-
-```python
-from pydantic import validator  # DEPRECATED in v2
-
-class Model(BaseModel):
-    name: str
-
-    @validator("name")  # v1 decorator
-    def check_name(cls, v):
-        return v.strip()
-```
-
-### Correct (v2 syntax)
+## Field Validator Modes
 
 ```python
 from pydantic import field_validator
+from typing import Any
 
-class Model(BaseModel):
-    name: str
+# AFTER: Runs after type coercion (type-safe)
+@field_validator("amount", mode="after")
+@classmethod
+def check_positive(cls, v: float) -> float:
+    if v < 0:
+        raise ValueError("Amount must be positive")
+    return v
 
-    @field_validator("name")
-    @classmethod
-    def check_name(cls, v: str) -> str:
-        return v.strip()
+# BEFORE: Runs before coercion (raw input)
+@field_validator("phone", mode="before")
+@classmethod
+def clean_phone(cls, v: Any) -> Any:
+    if isinstance(v, str):
+        return v.replace("-", "").replace(" ", "")
+    return v
 ```
 
-## Annotated Validators (Functional Style)
+## Model Validator
 
 ```python
-from typing import Annotated
-from pydantic import BaseModel
-from pydantic.functional_validators import AfterValidator, BeforeValidator
+from pydantic import model_validator
+from typing_extensions import Self
 
+@model_validator(mode="after")
+def check_consistency(self) -> Self:
+    """Cross-field validation after all fields parsed."""
+    if self.end_date < self.start_date:
+        raise ValueError("end_date must be after start_date")
+    return self
 
-def normalize_whitespace(v: str) -> str:
-    return " ".join(v.split())
+@model_validator(mode="before")
+@classmethod
+def preprocess(cls, data: dict) -> dict:
+    """Transform input dict before field parsing."""
+    if "full_name" in data:
+        parts = data["full_name"].split()
+        data["first_name"] = parts[0]
+        data["last_name"] = " ".join(parts[1:])
+    return data
+```
 
+## Common Mistakes
 
-def ensure_uppercase(v: str) -> str:
-    return v.upper()
+### Wrong
 
+```python
+@field_validator("amount")
+@classmethod
+def check_amount(cls, v):
+    # DON'T raise ValidationError directly
+    raise ValidationError("Invalid")
+```
 
-CleanStr = Annotated[str, BeforeValidator(normalize_whitespace)]
-UpperStr = Annotated[str, AfterValidator(ensure_uppercase)]
+### Correct
 
+```python
+@field_validator("amount")
+@classmethod
+def check_amount(cls, v: float) -> float:
+    # Raise ValueError - Pydantic wraps it
+    if v < 0:
+        raise ValueError("Amount must be non-negative")
+    return v
+```
 
-class Document(BaseModel):
-    title: CleanStr
-    code: UpperStr
+## Multiple Fields
+
+```python
+@field_validator("subtotal", "tax_amount", "total_amount", mode="after")
+@classmethod
+def round_money(cls, v: float) -> float:
+    return round(v, 2)
+
+# Wildcard for all fields
+@field_validator("*", mode="before")
+@classmethod
+def strip_strings(cls, v: Any) -> Any:
+    if isinstance(v, str):
+        return v.strip()
+    return v
 ```
 
 ## Related
 
-- [BaseModel](../concepts/base-model.md)
-- [Custom Validators](../patterns/custom-validators.md)
-- [Error Handling](../patterns/error-handling.md)
+- [base-model.md](base-model.md)
+- [custom-validators.md](../patterns/custom-validators.md)
+- [error-handling.md](../patterns/error-handling.md)

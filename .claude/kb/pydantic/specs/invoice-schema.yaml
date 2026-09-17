@@ -1,190 +1,160 @@
-schema_version: "1.0"
-domain: pydantic
-file_type: extraction-schema
-last_validated: "2026-02-17"
-source: "patterns/extraction-schema.md"
+# Invoice Extraction JSON Schema
+# MCP Validated: 2026-01-25
+# Use this schema in LLM system prompts to guide extraction output format
 
-# Invoice Extraction Schema Specification
-# Machine-readable spec for LLM-based invoice data extraction
+$schema: "https://json-schema.org/draft/2020-12/schema"
+title: InvoiceExtraction
+description: Schema for LLM invoice extraction output from delivery platform invoices
+type: object
 
-description: >
-  Pydantic model specification for extracting structured invoice data
-  from unstructured documents via LLM. Used by ai-prompt-specialist
-  agent for document processing pipelines.
+required:
+  - invoice_id
+  - vendor_name
+  - invoice_date
+  - subtotal
+  - total_amount
 
-model:
-  name: InvoiceExtraction
-  python_import: "from schemas.invoice import InvoiceExtraction"
+properties:
+  invoice_id:
+    type: string
+    description: Unique invoice identifier (e.g., INV-2024-001)
+    minLength: 1
+    examples:
+      - "INV-2024-001"
+      - "UE-12345"
 
-  fields:
-    invoice_number:
-      type: string
-      required: true
-      min_length: 1
-      strip_whitespace: true
-      description: "Unique invoice identifier (e.g., INV-2026-001)"
-      validation:
-        - "min_length=1"
-        - "strip_whitespace=True"
-      notes: "LLMs may prefix with 'Invoice #' -- use field_validator to strip"
+  vendor_name:
+    type: string
+    description: Restaurant or vendor name
+    minLength: 1
+    examples:
+      - "Pizza Palace"
+      - "Burger Joint"
 
-    vendor_name:
-      type: string
-      required: true
-      min_length: 1
-      description: "Name of the vendor or supplier"
-      validation:
-        - "min_length=1"
+  vendor_type:
+    type: string
+    description: Delivery platform type
+    enum:
+      - ubereats
+      - doordash
+      - grubhub
+      - other
+    default: other
 
-    vendor_address:
-      type: nested_model
-      model: Address
-      required: false
-      default: null
-      description: "Vendor's postal address"
+  invoice_date:
+    type: string
+    format: date
+    description: Invoice issue date (YYYY-MM-DD format)
+    examples:
+      - "2024-01-15"
 
-    customer_name:
-      type: string
-      required: false
-      default: null
-      description: "Customer or buyer name"
+  due_date:
+    type: string
+    format: date
+    description: Payment due date (YYYY-MM-DD format)
+    nullable: true
+    examples:
+      - "2024-02-15"
 
-    issue_date:
-      type: date
-      required: true
-      format: "YYYY-MM-DD"
-      description: "Date the invoice was issued"
-      validation:
-        - "must be valid ISO date"
-      notes: "LLMs may return various formats; use field_validator mode=before to normalize"
+  subtotal:
+    type: number
+    description: Subtotal before tax and fees
+    minimum: 0
+    examples:
+      - 100.00
 
-    due_date:
-      type: date
-      required: false
-      default: null
-      format: "YYYY-MM-DD"
-      description: "Payment due date"
-      validation:
-        - "must be >= issue_date if provided"
+  tax_amount:
+    type: number
+    description: Tax amount
+    minimum: 0
+    default: 0
+    examples:
+      - 8.00
 
-    currency:
-      type: enum
-      required: false
-      default: "USD"
-      allowed_values: ["USD", "EUR", "GBP", "BRL"]
-      description: "ISO 4217 currency code"
+  commission_rate:
+    type: number
+    description: Platform commission rate (0.0 to 1.0)
+    minimum: 0
+    maximum: 1
+    nullable: true
+    examples:
+      - 0.15
+      - 0.30
 
+  commission_amount:
+    type: number
+    description: Platform commission amount in currency
+    minimum: 0
+    nullable: true
+    examples:
+      - 15.00
+
+  total_amount:
+    type: number
+    description: Total invoice amount
+    minimum: 0
+    examples:
+      - 108.00
+
+  currency:
+    type: string
+    description: ISO 4217 currency code
+    enum:
+      - USD
+      - EUR
+      - GBP
+      - CAD
+    default: USD
+    maxLength: 3
+
+  line_items:
+    type: array
+    description: Individual line items on the invoice
+    default: []
+    items:
+      type: object
+      required:
+        - description
+        - unit_price
+        - amount
+      properties:
+        description:
+          type: string
+          description: Item or service description
+          minLength: 1
+          maxLength: 500
+        quantity:
+          type: integer
+          description: Quantity of items
+          minimum: 1
+          default: 1
+        unit_price:
+          type: number
+          description: Price per unit
+          minimum: 0
+        amount:
+          type: number
+          description: Total amount (quantity * unit_price)
+          minimum: 0
+
+examples:
+  - invoice_id: "INV-2024-001"
+    vendor_name: "Pizza Palace"
+    vendor_type: "ubereats"
+    invoice_date: "2024-01-15"
+    due_date: "2024-02-15"
+    subtotal: 100.00
+    tax_amount: 8.00
+    commission_rate: 0.15
+    commission_amount: 15.00
+    total_amount: 123.00
+    currency: "USD"
     line_items:
-      type: list
-      item_model: LineItem
-      required: true
-      min_length: 1
-      description: "List of invoice line items"
-
-    subtotal:
-      type: float
-      required: false
-      default: null
-      validation:
-        - "ge=0"
-        - "auto-computed from line_items if not provided"
-
-    tax_amount:
-      type: float
-      required: false
-      default: 0.0
-      validation:
-        - "ge=0"
-
-    total_amount:
-      type: float
-      required: true
-      validation:
-        - "ge=0"
-      description: "Total invoice amount including tax"
-
-    extraction_confidence:
-      type: float
-      required: false
-      default: 0.5
-      validation:
-        - "ge=0.0"
-        - "le=1.0"
-      description: "LLM self-reported extraction confidence"
-
-nested_models:
-  Address:
-    fields:
-      street:
-        type: string
-        required: false
-        default: null
-        description: "Street address line"
-      city:
-        type: string
-        required: false
-        default: null
-        description: "City name"
-      state:
-        type: string
-        required: false
-        default: null
-        description: "State or province"
-      postal_code:
-        type: string
-        required: false
-        default: null
-        description: "ZIP or postal code"
-      country:
-        type: string
-        required: false
-        default: "US"
-        description: "ISO 3166-1 alpha-2 country code"
-
-  LineItem:
-    fields:
-      description:
-        type: string
-        required: true
-        min_length: 1
-        description: "Item or service description"
-      quantity:
-        type: float
-        required: false
-        default: 1.0
-        validation:
-          - "ge=0"
-      unit_price:
-        type: float
-        required: true
-        validation:
-          - "ge=0"
-        description: "Price per unit"
-      total:
-        type: float
-        required: false
-        default: null
-        validation:
-          - "ge=0"
-          - "auto-computed as quantity * unit_price if null"
-
-model_validators:
-  - name: validate_totals
-    mode: "after"
-    logic: "If subtotal is None, compute from sum of line_item totals"
-  - name: validate_dates
-    mode: "after"
-    logic: "If due_date provided, assert due_date >= issue_date"
-
-usage:
-  prompt_generation: "Use InvoiceExtraction.model_json_schema() to generate format instructions"
-  validation: "Use InvoiceExtraction.model_validate_json(llm_response)"
-  retry_on_failure: "See patterns/error-handling.md for retry logic"
-
-related_files:
-  - path: "../patterns/extraction-schema.md"
-    purpose: "Python implementation with full code"
-  - path: "../patterns/llm-output-validation.md"
-    purpose: "Validation and parsing utilities"
-  - path: "../patterns/error-handling.md"
-    purpose: "Error handling and retry logic"
+      - description: "Large Pepperoni Pizza"
+        quantity: 2
+        unit_price: 25.00
+        amount: 50.00
+      - description: "Delivery Fee"
+        quantity: 1
+        unit_price: 5.00
+        amount: 5.00

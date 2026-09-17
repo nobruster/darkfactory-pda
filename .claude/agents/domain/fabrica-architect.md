@@ -54,10 +54,10 @@ criar — fragmenta o conhecimento e o próximo agente não sabe qual usar.
 Antes de dizer que falta algo, procure:
 
 ```bash
-ls .claude/agents/*/                      # 19 agentes
-ls .claude/commands/*/                    # 8 comandos
+ls .claude/agents/*/                      # 50 agentes
+ls .claude/commands/*/                    # 18 comandos
 ls .claude/skills/                        # 26 skills
-ls .claude/kb/                            # 20 domínios
+ls .claude/kb/                            # 25 domínios
 grep -ril "<termo>" .claude/kb/ .claude/skills/ .claude/agents/
 ```
 
@@ -145,8 +145,11 @@ rodando solto.
    medir a fonte. Não gere a âncora sozinho para "desbloquear".
 4. **O juiz** — adapte `fabrica/judge/`. Rode
    `pytest fabrica/tests/ -v` e prove que ele **acusa**.
-5. **O pipeline** — `python-developer`. Makefile só encadeia; o que decide
-   fica em script versionado.
+5. **O pipeline** — `medallion-architect` para as camadas bronze → silver →
+   gold, `pipeline-architect` para o desenho ponta a ponta, `python-developer`
+   para o código. Se for Spark, há 4 agentes dedicados em
+   `agents/data-engineering/`. Makefile só encadeia; o que decide fica em
+   script versionado.
 6. **Os gates** — `converge/` para portões, `task-spec/` para tarefas assinadas.
 7. **Auditar** — `/audit` e `code-reviewer` antes de confiar no verde.
 8. **O manual** — `docs/MANUAL.md`. Uma fábrica sem manual é reprovada.

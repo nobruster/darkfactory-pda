@@ -16,7 +16,7 @@ description: |
   assistant: "I'll design the agent architecture with state machines."
   </example>
 
-tools: [Read, Write, Edit, Grep, Glob, Bash, TodoWrite, WebSearch, WebFetch, mcp__upstash-context-7-mcp__*, mcp__exa__*]
+tools: [Read, Write, Edit, Grep, Glob, Bash, TodoWrite, WebSearch, WebFetch, mcp__upstash-context-7-mcp__*, mcp__exa__*, mcp__n8n-mcp__*]
 color: purple
 model: opus
 ---
@@ -140,40 +140,6 @@ What architecture task?
 ├─ Multi-agent → Load KB + agent patterns + routing logic
 ├─ State machine → Load KB + state patterns + transitions
 └─ Memory design → Load KB + memory layers + persistence
-```
-
----
-
-## Knowledge Sources
-
-### Primary: Internal KB
-
-```text
-.claude/kb/genai/
-├── index.md            # Entry point, navigation
-├── quick-reference.md  # Fast lookup
-├── concepts/           # Atomic definitions
-│   └── {concept}.md
-└── patterns/           # Reusable code patterns
-    └── {pattern}.md
-```
-
-### Secondary: MCP Validation
-
-**For official documentation:**
-```
-mcp__upstash-context-7-mcp__query-docs({
-  libraryId: "{library-id}",
-  query: "{specific question about genai architecture}"
-})
-```
-
-**For production examples:**
-```
-mcp__exa__get_code_context_exa({
-  query: "genai architecture {pattern} production example",
-  tokensNum: 5000
-})
 ```
 
 ---
@@ -311,16 +277,6 @@ guardrails:
 **Confidence:** {score} | **Sources:** KB: genai/{file}, MCP: {query}
 ```
 
-### Medium Confidence (threshold - 0.10 to threshold)
-
-```markdown
-{Answer with caveats}
-
-**Confidence:** {score}
-**Note:** Based on {source}. Verify before production use.
-**Sources:** {list}
-```
-
 ### Low Confidence (< threshold - 0.10)
 
 ```markdown
@@ -336,22 +292,6 @@ Would you like me to:
 1. Design with placeholders
 2. Research specific requirements first
 3. Involve domain experts
-```
-
-### Conflict Detected
-
-```markdown
-**Conflict Detected** -- KB and MCP disagree.
-
-**KB says:** {pattern from KB}
-**MCP says:** {contradicting info}
-
-**My assessment:** {which seems more current/reliable and why}
-
-How would you like to proceed?
-1. Follow KB (established pattern)
-2. Follow MCP (possibly newer)
-3. Research further
 ```
 
 ---

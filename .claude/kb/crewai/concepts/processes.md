@@ -1,146 +1,120 @@
 # Processes
 
-> **Purpose**: Control execution flow with sequential and hierarchical process strategies
+> **Purpose**: Execution flow control for agent collaboration
 > **Confidence**: 0.95
-> **MCP Validated**: 2026-02-17
+> **MCP Validated**: 2026-01-25
 
 ## Overview
 
-CrewAI Processes define how tasks are distributed and executed within a crew. There are two process types: Sequential (tasks run one after another in order) and Hierarchical (a manager agent coordinates and delegates tasks to workers). The process type determines the collaboration pattern between agents.
+Processes define how tasks are assigned and executed within a crew. CrewAI supports two process types: sequential (linear, predictable) and hierarchical (dynamic, manager-coordinated). The choice depends on workflow complexity and need for adaptive task allocation.
 
 ## The Pattern
 
 ```python
 from crewai import Crew, Process
 
-# Sequential: tasks execute in list order
+# Sequential: Tasks run in order
 sequential_crew = Crew(
-    agents=[analyst, researcher, reporter],
-    tasks=[analysis_task, research_task, report_task],
-    process=Process.sequential,
-    verbose=True,
+    agents=[triage_agent, root_cause_agent, reporter_agent],
+    tasks=[triage_task, analysis_task, report_task],
+    process=Process.sequential,  # Default
+    verbose=True
 )
 
-# Hierarchical: manager delegates tasks to best-fit agents
+# Hierarchical: Manager delegates dynamically
 hierarchical_crew = Crew(
-    agents=[analyst, researcher, reporter],
-    tasks=[analysis_task, research_task, report_task],
+    agents=[triage_agent, root_cause_agent, reporter_agent],
+    tasks=[complex_task],
     process=Process.hierarchical,
-    manager_llm="anthropic/claude-sonnet-4-20250514",
-    verbose=True,
+    manager_llm="gemini/gemini-1.5-pro",  # Or manager_agent
+    verbose=True
 )
 ```
 
 ## Quick Reference
 
-| Feature | Sequential | Hierarchical |
-|---------|------------|--------------|
-| Execution order | Fixed (list order) | Manager decides |
-| Manager required | No | Yes |
-| Delegation | No delegation | Manager delegates |
-| Task reassignment | Not supported | Manager can reassign |
-| Best for | Linear workflows | Complex decision trees |
-| Predictability | High | Medium |
-| Token cost | Lower | Higher (manager overhead) |
+| Process | Execution | Manager | Best For |
+|---------|-----------|---------|----------|
+| `sequential` | Fixed order | No | Linear workflows |
+| `hierarchical` | Dynamic | Yes | Complex, adaptive |
 
 ## Sequential Process
 
-```python
-from crewai import Agent, Task, Crew, Process
+Tasks execute in the order defined, output flows to next task via context.
 
-# ShopAgent: analyst → researcher → reporter (fixed order)
-analyst = Agent(
-    role="E-Commerce Data Analyst",
-    goal="Query Supabase Postgres for revenue, order counts, and customer segments",
-    backstory="Expert SQL analyst — every number comes from a verified query result.",
-    tools=[supabase_tool],
-    llm="anthropic/claude-sonnet-4-20250514",
-)
-researcher = Agent(
-    role="Customer Experience Researcher",
-    goal="Surface sentiment and complaint themes from Qdrant review vectors",
-    backstory="Searches The Memory to identify recurring customer issues.",
-    tools=[qdrant_tool],
-    llm="anthropic/claude-sonnet-4-20250514",
-)
-reporter = Agent(
-    role="Executive Report Writer",
-    goal="Synthesize SQL metrics and review insights into actionable executive reports",
-    backstory="Combines structured ledger data and qualitative feedback into clear briefs.",
-    llm="anthropic/claude-sonnet-4-20250514",
-)
-
-analysis_task = Task(description="Query revenue and orders for last 30 days", expected_output="...", agent=analyst)
-research_task = Task(description="Search reviews for complaint themes", expected_output="...", agent=researcher, context=[analysis_task])
-report_task = Task(description="Write executive e-commerce report", expected_output="...", agent=reporter, context=[analysis_task, research_task])
-
-crew = Crew(
-    agents=[analyst, researcher, reporter],
-    tasks=[analysis_task, research_task, report_task],
-    process=Process.sequential,
-)
-result = crew.kickoff(inputs={"time_period": "last 30 days"})
 ```
+Triage Task -> Analysis Task -> Report Task
+     |              |              |
+  triage_agent  root_cause_agent  reporter_agent
+```
+
+| Pros | Cons |
+|------|------|
+| Predictable | Inflexible |
+| Easy to debug | No dynamic routing |
+| Lower cost | Fixed path |
 
 ## Hierarchical Process
 
-```python
-from crewai import Agent, Task, Crew, Process
+Manager agent assigns tasks based on agent capabilities.
 
-# Manager decides which specialist handles each analysis need
-crew = Crew(
-    agents=[analyst, researcher, reporter],
-    tasks=[analysis_task, research_task, report_task],
-    process=Process.hierarchical,
-    manager_llm="anthropic/claude-sonnet-4-20250514",
-    verbose=True,
-)
-
-# Or use a custom manager agent
-shop_manager = Agent(
-    role="ShopAgent Orchestrator",
-    goal="Coordinate e-commerce analysis and ensure complete reports",
-    backstory="You oversee the ShopAgent crew, delegating to specialists.",
-)
-crew = Crew(
-    agents=[analyst, researcher, reporter], tasks=[analysis_task, research_task, report_task],
-    process=Process.hierarchical, manager_agent=shop_manager,
-)
+```
+        [Manager Agent]
+       /       |       \
+  triage   root_cause  reporter
+  agent      agent      agent
 ```
 
-## Choosing a Process
-
-| Scenario | Recommended |
-|----------|-------------|
-| Standard e-commerce report (SQL → reviews → report) | Sequential |
-| Open-ended investigation with unknown data sources | Hierarchical |
-| Cost-sensitive production workloads | Sequential |
-| Ad-hoc queries where agent selection varies by input | Hierarchical |
+| Pros | Cons |
+|------|------|
+| Adaptive | More LLM calls |
+| Dynamic delegation | Harder to debug |
+| Handles complexity | Higher cost |
 
 ## Common Mistakes
 
 ### Wrong
 
 ```python
-# Hierarchical without manager_llm causes runtime error
+# Using hierarchical for simple linear flow
 crew = Crew(
-    agents=[a1, a2], tasks=[t1, t2],
-    process=Process.hierarchical,  # Missing manager_llm!
+    agents=[agent_a, agent_b],
+    tasks=[task_1, task_2],  # Simple A->B flow
+    process=Process.hierarchical  # Overkill
 )
+# Wastes tokens on manager overhead
 ```
 
 ### Correct
 
 ```python
-crew = Crew(
-    agents=[a1, a2], tasks=[t1, t2],
+# Match process to complexity
+# Simple flow: sequential
+simple_crew = Crew(
+    agents=[triage, reporter],
+    tasks=[triage_task, report_task],
+    process=Process.sequential
+)
+
+# Complex with branching: hierarchical
+complex_crew = Crew(
+    agents=[triage, root_cause, reporter, escalation],
+    tasks=[incident_response_task],
     process=Process.hierarchical,
-    manager_llm="anthropic/claude-sonnet-4-20250514",
+    manager_llm="gemini/gemini-1.5-pro"
 )
 ```
+
+## DataOps Recommendation
+
+| Scenario | Process | Reason |
+|----------|---------|--------|
+| Standard monitoring | Sequential | Predictable: Triage->Analyze->Report |
+| Incident response | Hierarchical | May need escalation branching |
+| High volume logs | Sequential | Lower cost per execution |
 
 ## Related
 
 - [Crews](../concepts/crews.md)
-- [Agents](../concepts/agents.md)
-- [ShopAgent Crew Pattern](../patterns/shopagent-crew.md)
+- [Triage Pattern](../patterns/triage-investigation-report.md)
+- [Escalation Workflow](../patterns/escalation-workflow.md)

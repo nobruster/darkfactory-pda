@@ -1,139 +1,138 @@
 # Model Comparison
 
-> **Purpose**: Compare LLM models and prompt versions using Langfuse metrics
+> **Purpose**: A/B testing and analytics for comparing LLM models
 > **Confidence**: 0.95
-> **MCP Validated**: 2026-02-17
+> **MCP Validated**: 2026-01-25
 
 ## Overview
 
-Langfuse enables A/B testing of LLM models and prompt versions by collecting structured metrics across traces. By tagging generations with model names and linking prompts to traces, you can compare cost, latency, token usage, and quality scores across different configurations. Dashboards and the metrics API provide breakdowns by model, prompt version, user, and custom tags.
+Langfuse enables model comparison by tracking metrics across different models, prompt versions, and configurations. Compare cost, latency, quality scores, and token usage to make data-driven decisions about model selection and prompt optimization.
 
 ## The Pattern
 
 ```python
-from langfuse import get_client, observe
+from langfuse import get_client
+import random
 
 langfuse = get_client()
 
-@observe(as_type="generation")
-def extract_with_model(text: str, model: str):
-    """Run extraction with a specific model for comparison."""
-    prompt = langfuse.get_prompt("invoice-extractor")
-    compiled = prompt.compile(invoice_text=text)
+# A/B test between models
+models = [
+    {"name": "gemini-1.5-pro", "weight": 0.5},
+    {"name": "gemini-1.5-flash", "weight": 0.5}
+]
 
-    with langfuse.start_as_current_observation(
-        as_type="generation",
-        name="model-comparison",
-        model=model,
-        langfuse_prompt=prompt
-    ) as gen:
-        result = call_llm(compiled, model=model)
-        gen.update(
-            output=result,
-            usage_details={"input": 500, "output": 120},
-            metadata={"experiment": "model-comparison-v1"}
-        )
+def select_model():
+    r = random.random()
+    cumulative = 0
+    for model in models:
+        cumulative += model["weight"]
+        if r <= cumulative:
+            return model["name"]
+    return models[-1]["name"]
 
-        # Score the result for comparison
-        gen.score(
-            name="extraction_accuracy",
-            value=evaluate_result(result),
-            data_type="NUMERIC"
-        )
-    return result
+# Track with model metadata
+selected_model = select_model()
 
-# Run comparison
-for model in ["gemini-2.0-flash", "gpt-4o-mini", "claude-sonnet-4-20250514"]:
-    extract_with_model(invoice_text, model=model)
+with langfuse.start_as_current_observation(
+    as_type="generation",
+    name="invoice-extraction",
+    model=selected_model,
+    metadata={
+        "experiment": "model-comparison-v1",
+        "variant": selected_model
+    }
+) as generation:
 
-langfuse.flush()
+    result = call_llm(model=selected_model)
+
+    generation.update(
+        output=result,
+        usage_details={"input": 500, "output": 100}
+    )
+
+    # Score for comparison
+    generation.score(
+        name="extraction_accuracy",
+        value=evaluate_accuracy(result),
+        data_type="NUMERIC"
+    )
 ```
+
+## Quick Reference
+
+| Metric | Compare By | Decision Factor |
+|--------|------------|-----------------|
+| Cost | Per request, per token | Budget constraints |
+| Latency | P50, P95, P99 | User experience |
+| Quality | Score averages | Accuracy requirements |
+| Throughput | Requests/sec | Scale requirements |
 
 ## Comparison Dimensions
 
-| Dimension | How to Measure | Source |
-|-----------|---------------|--------|
-| **Cost** | `cost_details.total` per generation | Automatic from model pricing |
-| **Latency** | Observation duration (start to end) | Automatic timing |
-| **Token Usage** | `usage_details.input` + `output` | Ingested or inferred |
-| **Quality** | Scores attached to generations | Manual or automated scoring |
-| **Throughput** | Traces per time window | Dashboard metrics |
-
-## Tagging for Comparison
-
-```python
-from langfuse import propagate_attributes
-
-@observe()
-def run_experiment(model: str, prompt_version: str):
-    with propagate_attributes(
-        tags=["experiment", f"model:{model}", f"prompt:{prompt_version}"],
-        metadata={
-            "experiment_id": "exp-2026-02",
-            "model": model,
-            "prompt_version": prompt_version
-        }
-    ):
-        return process_pipeline(model, prompt_version)
-```
-
-## Prompt Version Comparison
-
-| Step | How |
-|------|-----|
-| 1. Create prompt versions | `create_prompt()` with same name (auto-versions) |
-| 2. Label for routing | Label "production" vs "staging" |
-| 3. Link to generations | Pass `langfuse_prompt=prompt` |
-| 4. Score results | Attach quality scores to each generation |
-| 5. Analyze in dashboard | Filter by prompt version in Langfuse UI |
-
-## Dashboard Filters for Comparison
-
-| Filter | Purpose |
-|--------|---------|
-| Model name | Compare models side by side |
-| Prompt version | Compare prompt iterations |
-| Tags | Filter by experiment group |
-| Date range | Time-bounded comparison |
-| User ID | Per-user performance |
-| Environment | Production vs staging |
-
-## Metrics API
-
-```python
-# Export metrics programmatically for custom analysis
-# Use Langfuse API or integrate with PostHog/Mixpanel
-# Metrics available: cost, latency, token usage, scores
-# Breakdowns: by model, prompt version, user, tags
-```
+| Dimension | Filter/Group | Use Case |
+|-----------|--------------|----------|
+| `model` | Model name | Model A vs B |
+| `prompt.version` | Prompt version | Prompt iteration |
+| `metadata.experiment` | Custom tag | A/B experiments |
+| `metadata.variant` | Custom tag | Feature flags |
 
 ## Common Mistakes
 
 ### Wrong
 
 ```python
-# No tagging or scoring - cannot compare later
-@observe(as_type="generation")
-def call_llm(prompt):
-    return llm.generate(prompt)
+# No experiment tracking - hard to compare later
+with langfuse.start_as_current_observation(
+    as_type="generation",
+    model="gemini-1.5-pro"
+) as gen:
+    pass
 ```
 
 ### Correct
 
 ```python
-# Tag with model, score results, link prompt version
-@observe(as_type="generation")
-def call_llm(prompt, model):
-    with langfuse.start_as_current_observation(
-        as_type="generation", name="compare", model=model
-    ) as gen:
-        result = llm.generate(prompt, model=model)
-        gen.score(name="quality", value=0.9, data_type="NUMERIC")
-    return result
+# Tag for experiment analysis
+with langfuse.start_as_current_observation(
+    as_type="generation",
+    model="gemini-1.5-pro",
+    metadata={
+        "experiment": "invoice-model-test",
+        "variant": "pro"
+    }
+) as gen:
+    gen.score(name="accuracy", value=0.95)
 ```
+
+## Invoice Processing Comparison
+
+| Model | Cost/Invoice | Latency P95 | Accuracy |
+|-------|--------------|-------------|----------|
+| gemini-1.5-pro | $0.003 | 2.5s | 95% |
+| gemini-1.5-flash | $0.001 | 1.2s | 88% |
+| gpt-4o | $0.004 | 3.0s | 94% |
+
+## Analytics Queries
+
+| Analysis | Langfuse Filter | Output |
+|----------|-----------------|--------|
+| Model cost | Group by model | Cost breakdown |
+| Latency dist | Filter by model | P50/P95/P99 |
+| Quality trend | Score over time | Trend chart |
+| A/B results | Filter experiment | Variant comparison |
+
+## Decision Matrix
+
+| Priority | Choose |
+|----------|--------|
+| Cost-sensitive | gemini-1.5-flash |
+| Accuracy-critical | gemini-1.5-pro |
+| Balanced | Analyze A/B results |
+| Low latency | gemini-1.5-flash |
 
 ## Related
 
-- [Scoring](../concepts/scoring.md)
-- [Prompt Management](../concepts/prompt-management.md)
 - [Dashboard Metrics](../patterns/dashboard-metrics.md)
+- [Cost Tracking](../concepts/cost-tracking.md)
+- [Scoring](../concepts/scoring.md)

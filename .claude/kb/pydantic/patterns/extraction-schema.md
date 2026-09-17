@@ -1,151 +1,121 @@
-# Extraction Schema
+# Extraction Schema Pattern
 
-> **Purpose**: Design Pydantic schemas optimized for LLM-based document data extraction
-> **MCP Validated**: 2026-02-17
+> **Purpose**: Define invoice extraction schemas for LLM prompting and output validation
+> **MCP Validated**: 2026-01-25
 
 ## When to Use
 
-- Building structured extraction pipelines for invoices, receipts, contracts
-- Defining schemas that LLMs can reliably populate from unstructured text
-- Creating reusable extraction models across different document types
-- Generating JSON Schema instructions to embed in extraction prompts
+- Defining structured output format for LLM extraction tasks
+- Generating JSON Schema to include in LLM prompts
+- Type-safe database insertion after extraction
 
 ## Implementation
 
 ```python
-from pydantic import BaseModel, Field, model_validator
-from typing import Annotated, Literal, Optional
+from pydantic import BaseModel, Field, computed_field, model_validator
+from typing import Optional, Literal
 from datetime import date
+from decimal import Decimal
 from enum import Enum
+from typing_extensions import Self
 
-
-# --- Reusable annotated types for extraction ---
-NonEmptyStr = Annotated[str, Field(min_length=1, strip_whitespace=True)]
-Confidence = Annotated[float, Field(ge=0.0, le=1.0, description="Extraction confidence 0-1")]
-MoneyAmount = Annotated[float, Field(ge=0, description="Monetary amount")]
-
-
-class Currency(str, Enum):
-    USD = "USD"
-    EUR = "EUR"
-    GBP = "GBP"
-    BRL = "BRL"
-
-
-class Address(BaseModel):
-    """Postal address extracted from document."""
-    street: Optional[str] = Field(None, description="Street address line")
-    city: Optional[str] = Field(None, description="City name")
-    state: Optional[str] = Field(None, description="State or province")
-    postal_code: Optional[str] = Field(None, description="ZIP or postal code")
-    country: str = Field(default="US", description="ISO 3166-1 alpha-2 country code")
-
+class VendorType(str, Enum):
+    UBEREATS = "ubereats"
+    DOORDASH = "doordash"
+    GRUBHUB = "grubhub"
+    OTHER = "other"
 
 class LineItem(BaseModel):
-    """Single line item from an invoice or receipt."""
-    description: NonEmptyStr = Field(..., description="Item or service description")
-    quantity: float = Field(default=1.0, ge=0, description="Quantity")
-    unit_price: MoneyAmount = Field(..., description="Price per unit")
-    total: Optional[MoneyAmount] = Field(None, description="Line total if stated")
+    description: str = Field(..., description="Item or service description", min_length=1)
+    quantity: int = Field(default=1, description="Quantity of items", ge=1)
+    unit_price: Decimal = Field(..., description="Price per unit", ge=0)
+    amount: Decimal = Field(..., description="Total amount", ge=0)
+
+class InvoiceSchema(BaseModel):
+    """Invoice extraction schema for delivery platform invoices."""
+
+    invoice_id: str = Field(..., description="Unique invoice identifier")
+    vendor_name: str = Field(..., description="Restaurant or vendor name")
+    vendor_type: VendorType = Field(default=VendorType.OTHER, description="Platform type")
+    invoice_date: date = Field(..., description="Invoice issue date (YYYY-MM-DD)")
+    due_date: Optional[date] = Field(default=None, description="Payment due date")
+    subtotal: Decimal = Field(..., description="Subtotal before tax", ge=0)
+    tax_amount: Decimal = Field(default=Decimal("0"), description="Tax amount", ge=0)
+    commission_rate: Optional[Decimal] = Field(default=None, ge=0, le=1)
+    commission_amount: Optional[Decimal] = Field(default=None, ge=0)
+    total_amount: Decimal = Field(..., description="Total invoice amount", ge=0)
+    currency: Literal["USD", "EUR", "GBP", "CAD"] = Field(default="USD")
+    line_items: list[LineItem] = Field(default_factory=list)
+
+    model_config = {
+        "str_strip_whitespace": True,
+        "validate_default": True,
+        "json_schema_extra": {
+            "examples": [{
+                "invoice_id": "INV-2024-001",
+                "vendor_name": "Pizza Palace",
+                "vendor_type": "ubereats",
+                "invoice_date": "2024-01-15",
+                "subtotal": 100.00,
+                "tax_amount": 8.00,
+                "total_amount": 108.00,
+                "currency": "USD",
+                "line_items": []
+            }]
+        }
+    }
+
+    @computed_field
+    @property
+    def has_line_items(self) -> bool:
+        return len(self.line_items) > 0
 
     @model_validator(mode="after")
-    def compute_total(self) -> "LineItem":
-        if self.total is None:
-            self.total = round(self.quantity * self.unit_price, 2)
+    def validate_totals(self) -> Self:
+        expected = self.subtotal + self.tax_amount
+        if self.commission_amount:
+            expected += self.commission_amount
+        if abs(self.total_amount - expected) > Decimal("0.02"):
+            pass  # Log warning but don't fail
         return self
 
-
-class InvoiceExtraction(BaseModel):
-    """Complete invoice extraction schema for LLM output."""
-    invoice_number: NonEmptyStr = Field(..., description="Invoice ID or number")
-    vendor_name: NonEmptyStr = Field(..., description="Vendor or supplier name")
-    vendor_address: Optional[Address] = Field(None, description="Vendor address")
-    customer_name: Optional[str] = Field(None, description="Customer or buyer name")
-    issue_date: date = Field(..., description="Invoice issue date (YYYY-MM-DD)")
-    due_date: Optional[date] = Field(None, description="Payment due date")
-    currency: Currency = Field(default=Currency.USD, description="Currency code")
-    line_items: list[LineItem] = Field(..., min_length=1, description="Invoice line items")
-    subtotal: Optional[MoneyAmount] = None
-    tax_amount: Optional[MoneyAmount] = Field(default=0.0)
-    total_amount: MoneyAmount = Field(..., description="Total invoice amount")
-    extraction_confidence: Confidence = Field(
-        default=0.5, description="Overall extraction confidence"
-    )
-
-    @model_validator(mode="after")
-    def validate_totals(self) -> "InvoiceExtraction":
-        computed = sum(item.total or 0 for item in self.line_items)
-        if self.subtotal is None:
-            self.subtotal = round(computed, 2)
-        return self
+def get_extraction_prompt_schema() -> str:
+    """Generate JSON Schema string for LLM system prompt."""
+    import json
+    return json.dumps(InvoiceSchema.model_json_schema(), indent=2)
 ```
 
 ## Configuration
 
-| Schema Design Rule | Rationale |
-|--------------------|-----------|
-| Use `Field(description=...)` on every field | Descriptions become LLM instructions via JSON Schema |
-| Make non-essential fields `Optional` with defaults | LLMs may miss fields; graceful degradation |
-| Use `Literal` or `Enum` for constrained values | Reduces LLM hallucination in category fields |
-| Add `extraction_confidence` field | Lets LLM self-report uncertainty |
-| Keep line items as `list[Model]` | Structured, validated nested extraction |
+| Setting | Default | Description |
+|---------|---------|-------------|
+| `str_strip_whitespace` | `True` | Auto-strip string fields |
+| `validate_default` | `True` | Validate default values |
 
 ## Example Usage
 
 ```python
-import json
-from patterns.llm_output_validation import validate_llm_output, build_format_instruction
+# 1. Generate schema for LLM prompt
+schema_json = get_extraction_prompt_schema()
 
+system_prompt = f"""
+Extract invoice data from the image. Return valid JSON matching this schema:
+{schema_json}
+"""
 
-# Build extraction prompt
-schema_instructions = build_format_instruction(InvoiceExtraction)
-prompt = f"""Extract all invoice data from the following document text.
+# 2. Call LLM (e.g., Gemini)
+llm_response = call_gemini(system_prompt, invoice_image)
 
-DOCUMENT:
-\"\"\"
-Invoice #2026-0142
-From: DataFlow Corp, 456 Tech Ave, Austin TX 78701
-To: Acme Industries
-Date: February 10, 2026
-Due: March 10, 2026
-
-Items:
-- Cloud Processing (10 hours @ $150/hr): $1,500.00
-- Data Storage (500GB @ $0.10/GB): $50.00
-
-Subtotal: $1,550.00
-Tax (8.25%): $127.88
-Total: $1,677.88
-\"\"\"
-
-{schema_instructions}"""
-
-# Parse LLM response
-llm_json = call_llm(prompt, temperature=0.0)
-invoice = validate_llm_output(llm_json, InvoiceExtraction)
-
-# Access structured data
-print(f"Invoice: {invoice.invoice_number}")
-print(f"Vendor: {invoice.vendor_name}")
-print(f"Items: {len(invoice.line_items)}")
-print(f"Total: {invoice.currency.value} {invoice.total_amount}")
-```
-
-## Schema Design Checklist
-
-```text
-[ ] Every field has a description (for JSON Schema generation)
-[ ] Non-critical fields are Optional with defaults
-[ ] Enum/Literal used for categorical fields
-[ ] Nested models for structured sub-objects
-[ ] model_validator for cross-field consistency
-[ ] Confidence field for LLM self-assessment
-[ ] Monetary fields use float with ge=0
-[ ] Date fields use date type (YYYY-MM-DD)
+# 3. Validate response
+try:
+    invoice = InvoiceSchema.model_validate_json(llm_response)
+    print(f"Extracted: {invoice.vendor_name} - ${invoice.total_amount}")
+except ValidationError as e:
+    print(f"Extraction failed: {e.errors()}")
 ```
 
 ## See Also
 
-- [LLM Output Validation](../patterns/llm-output-validation.md)
-- [Nested Models](../concepts/nested-models.md)
-- [Invoice Schema Spec](../specs/invoice-schema.yaml)
+- [llm-output-validation.md](llm-output-validation.md)
+- [nested-models.md](../concepts/nested-models.md)
+- [base-model.md](../concepts/base-model.md)

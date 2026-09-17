@@ -93,7 +93,7 @@ TYPE: [ ] CRITICAL  [ ] IMPORTANT  [ ] STANDARD  [ ] ADVISORY
 THRESHOLD: _____
 
 VALIDATION
-├─ KB: .claude/kb/prompt-engineering/_______________
+├─ KB: .claude/kb/prompts/_______________
 │     Result: [ ] FOUND  [ ] NOT FOUND
 │     Summary: ________________________________
 │
@@ -127,7 +127,7 @@ Load context based on task needs. Skip what isn't relevant.
 | Context Source | When to Load | Skip If |
 |----------------|--------------|---------|
 | `.claude/CLAUDE.md` | Always recommended | Task is trivial |
-| `.claude/kb/prompt-engineering/` | Prompt work | Not prompt-related |
+| `.claude/kb/prompts/` | Prompt work | Not prompt-related |
 | Existing prompt templates | Modifying prompts | New pattern |
 | Model configurations | Model tuning | Default settings |
 | Output validation rules | Structured output | Freeform text |
@@ -139,40 +139,6 @@ What LLM task?
 ├─ Optimization → Load KB + existing prompts + performance data
 ├─ Extraction → Load KB + schemas + validation patterns
 └─ Reasoning → Load KB + chain-of-thought patterns
-```
-
----
-
-## Knowledge Sources
-
-### Primary: Internal KB
-
-```text
-.claude/kb/prompt-engineering/
-├── index.md            # Entry point, navigation
-├── quick-reference.md  # Fast lookup
-├── concepts/           # Atomic definitions
-│   └── {concept}.md
-└── patterns/           # Reusable code patterns
-    └── {pattern}.md
-```
-
-### Secondary: MCP Validation
-
-**For official documentation:**
-```
-mcp__upstash-context-7-mcp__query-docs({
-  libraryId: "{library-id}",
-  query: "{specific question about LLM prompt engineering}"
-})
-```
-
-**For production examples:**
-```
-mcp__exa__get_code_context_exa({
-  query: "LLM prompt {pattern} production example",
-  tokensNum: 5000
-})
 ```
 
 ---
@@ -318,17 +284,7 @@ TEXT:
 - {why this works}
 - {pattern applied}
 
-**Confidence:** {score} | **Sources:** KB: prompt-engineering/{file}, MCP: {query}
-```
-
-### Medium Confidence (threshold - 0.10 to threshold)
-
-```markdown
-{Answer with caveats}
-
-**Confidence:** {score}
-**Note:** Based on {source}. Verify before production use.
-**Sources:** {list}
+**Confidence:** {score} | **Sources:** KB: prompts/{file}, MCP: {query}
 ```
 
 ### Low Confidence (< threshold - 0.10)
@@ -344,22 +300,6 @@ TEXT:
 2. Test with your specific use case
 
 Would you like me to research further?
-```
-
-### Conflict Detected
-
-```markdown
-**Conflict Detected** -- KB and MCP disagree.
-
-**KB says:** {pattern from KB}
-**MCP says:** {contradicting info}
-
-**My assessment:** {which seems more current/reliable and why}
-
-How would you like to proceed?
-1. Follow KB (established pattern)
-2. Follow MCP (possibly newer)
-3. Research further
 ```
 
 ---

@@ -53,7 +53,7 @@ Grep("async def")            # Async patterns
 # Architecture patterns
 Grep("from src")             # Import structure
 Grep("@router")              # API patterns
-Grep("BaseModel")            # Pydantic patterns
+Grep("@lambda_handler")      # Lambda patterns
 ```
 
 ### Step 3: Analyze Agents
@@ -63,9 +63,12 @@ Grep("BaseModel")            # Pydantic patterns
 Glob(".claude/agents/**/*.md")
 
 # Categorize by folder
-- ai-ml/            → AI/ML, prompts, GenAI architecture, LLM specialist
-- communication/    → Planning, meetings
-- exploration/      → Codebase explorer, KB architect
+- workflow/      → SDD pipeline agents
+- code-quality/  → Review, clean, test
+- data-engineering/ → Spark, Lakeflow
+- aws/           → Lambda, deployer
+- ai-ml/         → LLM, prompts
+- domain/        → Project-specific
 ```
 
 ### Step 4: Merge Updates
@@ -128,7 +131,7 @@ Generated CLAUDE.md follows this structure:
 │   ├── commands/
 │   ├── sdd/
 │   ├── kb/
-│   └── storage/
+│   └── memories/
 ```
 
 ---
@@ -141,9 +144,9 @@ Generated CLAUDE.md follows this structure:
 
 | Category | Agents | Use When |
 | -------- | ------ | -------- |
-| AI/ML | ai-data-engineer, ai-prompt-specialist, genai-architect, llm-specialist | AI pipelines, prompts, architecture |
-| Communication | meeting-analyst, the-planner | Planning, meetings |
-| Exploration | codebase-explorer, kb-architect | Codebase analysis, KB management |
+| Workflow | prd-agent, clarify-agent, ... | Building features with SDD |
+| Code Quality | code-reviewer, test-generator, ... | Improving code |
+| {category} | {agents} | {trigger} |
 
 ---
 
@@ -171,7 +174,7 @@ Generated CLAUDE.md follows this structure:
 
 | Command | Purpose |
 | ------- | ------- |
-| /dev | AgentLoop development |
+| /build-feature | Full SDD pipeline |
 | /memory | Save session insights |
 | {command} | {purpose} |
 
@@ -193,8 +196,8 @@ Generated CLAUDE.md follows this structure:
 
 | MCP Server | Purpose |
 | ---------- | ------- |
-| mcp__upstash-context-7-mcp | Library documentation |
-| mcp__exa | Code context search |
+| context7-mcp | Library documentation |
+| exa | Code context search |
 | {mcp} | {purpose} |
 
 ---
@@ -227,7 +230,7 @@ Generated CLAUDE.md follows this structure:
 | Coding Standards | Pattern detection | Merge |
 | Commands | commands/ folder | Replace |
 | Environment | Config files | Merge |
-| MCP Tools | settings.local.json | Replace |
+| MCP Tools | settings.json | Replace |
 | Important Dates | Manual | Preserve |
 | Getting Help | Structure | Replace |
 

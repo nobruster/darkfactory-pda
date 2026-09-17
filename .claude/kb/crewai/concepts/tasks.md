@@ -1,150 +1,102 @@
 # Tasks
 
-> **Purpose**: Define actionable units of work assigned to agents with structured outputs
+> **Purpose**: Units of work with clear descriptions and expected outputs
 > **Confidence**: 0.95
-> **MCP Validated**: 2026-02-17
+> **MCP Validated**: 2026-01-25
 
 ## Overview
 
-A Task is the actionable unit that an agent executes within a crew. Each task has a description, expected output, and is assigned to a specific agent. Tasks can depend on other tasks via the `context` parameter, enabling data flow between pipeline stages. Tasks support structured output via Pydantic models.
+Tasks define specific work units for agents to complete. Each task includes a description of what needs to be done and an expected output format. Tasks can depend on other tasks through context, enabling data flow between agents in a crew.
 
 ## The Pattern
 
 ```python
-from crewai import Task, Agent
-from pydantic import BaseModel
-from typing import List
+from crewai import Task
 
-class ShopAgentReport(BaseModel):
-    time_period: str
-    total_revenue: float
-    order_count: int
-    top_segment: str
-    top_complaint: str
-    recommendations: List[str]
+# Log Triage Task
+triage_task = Task(
+    description="""Analyze the log file at {log_path} and classify
+    each event by severity: CRITICAL, ERROR, WARNING, INFO.
 
-analyst = Agent(role="E-Commerce Data Analyst", goal="...", backstory="...")
+    Focus on:
+    - Cloud Run failures
+    - Pub/Sub delivery issues
+    - BigQuery errors
+    - LLM API timeouts
 
+    Filter out routine INFO messages.""",
+    expected_output="""JSON array of classified events:
+    [{"timestamp": "...", "severity": "ERROR",
+      "service": "cloud-run", "message": "..."}]""",
+    agent=triage_agent,
+    async_execution=False
+)
+
+# Analysis Task (depends on triage)
 analysis_task = Task(
-    description=(
-        "Query Supabase Postgres for revenue totals, order counts, and top customer "
-        "segments for {time_period}. Return exact figures from SQL results only."
-    ),
-    expected_output="Revenue total, order count, and top segment with SQL evidence",
-    agent=analyst,
-    output_pydantic=ShopAgentReport,
+    description="Analyze the classified errors and find root cause",
+    expected_output="Root cause analysis with suggested fix",
+    agent=root_cause_agent,
+    context=[triage_task]  # Receives triage output
 )
 ```
 
 ## Quick Reference
 
-| Parameter | Type | Default | Notes |
-|-----------|------|---------|-------|
-| `description` | str | required | What the agent should do |
-| `expected_output` | str | required | What the output should look like |
-| `agent` | Agent | `None` | Agent assigned to execute |
-| `tools` | list | `[]` | Task-specific tools (override agent) |
-| `context` | list[Task] | `[]` | Upstream tasks providing input |
-| `output_pydantic` | BaseModel | `None` | Structured output model |
-| `output_json` | type | `None` | JSON output schema |
-| `output_file` | str | `None` | Write output to file |
-| `async_execution` | bool | `False` | Run asynchronously |
-| `human_input` | bool | `False` | Require human approval |
-| `callback` | callable | `None` | Post-execution hook |
-
-## YAML Configuration
-
-```yaml
-# config/tasks.yaml
-analysis_task:
-  description: >
-    Query Supabase Postgres for revenue totals, order counts, and top customer
-    segments for {time_period}. Return exact SQL results — no estimates.
-  expected_output: >
-    Revenue total, order count, payment method distribution,
-    and top customer segment with supporting SQL query result.
-  agent: analyst
-
-research_task:
-  description: >
-    Search Qdrant review vectors for customer complaints and sentiment
-    themes in {time_period}. Surface top issues with supporting evidence.
-  expected_output: >
-    Top 3 complaint themes, average sentiment score, and satisfaction drivers
-    with representative review excerpts.
-  agent: researcher
-  context:
-    - analysis_task
-
-report_task:
-  description: >
-    Write an executive e-commerce report combining SQL metrics and review insights.
-    Include revenue highlights, sentiment summary, and actionable recommendations.
-  expected_output: >
-    Structured executive report with revenue section, customer sentiment section,
-    and 3-5 prioritized recommendations.
-  agent: reporter
-  context:
-    - analysis_task
-    - research_task
-```
-
-## Task Context and Structured Output
-
-```python
-# ShopAgent flow: analysis → research → report (with Pydantic output)
-from pydantic import BaseModel, Field
-from typing import List, Literal
-
-class ShopAgentReport(BaseModel):
-    total_revenue: float = Field(description="Total revenue in BRL")
-    order_count: int = Field(description="Total confirmed orders")
-    top_segment: str = Field(description="Highest-revenue customer segment")
-    sentiment: Literal["positive", "neutral", "negative"]
-    top_complaint: str = Field(description="Most frequent complaint theme")
-    recommendations: List[str] = Field(description="Prioritized action items")
-
-analysis_task = Task(
-    description="Query revenue and order metrics for {time_period}",
-    expected_output="Revenue totals and order counts from SQL",
-    agent=analyst,
-)
-research_task = Task(
-    description="Search reviews for sentiment and complaint themes",
-    expected_output="Top complaint themes with sentiment scores",
-    agent=researcher,
-    context=[analysis_task],  # receives SQL metrics as context
-)
-report_task = Task(
-    description="Synthesize metrics and sentiment into executive report",
-    expected_output="Structured report with revenue, sentiment, recommendations",
-    agent=reporter,
-    context=[analysis_task, research_task],  # receives both outputs
-    output_pydantic=ShopAgentReport,
-)
-```
+| Parameter | Required | Description |
+|-----------|----------|-------------|
+| `description` | Yes | What the agent should do |
+| `expected_output` | Yes | Format/structure of result |
+| `agent` | Yes | Agent assigned to this task |
+| `context` | No | List of dependent tasks |
+| `human_input` | No | Require human approval |
+| `async_execution` | No | Run asynchronously |
+| `output_json` | No | Pydantic model for JSON output |
+| `output_file` | No | Save output to file path |
 
 ## Common Mistakes
 
 ### Wrong
 
 ```python
-# Missing expected_output leads to unfocused agent behavior
-task = Task(description="Check the orders", agent=analyst)
+# Vague description, no expected output format
+task = Task(
+    description="Look at the logs",
+    expected_output="Analysis",
+    agent=agent
+)
 ```
 
 ### Correct
 
 ```python
+# Specific instructions, clear output format
 task = Task(
-    description="Query total revenue and order count for the last 30 days from Supabase",
-    expected_output="JSON with total_revenue (float), order_count (int), and top_segment (str)",
-    agent=analyst,
+    description="""Read Cloud Run logs from {log_path}.
+    For each ERROR or CRITICAL entry:
+    1. Extract timestamp, service name, error message
+    2. Identify if it's a transient or persistent issue
+    3. Check for recent similar errors (last 24h)""",
+    expected_output="""Structured report with:
+    - List of errors with timestamps
+    - Severity classification
+    - Pattern analysis (recurring vs one-time)
+    - Recommended action (retry, investigate, escalate)""",
+    agent=root_cause_agent,
+    context=[triage_task]
 )
 ```
+
+## Task Output Options
+
+| Option | Use Case |
+|--------|----------|
+| `output_json=Model` | Validate with Pydantic |
+| `output_file="report.md"` | Save to disk |
+| `callback=fn` | Post-processing function |
 
 ## Related
 
 - [Agents](../concepts/agents.md)
-- [Crews](../concepts/crews.md)
-- [ShopAgent Crew Pattern](../patterns/shopagent-crew.md)
+- [Tools](../concepts/tools.md)
+- [Escalation Workflow](../patterns/escalation-workflow.md)

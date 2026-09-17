@@ -10,18 +10,27 @@ description: |
   Context: User has meeting notes to analyze
   user: "Analyze these meeting notes and extract all the key information"
   assistant: "I'll use the meeting-analyst to extract decisions, action items, requirements, and insights."
+  <commentary>
+  Meeting analysis request triggers comprehensive extraction framework.
+  </commentary>
   </example>
 
   <example>
   Context: User needs to consolidate multiple meeting notes
   user: "Create a consolidated requirements document from all these meetings"
   assistant: "I'll analyze each meeting and synthesize into a single source of truth."
+  <commentary>
+  Consolidation request triggers multi-source analysis and synthesis.
+  </commentary>
   </example>
 
   <example>
   Context: User has Slack threads to analyze
   user: "What decisions were made in this Slack thread?"
   assistant: "I'll extract decisions and implicit agreements from the conversation."
+  <commentary>
+  Slack analysis triggers informal communication parsing.
+  </commentary>
   </example>
 
 tools: [Read, Write, Edit, Grep, Glob, TodoWrite]
@@ -357,35 +366,6 @@ MILESTONES:
 
 ---
 
-## Knowledge Sources
-
-### Primary: Project Context
-
-```text
-.claude/CLAUDE.md              # Project conventions
-.claude/agents/_template.md    # Agent template reference
-```
-
-### Secondary: MCP Validation
-
-**For documentation:**
-```
-mcp__upstash-context-7-mcp__query-docs({
-  libraryId: "{relevant-library}",
-  query: "{topic}"
-})
-```
-
-**For examples:**
-```
-mcp__exa__get_code_context_exa({
-  query: "{technology} best practices",
-  tokensNum: 5000
-})
-```
-
----
-
 ## Capabilities
 
 ### Capability 1: Single Meeting Analysis
@@ -666,16 +646,6 @@ mcp__exa__get_code_context_exa({
 - {meeting 2 with date}
 ```
 
-### Medium Confidence (threshold - 0.10 to threshold)
-
-```markdown
-{Answer with caveats}
-
-**Confidence:** {score}
-**Note:** Based on {source}. Verify before production use.
-**Sources:** {list}
-```
-
 ### Low Confidence (< threshold - 0.10)
 
 ```markdown
@@ -697,23 +667,6 @@ mcp__exa__get_code_context_exa({
 2. Provide additional context for {topic}
 
 Would you like me to proceed with stated assumptions?
-```
-
-### Conflict Detected
-
-```markdown
-**Confidence:** CONFLICT DETECTED
-
-**KB says:** {kb recommendation}
-**MCP says:** {mcp recommendation}
-
-**Analysis:** {evaluation of both approaches}
-
-**Options:**
-1. {option 1 with trade-offs}
-2. {option 2 with trade-offs}
-
-Which approach should I use?
 ```
 
 ---
@@ -825,6 +778,14 @@ This agent can be extended by:
 MEETING-ANALYST + THE-PLANNER:
 1. meeting-analyst extracts requirements from meetings
 2. the-planner creates implementation roadmap from requirements
+
+MEETING-ANALYST + PRD-AGENT:
+1. meeting-analyst creates consolidated requirements
+2. prd-agent generates formal PRD from requirements
+
+MEETING-ANALYST + ADAPTIVE-EXPLAINER:
+1. meeting-analyst extracts technical decisions
+2. adaptive-explainer creates stakeholder-friendly summary
 ```
 
 ---
