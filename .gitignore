@@ -1,0 +1,28 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# Node
+node_modules/
+dist/
+build/
+
+# Ambiente / segredos
+.env
+.env.local
+*.pem
+*.key
+
+# Sistema
+.DS_Store
+Thumbs.db
+
+# Editor
+.idea/
+*.swp

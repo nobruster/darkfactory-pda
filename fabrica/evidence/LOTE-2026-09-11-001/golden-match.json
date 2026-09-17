@@ -1,0 +1,37 @@
+{
+  "batch_id": "LOTE-2026-09-11-001",
+  "oracle": "contracts\\oracles\\exemplo-lote-001.json",
+  "approved_by": "nome@empresa.com",
+  "resolved": false,
+  "unexplained_count": 1,
+  "scopes": {
+    "agregado": {
+      "batch_id": "LOTE-2026-09-11-001",
+      "status": "STALLED",
+      "business_correct": false,
+      "parity_with_reference": null,
+      "resolved": false,
+      "unexplained_count": 1,
+      "differences": [
+        {
+          "scope": "agregado",
+          "key": "-",
+          "field": "valor_liquido",
+          "actual": "1237926.24",
+          "reference": "1237926.25",
+          "reference_name": "contrato",
+          "classification": "MODERN_DEFECT"
+        }
+      ]
+    },
+    "registros": {
+      "batch_id": "LOTE-2026-09-11-001",
+      "status": "MATCHED",
+      "business_correct": true,
+      "parity_with_reference": null,
+      "resolved": true,
+      "unexplained_count": 0,
+      "differences": []
+    }
+  }
+}

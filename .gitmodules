@@ -1,0 +1,15 @@
+[submodule "brief-spec"]
+	path = brief-spec
+	url = https://github.com/luanmorenommaciel/brief-spec.git
+[submodule "converge"]
+	path = converge
+	url = https://github.com/luanmorenommaciel/converge.git
+[submodule "seamwise"]
+	path = seamwise
+	url = https://github.com/luanmorenommaciel/seamwise.git
+[submodule "task-spec"]
+	path = task-spec
+	url = https://github.com/luanmorenommaciel/task-spec.git
+[submodule "uc-northwind-pay-edp"]
+	path = uc-northwind-pay-edp
+	url = https://github.com/luanmorenommaciel/uc-northwind-pay-edp

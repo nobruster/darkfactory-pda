@@ -1,0 +1,45 @@
+{
+  "_comentario": "ORÁCULO — a resposta certa, aprovada por quem entende do negócio. Nunca edite este arquivo para um portão passar. Se o pipeline diverge daqui, o pipeline está errado (ou o negócio mudou e alguém precisa re-aprovar).",
+
+  "batch_id": "LOTE-2026-09-11-001",
+  "arquivo_origem": "vendas_20260911.csv",
+  "sha256_origem": "a3f1...preencha-com-o-hash-real",
+
+  "approved_by": "nome@empresa.com",
+  "approved_at": "2026-09-11",
+  "approval_note": "Conferido manualmente contra o relatório da controladoria de 11/09.",
+
+  "aggregate": {
+    "linhas_entrada": "1000",
+    "linhas_validas": "998",
+    "linhas_rejeitadas": "2",
+    "valor_bruto": "1250430.55",
+    "valor_descontos": "12504.30",
+    "valor_liquido": "1237926.25"
+  },
+
+  "money_fields": [
+    "valor_bruto",
+    "valor_descontos",
+    "valor_liquido"
+  ],
+
+  "key_fields": ["id_venda"],
+
+  "records": [
+    {"id_venda": "V001", "cliente": "ACME",  "valor_liquido": "1500.00"},
+    {"id_venda": "V002", "cliente": "GLOBEX", "valor_liquido": "2350.75"}
+  ],
+
+  "rejeicoes_esperadas": [
+    {"linha": 447, "codigo": "VALOR_NEGATIVO"},
+    {"linha": 892, "codigo": "CLIENTE_INEXISTENTE"}
+  ],
+
+  "regras_declaradas": {
+    "arredondamento": "HALF_UP",
+    "casas_decimais": 2,
+    "moeda": "BRL",
+    "grao": "uma linha por id_venda"
+  }
+}
