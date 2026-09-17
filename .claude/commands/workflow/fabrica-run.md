@@ -75,6 +75,34 @@ resolva antes de seguir.
 `cvg next` é **read-only**: nomeia o próximo passo, não o executa
 (`converge/skills/evidence-to-next-pass/SKILL.md:3`).
 
+### 🚨 `[+]` no conductor NÃO significa aprovado
+
+O conductor marca um passe como feito quando o **arquivo existe** — não
+quando o gate passou. Ele mesmo diz: *"pass 1 left its artifact on the
+floor"* e *"authoritative verdict: cvg intent"*.
+
+Verificado nesta máquina: com a tech-spec em `CHECK_TECH_SPEC=FAIL`, o
+conductor ainda mostrava `[+] pass 1 · Intent` e `PASS_PRE=OK` para o Pass 2.
+
+```
+converge/README.md:166 — "Evidence presence is not a verdict.
+                          cvg next sequences; gates decide."
+```
+
+**Nunca relate progresso com base no `[+]`.** A verdade de cada passe vem do
+seu token:
+
+| Passe | Autoridade |
+|---|---|
+| 0 | `CHECK_BRD=PASS` |
+| 1 | `CHECK_TECH_SPEC=PASS` |
+| 4 | `CHECK_CONSENSUS` |
+| 8 | `TASK_LOOP=SETTLED\|LOCAL_SETTLED\|NO_OP` |
+
+Se `PASS_PRE=OK` mas o gate do passe anterior reprovou, **o que vale é o
+gate**. Seguir em frente ali é exatamente a falha que a Barreira de Consenso
+existe para impedir.
+
 ---
 
 ## A cadeia
