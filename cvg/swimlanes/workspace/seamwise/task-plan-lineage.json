@@ -1,0 +1,63 @@
+{
+  "contract": "SeamwiseTaskPlanLineage/v1",
+  "delivery_plan_sha256": "d9ffeae5e96eee704a61d4679f7c5115fbe565019597f9e00bb2b947145f7c60",
+  "engine_version": "0.2.0",
+  "intent": {
+    "id": "DI-FABRICA-COMPETENCIA",
+    "sha256": "72bb6a2fd183a705d6e27083153b3020a2ddc7193e71584cb3025cf9f0d25a66"
+  },
+  "review": {
+    "fixture": false,
+    "plan_sha256": "d9ffeae5e96eee704a61d4679f7c5115fbe565019597f9e00bb2b947145f7c60",
+    "reviewed_at": "2026-09-17T23:19:52.322061+00:00",
+    "reviewer": "Bruno Nunes",
+    "sha256": "9ffa48279d129b061a5315d73a4739ef237843c7ab842fe87c4f84c9a37b0956"
+  },
+  "task_plan": {
+    "contract": "TaskPlan/v1",
+    "digest": "50e03c7bf2354587ee68f98bf6ca24df11ac764ca16b26b14b3735faeab67112",
+    "path": "seamwise/task-plan.json"
+  },
+  "units": {
+    "T-20260917-agregacao-exata": {
+      "intent": "DI-FABRICA-COMPETENCIA",
+      "leg": "LEG-AGREGADO-EXATO",
+      "seam": "SEAM-AGREGACAO",
+      "source_sha256": "f95dee42cf6a9c82613a255924f445e3a76bab52dc22acb08cdf2b87c7145d53",
+      "swimlane": "LANE-AGREGACAO",
+      "unit_id": "T-20260917-agregacao-exata"
+    },
+    "T-20260917-contrato-ancora": {
+      "intent": "DI-FABRICA-COMPETENCIA",
+      "leg": "LEG-CONTRATO-RECUSA-SEM-ANCORA",
+      "seam": "SEAM-CONTRATO-ANCORA",
+      "source_sha256": "b1caeef9e62ca5af70eb7a197a2344b3ce96b2b16b01466af407c62be3e5fafa",
+      "swimlane": "LANE-CONTRATO",
+      "unit_id": "T-20260917-contrato-ancora"
+    },
+    "T-20260917-evidencia-packet": {
+      "intent": "DI-FABRICA-COMPETENCIA",
+      "leg": "LEG-EVIDENCIA-RECONSTROI",
+      "seam": "SEAM-EVIDENCIA",
+      "source_sha256": "2a9a7f9331b49518cf5539c18023aba0b01257100a4f3893d26d5ced2f2cb63a",
+      "swimlane": "LANE-EVIDENCIA",
+      "unit_id": "T-20260917-evidencia-packet"
+    },
+    "T-20260917-juizo-classifica": {
+      "intent": "DI-FABRICA-COMPETENCIA",
+      "leg": "LEG-JUIZO-ACUSA-CENTAVO",
+      "seam": "SEAM-JUIZO",
+      "source_sha256": "2f8a6409af2455fbf2b0308b4872bca0e7a78ae352672b647bfc01f036c0ca77",
+      "swimlane": "LANE-JUIZO",
+      "unit_id": "T-20260917-juizo-classifica"
+    },
+    "T-20260917-leitura-competencia": {
+      "intent": "DI-FABRICA-COMPETENCIA",
+      "leg": "LEG-LEITURA-NAO-ALTERA-FONTE",
+      "seam": "SEAM-LEITURA",
+      "source_sha256": "cfe7e2c6aa749c54e66c354df3a34a55223bd7620cdfe85458a82c8250f419c1",
+      "swimlane": "LANE-LEITURA",
+      "unit_id": "T-20260917-leitura-competencia"
+    }
+  }
+}

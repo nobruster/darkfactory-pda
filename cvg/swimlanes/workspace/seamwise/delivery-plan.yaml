@@ -1,5 +1,5 @@
 schema_version: 1
-status: DELIVERY_PLAN=NEEDS_REVIEW
+status: DELIVERY_PLAN=READY
 seam_map_sha256: c1f4cc99ea03720b7b737dece55d02b878fa36c00b0e8d75dddd15d9cac39204
 swimlanes:
 - id: LANE-CONTRATO
@@ -63,3 +63,4 @@ objections: []
 contentions: []
 steel_thread_path: seamwise/steel-thread.md
 steel_thread_sha256: 7bf8287daa939642e1b5b039f612f99d98203a1280919ccd775a7928e2795420
+review_authority_sha256: 3f7482937a196979a2d1283743461fe2dc6a0de96d3ff56ccca0c9e9c7f4385e

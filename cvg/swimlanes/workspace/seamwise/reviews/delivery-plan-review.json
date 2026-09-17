@@ -1,0 +1,10 @@
+{
+  "disposition": "accepted",
+  "draft_sha256": "49f49950e2014f7f54a1caebe8d9a04f2ea361db4e6d025649a8131a29ab3777",
+  "fixture": false,
+  "plan_sha256": "d9ffeae5e96eee704a61d4679f7c5115fbe565019597f9e00bb2b947145f7c60",
+  "reason": "PASSOU com os valores exatos",
+  "reviewed_at": "2026-09-17T23:19:52.322061+00:00",
+  "reviewer": "Bruno Nunes",
+  "schema_version": 1
+}

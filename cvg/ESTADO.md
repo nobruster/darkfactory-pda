@@ -3,8 +3,8 @@
 Onde o caso de exemplo parou, e o que falta para destravar.
 Atualizado em 17/09/2026.
 
-> **Este é um caso real em aberto**, não uma demonstração. Os dois blockers
-> abaixo esperam decisão do dono e foram mantidos `open` de propósito.
+> **Este é um caso real**, não uma demonstração. Os dois blockers do Pass 1
+> foram decididos pelo dono, e o plano de entrega foi revisado e assinado.
 
 ## Posição
 
@@ -13,14 +13,35 @@ Atualizado em 17/09/2026.
 | 0 · Capture | `cvg capture` | 🟢 `CHECK_BRD=PASS` |
 | 1 · Intent | `cvg intent` | 🟢 `CHECK_TECH_SPEC=PASS` |
 | 2 · Structure | `cvg structure --final` | 🟢 `CHECK_ADR=OK` |
-| 3 · Decompose | `seamwise plan` | ⬜ **próximo** |
-| 4 · Consensus | `cvg review` | ⬜ 🛑 barreira |
+| 3 · Decompose | `seamwise compile` | 🟢 `TASK_GRAPH=READY` — 5 tarefas |
+| 4 · Consensus | `cvg review --check` | ⬜ 🛑 **próximo — a barreira** |
 | 5 · Tasking | `taskspec gate --stamp` | ⬜ |
 | 7 · Bind | `cvg bind` | ⬜ |
 | 8 · Loop | `cvg loop` | ⬜ |
 
-Os três vereditos acima vêm dos **gates**, não do `[+]` do conductor — o
-conductor só confere que o arquivo existe.
+Os vereditos acima vêm dos **gates**, não do `[+]` do conductor — o conductor
+só confere que o arquivo existe.
+
+## Barreira B — vencida
+
+```
+reviewer   : Bruno Nunes
+reason     : PASSOU com os valores exatos
+reviewed_at: 2026-09-17T23:19:52Z
+```
+
+O `compile` produziu **5 tarefas** ligadas ao digest do plano revisado:
+
+| Tarefa | O que faz |
+|---|---|
+| `T-20260917-contrato-ancora` | recusa competência sem âncora |
+| `T-20260917-leitura-competencia` | lê sem alterar a fonte |
+| `T-20260917-agregacao-exata` | soma com meio-para-par |
+| `T-20260917-juizo-classifica` | compara e classifica |
+| `T-20260917-evidencia-packet` | grava evidência reconstruível |
+
+Antes da revisão, `compile` devolvia `TASK_GRAPH=BLOCKED` com
+`[review_missing]`. A barreira era real.
 
 ## Os dois gaps, resolvidos
 
@@ -56,26 +77,25 @@ Registrado em
 evidência verificada: dos três empates testados, dois divergem em um centavo
 entre as duas regras.
 
-## Próximo passo: Pass 3 · Decompose
+## Próximo: Pass 4 · Consenso 🛑 **a barreira**
 
 ```bash
-cvg next --guided     # aponta: pass 3 · Decompose (skill reqs-to-swimlane-plans)
+cvg review --adversary codex     # o adversário ataca o plano
+cvg review --check               # CHECK_CONSENSUS
+cvg review --resolve <id> --fix
+cvg review --resolve <id> --accept --owner <nome> --risk <peso>
 ```
 
-Aqui a stack finalmente é decidida — até o Pass 2 tudo ficou acima dela. Só o
-**Seamwise** decompõe (token `COMPOSE`), e ele para em
-`DELIVERY_PLAN=NEEDS_REVIEW`.
+**O adversário só PROPÕE.** `--check` fica RED até um humano decidir cada
+objeção, uma a uma. O `cvg` recusa se não conseguir atribuir `decided_by` —
+*"uma decisão não atribuível é o que acabamos de remover"*.
 
-🛑 **Barreira B** — a decomposição exige revisor nomeado:
+> Por que é a barreira mais dura: em 2026-08-03 o gate leu a proposta do
+> próprio adversário como consentimento e ficou **GREEN com sete críticos
+> abertos** (`converge/bin/cvg:1218-1220`).
 
-```bash
-seamwise review --accept --reviewer <nome> --reason <motivo>
-```
-
-Depois vem a **Barreira C (Pass 4 · Consenso)**, a mais dura: um modelo
-adversário ataca o plano, e **cada objeção precisa de decisão humana** —
-corrigir ou aceitar o risco conscientemente. O `cvg` recusa se não conseguir
-atribuir `decided_by`.
+⚠️ O dispatch exige um engine de família diferente (`codex`, `kimi`).
+`cvg doctor` diz quais estão prontos nesta máquina.
 
 ⚠️ **Esta âncora veio de outro repositório.** Uma fábrica nova mede a sua
 própria: copiar número entre projetos é herdar um fato sem a evidência que o

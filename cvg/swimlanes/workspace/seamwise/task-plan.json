@@ -1,0 +1,435 @@
+{
+  "api_version": "taskspec.dev/v1",
+  "approved": true,
+  "kind": "TaskPlan",
+  "metadata": {
+    "delivery_plan_review_sha256": "9ffa48279d129b061a5315d73a4739ef237843c7ab842fe87c4f84c9a37b0956",
+    "delivery_plan_sha256": "d9ffeae5e96eee704a61d4679f7c5115fbe565019597f9e00bb2b947145f7c60",
+    "name": "DI-FABRICA-COMPETENCIA",
+    "producer": "seamwise",
+    "producer_version": "0.2.0",
+    "seamwise_plan_status": "DELIVERY_PLAN=READY",
+    "source": "seamwise/task-plan.json"
+  },
+  "units": [
+    {
+      "agent": "any",
+      "anti_patterns": [
+        "Do not herdar o arredondamento padrão da linguagem: defaults divergem e o erro fica estruturalmente verde; instead declarar a regra no contrato e testá-la.",
+        "Do not converter float para decimal silenciosamente: o centavo já se perdeu antes da conversão; instead recusar float na entrada.",
+        "Do not arredondar a cada soma parcial: o erro de arredondamento acumula linha a linha; instead somar exato e arredondar uma vez no final."
+      ],
+      "behaviors": [
+        {
+          "given": "um valor de ponto flutuante em campo monetário",
+          "id": "B-1",
+          "then": "a entrada é recusada com erro explícito",
+          "when": "o agregado é calculado"
+        },
+        {
+          "given": "valores em empate exato de arredondamento",
+          "id": "B-2",
+          "then": "o resultado difere do calculado com meio-para-cima",
+          "when": "o total é calculado com meio-para-par"
+        }
+      ],
+      "context": "Intent DI-FABRICA-COMPETENCIA; seam SEAM-AGREGACAO; swimlane LANE-AGREGACAO; capability leg LEG-AGREGADO-EXATO. Done condition: Float é recusado na entrada e o total usa meio-para-par a duas casas.",
+      "creates_paths": [
+        "src/fabrica/agregacao.py",
+        "tests/test_agregacao.py"
+      ],
+      "depends_on": [
+        "T-20260917-leitura-competencia"
+      ],
+      "do_not_touch": [
+        "cvg/docs/adrs"
+      ],
+      "done_condition": "Float é recusado na entrada e o total usa meio-para-par a duas casas.",
+      "effort": "M",
+      "evals": [
+        {
+          "command": "pytest -q tests/test_agregacao.py -k recusa_float",
+          "description": "Float em campo monetário é recusado",
+          "expected_duration_sec": 10,
+          "id": "eval_1",
+          "terminal": false,
+          "verifies": [
+            "B-1"
+          ]
+        },
+        {
+          "command": "pytest -q tests/test_agregacao.py -k half_even",
+          "description": "Meio-para-par difere de meio-para-cima",
+          "expected_duration_sec": 10,
+          "id": "eval_2",
+          "terminal": false,
+          "verifies": [
+            "B-2"
+          ]
+        },
+        {
+          "command": "pytest -q tests/test_agregacao.py -k total_ancora",
+          "description": "O total de 2026-03 reproduz a âncora medida",
+          "expected_duration_sec": 10,
+          "id": "eval_3",
+          "terminal": true,
+          "verifies": [
+            "B-1",
+            "B-2"
+          ]
+        }
+      ],
+      "execution_backend": "any",
+      "goal": "Tornar a regra de arredondamento explícita e verificável.",
+      "id": "T-20260917-agregacao-exata",
+      "observability": "total agregado por competência",
+      "profile": "standard",
+      "required_tools": [
+        "git",
+        "bash",
+        "python3",
+        "pytest"
+      ],
+      "rollback": "Remover o agregador e seus testes.",
+      "source_note": "seamwise/legs/LEG-AGREGADO-EXATO.md#T-20260917-agregacao-exata",
+      "title": "Somar valores monetários com meio-para-par",
+      "touches_paths": [],
+      "why": "Tornar a regra de arredondamento explícita e verificável."
+    },
+    {
+      "agent": "any",
+      "anti_patterns": [
+        "Do not gerar a âncora automaticamente quando ela falta: um número que ninguém viu medir é um palpite; instead retornar NAO_MEDIDO e parar.",
+        "Do not tratar âncora ausente como zero: o gate compararia contra nada e publicaria ACEITO; instead distinguir ausência de valor.",
+        "Do not editar a âncora para um veredito passar: falsifica a verdade contra a qual tudo é medido; instead investigar; âncora revista exige nova aprovação."
+      ],
+      "behaviors": [
+        {
+          "given": "uma competência com âncora medida no contrato",
+          "id": "B-1",
+          "then": "os cinco valores da âncora são devolvidos",
+          "when": "o contrato é carregado"
+        },
+        {
+          "given": "uma competência sem âncora no contrato",
+          "id": "B-2",
+          "then": "o resultado é NAO_MEDIDO e o processo sai com código 1",
+          "when": "o contrato é carregado"
+        }
+      ],
+      "context": "Intent DI-FABRICA-COMPETENCIA; seam SEAM-CONTRATO-ANCORA; swimlane LANE-CONTRATO; capability leg LEG-CONTRATO-RECUSA-SEM-ANCORA. Done condition: Competência com âncora carrega os cinco valores; sem âncora retorna NAO_MEDIDO e exit 1.",
+      "creates_paths": [
+        "src/fabrica/contrato.py",
+        "tests/test_contrato.py"
+      ],
+      "depends_on": [],
+      "do_not_touch": [
+        "cvg/docs/adrs"
+      ],
+      "done_condition": "Competência com âncora carrega os cinco valores; sem âncora retorna NAO_MEDIDO e exit 1.",
+      "effort": "S",
+      "evals": [
+        {
+          "command": "pytest -q tests/test_contrato.py -k ancorada",
+          "description": "Competência ancorada carrega os cinco valores",
+          "expected_duration_sec": 10,
+          "id": "eval_1",
+          "terminal": false,
+          "verifies": [
+            "B-1"
+          ]
+        },
+        {
+          "command": "pytest -q tests/test_contrato.py -k nao_medido",
+          "description": "Competência sem âncora recusa construir",
+          "expected_duration_sec": 10,
+          "id": "eval_2",
+          "terminal": false,
+          "verifies": [
+            "B-2"
+          ]
+        },
+        {
+          "command": "pytest -q tests/test_contrato.py -k integridade",
+          "description": "A âncora carregada bate com o contrato em disco",
+          "expected_duration_sec": 10,
+          "id": "eval_3",
+          "terminal": true,
+          "verifies": [
+            "B-1",
+            "B-2"
+          ]
+        }
+      ],
+      "execution_backend": "any",
+      "goal": "Fazer a ausência de prova bloquear, em vez de virar verde.",
+      "id": "T-20260917-contrato-ancora",
+      "observability": "contagem de competências ancoradas no contrato",
+      "profile": "standard",
+      "required_tools": [
+        "git",
+        "bash",
+        "python3",
+        "pytest"
+      ],
+      "rollback": "Remover o carregador de contrato e seus testes.",
+      "source_note": "seamwise/legs/LEG-CONTRATO-RECUSA-SEM-ANCORA.md#T-20260917-contrato-ancora",
+      "title": "Carregar o contrato e recusar competência sem âncora",
+      "touches_paths": [],
+      "why": "Fazer a ausência de prova bloquear, em vez de virar verde."
+    },
+    {
+      "agent": "any",
+      "anti_patterns": [
+        "Do not gravar ACEITO com gate de âncora falso dentro: foi a objeção 28 — 82 milhões de linhas sem conferência; instead publicar ACEITO_SEM_ANCORA de forma visível.",
+        "Do not editar um pacote antigo para corrigir o histórico: falsifica evidência; instead gravar evidência nova e manter a antiga.",
+        "Do not gravar só o veredito, sem os números: ninguém consegue reconstruir por que aquilo foi aceito; instead registrar âncora, agregado e cada classificação."
+      ],
+      "behaviors": [
+        {
+          "given": "uma execução com âncora medida",
+          "id": "B-1",
+          "then": "o veredito é reconstruído sem reexecutar o pipeline",
+          "when": "o pacote é lido de volta"
+        },
+        {
+          "given": "uma execução sem âncora",
+          "id": "B-2",
+          "then": "o veredito registrado é ACEITO_SEM_ANCORA",
+          "when": "o pacote é gravado"
+        }
+      ],
+      "context": "Intent DI-FABRICA-COMPETENCIA; seam SEAM-EVIDENCIA; swimlane LANE-EVIDENCIA; capability leg LEG-EVIDENCIA-RECONSTROI. Done condition: O pacote contém veredito, âncora, agregado e classificações, e distingue ACEITO de ACEITO_SEM_ANCORA.",
+      "creates_paths": [
+        "src/fabrica/evidencia.py",
+        "tests/test_evidencia.py"
+      ],
+      "depends_on": [
+        "T-20260917-juizo-classifica"
+      ],
+      "do_not_touch": [
+        "evidence"
+      ],
+      "done_condition": "O pacote contém veredito, âncora, agregado e classificações, e distingue ACEITO de ACEITO_SEM_ANCORA.",
+      "effort": "S",
+      "evals": [
+        {
+          "command": "pytest -q tests/test_evidencia.py -k reconstroi",
+          "description": "O pacote reconstrói o veredito",
+          "expected_duration_sec": 10,
+          "id": "eval_1",
+          "terminal": false,
+          "verifies": [
+            "B-1"
+          ]
+        },
+        {
+          "command": "pytest -q tests/test_evidencia.py -k sem_ancora",
+          "description": "Sem âncora nunca vira ACEITO",
+          "expected_duration_sec": 10,
+          "id": "eval_2",
+          "terminal": false,
+          "verifies": [
+            "B-2"
+          ]
+        },
+        {
+          "command": "pytest -q tests/test_evidencia.py -k campos_obrigatorios",
+          "description": "O pacote registra âncora, agregado e classificações",
+          "expected_duration_sec": 10,
+          "id": "eval_3",
+          "terminal": true,
+          "verifies": [
+            "B-1",
+            "B-2"
+          ]
+        }
+      ],
+      "execution_backend": "any",
+      "goal": "Tornar o veredito auditável sem reexecutar o pipeline.",
+      "id": "T-20260917-evidencia-packet",
+      "observability": "pacotes gravados por competência",
+      "profile": "standard",
+      "required_tools": [
+        "git",
+        "bash",
+        "python3",
+        "pytest"
+      ],
+      "rollback": "Remover o gravador de evidência e seus testes.",
+      "source_note": "seamwise/legs/LEG-EVIDENCIA-RECONSTROI.md#T-20260917-evidencia-packet",
+      "title": "Gravar o pacote de evidência por execução",
+      "touches_paths": [],
+      "why": "Tornar o veredito auditável sem reexecutar o pipeline."
+    },
+    {
+      "agent": "any",
+      "anti_patterns": [
+        "Do not introduzir parâmetro de tolerância: um centavo inexplicado viraria um centavo aceito; instead classificar a diferença ou consertar o pipeline.",
+        "Do not editar a âncora para o veredito passar: falsifica a prova em vez de investigar; instead investigar; âncora revista exige nova aprovação.",
+        "Do not classificar como UNRESOLVED para destravar: UNRESOLVED bloqueia; usá-lo como atalho esconde a causa; instead medir a diferença e atribuir a classificação certa."
+      ],
+      "behaviors": [
+        {
+          "given": "um agregado com um centavo alterado",
+          "id": "B-1",
+          "then": "o veredito é recusado e o processo sai com código 1",
+          "when": "o juízo compara contra a âncora"
+        },
+        {
+          "given": "uma diferença sem classificação atribuída",
+          "id": "B-2",
+          "then": "o resultado é UNRESOLVED e bloqueia",
+          "when": "o veredito é calculado"
+        }
+      ],
+      "context": "Intent DI-FABRICA-COMPETENCIA; seam SEAM-JUIZO; swimlane LANE-JUIZO; capability leg LEG-JUIZO-ACUSA-CENTAVO. Done condition: Um centavo alterado é recusado, e diferença sem classificação bloqueia a publicação.",
+      "creates_paths": [
+        "src/fabrica/juizo.py",
+        "tests/test_juizo.py"
+      ],
+      "depends_on": [
+        "T-20260917-agregacao-exata"
+      ],
+      "do_not_touch": [
+        "cvg/docs/adrs",
+        "contracts"
+      ],
+      "done_condition": "Um centavo alterado é recusado, e diferença sem classificação bloqueia a publicação.",
+      "effort": "M",
+      "evals": [
+        {
+          "command": "pytest -q tests/test_juizo.py -k um_centavo",
+          "description": "Um centavo de divergência é recusado",
+          "expected_duration_sec": 10,
+          "id": "eval_1",
+          "terminal": false,
+          "verifies": [
+            "B-1"
+          ]
+        },
+        {
+          "command": "pytest -q tests/test_juizo.py -k unresolved",
+          "description": "Diferença não classificada bloqueia",
+          "expected_duration_sec": 10,
+          "id": "eval_2",
+          "terminal": false,
+          "verifies": [
+            "B-2"
+          ]
+        },
+        {
+          "command": "pytest -q tests/test_juizo.py -k classificacoes",
+          "description": "As seis classificações são exaustivas e exclusivas",
+          "expected_duration_sec": 10,
+          "id": "eval_3",
+          "terminal": true,
+          "verifies": [
+            "B-1",
+            "B-2"
+          ]
+        }
+      ],
+      "execution_backend": "any",
+      "goal": "Fazer o juiz acusar, não apenas aprovar.",
+      "id": "T-20260917-juizo-classifica",
+      "observability": "vereditos por classificação",
+      "profile": "standard",
+      "required_tools": [
+        "git",
+        "bash",
+        "python3",
+        "pytest"
+      ],
+      "rollback": "Remover o juízo e seus testes.",
+      "source_note": "seamwise/legs/LEG-JUIZO-ACUSA-CENTAVO.md#T-20260917-juizo-classifica",
+      "title": "Comparar contra a âncora e classificar a diferença",
+      "touches_paths": [],
+      "why": "Fazer o juiz acusar, não apenas aprovar."
+    },
+    {
+      "agent": "any",
+      "anti_patterns": [
+        "Do not escrever no arquivo de origem: destrói a prova de que a origem publicou aquilo; instead tratar a origem como somente leitura.",
+        "Do not corrigir valor malformado durante a leitura: apaga o defeito antes da classificação; instead preservar e deixar o juízo classificar.",
+        "Do not ler colunas por nome de cabeçalho: cabeçalho com nome repetido faz perder a coluna em silêncio; instead ler por posição declarada no contrato."
+      ],
+      "behaviors": [
+        {
+          "given": "o arquivo de uma competência",
+          "id": "B-1",
+          "then": "o sha256 do arquivo é idêntico ao de antes",
+          "when": "a leitura termina"
+        },
+        {
+          "given": "o arquivo de 2026-03",
+          "id": "B-2",
+          "then": "a contagem é 41719140",
+          "when": "os registros são contados"
+        }
+      ],
+      "context": "Intent DI-FABRICA-COMPETENCIA; seam SEAM-LEITURA; swimlane LANE-LEITURA; capability leg LEG-LEITURA-NAO-ALTERA-FONTE. Done condition: O sha256 do arquivo é idêntico antes e depois, e a contagem de registros bate com a âncora.",
+      "creates_paths": [
+        "src/fabrica/leitura.py",
+        "tests/test_leitura.py"
+      ],
+      "depends_on": [
+        "T-20260917-contrato-ancora"
+      ],
+      "do_not_touch": [
+        "_raw"
+      ],
+      "done_condition": "O sha256 do arquivo é idêntico antes e depois, e a contagem de registros bate com a âncora.",
+      "effort": "M",
+      "evals": [
+        {
+          "command": "pytest -q tests/test_leitura.py -k sha256",
+          "description": "A fonte permanece byte-idêntica",
+          "expected_duration_sec": 10,
+          "id": "eval_1",
+          "terminal": false,
+          "verifies": [
+            "B-1"
+          ]
+        },
+        {
+          "command": "pytest -q tests/test_leitura.py -k contagem",
+          "description": "A contagem bate com a âncora",
+          "expected_duration_sec": 10,
+          "id": "eval_2",
+          "terminal": false,
+          "verifies": [
+            "B-2"
+          ]
+        },
+        {
+          "command": "pytest -q tests/test_leitura.py -k preserva_defeito",
+          "description": "Registro malformado é preservado, não corrigido",
+          "expected_duration_sec": 10,
+          "id": "eval_3",
+          "terminal": true,
+          "verifies": [
+            "B-1",
+            "B-2"
+          ]
+        }
+      ],
+      "execution_backend": "any",
+      "goal": "Extrair registros preservando os bytes originais.",
+      "id": "T-20260917-leitura-competencia",
+      "observability": "contagem de registros lidos por competência",
+      "profile": "standard",
+      "required_tools": [
+        "git",
+        "bash",
+        "python3",
+        "pytest"
+      ],
+      "rollback": "Remover o leitor e seus testes.",
+      "source_note": "seamwise/legs/LEG-LEITURA-NAO-ALTERA-FONTE.md#T-20260917-leitura-competencia",
+      "title": "Ler a competência sem alterar a fonte",
+      "touches_paths": [],
+      "why": "Extrair registros preservando os bytes originais."
+    }
+  ]
+}
