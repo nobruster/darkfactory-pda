@@ -54,6 +54,30 @@ Ver [`converge/VENDORED.md`](converge/VENDORED.md).
 
 ---
 
+## Regra 1.5 — Use o que existe antes de improvisar
+
+O repositório traz 19 agentes, 8 comandos, 26 skills e 20 domínios de KB em
+`.claude/`. Antes de escrever solução do zero, **procure**:
+
+```bash
+ls .claude/agents/*/ .claude/skills/ .claude/kb/
+grep -ril "<termo>" .claude/
+```
+
+Índice comentado em [`.claude/README.md`](.claude/README.md) — ele separa o
+núcleo de fábrica da herança do curso ShopAgent (slides, CrewAI, Chainlit).
+
+**Se não existe recurso para a demanda, crie** — não improvise um
+atalho descartável. O agente
+[`fabrica-architect`](.claude/agents/domain/fabrica-architect.md) faz isso:
+inventaria, decide entre usar/estender/criar, cria seguindo os padrões
+existentes e **registra no índice**. Recurso criado e não indexado é recurso
+perdido.
+
+Atalho: `/nova-fabrica <domínio>`.
+
+---
+
 ## Regra 2 — Sem oráculo, não se constrói
 
 Uma fábrica nova nasce com contrato `NAO_MEDIDO` e **recusa rodar** até alguém

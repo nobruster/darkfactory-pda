@@ -1,0 +1,305 @@
+schema_version: "1.0"
+domain: exploration
+file_type: analysis-framework
+last_validated: "2026-02-17"
+source: "codebase-explorer agent analysis methodology"
+
+# ============================================================
+# Codebase Analysis Framework Specification
+# ============================================================
+# Defines the phases, metrics, thresholds, and output formats
+# used by the codebase-explorer agent for repository analysis.
+# ============================================================
+
+framework:
+  name: "Codebase Exploration Analysis Framework"
+  version: "1.0"
+  agent: "codebase-explorer"
+  description: >
+    Structured methodology for analyzing codebases through five
+    sequential phases: discovery, dependency, architecture, health,
+    and synthesis. Each phase produces typed outputs that feed into
+    the next phase.
+
+# ============================================================
+# Analysis Phases
+# ============================================================
+phases:
+  discovery:
+    order: 1
+    description: "Scan file tree, detect languages, identify project type"
+    inputs:
+      - repo_path: "string (absolute path to repository root)"
+      - ignore_dirs: "set[string] (directories to skip)"
+    outputs:
+      - repo_structure: "RepoStructure dataclass"
+    tools:
+      - "file tree traversal (pathlib.rglob)"
+      - "language detection (extension mapping)"
+      - "config file identification"
+    timeout_seconds: 30
+
+  dependency:
+    order: 2
+    description: "Trace imports, build dependency graph, detect circular deps"
+    inputs:
+      - repo_path: "string"
+      - internal_packages: "set[string] (known internal package names)"
+      - repo_structure: "RepoStructure (from phase 1)"
+    outputs:
+      - dependency_graph: "DependencyGraph dataclass"
+    tools:
+      - "AST parsing (ast module for Python)"
+      - "regex import extraction (for non-Python)"
+      - "graph cycle detection"
+    timeout_seconds: 60
+
+  architecture:
+    order: 3
+    description: "Classify modules into layers, detect design patterns, map data flow"
+    inputs:
+      - repo_structure: "RepoStructure (from phase 1)"
+      - dependency_graph: "DependencyGraph (from phase 2)"
+    outputs:
+      - architecture_report: "ArchitectureReport dataclass"
+    tools:
+      - "layer classification heuristics"
+      - "design pattern detection"
+      - "violation checking"
+    timeout_seconds: 60
+
+  health:
+    order: 4
+    description: "Calculate complexity, measure file sizes, score overall health"
+    inputs:
+      - repo_path: "string"
+      - repo_structure: "RepoStructure (from phase 1)"
+    outputs:
+      - health_report: "HealthReport dataclass"
+    tools:
+      - "cyclomatic complexity (AST analysis)"
+      - "line counting"
+      - "duplication detection"
+    timeout_seconds: 120
+
+  synthesis:
+    order: 5
+    description: "Combine all phase outputs into final deliverables"
+    inputs:
+      - repo_structure: "RepoStructure (from phase 1)"
+      - dependency_graph: "DependencyGraph (from phase 2)"
+      - architecture_report: "ArchitectureReport (from phase 3)"
+      - health_report: "HealthReport (from phase 4)"
+    outputs:
+      - executive_summary: "Markdown document"
+      - onboarding_guide: "Markdown document"
+      - architecture_diagram: "Mermaid diagram"
+    tools:
+      - "template rendering"
+      - "Mermaid diagram generation"
+    timeout_seconds: 30
+
+# ============================================================
+# Metrics Definitions
+# ============================================================
+metrics:
+  cyclomatic_complexity:
+    description: "Number of linearly independent paths through function code"
+    formula: "decisions + 1 (if, while, for, except, assert, bool_op)"
+    thresholds:
+      good: "< 10"
+      warning: "10-20"
+      critical: "> 20"
+    unit: "per function"
+
+  coupling_score:
+    description: "Ratio of internal import edges to total module count"
+    formula: "internal_edges / node_count"
+    thresholds:
+      good: "< 3.0"
+      warning: "3.0-5.0"
+      critical: "> 5.0"
+    unit: "ratio"
+
+  file_length:
+    description: "Total lines per source file"
+    thresholds:
+      good: "< 300"
+      warning: "300-500"
+      critical: "> 500"
+    unit: "lines"
+
+  function_length:
+    description: "Total lines per function/method"
+    thresholds:
+      good: "< 30"
+      warning: "30-60"
+      critical: "> 60"
+    unit: "lines"
+
+  duplication_ratio:
+    description: "Percentage of code that is duplicated across files"
+    thresholds:
+      good: "< 5%"
+      warning: "5-15%"
+      critical: "> 15%"
+    unit: "percentage"
+
+  test_coverage:
+    description: "Percentage of source lines executed by test suite"
+    thresholds:
+      good: "> 80%"
+      warning: "50-80%"
+      critical: "< 50%"
+    unit: "percentage"
+
+  import_depth:
+    description: "Maximum nesting depth of import chains"
+    thresholds:
+      good: "< 3"
+      warning: "3-5"
+      critical: "> 5"
+    unit: "levels"
+
+# ============================================================
+# Health Score Calculation
+# ============================================================
+health_scoring:
+  scale: "0-100"
+  grade_map:
+    A: "90-100"
+    B: "75-89"
+    C: "60-74"
+    D: "40-59"
+    F: "0-39"
+  components:
+    - name: "avg_cyclomatic_complexity"
+      weight: 0.25
+      scoring:
+        - range: "< 5"
+          score: 100
+        - range: "5-10"
+          score: 75
+        - range: "10-15"
+          score: 50
+        - range: "> 15"
+          score: 25
+    - name: "file_size_distribution"
+      weight: 0.20
+      scoring: "percentage of files under 300 lines * 100"
+    - name: "function_size_distribution"
+      weight: 0.20
+      scoring: "percentage of functions under 30 lines * 100"
+    - name: "duplication_ratio"
+      weight: 0.15
+      scoring:
+        - range: "< 5%"
+          score: 100
+        - range: "5-10%"
+          score: 75
+        - range: "> 10%"
+          score: 50
+    - name: "test_existence"
+      weight: 0.10
+      scoring: "100 if tests/ dir and test files exist, else 0"
+    - name: "documentation"
+      weight: 0.10
+      scoring: "weighted: README (40) + docstrings (30) + comment_ratio (30)"
+
+# ============================================================
+# Output Formats
+# ============================================================
+outputs:
+  executive_summary:
+    format: "markdown"
+    max_length: "~200 lines"
+    sections:
+      - "Overview table (project type, language, size)"
+      - "Language distribution"
+      - "Key dependencies (top 10)"
+      - "Health assessment with grade"
+      - "Risks and recommendations"
+
+  onboarding_guide:
+    format: "markdown"
+    max_length: "~200 lines"
+    sections:
+      - "Prerequisites"
+      - "Setup steps"
+      - "Architecture overview"
+      - "Key directories and files"
+      - "Common tasks and commands"
+      - "Gotchas and tips"
+
+  architecture_diagram:
+    format: "mermaid"
+    diagram_type: "graph TD"
+    sections:
+      - "Layer subgraphs (presentation, application, domain, infrastructure)"
+      - "Module nodes within layers"
+      - "Dependency arrows between modules"
+      - "Violation highlights (dashed red lines)"
+
+# ============================================================
+# Ignore Patterns
+# ============================================================
+default_ignore:
+  directories:
+    - ".git"
+    - "node_modules"
+    - "__pycache__"
+    - ".venv"
+    - "venv"
+    - "dist"
+    - "build"
+    - ".tox"
+    - ".mypy_cache"
+    - ".pytest_cache"
+    - "egg-info"
+  files:
+    - "*.pyc"
+    - "*.pyo"
+    - "*.so"
+    - "*.dylib"
+    - "*.min.js"
+    - "*.map"
+    - "package-lock.json"
+    - "yarn.lock"
+    - "poetry.lock"
+
+# ============================================================
+# Language Support
+# ============================================================
+language_support:
+  full:
+    - language: "Python"
+      extensions: [".py"]
+      import_parser: "ast"
+      complexity_tool: "ast walk"
+    - language: "TypeScript"
+      extensions: [".ts", ".tsx"]
+      import_parser: "regex"
+      complexity_tool: "line counting"
+    - language: "JavaScript"
+      extensions: [".js", ".jsx"]
+      import_parser: "regex"
+      complexity_tool: "line counting"
+  partial:
+    - language: "Go"
+      extensions: [".go"]
+      import_parser: "regex"
+    - language: "Rust"
+      extensions: [".rs"]
+      import_parser: "regex"
+    - language: "Java"
+      extensions: [".java"]
+      import_parser: "regex"
+  detection_only:
+    - language: "Terraform"
+      extensions: [".tf", ".hcl"]
+    - language: "YAML"
+      extensions: [".yaml", ".yml"]
+    - language: "SQL"
+      extensions: [".sql"]
+    - language: "Shell"
+      extensions: [".sh", ".bash", ".zsh"]

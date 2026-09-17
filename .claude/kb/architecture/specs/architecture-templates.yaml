@@ -1,0 +1,298 @@
+schema_version: "1.0"
+domain: architecture
+file_type: architecture-templates
+last_validated: "2026-02-17"
+source: "System architecture best practices - MCP validated"
+
+# Architecture Decision Record (ADR) Template
+templates:
+  adr:
+    description: "Architecture Decision Record for documenting significant architectural choices"
+    fields:
+      id:
+        type: string
+        required: true
+        format: "ADR-{NNN}"
+        notes: "Sequential numbering within project"
+      title:
+        type: string
+        required: true
+        validation:
+          - "max_length: 100"
+          - "must describe the decision, not the problem"
+      date:
+        type: date
+        required: true
+        format: "YYYY-MM-DD"
+      status:
+        type: string
+        required: true
+        validation:
+          - "enum: [Proposed, Accepted, Deprecated, Superseded]"
+      deciders:
+        type: list
+        required: true
+        notes: "Names and roles of decision makers"
+      context:
+        type: string
+        required: true
+        validation:
+          - "min_length: 50"
+          - "must describe problem and why decision is needed"
+      constraints:
+        type: list
+        required: false
+        notes: "Non-negotiable requirements that limit options"
+      candidates:
+        type: list
+        required: true
+        min_items: 2
+        max_items: 5
+        fields:
+          name:
+            type: string
+            required: true
+          summary:
+            type: string
+            required: true
+      evaluation_matrix:
+        type: object
+        required: true
+        fields:
+          criteria:
+            type: list
+            min_items: 3
+            max_items: 7
+            fields:
+              name:
+                type: string
+                required: true
+              weight:
+                type: decimal
+                required: true
+                validation:
+                  - "range: 0.05-0.40"
+                  - "all weights must sum to 1.00"
+              scores:
+                type: map
+                required: true
+                notes: "candidate_name -> score (1-5)"
+      decision:
+        type: string
+        required: true
+        notes: "Which candidate was chosen"
+      rationale:
+        type: string
+        required: true
+        validation:
+          - "min_length: 50"
+      consequences:
+        type: object
+        required: true
+        fields:
+          positive:
+            type: list
+            min_items: 1
+          negative:
+            type: list
+            min_items: 1
+          risks:
+            type: list
+            required: false
+      review_date:
+        type: date
+        required: false
+        notes: "When to revisit this decision"
+
+  # System Design Document Template
+  system_design:
+    description: "End-to-end system design document template"
+    sections:
+      requirements:
+        required: true
+        fields:
+          functional:
+            type: list
+            min_items: 3
+            format: "FR-{N}: The system shall..."
+          non_functional:
+            type: list
+            min_items: 2
+            fields:
+              attribute:
+                type: string
+                validation:
+                  - "enum: [availability, latency, throughput, durability, security, cost]"
+              target:
+                type: string
+                notes: "Measurable target value"
+          constraints:
+            type: list
+            required: false
+      architecture:
+        required: true
+        fields:
+          style:
+            type: string
+            validation:
+              - "enum: [monolith, layered, microservices, event-driven, serverless, hexagonal, cqrs]"
+          diagram:
+            type: string
+            format: "ASCII art"
+            required: true
+          components:
+            type: list
+            min_items: 2
+            fields:
+              name:
+                type: string
+                required: true
+              responsibility:
+                type: string
+                required: true
+              technology:
+                type: string
+                required: true
+      data_flow:
+        required: true
+        fields:
+          synchronous:
+            type: list
+            notes: "Request-response paths"
+          asynchronous:
+            type: list
+            notes: "Event-driven paths"
+      failure_modes:
+        required: true
+        fields:
+          scenarios:
+            type: list
+            min_items: 3
+            fields:
+              failure:
+                type: string
+                required: true
+              impact:
+                type: string
+                validation:
+                  - "enum: [full_outage, partial_degradation, latency_increase, data_risk]"
+              mitigation:
+                type: string
+                required: true
+      capacity:
+        required: true
+        fields:
+          users:
+            type: integer
+            notes: "Daily active users"
+          peak_rps:
+            type: integer
+            notes: "Peak requests per second"
+          storage_growth:
+            type: string
+            notes: "Monthly storage growth rate"
+          compute:
+            type: list
+            notes: "Instance types and counts per component"
+
+  # Implementation Plan Template
+  implementation_plan:
+    description: "Multi-phase implementation plan with milestones and risk tracking"
+    fields:
+      project_name:
+        type: string
+        required: true
+      owner:
+        type: string
+        required: true
+      start_date:
+        type: date
+        required: true
+      target_date:
+        type: date
+        required: true
+      phases:
+        type: list
+        min_items: 2
+        max_items: 6
+        fields:
+          name:
+            type: string
+            required: true
+          duration:
+            type: string
+            required: true
+            notes: "e.g., 'Weeks 1-2'"
+          objectives:
+            type: list
+            min_items: 2
+          deliverables:
+            type: list
+            min_items: 1
+          exit_criteria:
+            type: list
+            min_items: 1
+          dependencies:
+            type: list
+            required: false
+          risks:
+            type: list
+            required: false
+            fields:
+              description:
+                type: string
+              impact:
+                type: string
+                validation:
+                  - "enum: [low, medium, high, critical]"
+              likelihood:
+                type: string
+                validation:
+                  - "enum: [low, medium, high]"
+              mitigation:
+                type: string
+      milestones:
+        type: list
+        min_items: 2
+        fields:
+          name:
+            type: string
+            required: true
+          target:
+            type: string
+            required: true
+          status:
+            type: string
+            validation:
+              - "enum: [pending, on_track, at_risk, delayed, complete]"
+
+# Quality Attributes Reference
+quality_attributes:
+  availability:
+    tiers:
+      - level: "99%"
+        downtime_per_year: "3.65 days"
+        use_case: "Internal tools"
+      - level: "99.9%"
+        downtime_per_year: "8.7 hours"
+        use_case: "Standard SaaS"
+      - level: "99.95%"
+        downtime_per_year: "4.4 hours"
+        use_case: "Business-critical"
+      - level: "99.99%"
+        downtime_per_year: "52.6 minutes"
+        use_case: "Financial systems"
+  latency:
+    targets:
+      - tier: "fast"
+        p50: "50ms"
+        p99: "200ms"
+        use_case: "User-facing API"
+      - tier: "standard"
+        p50: "200ms"
+        p99: "1000ms"
+        use_case: "Backend services"
+      - tier: "batch"
+        p50: "5s"
+        p99: "30s"
+        use_case: "Data processing"

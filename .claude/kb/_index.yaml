@@ -1,0 +1,648 @@
+# Knowledge Base Index
+# Machine-readable registry for KB domains
+# Project: ShopAgent (Semana AI Data Engineer)
+
+version: "2.0"
+last_updated: "2026-04-12"
+last_domain_added: deepeval
+
+# File Size Limits (SINGLE SOURCE OF TRUTH)
+limits:
+  quick_reference: 100
+  concept: 150
+  pattern: 200
+  spec: null
+  reference: null
+
+# Templates
+templates:
+  - name: concept
+    path: _templates/concept.md.template
+  - name: pattern
+    path: _templates/pattern.md.template
+  - name: index
+    path: _templates/index.md.template
+  - name: quick-reference
+    path: _templates/quick-reference.md.template
+  - name: spec
+    path: _templates/spec.yaml.template
+  - name: test-case
+    path: _templates/test-case.json.template
+  - name: domain-manifest
+    path: _templates/domain-manifest.yaml.template
+
+# Domain Registry
+domains:
+  pydantic:
+    name: Pydantic
+    description: Python data validation for LLM output parsing and structured extraction
+    path: pydantic/
+    mcp_validated: "2026-02-17"
+    status: complete
+    agents:
+      - ai-prompt-specialist
+    entry_points:
+      index: index.md
+      quick_reference: quick-reference.md
+    concepts:
+      - name: base-model
+        path: concepts/base-model.md
+        confidence: 0.95
+      - name: field-types
+        path: concepts/field-types.md
+        confidence: 0.95
+      - name: validators
+        path: concepts/validators.md
+        confidence: 0.95
+      - name: nested-models
+        path: concepts/nested-models.md
+        confidence: 0.95
+    patterns:
+      - name: llm-output-validation
+        path: patterns/llm-output-validation.md
+      - name: extraction-schema
+        path: patterns/extraction-schema.md
+      - name: error-handling
+        path: patterns/error-handling.md
+      - name: custom-validators
+        path: patterns/custom-validators.md
+    specs:
+      - name: invoice-schema
+        path: specs/invoice-schema.yaml
+
+  python:
+    name: Python Clean Code
+    description: Clean code patterns for Python 3.11+ -- dataclasses, type hints, generators, testing
+    path: python/
+    mcp_validated: "2026-02-17"
+    status: complete
+    entry_points:
+      index: index.md
+      quick_reference: quick-reference.md
+    agents:
+      - ai-data-engineer
+    concepts:
+      - name: dataclasses
+        path: concepts/dataclasses.md
+        confidence: 0.95
+      - name: type-hints
+        path: concepts/type-hints.md
+        confidence: 0.95
+      - name: generators
+        path: concepts/generators.md
+        confidence: 0.95
+      - name: context-managers
+        path: concepts/context-managers.md
+        confidence: 0.95
+    patterns:
+      - name: file-parser
+        path: patterns/file-parser.md
+      - name: clean-architecture
+        path: patterns/clean-architecture.md
+      - name: error-handling
+        path: patterns/error-handling.md
+      - name: functional-patterns
+        path: patterns/functional-patterns.md
+    specs:
+      - name: python-standards
+        path: specs/python-standards.yaml
+
+  crewai:
+    name: CrewAI
+    description: Multi-agent AI orchestration framework for ShopAgent -- agents, crews, tasks, tools, memory
+    path: crewai/
+    mcp_validated: "2026-02-17"
+    status: complete
+    agents:
+      - genai-architect
+      - crewai-specialist
+    entry_points:
+      index: index.md
+      quick_reference: quick-reference.md
+    concepts:
+      - name: agents
+        path: concepts/agents.md
+        confidence: 0.95
+      - name: crews
+        path: concepts/crews.md
+        confidence: 0.95
+      - name: tasks
+        path: concepts/tasks.md
+        confidence: 0.95
+      - name: tools
+        path: concepts/tools.md
+        confidence: 0.95
+      - name: memory
+        path: concepts/memory.md
+        confidence: 0.95
+      - name: processes
+        path: concepts/processes.md
+        confidence: 0.95
+    patterns:
+      - name: shopagent-crew
+        path: patterns/shopagent-crew.md
+      - name: shopagent-tools
+        path: patterns/shopagent-tools.md
+      - name: yaml-configuration
+        path: patterns/yaml-configuration.md
+      - name: chainlit-crewai
+        path: patterns/chainlit-crewai.md
+      - name: evaluation-observability
+        path: patterns/evaluation-observability.md
+    specs:
+      - name: crewai-config
+        path: specs/crewai-config.yaml
+
+  supabase:
+    name: Supabase
+    description: "The Ledger -- Supabase Postgres for structured queries, auth, edge functions, RLS, pgvector"
+    path: supabase/
+    mcp_validated: "2026-04-11"
+    status: complete
+    agents:
+      - ai-data-engineer
+    entry_points:
+      index: index.md
+      quick_reference: quick-reference.md
+    concepts:
+      - name: auth
+        path: concepts/auth.md
+        confidence: 0.95
+      - name: edge-functions
+        path: concepts/edge-functions.md
+        confidence: 0.95
+      - name: pgvector
+        path: concepts/pgvector.md
+        confidence: 0.95
+      - name: pgvector-fundamentals
+        path: concepts/pgvector-fundamentals.md
+        confidence: 0.95
+      - name: realtime
+        path: concepts/realtime.md
+        confidence: 0.95
+      - name: rls
+        path: concepts/rls.md
+        confidence: 0.95
+      - name: rls-policies
+        path: concepts/rls-policies.md
+        confidence: 0.95
+    patterns:
+      - name: conversation-memory
+        path: patterns/conversation-memory.md
+      - name: e2e-testing-cleanup
+        path: patterns/e2e-testing-cleanup.md
+      - name: edge-function-api
+        path: patterns/edge-function-api.md
+      - name: migration-patterns
+        path: patterns/migration-patterns.md
+      - name: multi-tenant-rls
+        path: patterns/multi-tenant-rls.md
+      - name: rag-vector-store
+        path: patterns/rag-vector-store.md
+      - name: rls-multi-tenant
+        path: patterns/rls-multi-tenant.md
+      - name: vector-store-rag
+        path: patterns/vector-store-rag.md
+      - name: webhook-edge-function
+        path: patterns/webhook-edge-function.md
+      - name: shopagent-ledger-queries
+        path: patterns/shopagent-ledger-queries.md
+
+  qdrant:
+    name: Qdrant Vector Database
+    description: "The Memory -- Qdrant vector DB for semantic search, collection management, and RAG pipeline integration"
+    path: qdrant/
+    mcp_validated: "2026-02-24"
+    status: complete
+    agents:
+      - genai-architect
+    entry_points:
+      index: index.md
+      quick_reference: quick-reference.md
+    concepts:
+      - name: collections-and-points
+        path: concepts/collections-and-points.md
+        confidence: 0.95
+    patterns:
+      - name: n8n-rag-pipeline
+        path: patterns/n8n-rag-pipeline.md
+      - name: shopagent-reviews-collection
+        path: patterns/shopagent-reviews-collection.md
+
+  langfuse:
+    name: Langfuse
+    description: LLMOps observability platform for tracking LLM calls, costs, latency, and quality
+    path: langfuse/
+    mcp_validated: "2026-02-17"
+    status: complete
+    entry_points:
+      index: index.md
+      quick_reference: quick-reference.md
+    agents:
+      - ai-data-engineer
+    concepts:
+      - name: traces-spans
+        path: concepts/traces-spans.md
+        confidence: 0.95
+      - name: generations
+        path: concepts/generations.md
+        confidence: 0.95
+      - name: cost-tracking
+        path: concepts/cost-tracking.md
+        confidence: 0.95
+      - name: scoring
+        path: concepts/scoring.md
+        confidence: 0.95
+      - name: prompt-management
+        path: concepts/prompt-management.md
+        confidence: 0.95
+      - name: model-comparison
+        path: concepts/model-comparison.md
+        confidence: 0.95
+    patterns:
+      - name: python-sdk-integration
+        path: patterns/python-sdk-integration.md
+      - name: cloud-run-instrumentation
+        path: patterns/cloud-run-instrumentation.md
+      - name: quality-feedback-loops
+        path: patterns/quality-feedback-loops.md
+      - name: cost-alerting
+        path: patterns/cost-alerting.md
+      - name: trace-linking
+        path: patterns/trace-linking.md
+      - name: dashboard-metrics
+        path: patterns/dashboard-metrics.md
+    specs:
+      - name: langfuse-config
+        path: specs/langfuse-config.yaml
+
+  prompt-engineering:
+    name: Prompt Engineering
+    description: Techniques and patterns for effective LLM prompting -- extraction, chain-of-thought, structured output, few-shot
+    path: prompt-engineering/
+    mcp_validated: "2026-02-17"
+    status: complete
+    entry_points:
+      index: index.md
+      quick_reference: quick-reference.md
+    agents:
+      - ai-prompt-specialist
+    concepts:
+      - name: chain-of-thought
+        path: concepts/chain-of-thought.md
+        confidence: 0.95
+      - name: structured-extraction
+        path: concepts/structured-extraction.md
+        confidence: 0.95
+      - name: few-shot-prompting
+        path: concepts/few-shot-prompting.md
+        confidence: 0.95
+      - name: system-prompts
+        path: concepts/system-prompts.md
+        confidence: 0.95
+      - name: output-formatting
+        path: concepts/output-formatting.md
+        confidence: 0.95
+    patterns:
+      - name: document-extraction
+        path: patterns/document-extraction.md
+      - name: validation-prompts
+        path: patterns/validation-prompts.md
+      - name: multi-pass-extraction
+        path: patterns/multi-pass-extraction.md
+      - name: prompt-template
+        path: patterns/prompt-template.md
+    specs:
+      - name: prompt-formats
+        path: specs/prompt-formats.yaml
+
+  genai:
+    name: GenAI Architecture
+    description: Architecture patterns for GenAI systems -- multi-agent orchestration, agentic workflows, RAG, chatbots, LLM pipelines
+    path: genai/
+    mcp_validated: "2026-02-17"
+    status: complete
+    entry_points:
+      index: index.md
+      quick_reference: quick-reference.md
+    agents:
+      - genai-architect
+    concepts:
+      - name: multi-agent-systems
+        path: concepts/multi-agent-systems.md
+        confidence: 0.95
+      - name: rag-architecture
+        path: concepts/rag-architecture.md
+        confidence: 0.95
+      - name: state-machines
+        path: concepts/state-machines.md
+        confidence: 0.95
+      - name: tool-calling
+        path: concepts/tool-calling.md
+        confidence: 0.95
+      - name: guardrails
+        path: concepts/guardrails.md
+        confidence: 0.95
+    patterns:
+      - name: agentic-workflow
+        path: patterns/agentic-workflow.md
+      - name: chatbot-architecture
+        path: patterns/chatbot-architecture.md
+      - name: rag-pipeline
+        path: patterns/rag-pipeline.md
+      - name: evaluation-framework
+        path: patterns/evaluation-framework.md
+    specs:
+      - name: genai-patterns
+        path: specs/genai-patterns.yaml
+
+  testing:
+    name: Python Testing
+    description: Comprehensive pytest-based testing patterns for Python data engineering -- fixtures, mocking, parametrize
+    path: testing/
+    mcp_validated: "2026-02-17"
+    status: complete
+    entry_points:
+      index: index.md
+      quick_reference: quick-reference.md
+    agents:
+      - ai-data-engineer
+    concepts:
+      - name: pytest-basics
+        path: concepts/pytest-basics.md
+        confidence: 0.95
+      - name: fixtures
+        path: concepts/fixtures.md
+        confidence: 0.95
+      - name: mocking
+        path: concepts/mocking.md
+        confidence: 0.95
+      - name: parametrize
+        path: concepts/parametrize.md
+        confidence: 0.95
+    patterns:
+      - name: unit-test-patterns
+        path: patterns/unit-test-patterns.md
+      - name: integration-tests
+        path: patterns/integration-tests.md
+      - name: fixture-factories
+        path: patterns/fixture-factories.md
+    specs:
+      - name: test-config
+        path: specs/test-config.yaml
+
+  exploration:
+    name: Codebase Exploration
+    description: Codebase analysis -- repo structure, architecture mapping, dependency analysis, health reports
+    path: exploration/
+    mcp_validated: "2026-02-17"
+    status: complete
+    entry_points:
+      index: index.md
+      quick_reference: quick-reference.md
+    agents:
+      - codebase-explorer
+    concepts:
+      - name: repo-analysis
+        path: concepts/repo-analysis.md
+        confidence: 0.95
+      - name: dependency-mapping
+        path: concepts/dependency-mapping.md
+        confidence: 0.95
+      - name: code-health
+        path: concepts/code-health.md
+        confidence: 0.95
+    patterns:
+      - name: executive-summary
+        path: patterns/executive-summary.md
+      - name: deep-dive
+        path: patterns/deep-dive.md
+      - name: onboarding-guide
+        path: patterns/onboarding-guide.md
+    specs:
+      - name: analysis-framework
+        path: specs/analysis-framework.yaml
+
+  communication:
+    name: Communication
+    description: Adaptive explanations, audience analysis, meeting analysis, and stakeholder communication
+    path: communication/
+    mcp_validated: "2026-02-17"
+    status: complete
+    entry_points:
+      index: index.md
+      quick_reference: quick-reference.md
+    agents:
+      - meeting-analyst
+    concepts:
+      - name: audience-analysis
+        path: concepts/audience-analysis.md
+        confidence: 0.95
+      - name: progressive-disclosure
+        path: concepts/progressive-disclosure.md
+        confidence: 0.95
+      - name: analogies
+        path: concepts/analogies.md
+        confidence: 0.95
+    patterns:
+      - name: adaptive-explanation
+        path: patterns/adaptive-explanation.md
+      - name: meeting-extraction
+        path: patterns/meeting-extraction.md
+      - name: stakeholder-report
+        path: patterns/stakeholder-report.md
+    specs:
+      - name: communication-frameworks
+        path: specs/communication-frameworks.yaml
+
+  architecture:
+    name: System Architecture
+    description: System architecture design patterns, technology selection, implementation planning, and trade-off analysis
+    path: architecture/
+    mcp_validated: "2026-02-17"
+    status: complete
+    entry_points:
+      index: index.md
+      quick_reference: quick-reference.md
+    agents:
+      - the-planner
+    concepts:
+      - name: design-patterns
+        path: concepts/design-patterns.md
+        confidence: 0.95
+      - name: technology-selection
+        path: concepts/technology-selection.md
+        confidence: 0.95
+      - name: scalability
+        path: concepts/scalability.md
+        confidence: 0.95
+    patterns:
+      - name: implementation-plan
+        path: patterns/implementation-plan.md
+      - name: trade-off-analysis
+        path: patterns/trade-off-analysis.md
+      - name: system-design
+        path: patterns/system-design.md
+    specs:
+      - name: architecture-templates
+        path: specs/architecture-templates.yaml
+
+  # =========================================================================
+  # NEW DOMAINS — Added 2026-04-12 for ShopAgent event (Days 1-4)
+  # =========================================================================
+
+  shadowtraffic:
+    name: ShadowTraffic
+    description: "Declarative synthetic data generation for ShopAgent e-commerce pipeline — v1.17.0"
+    path: shadowtraffic/
+    mcp_validated: "2026-04-12"
+    status: complete
+    agents:
+      - shopagent-builder
+    entry_points:
+      index: index.md
+      quick_reference: quick-reference.md
+    concepts:
+      - name: generators
+        path: concepts/generators.md
+        confidence: 0.95
+      - name: connections
+        path: concepts/connections.md
+        confidence: 0.95
+      - name: functions
+        path: concepts/functions.md
+        confidence: 0.95
+      - name: faker-expressions
+        path: concepts/faker-expressions.md
+        confidence: 0.95
+    patterns:
+      - name: ecommerce-postgres
+        path: patterns/ecommerce-postgres.md
+      - name: staged-seeding
+        path: patterns/staged-seeding.md
+    specs:
+      - name: shadowtraffic-config
+        path: specs/shadowtraffic-config.yaml
+
+  llamaindex:
+    name: LlamaIndex
+    description: "RAG ingestion and query framework for ShopAgent — JSONL reviews to Qdrant via embeddings"
+    path: llamaindex/
+    mcp_validated: "2026-04-12"
+    status: complete
+    agents:
+      - shopagent-builder
+    entry_points:
+      index: index.md
+      quick_reference: quick-reference.md
+    concepts:
+      - name: settings
+        path: concepts/settings.md
+        confidence: 0.95
+      - name: readers
+        path: concepts/readers.md
+        confidence: 0.95
+      - name: vector-store-index
+        path: concepts/vector-store-index.md
+        confidence: 0.95
+      - name: query-engine
+        path: concepts/query-engine.md
+        confidence: 0.95
+    patterns:
+      - name: jsonl-to-qdrant
+        path: patterns/jsonl-to-qdrant.md
+      - name: rag-query-pipeline
+        path: patterns/rag-query-pipeline.md
+    specs:
+      - name: llamaindex-config
+        path: specs/llamaindex-config.yaml
+
+  langchain:
+    name: LangChain
+    description: "LangChain + LangGraph agent framework for ShopAgent — autonomous SQL vs semantic routing"
+    path: langchain/
+    mcp_validated: "2026-04-12"
+    status: complete
+    agents:
+      - shopagent-builder
+    entry_points:
+      index: index.md
+      quick_reference: quick-reference.md
+    concepts:
+      - name: tools
+        path: concepts/tools.md
+        confidence: 0.95
+      - name: chat-models
+        path: concepts/chat-models.md
+        confidence: 0.95
+      - name: react-agent
+        path: concepts/react-agent.md
+        confidence: 0.95
+      - name: routing
+        path: concepts/routing.md
+        confidence: 0.95
+    patterns:
+      - name: react-agent-dual-tools
+        path: patterns/react-agent-dual-tools.md
+      - name: langgraph-routing
+        path: patterns/langgraph-routing.md
+    specs:
+      - name: langchain-config
+        path: specs/langchain-config.yaml
+
+  chainlit:
+    name: Chainlit
+    description: "Chainlit conversational interface for ShopAgent — streaming chat with agent step visibility"
+    path: chainlit/
+    mcp_validated: "2026-04-12"
+    status: complete
+    agents:
+      - shopagent-builder
+    entry_points:
+      index: index.md
+      quick_reference: quick-reference.md
+    concepts:
+      - name: lifecycle
+        path: concepts/lifecycle.md
+        confidence: 0.95
+      - name: messages
+        path: concepts/messages.md
+        confidence: 0.95
+      - name: steps
+        path: concepts/steps.md
+        confidence: 0.95
+    patterns:
+      - name: langchain-integration
+        path: patterns/langchain-integration.md
+      - name: crewai-integration
+        path: patterns/crewai-integration.md
+    specs:
+      - name: chainlit-config
+        path: specs/chainlit-config.yaml
+
+  deepeval:
+    name: DeepEval
+    description: "LLM evaluation framework for ShopAgent — test tool selection correctness and answer quality"
+    path: deepeval/
+    mcp_validated: "2026-04-12"
+    status: complete
+    agents:
+      - shopagent-builder
+    entry_points:
+      index: index.md
+      quick_reference: quick-reference.md
+    concepts:
+      - name: test-cases
+        path: concepts/test-cases.md
+        confidence: 0.95
+      - name: metrics
+        path: concepts/metrics.md
+        confidence: 0.95
+    patterns:
+      - name: agent-evaluation
+        path: patterns/agent-evaluation.md
+      - name: pytest-integration
+        path: patterns/pytest-integration.md
+    specs:
+      - name: deepeval-config
+        path: specs/deepeval-config.yaml
