@@ -42,7 +42,8 @@ daqui:
 | [`.claude/`](.claude/) | **Ambiente de agentes** — 50 agentes, 18 comandos, 26 skills, KB de 25 domínios | herdado |
 | [`fabrica/`](fabrica/) | **O juiz** — oráculo + golden-match. O núcleo: 6 classificações, zero tolerância. | próprio |
 | [`converge/`](converge/) | Motor de convergência e gates (`cvg`) | vendorizado |
-| [`task-spec/`](task-spec/) | Tarefas assinadas (HMAC) e tiers de aceite | vendorizado |
+| [`task-spec/`](task-spec/) | Tarefas assinadas (HMAC) — v3.9.0, traz o TaskMesh | vendorizado |
+| [`task-spec-3.8.1/`](task-spec-3.8.1/) | ⚠️ A versão que o `cvg` exige (3.8.x exato) | vendorizado |
 | [`brief-spec/`](brief-spec/) | Especificação de briefings para agentes | vendorizado |
 | [`seamwise/`](seamwise/) | Skills e costura entre agentes | vendorizado |
 | [`uc-northwind-pay-edp/`](uc-northwind-pay-edp/) | Caso de uso completo de referência (legado × moderno) | vendorizado |

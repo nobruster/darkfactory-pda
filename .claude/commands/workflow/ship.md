@@ -2,6 +2,19 @@
 
 > Archive completed feature with lessons learned (Phase 4)
 
+> ⚠️ **"Ship" aqui significa ARQUIVAR, não ENTREGAR.**
+>
+> Este comando copia markdown para `archive/` e escreve um `SHIPPED_*.md`.
+> Ele **não faz commit, não faz push e não abre PR** — não tem `gh` entre
+> suas ferramentas (`.claude/agents/workflow/ship-agent.md:4`).
+>
+> Para entregar software com prova, o caminho é o Pass 8 do motor:
+> [`/fabrica-run`](fabrica-run.md) → `cvg loop --issue <id>`, que termina em
+> `gh pr create`. Ver a Regra 1.6 em [`AGENTS.md`](../../../AGENTS.md).
+>
+> Se alguém pediu "entrega" e você rodou só isto, **diga que o que foi feito
+> foi arquivamento de documentação.**
+
 ## Usage
 
 ```bash

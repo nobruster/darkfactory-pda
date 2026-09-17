@@ -10,8 +10,8 @@ decomposição → consenso → tarefas → bind → loop → PR**.
 
 Diferente de `/brainstorm`, `/define` e `/design` — que produzem markdown para
 um humano ler — este comando aciona **código executável** (`converge/bin/cvg`,
-`task-spec/bin/taskspec`, `seamwise`), com gates que reprovam de verdade e
-roteamento de modelo por lane.
+`task-spec-3.8.1/bin/taskspec`, `seamwise`), com gates que reprovam de verdade
+e roteamento de modelo por lane.
 
 > **Você conduz, não decide.** O `cvg` é o árbitro e não chama LLM nenhum
 > (`converge/bin/cvg:4-5`). Quatro barreiras exigem decisão humana; nelas você
@@ -19,37 +19,53 @@ roteamento de modelo por lane.
 
 ---
 
-## Pré-requisito: instalar os motores
+## Pré-requisito: apontar a versão certa do task-spec
 
-⚠️ **Ter as pastas não basta.** O `cvg` procura o `taskspec` **instalado**, e
-falha assim:
+⚠️ **Há duas versões do task-spec neste repositório, e o `cvg` só aceita uma.**
 
-```console
-$ converge/bin/cvg doctor host
-error: Task-Spec engine not found — install taskspec 3.8.0, then rerun
-```
+| Pasta | Versão | Serve para |
+|---|---|---|
+| `task-spec/` | 3.9.0 | TaskMesh (daemon autônomo) — **o `cvg` recusa** |
+| `task-spec-3.8.1/` | 3.8.1 | **O que o `cvg` exige** |
 
-Verificado neste repositório: `task-spec/bin/taskspec --version` responde
-`3.9.0`, mas não está no `PATH`. Instale antes de qualquer passe:
+O Converge 0.2 exige `3.8.x` **exato**, não mínimo (`converge/bin/cvg:143-149`).
+Aponte antes de qualquer passe:
 
 ```bash
-bash task-spec/install.sh        # o motor de tarefas assinadas
-bash converge/install.sh         # o árbitro
-command -v taskspec && command -v cvg    # confirme
+export CVG_TASKSPEC_BIN="$PWD/task-spec-3.8.1/bin/taskspec"
 ```
 
-Sem isso, todo o resto deste comando falha no primeiro gate.
+Sem isso o `cvg` falha com `incompatible Task-Spec engine '3.9.0'` — ou, se
+nada estiver no `PATH`, com `Task-Spec engine not found`.
+
+Detalhes em [`task-spec-3.8.1/VENDORED.md`](../../../task-spec-3.8.1/VENDORED.md).
 
 ## Antes de começar
 
 ```bash
-cvg doctor host        # esta máquina consegue assinar, bind, loop?
-cvg next --guided      # em que passe o projeto está?
+export CVG_TASKSPEC_BIN="$PWD/task-spec-3.8.1/bin/taskspec"
+converge/bin/cvg doctor host      # esta máquina consegue assinar, bind, loop?
+converge/bin/cvg next --guided    # em que passe o projeto está?
 ```
 
-`cvg next` é **read-only**: ele nomeia o próximo passo, não o executa
-(`converge/skills/evidence-to-next-pass/SKILL.md:3`). Se `doctor host` acusar
-falta, ele diz **quais verbos ficam bloqueados** — resolva antes.
+### ⚠️ `doctor host` provavelmente vai acusar falta
+
+Verificado nesta máquina: falta **`shellcheck`**. O `cvg` explica a cadeia de
+consequências melhor do que qualquer resumo:
+
+```
+MISSING  shellcheck  not on PATH
+         blocks: cvg tasks gate (always passes --shellcheck-evals) → so no spec
+         can be SIGNED → so cvg bind refuses it → so cvg loop has no runtime
+         contract
+```
+
+Ou seja: **sem `shellcheck`, nada é assinável — e nada chega ao Pass 8.**
+Instale (`apt install shellcheck` / `brew install shellcheck`) e rode
+`doctor host` de novo até sair `DOCTOR_HOST=OK`.
+
+`cvg next` é **read-only**: nomeia o próximo passo, não o executa
+(`converge/skills/evidence-to-next-pass/SKILL.md:3`).
 
 ---
 
@@ -69,7 +85,7 @@ falta, ele diz **quais verbos ficam bloqueados** — resolva antes.
 ### Pass 0 — Capture
 
 ```bash
-cvg capture cvg/docs/brd/<arquivo>.md
+converge/bin/cvg capture cvg/docs/brd/<arquivo>.md
 ```
 
 O veredito exige a assinatura do dono dizendo `canonical`. `pending` e `draft`
@@ -81,8 +97,8 @@ sign-off. Não promova por conta própria.
 ### Pass 1–2 — Intent e Structure
 
 ```bash
-cvg intent      # tech-spec responde ao BRD
-cvg structure   # ADRs registram as decisões
+converge/bin/cvg intent      # tech-spec responde ao BRD
+converge/bin/cvg structure   # ADRs registram as decisões
 ```
 
 Revisão de ADR se faz com **ADR novo**, nunca editando o antigo.
@@ -102,10 +118,10 @@ seamwise review --accept --reviewer <nome> --reason <motivo>
 ### Pass 4 — Consensus 🛑 **A BARREIRA**
 
 ```bash
-cvg review --adversary codex     # ou kimi, claude
-cvg review --check               # CHECK_CONSENSUS
-cvg review --resolve <id> --fix
-cvg review --resolve <id> --accept --owner <nome> --risk <peso>
+converge/bin/cvg review --adversary codex     # ou kimi, claude
+converge/bin/cvg review --check               # CHECK_CONSENSUS
+converge/bin/cvg review --resolve <id> --fix
+converge/bin/cvg review --resolve <id> --accept --owner <nome> --risk <peso>
 ```
 
 **O adversário só PROPÕE.** `--check` fica RED até um humano decidir cada
@@ -124,7 +140,7 @@ pergunte: corrigir ou aceitar o risco conscientemente?
 Cada folha é autorizada individualmente por HMAC:
 
 ```bash
-taskspec gate --stamp tasks/T-<id>.md
+task-spec-3.8.1/bin/taskspec gate --stamp tasks/T-<id>.md
 ```
 
 🛑 **Barreira D.** Não carimbe `signed_off` nem `accepted` à mão — é
@@ -133,7 +149,7 @@ exatamente o que o selo existe para impedir.
 ### Pass 7 — Bind
 
 ```bash
-cvg bind --task <spec>
+converge/bin/cvg bind --task <spec>
 ```
 
 Aqui o **roteamento de modelo** acontece, por
@@ -155,7 +171,7 @@ numa execução real (`loop-kernel.sh:268-271`).
 ### Pass 8 — Loop
 
 ```bash
-cvg loop --issue <id> [--agent claude|codex|kimi]
+converge/bin/cvg loop --issue <id> [--agent claude|codex|kimi]
 ```
 
 Tenta → verifica → repete, limitado por iterações, relógio e tokens, com

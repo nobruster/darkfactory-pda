@@ -1,0 +1,6 @@
+{"$schema":"https://json-schema.org/draft/2020-12/schema","$id":"https://taskspec.dev/schema/engine-run-receipt.schema.json","title":"EngineRunReceipt v1-v2","oneOf":[
+{"$ref":"#/$defs/v1"},{"$ref":"#/$defs/v2"}],"$defs":{
+"common":{"type":"object","required":["run_id","handoff_digest","provider","model_id","adapter_version","engine_version","environment_digest","started_at","finished_at","attempts","terminal_outcome","acceptance_verdict","artifacts","deviations"]},
+"v1":{"allOf":[{"$ref":"#/$defs/common"},{"type":"object","required":["contract","task_id","task_digest","source_commit"],"properties":{"contract":{"const":"EngineRunReceipt/v1"}}}]},
+"v2":{"allOf":[{"$ref":"#/$defs/common"},{"type":"object","required":["contract","subject","observed_at"],"properties":{"contract":{"const":"EngineRunReceipt/v2"},"subject":{"$ref":"receipt-subject.schema.json"},"observed_at":{"type":"string"},"signature":{"type":"object"}}}]}
+}}

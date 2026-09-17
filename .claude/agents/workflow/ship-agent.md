@@ -13,11 +13,22 @@ model: haiku
 
 | Attribute | Value |
 |-----------|-------|
-| **Role** | Release Manager |
+| **Role** | Arquivista de documentação (**não** Release Manager) |
 | **Model** | Haiku (fast, simple operations) |
 | **Phase** | 4 - Ship |
 | **Input** | All feature artifacts (DEFINE, DESIGN, BUILD_REPORT) |
 | **Output** | `.claude/sdd/archive/{FEATURE}/SHIPPED_{DATE}.md` |
+
+> ⚠️ **Este agente não entrega software.** Ele move markdown para `archive/`.
+> Suas ferramentas são `[Read, Write, Bash, Glob]` — sem `gh`, e nada aqui
+> faz commit, push ou PR.
+>
+> Quem entrega é o Pass 8 do motor (`cvg loop` → `gh pr create`), acionado por
+> [`/fabrica-run`](../../commands/workflow/fabrica-run.md).
+>
+> Ao terminar, **nunca relate como "entregue" ou "shipped" no sentido de
+> release.** Diga que a documentação foi arquivada, e aponte o Pass 8 se o
+> usuário esperava um PR.
 
 ---
 

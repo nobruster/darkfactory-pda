@@ -1,0 +1,340 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://taskspec.dev/schema/v4/task-spec-frontmatter.schema.json",
+  "title": "Task-Spec Frontmatter v4",
+  "description": "Schema for the opt-in Task-Spec format v4 evidence policy. Formats v1-v3 remain readable and preserve their existing behavior.",
+  "type": "object",
+  "additionalProperties": true,
+  "required": [
+    "id",
+    "title",
+    "status",
+    "format_version",
+    "effort",
+    "budget_iterations",
+    "agent",
+    "depends_on",
+    "touches_paths",
+    "source_note",
+    "created",
+    "tags",
+    "owner",
+    "priority",
+    "severity",
+    "execution_backend",
+    "signed_off",
+    "signed_off_by",
+    "signed_off_at"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^T-[0-9]{8}-[a-z0-9][a-z0-9-]*$",
+      "description": "Task identifier. Must match T-YYYYMMDD-slug. Must equal filename basename."
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Short human-readable title."
+    },
+    "status": {
+      "type": "string",
+      "enum": ["ready", "in-progress", "blocked", "done", "parked"],
+      "description": "Lifecycle status. Only ready specs are eligible for dispatch."
+    },
+    "format_version": {
+      "oneOf": [
+        {"type": "integer", "enum": [1, 2, 3, 4]},
+        {"type": "string", "enum": ["1", "2", "2.1", "2.1.0", "2.1.1", "2.2", "3", "4"]}
+      ],
+      "description": "Task-Spec format version. v4 is opt-in; v1-v3 are retained for compatibility."
+    },
+    "profile": {
+      "type": "string",
+      "enum": ["lite", "standard", "full"],
+      "description": "Profile scaling required zones to effort/blast-radius (v3). See docs/concepts/profiles.md."
+    },
+    "parent": {
+      "type": "string",
+      "description": "FEATURE-altitude PRD/SDD (path or url) this task decomposes from, or (none). The task DISTILLS it, never embeds it (v3)."
+    },
+    "effort": {
+      "type": "string",
+      "enum": ["XS", "S", "M", "L", "XL", "XXL"],
+      "description": "XS/S/M/L are runnable leaves. XL/XXL are composition nodes that must declare at least two/three children and are never delegated directly. Leaf write-surface budgets apply to the union of touches_paths and creates_paths."
+    },
+    "budget_iterations": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 100,
+      "description": "Max autonomous iterations before park_with_context."
+    },
+    "agent": {
+      "type": "string",
+      "description": "Preferred agent (any, claude, codex, kimi, cursor, etc.)."
+    },
+    "depends_on": {
+      "type": "array",
+      "items": {"type": "string", "pattern": "^T-[0-9]{8}-[a-z0-9][a-z0-9-]*$"},
+      "description": "List of T-IDs that must be done before this task is ready."
+    },
+    "children": {
+      "type": "array",
+      "items": {"type": "string", "pattern": "^T-[0-9]{8}-[a-z0-9][a-z0-9-]*$"},
+      "description": "Child Task-Spec ids composed by an XL/XXL node."
+    },
+    "supersedes": {
+      "oneOf": [
+        {"type": "string", "pattern": "^T-[0-9]{8}-[a-z0-9][a-z0-9-]*$"},
+        {"const": "(none)"}
+      ],
+      "description": "Optional predecessor retired by explicit replanning. Dependents are never rewritten automatically."
+    },
+    "blocks": {
+      "type": "array",
+      "deprecated": true,
+      "items": {"type": "string"},
+      "description": "Advisory compatibility projection only. depends_on is authoritative."
+    },
+    "touches_paths": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 1},
+      "minItems": 0,
+      "description": "Existing paths this task may modify. Nodes declare an empty write surface."
+    },
+    "creates_paths": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 1},
+      "description": "New paths this task may create. Combined with touches_paths for sizing, conflicts, and blast-radius checks."
+    },
+    "source_note": {
+      "type": "string",
+      "description": "Free-form note about where this task originated."
+    },
+    "created": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z?$",
+      "description": "ISO-8601 timestamp of when the spec was authored."
+    },
+    "tags": {
+      "type": "array",
+      "items": {"type": "string"}
+    },
+    "owner": {"type": "string"},
+    "priority": {
+      "type": "string",
+      "enum": ["P0", "P1", "P2", "P3", "P4"]
+    },
+    "severity": {
+      "type": "string",
+      "enum": [
+        "cosmetic",
+        "refactor",
+        "feature",
+        "bugfix",
+        "security",
+        "financial-critical"
+      ],
+      "description": "Blast-radius classification used by safe-to-delegate.sh."
+    },
+    "due_date": {"type": "string"},
+    "precondition": {"type": "string"},
+    "blocked_reason": {"type": "string"},
+    "security_class": {"type": "string"},
+    "source_action_item": {"type": "string"},
+    "linear_ref": {
+      "type": "string",
+      "deprecated": true,
+      "description": "Deprecated Linear-specific alias of tracker_ref."
+    },
+    "tracker_ref": {
+      "type": "string",
+      "description": "Optional vendor-neutral backlink in <tracker>:<reference> form, or (none)."
+    },
+    "execution_backend": {
+      "type": "string",
+      "examples": [
+        "any",
+        "claude",
+        "codex",
+        "kimi",
+        "glm",
+        "gemini"
+      ],
+      "description": "Target executor type. OPEN STRING: examples are non-normative, not an allow-list. An L leaf must name a backend in TASKSPEC_LONG_HORIZON_BACKENDS."
+    },
+    "signed_off": {
+      "type": "boolean",
+      "description": "Autonomy contract flag. ONLY safe-to-delegate.sh --stamp may set this to true."
+    },
+    "signed_off_by": {
+      "type": "string",
+      "description": "Identity that ran safe-to-delegate.sh --stamp, or (none)."
+    },
+    "signed_off_at": {
+      "type": "string",
+      "description": "ISO-8601 timestamp of the stamp, or (none)."
+    },
+    "accepted": {
+      "type": "boolean",
+      "description": "Post-execution acceptance flag (v3). ONLY accept-task.sh may set this to true, AFTER execution closes the loop (evals re-run from clean checkout + blast-radius + envelope)."
+    },
+    "accepted_by": {
+      "type": "string",
+      "description": "Identity that ran accept-task.sh, or (none)."
+    },
+    "accepted_at": {
+      "type": "string",
+      "description": "ISO-8601 timestamp of acceptance, or (none)."
+    },
+    "accepted_tier": {"type": "integer", "enum": [1, 2]},
+    "accepted_attempt_id": {"type": "string", "format": "uuid"},
+    "accepted_authorization_ref": {"type": "string"},
+    "acceptance_record_digest": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
+    "task_spec_version": {
+      "type": "string",
+      "description": "Version of the task-spec skill that authored the file."
+    },
+    "signed_off_sig": {
+      "type": "string",
+      "pattern": "^hmac-sha256-v[123]:[0-9a-zA-Z]+:[0-9a-f]+$",
+      "description": "HMAC authorization. v3 seals TaskRevision/v1 with unknown fields protected by default. Valid v1/v2 envelopes remain readable as supervised Tier 2."
+    },
+    "requires": {
+      "type": "object",
+      "description": "B3 OPTIONAL isolation declaration. Tells a dispatcher what the executor's sandbox must provide; accept-task.sh GATE D reports it (document-and-warn — the bash tool cannot enforce egress). Absent on a non-full profile is silent; a full-profile spec with no requires.network is warned (not blocked).",
+      "additionalProperties": true,
+      "properties": {
+        "base_image": {"type": "string", "description": "Container/runtime image the eval set assumes."},
+        "deps": {"description": "Packages the sandbox must provision (list or scalar)."},
+        "network": {"type": "string", "enum": ["deny", "allow-list", "open"], "description": "Egress posture the sandbox enforces. deny is the safe default for unattended full tasks."}
+      }
+    },
+    "baseline_ref": {
+      "type": "string",
+      "description": "B3 OPTIONAL. Git ref of the UNPATCHED baseline used by accept-task.sh --gold-sanity (GATE E). The eval set must FAIL on this ref and PASS on the current state; an eval that passes here too is non-discriminating and is BLOCKED. A --base flag overrides this."
+    },
+    "reference_solution": {
+      "type": "string",
+      "description": "B3 OPTIONAL alias/fallback for baseline_ref (used by accept-task.sh --gold-sanity when baseline_ref is absent). A pointer (git ref) to a known-good reference state."
+    },
+    "evaluation_policy": {
+      "type": "object",
+      "description": "Format v4 acceptance policy. External evaluators return receipts; their implementation is never embedded in the executor handoff.",
+      "required": ["acceptance_scope"],
+      "properties": {
+        "acceptance_scope": {"type": "string", "enum": ["local", "portable", "human-authorized"]},
+        "max_age_sec": {"type": "integer", "minimum": 1},
+        "deterministic": {"$ref": "#/$defs/requiredPolicy"},
+        "holdout": {"$ref": "#/$defs/holdoutPolicy"},
+        "graded": {"$ref": "#/$defs/gradedPolicy"},
+        "human": {"$ref": "#/$defs/humanPolicy"}
+      }
+    },
+    "environment_contract": {
+      "type": "object",
+      "required": ["required"],
+      "properties": {
+        "required": {"type": "boolean"},
+        "ref": {"type": "string"},
+        "digest": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"}
+      },
+      "allOf": [{"if": {"properties": {"required": {"const": true}}}, "then": {"required": ["ref", "digest"]}}]
+    },
+    "identity_policy": {
+      "type": "object",
+      "required": ["required"],
+      "properties": {
+        "required": {"type": "boolean"},
+        "key_id": {"type": "string"},
+        "signer": {"type": "string"}
+      }
+    },
+    "evidence_refs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["ref", "digest", "role"],
+        "properties": {
+          "ref": {"type": "string"},
+          "digest": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
+          "role": {"enum": ["context", "constraint", "risk"]}
+        }
+      }
+    },
+    "signed_off_envelope": {
+      "type": "object",
+      "description": "DEPRECATED structured form. The current source of truth is signed_off_sig: hmac-sha256-v3:<keyid>:<hex>.",
+      "additionalProperties": true,
+      "properties": {
+        "algorithm": {"type": "string", "description": "e.g. hmac-sha256-v3"},
+        "keyid": {"type": "string", "description": "First 8 hex of sha256(key)."},
+        "signature": {"type": "string", "description": "Hex MAC over the canonical payload."}
+      }
+    }
+  },
+  "$defs": {
+    "requiredPolicy": {"type": "object", "required": ["required"], "properties": {"required": {"type": "boolean"}, "max_age_sec": {"type": "integer", "minimum": 1}}},
+    "holdoutPolicy": {"type": "object", "required": ["required"], "properties": {"required": {"type": "boolean"}, "descriptor_digest": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"}, "authorization_ref": {"type": "string"}}},
+    "gradedPolicy": {"type": "object", "required": ["required"], "properties": {"required": {"type": "boolean"}, "rubric_digest": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"}, "threshold": {"type": "number", "minimum": 0, "maximum": 1}}},
+    "humanPolicy": {"type": "object", "required": ["required"], "properties": {"required": {"type": "boolean"}, "owner": {"type": "string", "minLength": 1}}}
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"format_version": {"enum": [4, "4"]}}, "required": ["format_version"]},
+      "then": {"required": ["evaluation_policy"]}
+    },
+    {
+      "if": {"properties": {"effort": {"enum": ["XL", "XXL"]}}, "required": ["effort"]},
+      "then": {
+        "required": ["children"],
+        "properties": {
+          "touches_paths": {"maxItems": 0},
+          "creates_paths": {"maxItems": 0}
+        }
+      }
+    },
+    {
+      "if": {"properties": {"effort": {"const": "XL"}}, "required": ["effort"]},
+      "then": {"properties": {"children": {"minItems": 2}}}
+    },
+    {
+      "if": {"properties": {"effort": {"const": "XXL"}}, "required": ["effort"]},
+      "then": {"properties": {"children": {"minItems": 3}}}
+    },
+    {
+      "if": {"properties": {"signed_off": {"const": true}}, "required": ["signed_off"]},
+      "then": {
+        "required": ["signed_off_by", "signed_off_at"],
+        "properties": {
+          "signed_off_by": {"not": {"const": "(none)"}},
+          "signed_off_at": {"not": {"const": "(none)"}}
+        }
+      }
+    },
+    {
+      "if": {"properties": {"status": {"const": "done"}}, "required": ["status"]},
+      "then": {
+        "required": ["accepted", "accepted_by", "accepted_at"],
+        "properties": {
+          "accepted": {"const": true},
+          "accepted_by": {"not": {"const": "(none)"}},
+          "accepted_at": {"not": {"const": "(none)"}}
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "status": {"const": "done"},
+          "signed_off_sig": {"pattern": "^hmac-sha256-v3:"}
+        },
+        "required": ["status", "signed_off_sig"]
+      },
+      "then": {
+        "required": ["accepted_tier", "accepted_attempt_id", "accepted_authorization_ref", "acceptance_record_digest"]
+      }
+    }
+  ]
+}

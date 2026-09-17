@@ -60,6 +60,10 @@
       "Edit(task-spec/bin/**)",
       "Write(task-spec/src/**)",
       "Edit(task-spec/src/**)",
+      "Write(task-spec-3.8.1/bin/**)",
+      "Edit(task-spec-3.8.1/bin/**)",
+      "Write(task-spec-3.8.1/src/**)",
+      "Edit(task-spec-3.8.1/src/**)",
       "Write(seamwise/src/**)",
       "Edit(seamwise/src/**)",
 
