@@ -75,6 +75,31 @@ Atalho: `/nova-fabrica <domínio>`.
 
 ---
 
+## Regra 1.6 — Duas cadeias: saiba qual você está usando
+
+Este repositório tem **duas metodologias paralelas**, e confundi-las faz você
+achar que entregou quando só escreveu markdown.
+
+| | Ciclo SDD (`.claude/`) | Motor real |
+|---|---|---|
+| Comandos | `/brainstorm` → `/define` → … → `/ship` | `/fabrica-run` (`cvg`, `taskspec`, `seamwise`) |
+| Natureza | prompts markdown | código executável |
+| Modelo | `model:` estático no frontmatter | **roteado por lane**: FAST→Haiku, NORMAL→Sonnet, FULL→Opus |
+| Gates | score que o próprio LLM calcula | scripts que reprovam de verdade |
+| Entrega | arquiva documentação | `git push` + `gh pr create` |
+
+**`/ship` não abre PR.** Ele copia markdown para `archive/`. Quem entrega
+software é o Pass 8 (`cvg loop`).
+
+**Para entregar com prova, use [`/fabrica-run`](.claude/commands/workflow/fabrica-run.md).**
+Ele exige `taskspec` e `cvg` instalados — ter as pastas não basta.
+
+⚠️ As duas cadeias **ainda não se chamam**: os agentes de `.claude/workflow/`
+não invocam `cvg`. Ligá-las de fato é trabalho em aberto; por ora, a escolha
+é sua, na hora de começar.
+
+---
+
 ## Regra 2 — Sem oráculo, não se constrói
 
 Uma fábrica nova nasce com contrato `NAO_MEDIDO` e **recusa rodar** até alguém
@@ -144,15 +169,32 @@ continuando a bater e nada acusando.
 
 ---
 
-## Pastas congeladas numa fábrica gerada
+## O que está cercado
+
+**Neste repositório**, [`.claude/settings.json`](.claude/settings.json) nega
+escrita em:
+
+| Caminho | Por quê |
+|---|---|
+| `fabrica/contracts/`, `fabrica/judge/`, `fabrica/tests/` | O juiz. Editar o oráculo para um portão passar é a manobra mais perigosa que existe |
+| `converge/bin/`, `converge/skills/task-loop/scripts/`, `task-spec/src/`, `seamwise/src/` | Os motores. Um agente que edita o próprio verificador é *specification-gaming* |
+| `.cvg/gate.yaml`, `.claude/settings.json` | As próprias cercas. Cerca que o agente afrouxa não é cerca |
+| `.github/workflows/` | Quem roda a verificação no CI |
+
+**Numa fábrica gerada**, acrescente também — e nas **duas** cercas:
 
 ```
 _raw/         bytes originais (chmod 444 + sha256)
-contracts/    o juiz
+contracts/    o juiz daquela fábrica
 docs/adrs/    decisões vinculantes
+evidence/     pacotes por execução
 ```
 
-Escrita proibida, protegida por `.claude/settings.json` e `.cvg/gate.yaml`.
+⚠️ **Duas cercas, uma doutrina.** `.claude/settings.json` (o agente) e
+`.cvg/gate.yaml` (o gate) precisam concordar; divergência é defeito. No
+`darkfactory-inss` um script confere isso — uma auditoria já encontrou as duas
+discordando, com `docs/adrs/` e `evidence/` faltando de um lado. **Uma fábrica
+nova deve ter o seu verificador de cercas.**
 
 **Revisão de ADR se faz com ADR novo, nunca editando o antigo.** Um ADR
 corrigido em silêncio apaga o registro de que a decisão mudou — e o motivo da

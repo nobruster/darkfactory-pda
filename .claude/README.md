@@ -28,8 +28,26 @@ separa o que é núcleo do que é herança, para você não perder tempo procura
 
 | Recurso | Para quê |
 |---|---|
+| [`/fabrica-run`](commands/workflow/fabrica-run.md) | **BRD → entrega pelo motor real.** Aciona `cvg`/`taskspec`/`seamwise`, com roteamento Opus/Sonnet/Haiku por lane |
 | [`/nova-fabrica`](commands/core/nova-fabrica.md) | Monta o ferramental de uma fábrica nova |
 | [`fabrica-architect`](agents/domain/fabrica-architect.md) | **Usa o que existe, cria o que falta.** Inventaria antes de criar, e registra o que cria |
+
+### ⚠️ Há duas cadeias neste repositório — não as confunda
+
+| | Ciclo SDD (`.claude/`) | Motor real (`converge/`, `task-spec/`, `seamwise/`) |
+|---|---|---|
+| O que é | 6 prompts markdown | ~2.000 linhas de bash/Python/Go |
+| Comandos | `/brainstorm` → `/define` → … → `/ship` | [`/fabrica-run`](commands/workflow/fabrica-run.md) |
+| Modelo | `model:` no frontmatter, **estático** | **roteado por lane**, em código |
+| Gates | score que o LLM calcula | scripts que reprovam de verdade |
+| Entrega | arquiva markdown | `git push` + `gh pr create` |
+| Avança sozinho | **não** — você digita cada fase | o loop sim; as barreiras param de propósito |
+
+**Para produzir documento**, use o ciclo SDD. **Para entregar software com
+prova**, use `/fabrica-run`.
+
+O `/ship` arquiva documentação — **não abre PR**. Quem entrega é o Pass 8 do
+`cvg loop`.
 
 Se a demanda não tem recurso correspondente, é o `fabrica-architect` que
 decide entre usar, estender ou criar — e cria seguindo os padrões deste
