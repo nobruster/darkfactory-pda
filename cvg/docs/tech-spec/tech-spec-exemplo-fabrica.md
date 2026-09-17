@@ -38,9 +38,12 @@ meses depois por que aquele número foi aceito.
   `ACEITO_SEM_ANCORA` não autoriza publicar.
 - **R-2 (must).** Toda diferença recebe exatamente uma de seis
   classificações. Diferença não classificada bloqueia a publicação.
-- **R-3 (must).** Campo monetário é comparado com aritmética exata. Um valor
-  em ponto flutuante num campo monetário é recusado na entrada, não
-  arredondado.
+- **R-3 (must).** Campo monetário é comparado com aritmética exata, com
+  arredondamento meio-para-par (HALF_EVEN) a 2 casas decimais. Um valor em
+  ponto flutuante num campo monetário é recusado na entrada, não
+  arredondado. A regra é declarada no contrato e verificada por teste: o
+  mesmo dado arredondado meio-para-cima produz veredito diferente, e o teste
+  falha se a implementação herdar o default da linguagem.
 - **R-4 (must).** Não existe parâmetro de tolerância configurável em nenhum
   ponto do caminho de decisão.
 - **R-5 (must).** Uma divergência de R$ 0,01 introduzida de propósito em uma
@@ -95,8 +98,7 @@ número e quando.
   question: "O arredondamento monetário é meio-para-par ou meio-para-cima?"
   blocks: "R-3 — a regra decide o resultado e não pode ficar implícita no código"
   owner: "Bruno Nunes"
-  resolution: "open"
-  note: "Decisão de contrato, a registrar em ADR no Pass 2. Herdar o default da linguagem é como um erro estruturalmente verde entra."
+  resolution: "RESOLVIDO 2026-09-17 por Bruno Nunes: meio-para-par (HALF_EVEN). Declarado no contrato e verificado por teste; nenhum ponto do caminho de decisão herda o default da linguagem. A registrar como ADR no Pass 2."
 ```
 
 ## Sign-off

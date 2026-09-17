@@ -12,7 +12,7 @@ Atualizado em 17/09/2026.
 |---|---|---|
 | 0 · Capture | `cvg capture` | 🟢 `CHECK_BRD=PASS` |
 | 1 · Intent | `cvg intent` | 🔴 `CHECK_TECH_SPEC=FAIL` — **parado aqui** |
-| 2 · Structure | `cvg structure` | ⬜ bloqueado pelo Pass 1 |
+| 2 · Structure | `cvg structure` | 🟢 `CHECK_ADR=OK` |
 | 3 · Decompose | `seamwise plan` | ⬜ |
 | 4 · Consensus | `cvg review` | ⬜ 🛑 barreira |
 | 5 · Tasking | `taskspec gate --stamp` | ⬜ |
@@ -40,22 +40,27 @@ Bloqueia **R-1**: sem âncora medida, não há o que comparar. O contrato nasce
 viu ser medido é indistinguível de um palpite — e palpite no lugar do total
 faz o gate comparar contra nada e publicar `ACEITO`.
 
-### GAP-002 — o arredondamento
+### ~~GAP-002 — o arredondamento~~ ✅ resolvido em 17/09/2026
 
-> Meio-para-par ou meio-para-cima?
+**Meio-para-par (HALF_EVEN)**, a 2 casas, decidido por Bruno Nunes.
 
-Bloqueia **R-3**. É decisão de contrato, não de implementação: herdar o
-default da linguagem é como um erro *estruturalmente verde* entra — o total
-bate e nada acusa.
+Registrado em
+[ADR 0001](docs/adrs/0001-money-rounds-half-to-even-at-two-decimals.md), com a
+evidência verificada: dos três empates testados, dois divergem em um centavo
+entre as duas regras.
 
 ## Como destravar
 
-1. Responda os dois gaps
-2. Em `tech-spec-exemplo-fabrica.md`, troque `resolution: "open"` pela decisão
-   real (substantiva — ver a armadilha no
+Falta **só o GAP-001**:
+
+1. Responda: qual competência do passado é a primeira âncora, e quem do
+   negócio confirma que aquele número foi conferido e fechado?
+2. Em `tech-spec-exemplo-fabrica.md`, troque `resolution: "open"` do GAP-001
+   pela resposta (substantiva — ver a armadilha no
    [README do Pass 1](docs/tech-spec/README.md))
 3. Mude o veredito de sign-off para `canonical`
-4. Registre cada decisão como ADR no Pass 2 — é o que o `cvg structure` cobra
+4. Registre a âncora como ADR novo no Pass 2 (`scaffold-adr.sh`), e rode
+   `cvg structure --final` para exigir todos os ADRs em `accepted`
 5. `converge/bin/cvg intent cvg/docs/tech-spec/tech-spec-exemplo-fabrica.md`
 
 Precisa rodar **de dentro do WSL**, com:
