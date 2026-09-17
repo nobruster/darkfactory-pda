@@ -14,7 +14,7 @@ Atualizado em 17/09/2026.
 | 1 · Intent | `cvg intent` | 🟢 `CHECK_TECH_SPEC=PASS` |
 | 2 · Structure | `cvg structure --final` | 🟢 `CHECK_ADR=OK` |
 | 3 · Decompose | `seamwise compile` | 🟢 `TASK_GRAPH=READY` — 5 tarefas |
-| 4 · Consensus | `cvg review --check` | ⬜ 🛑 **próximo — a barreira** |
+| 4 · Consensus | `cvg review --check` | 🔴 `CHECK_CONSENSUS=EMPTY` — 🛑 **parado** |
 | 5 · Tasking | `taskspec gate --stamp` | ⬜ |
 | 7 · Bind | `cvg bind` | ⬜ |
 | 8 · Loop | `cvg loop` | ⬜ |
@@ -77,35 +77,96 @@ Registrado em
 evidência verificada: dos três empates testados, dois divergem em um centavo
 entre as duas regras.
 
-## Próximo: Pass 4 · Consenso 🛑 **a barreira**
+## Pass 4 · Consenso 🛑 **parado — dois blockers medidos**
 
-```bash
-cvg review --adversary codex     # o adversário ataca o plano
-cvg review --check               # CHECK_CONSENSUS
-cvg review --resolve <id> --fix
-cvg review --resolve <id> --accept --owner <nome> --risk <peso>
+Rodado nesta máquina em 17/09/2026. Nenhum dos dois foi contornado.
+
+### Blocker 1 — não há adversário nesta máquina
+
+```
+$ cvg doctor
+  SKIP  codex   (openai)    not installed (codex)
+  SKIP  kimi    (moonshot)  not installed (kimi)
+  SKIP  claude  (anthropic) not installed (claude)
+engines ready: 0   cross-family: 0
+DOCTOR=FAIL
 ```
 
-**O adversário só PROPÕE.** `--check` fica RED até um humano decidir cada
-objeção, uma a uma. O `cvg` recusa se não conseguir atribuir `decided_by` —
-*"uma decisão não atribuível é o que acabamos de remover"*.
+O Pass 4 exige **≥ 2 engines, ≥ 1 de família diferente** da autora
+(anthropic). O `dispatch-review.sh` chama a **CLI própria** do engine, que
+se autentica sozinha — a sessão do Claude Code **não serve**: ela não é um
+binário no PATH. Nenhum `node` de Linux nesta máquina (o `npm` visível é o
+do Windows, em `/mnt/c`), então instalar uma CLI via npm exige passo extra.
 
-> Por que é a barreira mais dura: em 2026-08-03 o gate leu a proposta do
-> próprio adversário como consentimento e ficou **GREEN com sete críticos
-> abertos** (`converge/bin/cvg:1218-1220`).
+Sem engine, `cvg review --adversary` devolve `REVIEW=SKIP` e não escreve
+log. Sem log, o gate para:
 
-⚠️ O dispatch exige um engine de família diferente (`codex`, `kimi`).
-`cvg doctor` diz quais estão prontos nesta máquina.
+```
+$ check-consensus-gate.sh --dir cvg/swimlanes/workspace/seamwise/swimlanes
+GATE: no objection log at .../.consensus/objection-log.json
+CHECK_CONSENSUS=EMPTY
+```
 
-⚠️ **Esta âncora veio de outro repositório.** Uma fábrica nova mede a sua
-própria: copiar número entre projetos é herdar um fato sem a evidência que o
-sustenta.
+**Não se fabrica o objection-log à mão.** O gate confere a família do
+adversário, re-hasheia os planos que ele atacou e exige `decided_by` humano
+por objeção. Escrever o log manualmente é a Regra 3 — editar o oráculo para
+o portão passar. É justamente o que quebrou em 2026-08-03.
 
-Precisa rodar **de dentro do WSL**, com:
+### Blocker 2 — as duas cadeias discordam do layout das lanes
+
+Independente do engine, e mais silencioso. O `seamwise` emite lanes como
+**arquivos planos**:
+
+```
+seamwise/swimlanes/LANE-CONTRATO.md
+```
+
+O Converge espera lanes como **subdiretórios com PRD**:
+
+```
+swimlanes/<seam>/_lane.md      (canônico)
+swimlanes/swimlane-<seam>/swimlane-<seam>.plan.md   (legado)
+```
+
+Consequência medida:
+
+| Componente | Padrão | Resultado no layout atual |
+|---|---|---|
+| `dispatch-review.sh` | `<tree>/*/*.md` | **zero planos** — o adversário atacaria o vazio |
+| gate, check [5] | `<seam>/_lane.md` | `FAIL` — "no swimlane PRDs … nothing to gate" |
+
+O gate **acusa** (check [5] falha), então isto não passa despercebido. Mas o
+dispatcher **não acusa**: ele montaria o prompt sem nenhum plano e o
+adversário produziria objeções sobre nada. O gate depois recusaria por outro
+motivo — o resultado certo pela razão errada.
+
+É a costura aberta que o `AGENTS.md` registra na Regra 1.6: *"as duas cadeias
+ainda não se chamam"*. Aqui ela tem um custo concreto e reproduzível.
+
+### Para destravar
+
+1. Instalar uma CLI cross-family (`codex` ou `kimi`) no **Linux/WSL**, não no
+   Windows. `cvg doctor` precisa dizer `DOCTOR=OK`.
+2. Decidir a ponte de layout — e **registrar em ADR**, porque é decisão
+   vinculante entre duas ferramentas de terceiros:
+   - adaptador em `fabrica/` que projeta as lanes planas do seamwise na
+     forma `<seam>/_lane.md` que o Converge gatea (Regra 1, opção 1); ou
+   - editar direto o `converge/` vendorizado — cujo upstream saiu do ar —
+     e anotar a divergência no `VENDORED.md`.
+
+   A primeira preserva as duas cópias; a segunda é mais curta e o
+   `converge/` é o único onde editar direto é o caminho normal.
+3. Só então `cvg review --adversary`, e uma decisão humana por objeção.
+
+⚠️ O dispatch precisa rodar **de dentro do WSL**, com:
 
 ```bash
 export CVG_TASKSPEC_BIN="$PWD/task-spec-3.8.1/bin/taskspec"
 ```
+
+⚠️ **A âncora veio de outro repositório.** Uma fábrica nova mede a sua
+própria: copiar número entre projetos é herdar um fato sem a evidência que o
+sustenta.
 
 ## O que já ficou provado
 
@@ -117,3 +178,6 @@ Rodado nesta máquina, não presumido:
 - O gate do Pass 1 **acusa** blocker sem resolução substantiva
 - O roteamento de modelo existe em código: FAST→Haiku, NORMAL→Sonnet,
   FULL→Opus (`converge/skills/task-to-runtime-contract/scripts/cost-profile.py:52`)
+- O gate do Pass 4 **acusa** duas vezes sem engine nenhum: `CHECK_CONSENSUS=EMPTY`
+  por falta de log, e o check [5] por falta de PRD de lane. Fail-closed confirmado
+  na prática — nenhum dos dois cede a um atalho
