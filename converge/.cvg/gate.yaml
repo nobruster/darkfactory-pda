@@ -1,0 +1,46 @@
+# Repo write fence — the one a Task-Spec cannot widen.
+#
+# The contract answers "may THIS task write here?".
+# This file answers "may ANY task ever write here?".
+# Protected paths beat contract, always. Policy is not part of the signed
+# payload, so
+# re-signing a spec cannot buy access to anything listed below.
+#
+# Candidate guards check these paths before supported tool writes. Settlement
+# checks load THIS policy from the captured Git base and inspect every
+# Git-visible changed path in the repository. Ignored local state and secrets
+# still require the runtime sandbox/credential boundary; this file does not
+# claim to observe bytes that Git intentionally hides.
+version: 2
+
+protected_paths:
+  # Machine-local and VCS control state. Git cannot observe ignored files at
+  # settlement, but supported candidate guards still refuse direct writes.
+  - "**/.git/**"
+  - "**/.cvg/**"
+  # Credential-shaped paths. Candidate guards refuse them at any depth.
+  - "**/.env"
+  - "**/.env.*"
+  - "**/secrets/**"
+  - "**/credentials/**"
+  - "**/*_key*"
+  - "**/*_secret*"
+  - "**/id_rsa*"
+  # Infrastructure and money — irreversible, or expensive to get wrong.
+  - "**/.terraform/**"
+  - "**/migrations/**"
+  - "**/auth/**"
+  - "**/payments/**"
+  - "**/billing/**"
+  # The gate and settlement control plane may not rewrite themselves.
+  - ".cvg/gate.yaml"
+  - "bin/cvg"
+  - "skills/task-to-runtime-contract/scripts/**"
+  - "skills/task-loop/scripts/**"
+  # CI defines what "verified" means. An agent that edits its own verifier is
+  # the specification-gaming failure mode, not a productive one.
+  - ".github/workflows/**"
+
+# Blast radius, orthogonal to paths: twelve in-scope files changed by an
+# unattended agent is a different event from two, even when every path is legal.
+max_changed_files: 12

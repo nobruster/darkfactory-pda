@@ -1,0 +1,19 @@
+{
+  "name": "cvg",
+  "description": "Converge — compile intent into shipped software. One install ships eleven Converge-owned skills and the cvg CLI; Task-Spec is installed and versioned independently.",
+  "owner": {
+    "name": "Luan Moreno M. Maciel",
+    "url": "https://github.com/luanmorenommaciel"
+  },
+  "plugins": [
+    {
+      "name": "converge",
+      "source": "./",
+      "description": "The nine-pass Converge method (eleven owned skills) plus the cvg referee CLI on PATH. Requires the independently installed Task-Spec 3.8 engine.",
+      "version": "0.2.0",
+      "license": "MIT",
+      "category": "workflow",
+      "keywords": ["agentic", "task-spec", "evals", "delivery", "referee"]
+    }
+  ]
+}

@@ -1,0 +1,40 @@
+{
+  "acceptance_tier": 1,
+  "accepted_at": "2026-08-15T18:43:12Z",
+  "accepted_by": "converge-loop",
+  "contract": "AcceptanceRecord/v1",
+  "gate_outcomes": {
+    "authorization": {
+      "code": "AUTHORIZATION_VALID",
+      "status": "pass"
+    },
+    "evaluation": {
+      "code": "EVAL_PASSED",
+      "status": "pass"
+    },
+    "evidence": {
+      "code": "EVIDENCE_SATISFIED",
+      "proof": [
+        "format v3 or earlier: v4 policy receipts are not required"
+      ],
+      "status": "pass"
+    },
+    "preflight": {
+      "code": "PREFLIGHT_PASSED",
+      "status": "pass",
+      "warnings": []
+    }
+  },
+  "outcome": {
+    "code": "ACCEPTED_TIER_1",
+    "status": "accepted"
+  },
+  "receipts": [],
+  "subject": {
+    "attempt_id": "d4afde7a-0f7c-4bc6-8b13-6e167d0e95bd",
+    "authorization_ref": "hmac-sha256-v3:62394328:536c448b2913a3fdbb0898d6af0af1045e4987be2bc9b26c4784d8acb7c141e7",
+    "base_commit": "e0c6cf8468eff4b7f3b02a90bae689dd20da09b1",
+    "task_id": "T-20260815-health-status",
+    "task_revision_digest": "sha256:e1caec7dd91eb6a076af446c3f2bd0a2908e2badc6eccacd036192c8f4c3bf7b"
+  }
+}

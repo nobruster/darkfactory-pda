@@ -1,0 +1,101 @@
+{
+  "contract": "TaskHandoff/v3",
+  "task_id": "T-20260815-health-status",
+  "format_version": 3,
+  "spec": "/private/var/folders/zf/r0gsd5px2v9_q24j3tfnyb5c0000gn/T/cvg-composed-demo.XXXXXX.eXYWVrCoWZ/cvg/tasks/T-20260815-health-status.md",
+  "spec_digest": "sha256:1d11bdc95b4bf5c288948f3f05e5074e77c810a63249e929dc79e98002e69501",
+  "task_revision_digest": "sha256:e1caec7dd91eb6a076af446c3f2bd0a2908e2badc6eccacd036192c8f4c3bf7b",
+  "signoff_tier": 1,
+  "backend": "any",
+  "workspace": "/private/var/folders/zf/r0gsd5px2v9_q24j3tfnyb5c0000gn/T/cvg-composed-demo.XXXXXX.eXYWVrCoWZ",
+  "authorization": {
+    "scheme": "hmac-sha256-v3",
+    "ref": "hmac-sha256-v3:62394328:536c448b2913a3fdbb0898d6af0af1045e4987be2bc9b26c4784d8acb7c141e7",
+    "tier": 1,
+    "signed_by": "deterministic-demo",
+    "signed_at": "2026-08-15T18:35:27Z"
+  },
+  "attempt": {
+    "id": "d4afde7a-0f7c-4bc6-8b13-6e167d0e95bd",
+    "issued_at": "2026-08-15T18:35:36Z"
+  },
+  "source": {
+    "workspace": "/private/var/folders/zf/r0gsd5px2v9_q24j3tfnyb5c0000gn/T/cvg-composed-demo.XXXXXX.eXYWVrCoWZ",
+    "base_commit": "e0c6cf8468eff4b7f3b02a90bae689dd20da09b1"
+  },
+  "dependency_closure": {
+    "contract": "DependencyClosure/v1",
+    "task_id": "T-20260815-health-status",
+    "digest": "sha256:dcf1448b5832780cca48da71697c7bcca05b4cc48fb8460a0d8b3b604623b9c8",
+    "members": [
+      {
+        "task_id": "T-20260815-health-status",
+        "task_revision_digest": "sha256:e1caec7dd91eb6a076af446c3f2bd0a2908e2badc6eccacd036192c8f4c3bf7b"
+      }
+    ]
+  },
+  "write_scope": {
+    "touches_paths": [],
+    "creates_paths": [
+      "src/health.py",
+      "tests/test_health.py"
+    ],
+    "do_not_touch": [
+      "README.md"
+    ]
+  },
+  "budgets": {
+    "iterations": 15,
+    "tokens": null,
+    "effort": "S"
+  },
+  "agent_contract": {
+    "version": 2,
+    "read": [
+      "intent",
+      "behavior",
+      "contract",
+      "guardrails"
+    ],
+    "produce": [
+      "code",
+      "tests"
+    ],
+    "required_tools": [
+      "git",
+      "bash",
+      "python3"
+    ],
+    "timeout_minutes": 30,
+    "sandbox_type": "host",
+    "output_artifacts": [],
+    "mcp_dependencies": [],
+    "emit": [
+      "pass",
+      "fail",
+      "retry_with_reason",
+      "parked_with_context"
+    ],
+    "backend_metadata": {}
+  },
+  "eval_command": [
+    "taskspec",
+    "run",
+    "--ci",
+    "/private/var/folders/zf/r0gsd5px2v9_q24j3tfnyb5c0000gn/T/cvg-composed-demo.XXXXXX.eXYWVrCoWZ/cvg/tasks/T-20260815-health-status.md"
+  ],
+  "acceptance_command": [
+    "taskspec",
+    "accept",
+    "--stamp",
+    "--handoff",
+    "<handoff.json>",
+    "/private/var/folders/zf/r0gsd5px2v9_q24j3tfnyb5c0000gn/T/cvg-composed-demo.XXXXXX.eXYWVrCoWZ/cvg/tasks/T-20260815-health-status.md"
+  ],
+  "evaluation_policy": {},
+  "environment_contract": {},
+  "identity_policy": {},
+  "receipt_requirements": [
+    "deterministic"
+  ]
+}

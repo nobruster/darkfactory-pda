@@ -1,0 +1,23 @@
+{
+  "evaluation": {
+    "output_sha256": "32adcff35046f2c21ba31c50280a27d48755f45b51dba3d0d1fd310e96f5b96c",
+    "path_policy": "pass"
+  },
+  "execution_profile": {
+    "path": "cvg/execution/T-20260815-health-status/execution-profile.yaml",
+    "sha256": "55c0cbf1bdcf697cd552b391831994efc68ffa34e32f909a6e7e634ad3819fde"
+  },
+  "generated_by": "task-loop",
+  "recorded_at": "2026-08-15T18:43:11Z",
+  "result": "pass",
+  "runtime": {
+    "agent": "codex",
+    "branch": "task/health-status"
+  },
+  "schema": "cvg.execution-receipt.v1",
+  "task_id": "T-20260815-health-status",
+  "task_spec": {
+    "path": "cvg/tasks/T-20260815-health-status.md",
+    "sha256": "1d11bdc95b4bf5c288948f3f05e5074e77c810a63249e929dc79e98002e69501"
+  }
+}

@@ -1,0 +1,16 @@
+[checkpoint]
+policy = "suggest" # off | manual | suggest | auto
+default_mode = "orient" # orient | teach | spoken
+elapsed_minutes = 12
+turns = 8
+assistant_chars = 16000
+tool_calls = 12
+cooldown_minutes = 6
+minimum_turns_after_checkpoint = 2
+
+[outcome]
+policy = "suggest" # off | suggest | enforce
+one_repair = true
+
+[state]
+retention_days = 14

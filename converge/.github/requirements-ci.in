@@ -1,0 +1,7 @@
+# CI-only validation dependencies.
+#
+# The shipped Python consumer keeps jsonschema optional for lightweight local
+# use. CI installs both packages and sets TASK_SPEC_REQUIRE_JSONSCHEMA=1 so the
+# schema-fidelity proof cannot silently weaken.
+PyYAML==6.0.3
+jsonschema==4.26.0

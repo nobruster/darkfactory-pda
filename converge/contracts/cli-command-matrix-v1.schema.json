@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://converge.dev/contracts/cli-command-matrix-v1.schema.json",
+  "title": "ConvergeCLICommandMatrix/v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["contract", "schema_version", "command_count", "source_of_truth_for", "commands"],
+  "properties": {
+    "contract": {"const": "ConvergeCLICommandMatrix/v1"},
+    "schema_version": {"const": 1},
+    "command_count": {"type": "integer", "minimum": 60},
+    "source_of_truth_for": {"type": "array", "minItems": 3, "items": {"type": "string"}},
+    "commands": {
+      "type": "array",
+      "minItems": 60,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name", "converge_pass", "wraps", "emits_tokens", "mutating", "example", "description"],
+        "properties": {
+          "name": {"type": "string", "minLength": 1},
+          "converge_pass": {"type": ["integer", "string", "null"]},
+          "wraps": {"type": "string"},
+          "emits_tokens": {"type": "array", "items": {"type": "string"}},
+          "mutating": {"type": "boolean"},
+          "example": {"type": "string", "minLength": 1},
+          "description": {"type": "string", "minLength": 1}
+        }
+      }
+    }
+  }
+}

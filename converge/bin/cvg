@@ -1,0 +1,2903 @@
+#!/usr/bin/env bash
+# cvg — the Converge CLI: one name over the proven task-spec toolchain.
+#
+# The referee, never a player: cvg frames, routes, and gates — it holds no
+# model credentials and never calls an LLM. Task operations are exact
+# pass-throughs (same bytes, same exit code) to the compatible standalone
+# Task-Spec engine, so Converge does not create a second contract authority.
+#
+# Resolution has TWO roots:
+#   CVG_HOME         — the Converge tool/package whose scripts we execute.
+#   CVG_PROJECT_ROOT — the consuming project whose .cvg state we read/write.
+# Keeping these separate is load-bearing for an installed CLI: the executable
+# and skill package are tools, while setup belongs to the project using them.
+#
+# Task-Spec: tasks/done/T-20260719-cvg-router.md (Milestone 1.1, born at R0.I).
+# Portability: macOS system bash 3.2.
+
+set -euo pipefail
+
+CVG_VERSION="0.2.0"
+CVG_TASKSPEC_REQUIRED="3.8.0"
+
+# Resolve THIS script through any symlink chain before locating its companions.
+# Development installs may put a symlink on PATH, so `dirname "$0"` can be the
+# bin dir on PATH rather than the checkout — and _ui.sh lives beside the real
+# file. `readlink -f` is not portable (absent on stock macOS),
+# so walk the chain by hand. Bash 3.2 safe.
+_cvg_self="$0"
+while [ -L "$_cvg_self" ]; do
+  _cvg_link="$(readlink "$_cvg_self")"
+  case "$_cvg_link" in
+    /*) _cvg_self="$_cvg_link" ;;
+    *)  _cvg_self="$(dirname "$_cvg_self")/$_cvg_link" ;;
+  esac
+done
+BIN_DIR="$(cd "$(dirname "$_cvg_self")" && pwd)"
+unset _cvg_self _cvg_link
+# shellcheck source=bin/_ui.sh
+if [ -f "$BIN_DIR/_ui.sh" ]; then
+  . "$BIN_DIR/_ui.sh"
+elif [ -f "$BIN_DIR/.cvg-ui.sh" ]; then
+  . "$BIN_DIR/.cvg-ui.sh"
+else
+  printf 'cvg: missing UI companion beside %s\n' "$BIN_DIR/cvg" >&2
+  exit 2
+fi
+
+# ---------------------------------------------------------------------------
+# Locate the Converge home (the repo whose scripts we route to)
+# ---------------------------------------------------------------------------
+resolve_home() {
+  if [ -n "${CVG_HOME:-}" ]; then
+    if [ -f "$CVG_HOME/skills/idea-to-brd/SKILL.md" ]; then
+      printf '%s\n' "$CVG_HOME"
+      return 0
+    fi
+    ui_err "CVG_HOME is set but '$CVG_HOME/skills/idea-to-brd/SKILL.md' does not exist"
+    return 1
+  fi
+  local dir="$PWD" candidate
+  while [ "$dir" != "/" ]; do
+    for candidate in "$dir" "$dir/.agents" "$dir/.claude"; do
+      if [ -f "$candidate/skills/idea-to-brd/SKILL.md" ]; then
+        printf '%s\n' "$candidate"
+        return 0
+      fi
+    done
+    dir="$(dirname "$dir")"
+  done
+  # Fall back to the checkout this script lives in for explicit development
+  # installs. Pinned installs normally resolve the consuming repo's .agents
+  # package while walking upward.
+  if [ -f "$BIN_DIR/../skills/idea-to-brd/SKILL.md" ]; then
+    (cd "$BIN_DIR/.." && pwd)
+    return 0
+  fi
+  ui_err "no Converge home found walking up from '$PWD' — run from an installed Converge project, or set CVG_HOME"
+  return 1
+}
+
+# Resolve the consuming project independently from the tool checkout.
+#
+# Precedence:
+#   1. explicit CVG_PROJECT_ROOT;
+#   2. nearest ancestor carrying project-local `.cvg/` or a canonical `cvg/`
+#      workspace (important for nested projects in a monorepo);
+#   3. the enclosing Git root;
+#   4. the current directory outside Git.
+resolve_project_root() {
+  if [ -n "${CVG_PROJECT_ROOT:-}" ]; then
+    if [ -d "$CVG_PROJECT_ROOT" ]; then
+      (cd "$CVG_PROJECT_ROOT" && pwd)
+      return 0
+    fi
+    ui_err "CVG_PROJECT_ROOT is set but '$CVG_PROJECT_ROOT' is not a directory"
+    return 1
+  fi
+
+  local start dir git_root parent
+  start="$(pwd)"
+  dir="$start"
+  git_root="$(git -C "$start" rev-parse --show-toplevel 2>/dev/null || true)"
+  while :; do
+    if [ -d "$dir/.cvg" ] || [ -d "$dir/cvg/tasks" ] || [ -f "$dir/cvg/INDEX.md" ]; then
+      printf '%s\n' "$dir"
+      return 0
+    fi
+    # Invoking from inside the canonical cvg/ workspace still belongs to its
+    # parent project, not to a second project rooted at project/cvg/.
+    if [ "$(basename "$dir")" = "cvg" ] \
+      && { [ -d "$dir/tasks" ] || [ -f "$dir/INDEX.md" ]; }; then
+      (cd "$dir/.." && pwd)
+      return 0
+    fi
+    [ -n "$git_root" ] && [ "$dir" = "$git_root" ] && break
+    [ "$dir" = "/" ] && break
+    parent="$(dirname "$dir")"
+    [ "$parent" = "$dir" ] && break
+    dir="$parent"
+  done
+  if [ -n "$git_root" ]; then
+    printf '%s\n' "$git_root"
+  else
+    printf '%s\n' "$start"
+  fi
+}
+
+# Task-Spec is a separately versioned engine. Converge owns orchestration and
+# assurance; it never carries a second runtime implementation of Task-Spec.
+resolve_taskspec() {
+  local candidate version
+  candidate="${CVG_TASKSPEC_BIN:-}"
+  if [ -z "$candidate" ]; then
+    candidate="$(command -v taskspec 2>/dev/null || true)"
+  elif command -v "$candidate" >/dev/null 2>&1; then
+    candidate="$(command -v "$candidate")"
+  fi
+  if [ -z "$candidate" ] || [ ! -x "$candidate" ]; then
+    ui_err "Task-Spec engine not found — install taskspec $CVG_TASKSPEC_REQUIRED, then rerun"
+    return 1
+  fi
+  version="$("$candidate" version 2>/dev/null | tail -1 | tr -d '[:space:]')"
+  case "$version" in
+    3.8.*) ;;
+    *)
+      ui_err "incompatible Task-Spec engine '$version' at $candidate — Converge 0.2 requires 3.8.x"
+      return 1
+      ;;
+  esac
+  printf '%s\n' "$candidate"
+}
+
+taskspec_version() {
+  "$TASKSPEC_BIN" version 2>/dev/null | tail -1 | tr -d '[:space:]'
+}
+
+# route_taskspec <command> [args...] — the engine owns task authoring, proof,
+# graph state, handoff, acceptance, and lifecycle transitions.
+route_taskspec() {
+  local command="$1"
+  shift
+  (
+    cd "$CVG_PROJECT_ROOT_DIR"
+    exec "$TASKSPEC_BIN" "$command" "$@"
+  )
+}
+
+cvg_require_passing_receipt() {
+  local task_id="$1" current_spec="${2:-}"
+  python3 - "$CVG_PROJECT_ROOT_DIR" "$task_id" "$current_spec" <<'PY'
+import hashlib
+import json
+import pathlib
+import sys
+
+root = pathlib.Path(sys.argv[1]).resolve()
+task_id = sys.argv[2]
+current_arg = sys.argv[3]
+
+def inside(raw: str, *, must_exist: bool = True) -> pathlib.Path:
+    candidate = pathlib.Path(raw)
+    path = (candidate if candidate.is_absolute() else root / candidate).resolve()
+    try:
+        path.relative_to(root)
+    except ValueError as exc:
+        raise ValueError(f"path escapes project: {raw}") from exc
+    if must_exist and (not path.is_file() or path.is_symlink()):
+        raise ValueError(f"file is missing or unsafe: {raw}")
+    return path
+
+def digest(path: pathlib.Path) -> str:
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+try:
+    receipt_path = inside(f"cvg/receipts/{task_id}.json")
+    receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
+    if receipt.get("schema") != "cvg.execution-receipt.v1":
+        raise ValueError("receipt schema is not cvg.execution-receipt.v1")
+    if receipt.get("task_id") != task_id or receipt.get("result") != "pass":
+        raise ValueError("receipt does not record a passing result for this task")
+    if receipt.get("evaluation", {}).get("path_policy") != "pass":
+        raise ValueError("receipt path-policy verdict is not pass")
+    if receipt.get("generated_by") != "task-loop" or receipt.get("post_hoc") is True:
+        raise ValueError("receipt is post-hoc or was not produced by the task loop")
+    profile_ref = receipt.get("execution_profile", {})
+    profile_path = inside(str(profile_ref.get("path", "")))
+    if digest(profile_path) != profile_ref.get("sha256"):
+        raise ValueError("execution profile digest no longer matches the receipt")
+    profile = json.loads(profile_path.read_text(encoding="utf-8"))
+    if profile.get("task", {}).get("id") != task_id:
+        raise ValueError("execution profile names a different task")
+    bound_sha = profile.get("task", {}).get("spec_ref", {}).get("sha256")
+    if receipt.get("task_spec", {}).get("sha256") != bound_sha:
+        raise ValueError("receipt is not bound to the execution profile task revision")
+    if pathlib.Path(str(receipt.get("task_spec", {}).get("path", ""))).name != f"{task_id}.md":
+        raise ValueError("receipt task path names a different task")
+    if current_arg:
+        current = inside(current_arg)
+        if digest(current) != bound_sha:
+            raise ValueError("current Task-Spec differs from the bound and executed revision")
+except (OSError, ValueError, TypeError, json.JSONDecodeError) as exc:
+    print(f"cvg: settlement refused: {exc}", file=sys.stderr)
+    raise SystemExit(1)
+PY
+}
+
+cvg_tasks_accept() {
+  local arg spec="" task_id handoff has_handoff=0 has_scope=0 has_acceptance_dir=0
+  for arg in "$@"; do
+    case "$arg" in
+      --handoff|--handoff=*) has_handoff=1 ;;
+      --no-blast-radius) has_scope=1 ;;
+      --acceptance-dir|--acceptance-dir=*) has_acceptance_dir=1 ;;
+      *T-*.md)
+        if [ -f "$arg" ]; then spec="$arg"
+        elif [ -f "$CVG_PROJECT_ROOT_DIR/$arg" ]; then spec="$CVG_PROJECT_ROOT_DIR/$arg"
+        fi
+        ;;
+    esac
+  done
+  [ -n "$spec" ] || {
+    ui_err "cvg tasks accept requires one existing Task-Spec path"
+    return 2
+  }
+  task_id="$(basename "$spec" .md)"
+  cvg_require_passing_receipt "$task_id" "$spec" || return 1
+  handoff="$CVG_PROJECT_ROOT_DIR/cvg/execution/$task_id/task-handoff.json"
+  if [ "$has_handoff" -eq 0 ]; then
+    [ -f "$handoff" ] || {
+      ui_err "settlement handoff is missing — rerun: cvg bind --task $spec"
+      return 1
+    }
+    set -- --handoff "$handoff" "$@"
+  fi
+  [ "$has_acceptance_dir" -eq 1 ] || \
+    set -- --acceptance-dir "$TASKSPEC_ACCEPTANCE_DIR" "$@"
+  # Converge's signed execution receipt owns runtime path enforcement; the
+  # Task-Spec engine still owns eval, revision, handoff, evidence, and acceptance.
+  [ "$has_scope" -eq 1 ] || set -- --no-blast-radius "$@"
+  route_taskspec accept "$@"
+}
+
+cvg_transition() {
+  if [ $# -ge 2 ] && [ "$2" = "done" ]; then
+    cvg_require_passing_receipt "$1" || return 1
+  fi
+  route_taskspec transition "$@"
+}
+
+# ---------------------------------------------------------------------------
+# Non-secret project config (.cvg/config) — CHOICES, never CREDENTIALS.
+# ---------------------------------------------------------------------------
+# The referee holds no secrets: setup records which tracker to use (later:
+# engine/index/memory) — never an API key. Secrets resolve at runtime from the
+# environment (or a secrets manager); if cvg can't see them it can't leak them
+# (the SOTA agent-secret posture — Claude Code / Cursor have both leaked .env
+# keys by reading them). Format: plain KEY=value lines, greppable, bash-3.2-safe.
+# Lives at <project>/.cvg/config. It is machine-local and ignored: remote/team
+# ids are non-credentials, but they are organization-specific metadata.
+cvg_config_file() { printf '%s/.cvg/config\n' "$CVG_PROJECT_ROOT_DIR"; }
+cvg_ensure_local_excludes() {
+  # Keep every machine-local .cvg artifact out of Git even in a brand-new
+  # consuming repo whose tracked .gitignore knows nothing about Converge.
+  # Use .git/info/exclude: project policy remains untouched, while the local
+  # choices and adapter cache cannot be swept into `git add .` accidentally.
+  local git_root project_physical project_rel prefix runtime_prefix git_path exclude dir tmp missing p pattern
+  git_root="$(git -C "$CVG_PROJECT_ROOT_DIR" rev-parse --show-toplevel 2>/dev/null || true)"
+  [ -n "$git_root" ] || return 0
+  # macOS can spell the same temp tree as /var or /private/var. Compare both
+  # roots in their physical form, never a logical PWD spelling.
+  git_root="$(cd "$git_root" 2>/dev/null && pwd -P)" || {
+    ui_err "could not resolve the discovered Git root"
+    return 1
+  }
+  project_physical="$(cd "$CVG_PROJECT_ROOT_DIR" 2>/dev/null && pwd -P)" || {
+    ui_err "could not resolve the consuming project root"
+    return 1
+  }
+  case "$project_physical" in
+    "$git_root") project_rel="" ;;
+    "$git_root"/*) project_rel="${project_physical#"$git_root"/}" ;;
+    *) ui_err "project root is outside its discovered Git root"; return 1 ;;
+  esac
+  case "$project_rel" in
+    *$'\n'*|*$'\r'*) ui_err "project path may not contain CR/LF"; return 1 ;;
+  esac
+  prefix="${project_rel:+$project_rel/}.cvg"
+  runtime_prefix="${project_rel:+$project_rel/}cvg"
+
+  missing=0
+  for p in \
+    "$prefix/config" \
+    "$prefix/identity" \
+    "$prefix/projection.lock" \
+    "$runtime_prefix/execution/.cvg-ignore-probe/task-handoff.json" \
+    "$runtime_prefix/loop/.cvg-ignore-probe" \
+    "$runtime_prefix/receipts/.cvg-ignore-probe.json" \
+    "$runtime_prefix/STATE.md"; do
+    if ! git -C "$git_root" check-ignore -q --no-index -- "$p" 2>/dev/null; then
+      missing=1
+    fi
+  done
+  [ "$missing" -eq 0 ] && return 0
+
+  git_path="$(git -C "$git_root" rev-parse --git-path info/exclude 2>/dev/null || true)"
+  [ -n "$git_path" ] || {
+    ui_err "could not resolve Git's local exclude file"
+    return 1
+  }
+  case "$git_path" in
+    /*) exclude="$git_path" ;;
+    *)  exclude="$git_root/$git_path" ;;
+  esac
+  [ ! -L "$exclude" ] || {
+    ui_err "refusing to replace symlinked Git exclude file: $exclude"
+    return 1
+  }
+  dir="$(dirname "$exclude")"
+  mkdir -p "$dir"
+  tmp="$(mktemp "$dir/.cvg-exclude.XXXXXX")" || return 1
+  chmod 600 "$tmp" 2>/dev/null || true
+  if [ -f "$exclude" ]; then
+    awk '{print}' "$exclude" > "$tmp" || {
+      rm -f "$tmp"; return 1;
+    }
+  fi
+  for pattern in \
+    "/$prefix/config" \
+    "/$prefix/identity" \
+    "/$prefix/projection.lock" \
+    "/$runtime_prefix/execution/*/task-handoff.json" \
+    "/$runtime_prefix/loop/" \
+    "/$runtime_prefix/receipts/*.json" \
+    "/$runtime_prefix/STATE.md"; do
+    grep -Fqx "$pattern" "$tmp" 2>/dev/null || printf '%s\n' "$pattern" >> "$tmp"
+  done
+  mv "$tmp" "$exclude"
+  chmod 600 "$exclude" 2>/dev/null || true
+
+  for p in \
+    "$prefix/config" \
+    "$prefix/identity" \
+    "$prefix/projection.lock" \
+    "$runtime_prefix/execution/.cvg-ignore-probe/task-handoff.json" \
+    "$runtime_prefix/loop/.cvg-ignore-probe" \
+    "$runtime_prefix/receipts/.cvg-ignore-probe.json" \
+    "$runtime_prefix/STATE.md"; do
+    if ! git -C "$git_root" check-ignore -q --no-index -- "$p" 2>/dev/null; then
+      ui_err "could not make '$p' machine-local via Git info/exclude"
+      return 1
+    fi
+  done
+  return 0
+}
+cvg_local_set() {  # cvg_local_set FILE KEY VALUE — literal, same-dir atomic, 0600
+  local f="$1" key="$2" val="$3" dir tmp
+  case "$key$val" in
+    *$'\n'*|*$'\r'*) ui_err "local .cvg values may not contain CR/LF"; return 2 ;;
+  esac
+  if [ -L "$f" ] || { [ -e "$f" ] && [ ! -f "$f" ]; }; then
+    ui_err "refusing non-regular or symlinked local .cvg file: $f"
+    return 1
+  fi
+  cvg_ensure_local_excludes || return 1
+  dir="$(dirname "$f")"
+  mkdir -p "$dir"
+  tmp="$(mktemp "$dir/.cvg-write.XXXXXX")" || return 1
+  chmod 600 "$tmp" 2>/dev/null || true
+  if [ -f "$f" ]; then
+    awk -F= -v k="$key" '$1 != k {print}' "$f" > "$tmp" || {
+      rm -f "$tmp"; return 1;
+    }
+  fi
+  printf '%s=%s\n' "$key" "$val" >> "$tmp"
+  mv "$tmp" "$f"
+  chmod 600 "$f" 2>/dev/null || true
+}
+cvg_config_get() {  # cvg_config_get KEY -> value on stdout (empty if unset)
+  local f bytes; f="$(cvg_config_file)"
+  [ -f "$f" ] && [ ! -L "$f" ] || return 0
+  bytes="$(wc -c < "$f" | tr -d ' ')"
+  [ "${bytes:-0}" -le 65536 ] || return 0
+  awk -F= -v k="$1" '$1 == k {sub(/^[^=]*=/, ""); print; exit}' "$f" 2>/dev/null || true
+}
+cvg_config_set() {  # cvg_config_set KEY VALUE  (idempotent replace-or-append)
+  cvg_local_set "$(cvg_config_file)" "$1" "$2"
+}
+
+# .cvg/identity — maps symbolic execution selectors to tracker identities.
+# "Identity" covers people, service accounts and future agent identities without
+# conflating this lookup with authorization or lane routing.
+cvg_identity_file() { printf '%s/.cvg/identity\n' "$CVG_PROJECT_ROOT_DIR"; }
+cvg_identity_key_valid() {
+  case "$1" in
+    default) return 0 ;;
+    backend:*|agent:*)
+      [[ "$1" =~ ^(backend|agent):[A-Za-z0-9][A-Za-z0-9._-]*$ ]]
+      return $? ;;
+    *) return 1 ;;
+  esac
+}
+cvg_identity_validate_file() {
+  local f="$1" line key val seen="|" line_no=0 bytes
+  [ -f "$f" ] && [ ! -L "$f" ] || {
+    ui_err "identity must be a regular, non-symlink file: $f"
+    return 1
+  }
+  bytes="$(wc -c < "$f" | tr -d ' ')"
+  if [ "${bytes:-0}" -gt 65536 ]; then
+    ui_err "identity exceeds 65536 bytes: $f"
+    return 1
+  fi
+  while IFS= read -r line || [ -n "$line" ]; do
+    line_no=$((line_no + 1))
+    case "$line" in
+      ""|\#*) continue ;;
+      *$'\r'*|*$'\n'*)
+        ui_err "identity line $line_no contains CR/LF"
+        return 1
+        ;;
+      *=*) ;;
+      *)
+        ui_err "identity line $line_no must be KEY=VALUE"
+        return 1
+        ;;
+    esac
+    key="${line%%=*}"
+    val="${line#*=}"
+    cvg_identity_key_valid "$key" || {
+      ui_err "identity line $line_no has an invalid key"
+      return 1
+    }
+    [ -n "$val" ] || {
+      ui_err "identity line $line_no has an empty value"
+      return 1
+    }
+    case "$val" in
+      *'='*)
+        ui_err "identity line $line_no contains more than one '='"
+        return 1
+        ;;
+    esac
+    case "$seen" in
+      *"|$key|"*)
+        ui_err "identity line $line_no duplicates key '$key'"
+        return 1
+        ;;
+    esac
+    seen="${seen}${key}|"
+  done < "$f"
+  return 0
+}
+cvg_identity_set() {  # exact KEY=VALUE; idempotent replace-or-append
+  local key="$1" val="$2"
+  cvg_identity_key_valid "$key" || {
+    ui_err "identity key must be default, backend:<engine>, or agent:<role> (safe token only)"
+    return 2
+  }
+  [ -n "$val" ] || { ui_err "identity value may not be empty"; return 2; }
+  case "$val" in *'='*) ui_err "identity value may not contain '='"; return 2 ;; esac
+  if [ -e "$(cvg_identity_file)" ]; then
+    cvg_identity_validate_file "$(cvg_identity_file)" || return 2
+  fi
+  cvg_local_set "$(cvg_identity_file)" "$key" "$val"
+}
+cvg_identity_resolved_file() {
+  local current
+  current="$(cvg_identity_file)"
+  if [ -e "$current" ] || [ -L "$current" ]; then
+    if cvg_identity_validate_file "$current"; then
+      printf '%s\n' "$current"
+    else
+      printf 'warning: invalid identity ignored; repair it with strict KEY=VALUE lines\n' >&2
+    fi
+  fi
+}
+
+# Bridge the non-secret Linear team id from .cvg/config into the env the adapter
+# reads, unless the user already set it. The API KEY is NEVER stored or bridged —
+# it lives in the environment only. This is what lets `cvg register` work after
+# setup with just the one secret exported.
+# Bridge the recorded repo base URL into the env the renderer reads, so every
+# registered issue links back to its spec. Non-secret, like the team id.
+cvg_export_spec_base() {
+  if [ -z "${TSI_SPEC_BASE_URL:-}" ]; then
+    local u; u="$(cvg_config_get spec_base_url)"
+    if [ -n "$u" ]; then export TSI_SPEC_BASE_URL="$u"; fi
+  fi
+  return 0   # bare-statement safe under set -e (see cvg_export_linear_team)
+}
+
+# Derive a browsable blob base (host/org/repo/blob/<branch>) from the git remote.
+# Echoes empty when there is no remote to read.
+cvg_detect_repo_base() {   # cvg_detect_repo_base [branch]
+  local remote branch path host
+  remote="$(git -C "$CVG_PROJECT_ROOT_DIR" remote get-url origin 2>/dev/null || true)"
+  [ -n "$remote" ] || return 0
+  branch="${1:-}"
+  if [ -z "$branch" ]; then
+    branch="$(git -C "$CVG_PROJECT_ROOT_DIR" rev-parse --abbrev-ref HEAD 2>/dev/null || true)"
+    [ -n "$branch" ] || branch="main"
+  fi
+  case "$remote" in
+    git@*)        path="${remote#git@}"; path="${path/://}" ;;
+    ssh://git@*)  path="${remote#ssh://git@}" ;;
+    https://*)    path="${remote#https://}" ;;
+    http://*)     path="${remote#http://}" ;;
+    *)            path="$remote" ;;
+  esac
+  path="${path%.git}"
+  host="${path%%/*}"
+  # Blob paths differ per host; GitHub's shape is the default.
+  case "$host" in
+    *gitlab*)    printf 'https://%s/-/blob/%s' "$path" "$branch" ;;
+    *bitbucket*) printf 'https://%s/src/%s' "$path" "$branch" ;;
+    *)           printf 'https://%s/blob/%s' "$path" "$branch" ;;
+  esac
+}
+
+cvg_setup_repo() {
+  local url="" branch=""
+  while [ $# -gt 0 ]; do
+    case "$1" in
+      --url)      url="${2:-}"; shift 2 ;;
+      --url=*)    url="${1#--url=}"; shift ;;
+      --branch)   branch="${2:-}"; shift 2 ;;
+      --branch=*) branch="${1#--branch=}"; shift ;;
+      -*) ui_err "unknown flag '$1' (expected: --url <base> | --branch <name>)"
+          printf 'SETUP_REPO=USAGE_ERROR\n'; exit 2 ;;
+      *)  shift ;;
+    esac
+  done
+  [ -n "$url" ] || url="$(cvg_detect_repo_base "$branch")"
+  if [ -z "$url" ]; then
+    ui_err "no git remote to detect — pass it: cvg setup repo --url https://github.com/<org>/<repo>/blob/main"
+    printf 'SETUP_REPO=UNDETECTED\n'; exit 1
+  fi
+  cvg_config_set spec_base_url "$url"
+  printf '%s[ok]%s repo linked: %s\n' "$UI_GREEN" "$UI_RESET" "$url"
+  printf '%s     registered issues now link back to their spec (branch-pinned —\n' "$UI_DIM"
+  printf '     re-run with --branch main once specs land there)%s\n' "$UI_RESET"
+  printf 'SETUP_REPO=OK\n'
+}
+
+cvg_export_linear_team() {
+  if [ -z "${LINEAR_TEAM_ID:-}" ]; then
+    local tid; tid="$(cvg_config_get linear_team_id)"
+    if [ -n "$tid" ]; then export LINEAR_TEAM_ID="$tid"; fi
+  fi
+  # MUST return 0: this is called as a bare statement under `set -e`, so a falsy
+  # trailing test would abort the whole command (it did — caught in review).
+  return 0
+}
+
+# Bridge the identity PATH (not its contents) into the adapter. An explicit
+# environment path wins over the project-local file.
+cvg_export_identity() {
+  if [ -n "${TSI_IDENTITY:-}" ]; then
+    if ! cvg_identity_validate_file "$TSI_IDENTITY"; then
+      printf 'warning: invalid TSI_IDENTITY ignored\n' >&2
+      unset TSI_IDENTITY
+    fi
+    return 0
+  fi
+  local f; f="$(cvg_identity_resolved_file)"
+  if [ -n "$f" ] && [ -f "$f" ]; then export TSI_IDENTITY="$f"; fi
+  return 0
+}
+
+# Bridge the projection CHOICES (gate + logical names) from .cvg/config into the env
+# register/the adapter consume for T3 structure. All non-secret: the master gate
+# defaults OFF, so a plain `cvg register` is byte-identical to today when unset.
+# The API key is NEVER stored or bridged — only these path/name choices cross over.
+cvg_export_projection() {
+  if [ -z "${CVG_PROJECTION_ENABLED:-}" ]; then
+    local e; e="$(cvg_config_get projection_enabled)"
+    if [ -n "$e" ]; then export CVG_PROJECTION_ENABLED="$e"; fi
+  fi
+  if [ -z "${TSI_PROJECTION_PROJECT:-}" ]; then
+    local p; p="$(cvg_config_get projection_project)"
+    if [ -n "$p" ]; then export TSI_PROJECTION_PROJECT="$p"; fi
+  fi
+  if [ -z "${TSI_PROJECTION_INITIATIVE:-}" ]; then
+    local i; i="$(cvg_config_get projection_initiative)"
+    if [ -n "$i" ]; then export TSI_PROJECTION_INITIATIVE="$i"; fi
+  fi
+  if [ -z "${TSI_PROJECTION_MILESTONES:-}" ]; then
+    local m; m="$(cvg_config_get projection_milestones)"
+    if [ -n "$m" ]; then export TSI_PROJECTION_MILESTONES="$m"; fi
+  fi
+  if [ -z "${TSI_PROJECTION_LOCK:-}" ]; then
+    export TSI_PROJECTION_LOCK="$CVG_PROJECT_ROOT_DIR/.cvg/projection.lock"
+  fi
+  return 0   # bare-statement safe under set -e (see cvg_export_linear_team)
+}
+
+# ---------------------------------------------------------------------------
+# init — create the canonical project-local control plane, without clobbering.
+# ---------------------------------------------------------------------------
+cvg_init() {
+  if [ $# -gt 0 ]; then
+    ui_err "usage: cvg init"
+    printf 'CVG_INIT=USAGE_ERROR\n'
+    return 2
+  fi
+
+  local root="$CVG_PROJECT_ROOT_DIR" task_templates gate_template
+  local changed=0 dir file
+  if ! git -C "$root" rev-parse --show-toplevel >/dev/null 2>&1; then
+    ui_err "cvg init requires a Git repository; initialize Git first"
+    printf 'CVG_INIT=NOT_GIT\n'
+    return 1
+  fi
+  for file in \
+    "$root/.cvg" "$root/.cvg/gate.yaml" \
+    "$root/cvg" "$root/cvg/INDEX.md" \
+    "$root/cvg/brain" "$root/cvg/brain/decisions" \
+    "$root/cvg/brain/definitions" "$root/cvg/brain/notes" \
+    "$root/cvg/brain/refs" "$root/cvg/brain/transcripts" \
+    "$root/cvg/docs" "$root/cvg/docs/adrs" "$root/cvg/docs/lessons" \
+    "$root/cvg/swimlanes" "$root/cvg/tasks" "$root/cvg/tasks/done" \
+    "$root/cvg/tasks/parked" "$root/cvg/tasks/README.md" \
+    "$root/cvg/tasks/_metrics.jsonl" "$root/cvg/tasks/_state.yaml" \
+    "$root/cvg/execution" "$root/cvg/loop" "$root/cvg/receipts" \
+    "$root/cvg/receipts/README.md"; do
+    if [ -L "$file" ]; then
+      ui_err "refusing to initialize through symlinked control-plane path: $file"
+      printf 'CVG_INIT=UNSAFE_PATH\n'
+      return 1
+    fi
+  done
+
+  task_templates="$CVG_HOME_DIR/templates/workspace"
+  gate_template="$CVG_HOME_DIR/skills/task-to-runtime-contract/templates/gate.yaml"
+  [ -f "$task_templates/INDEX.md" ] \
+    && [ -f "$task_templates/tasks-README.md" ] \
+    && [ -f "$task_templates/receipts-README.md" ] \
+    && [ -f "$CVG_HOME_DIR/skills/idea-to-brd/references/pass-prompt.md" ] \
+    && [ -f "$gate_template" ] || {
+      ui_err "the installed Converge package is missing workspace templates"
+      printf 'CVG_INIT=PACKAGE_ERROR\n'
+      return 2
+    }
+
+  for dir in \
+    "$root/.cvg" \
+    "$root/cvg/brain/decisions" \
+    "$root/cvg/brain/definitions" \
+    "$root/cvg/brain/notes" \
+    "$root/cvg/brain/refs" \
+    "$root/cvg/brain/transcripts" \
+    "$root/cvg/docs/brd" \
+    "$root/cvg/docs/tech-spec" \
+    "$root/cvg/docs/no-go" \
+    "$root/cvg/docs/adrs" \
+    "$root/cvg/docs/lessons" \
+    "$root/cvg/swimlanes" \
+    "$root/cvg/tasks/done" \
+    "$root/cvg/tasks/parked" \
+    "$root/cvg/execution" \
+    "$root/cvg/loop" \
+    "$root/cvg/receipts"; do
+    if [ ! -d "$dir" ]; then
+      mkdir -p "$dir"
+      changed=1
+    fi
+  done
+
+  for file in \
+    "$root/cvg/brain/decisions/.gitkeep" \
+    "$root/cvg/brain/definitions/.gitkeep" \
+    "$root/cvg/brain/notes/.gitkeep" \
+    "$root/cvg/brain/refs/.gitkeep" \
+    "$root/cvg/brain/transcripts/.gitkeep" \
+    "$root/cvg/docs/brd/.gitkeep" \
+    "$root/cvg/docs/tech-spec/.gitkeep" \
+    "$root/cvg/docs/no-go/.gitkeep" \
+    "$root/cvg/docs/adrs/.gitkeep" \
+    "$root/cvg/docs/lessons/.gitkeep" \
+    "$root/cvg/swimlanes/.gitkeep" \
+    "$root/cvg/tasks/done/.gitkeep" \
+    "$root/cvg/tasks/parked/.gitkeep" \
+    "$root/cvg/execution/.gitkeep" \
+    "$root/cvg/loop/.gitkeep"; do
+    if [ ! -e "$file" ]; then
+      : > "$file"
+      changed=1
+    fi
+  done
+
+  _cvg_init_copy() {
+    local src="$1" dst="$2"
+    if [ -L "$dst" ]; then
+      ui_err "refusing to replace symlinked workspace file: $dst"
+      return 1
+    fi
+    if [ ! -e "$dst" ]; then
+      cp "$src" "$dst"
+      changed=1
+    fi
+  }
+  _cvg_init_copy "$task_templates/INDEX.md" "$root/cvg/INDEX.md" || return 1
+  _cvg_init_copy "$task_templates/tasks-README.md" "$root/cvg/tasks/README.md" || return 1
+  _cvg_init_copy "$task_templates/receipts-README.md" "$root/cvg/receipts/README.md" || return 1
+  _cvg_init_copy "$gate_template" "$root/.cvg/gate.yaml" || return 1
+  # Pass prompts are NOT copied into the project. Each pass skill owns its own
+  # steering prompt (skills/<pass-skill>/references/pass-prompt.md) and ships
+  # with the package, so a consuming repository stays free of files it did not
+  # author and the prompts can never go stale against the installed version.
+  # `cvg next` prints the installed path.
+
+  if [ ! -e "$root/cvg/tasks/_metrics.jsonl" ]; then
+    : > "$root/cvg/tasks/_metrics.jsonl"
+    changed=1
+  fi
+  if [ ! -e "$root/cvg/tasks/_state.yaml" ]; then
+    route_taskspec rebuild-state >/dev/null
+    changed=1
+  fi
+
+  cvg_ensure_local_excludes || return 1
+  printf '%s[ok]%s project control plane: %s\n' "$UI_GREEN" "$UI_RESET" "$root/cvg"
+  printf '     tracked policy: %s\n' "$root/.cvg/gate.yaml"
+  if [ "$changed" -eq 1 ]; then
+    printf 'CVG_INIT=OK\n'
+  else
+    printf 'CVG_INIT=UNCHANGED\n'
+  fi
+}
+
+cvg_setup_signing() {
+  local key_path force=0 arg
+  if ! git -C "$CVG_PROJECT_ROOT_DIR" rev-parse --git-dir >/dev/null 2>&1; then
+    ui_err "cvg setup signing requires a Git repository"
+    printf 'SETUP_SIGNING=NOT_GIT\n'
+    return 1
+  fi
+  key_path="$(git -C "$CVG_PROJECT_ROOT_DIR" rev-parse --git-path info/taskspec-signing-key 2>/dev/null || true)"
+  if [ -n "$key_path" ] && [ "${key_path#/}" = "$key_path" ]; then
+    key_path="$CVG_PROJECT_ROOT_DIR/$key_path"
+  fi
+  for arg in "$@"; do
+    case "$arg" in
+      --force) force=1 ;;
+      *) ui_err "usage: cvg setup signing [--force]"; printf 'SETUP_SIGNING=USAGE_ERROR\n'; return 2 ;;
+    esac
+  done
+  if [ -L "$key_path" ]; then
+    ui_err "refusing symlinked signing-key path: $key_path"
+    printf 'SETUP_SIGNING=UNSAFE_PATH\n'
+    return 1
+  fi
+  if [ "$force" -eq 0 ] && [ -f "$key_path" ]; then
+    printf '%s[ok]%s signing key already provisioned outside version control\n' "$UI_GREEN" "$UI_RESET"
+    printf 'SETUP_SIGNING=UNCHANGED\n'
+    return 0
+  fi
+  (
+    cd "$CVG_PROJECT_ROOT_DIR"
+    if [ "$force" -eq 1 ]; then
+      "$TASKSPEC_BIN" setup signing --force
+    else
+      "$TASKSPEC_BIN" setup signing
+    fi
+  )
+  printf 'SETUP_SIGNING=OK\n'
+}
+
+# ---------------------------------------------------------------------------
+# setup — the guided connectivity surface (a generalized doctor + config).
+# ---------------------------------------------------------------------------
+# `cvg setup` scans every moving part and reports readiness + the exact next
+# step; `cvg setup tracker <t>` validates a backend and records the CHOICE.
+# Model: fly doctor + stripe projects status + clanker onboarding scan.
+# _cvg_has_lane <sketch-dir> — 0 when the dir holds at least one swimlane.
+# A swimlane is a subdirectory carrying a lane PRD (_lane.md canonical, or the
+# legacy <name>.plan.md); the folder's NAME is never the test, so dropping the
+# redundant "swimlane-" prefix cannot make Pass 3/4 discovery answer "none".
+_cvg_has_lane() {
+  local d p
+  for d in "$1"/*/; do
+    [ -d "$d" ] || continue
+    case "$(basename "$d")" in .*) continue ;; esac
+    [ -e "${d}_lane.md" ] && return 0
+    for p in "$d"*.plan.md; do [ -e "$p" ] && return 0; done
+  done
+  return 1
+}
+
+_cvg_tracker_adapter() { printf '%s/skills/task-specs-to-issues/scripts/adapters/%s.sh\n' "$CVG_HOME_DIR" "$1"; }
+
+cvg_setup_status() {
+  printf '%scvg setup%s %s— connectivity status%s\n' "$UI_BOLD" "$UI_RESET" "$UI_DIM" "$UI_RESET"
+  ui_rule
+  local ready=1 next="" key_path
+
+  if [ -f "$CVG_PROJECT_ROOT_DIR/cvg/INDEX.md" ] \
+    && [ -d "$CVG_PROJECT_ROOT_DIR/cvg/tasks" ] \
+    && [ -f "$CVG_PROJECT_ROOT_DIR/.cvg/gate.yaml" ]; then
+    printf '  %s[ok]%s  workspace canonical cvg/ + tracked .cvg/gate.yaml\n' "$UI_GREEN" "$UI_RESET"
+  else
+    printf '  %s[--]%s  workspace not initialized — run: cvg init\n' "$UI_YELLOW" "$UI_RESET"
+    ready=0
+    next="cvg init"
+  fi
+
+  key_path="$(git -C "$CVG_PROJECT_ROOT_DIR" rev-parse --git-path info/taskspec-signing-key 2>/dev/null || true)"
+  if [ -n "$key_path" ] && [ "${key_path#/}" = "$key_path" ]; then
+    key_path="$CVG_PROJECT_ROOT_DIR/$key_path"
+  fi
+  if [ -f "$key_path" ]; then
+    printf '  %s[ok]%s  signing   Tier-1 Task-Spec key provisioned\n' "$UI_GREEN" "$UI_RESET"
+  else
+    printf '  %s[--]%s  signing   no repo key — run: cvg setup signing\n' "$UI_YELLOW" "$UI_RESET"
+    ready=0
+    [ -n "$next" ] || next="cvg setup signing"
+  fi
+
+  # engines (Pass-4 workers) — reuse the doctor's verdict.
+  local doc
+  doc="$(bash "$CVG_HOME_DIR/skills/sketch-plans-adversarial-review/scripts/doctor.sh" 2>/dev/null | grep -m1 '^DOCTOR=' || true)"
+  if [ "$doc" = "DOCTOR=OK" ]; then
+    printf '  %s[ok]%s  engines   Pass-4 adversaries ready\n' "$UI_GREEN" "$UI_RESET"
+  else
+    printf '  %s[--]%s  engines   not ready — run: cvg setup engines\n' "$UI_YELLOW" "$UI_RESET"; ready=0
+    [ -n "$next" ] || next="cvg setup engines"
+  fi
+
+  # trackers — preflight each; mark the configured default.
+  local cfg; cfg="$(cvg_config_get tracker)"
+  printf '  trackers  %sdefault: %s%s\n' "$UI_DIM" "${cfg:-<none — cvg setup tracker linear>}" "$UI_RESET"
+  cvg_export_linear_team   # so a configured Linear team makes its preflight pass
+  local t ad marker
+  for t in linear github jira; do
+    ad="$(_cvg_tracker_adapter "$t")"
+    [ -f "$ad" ] || continue
+    marker=""
+    if [ "$t" = "$cfg" ]; then marker="  (default)"; fi
+    if bash "$ad" preflight >/dev/null 2>&1; then
+      printf '    %s[ok]%s  %-7s connected%s\n' "$UI_GREEN" "$UI_RESET" "$t" "$marker"
+    else
+      printf '    %s[--]%s  %-7s not connected — cvg setup tracker %s\n' "$UI_DIM" "$UI_RESET" "$t" "$t"
+    fi
+  done
+
+  # repo link — the spec <-> tracker glue.
+  local repo; repo="$(cvg_config_get spec_base_url)"
+  if [ -n "$repo" ]; then
+    printf '  %s[ok]%s  repo      %s\n' "$UI_GREEN" "$UI_RESET" "$repo"
+  else
+    printf '  %s[--]%s  repo      not linked — run: cvg setup repo\n' "$UI_DIM" "$UI_RESET"
+  fi
+
+  # identity — symbolic executor -> tracker identity (OPTIONAL).
+  # Purely informational: unmapped assignees fail-soft, so this never gates READY.
+  local identity_file; identity_file="$(cvg_identity_resolved_file)"
+  if [ -f "$identity_file" ]; then
+    local nb na nd dtxt
+    nb="$(grep -c '^backend:' "$identity_file" 2>/dev/null || true)"; nb="${nb//[^0-9]/}"; nb="${nb:-0}"
+    na="$(grep -c '^agent:'   "$identity_file" 2>/dev/null || true)"; na="${na//[^0-9]/}"; na="${na:-0}"
+    nd="$(grep -c '^default=' "$identity_file" 2>/dev/null || true)"; nd="${nd//[^0-9]/}"; nd="${nd:-0}"
+    dtxt="no default"; if [ "$nd" -gt 0 ]; then dtxt="default set"; fi
+    printf '  %s[ok]%s  identity  assignees: %s backend, %s agent mapped · %s\n' "$UI_GREEN" "$UI_RESET" "$nb" "$na" "$dtxt"
+  else
+    printf '  %s[--]%s  identity  not configured — cvg setup identity (optional; unmapped fail-soft)\n' "$UI_DIM" "$UI_RESET"
+  fi
+
+  # projection — T3 structure creation gate. Default OFF (opt-in); never gates READY.
+  local pen; pen="$(cvg_config_get projection_enabled)"
+  if [ "$pen" = "1" ]; then
+    local pp pi ptxt
+    pp="$(cvg_config_get projection_project)"
+    pi="$(cvg_config_get projection_initiative)"
+    ptxt="project \"${pp:-<unset>}\""
+    if [ -n "$pi" ]; then ptxt="$ptxt, initiative \"$pi\""; fi
+    printf '  %s[ok]%s  projection  enabled — %s\n' "$UI_GREEN" "$UI_RESET" "$ptxt"
+  else
+    printf '  %s[--]%s  projection  disabled (default) — cvg setup projection --enable\n' "$UI_DIM" "$UI_RESET"
+  fi
+
+  # projection.lock — the structure resolution cache (adapter-written; self-heals).
+  local lock; lock="$CVG_PROJECT_ROOT_DIR/.cvg/projection.lock"
+  if [ -f "$lock" ]; then
+    local nl; nl="$(grep -c . "$lock" 2>/dev/null || true)"; nl="${nl//[^0-9]/}"; nl="${nl:-0}"
+    printf '  %s[..]%s  lock      projection.lock: %s objects cached\n' "$UI_DIM" "$UI_RESET" "$nl"
+  else
+    printf '  %s[..]%s  lock      projection.lock: none yet (built on first enabled register)\n' "$UI_DIM" "$UI_RESET"
+  fi
+
+  # planned areas (brownfield) — visible vision, honest status.
+  printf '  %s[..]%s  index     codebase indexing (planned)\n' "$UI_DIM" "$UI_RESET"
+  printf '  %s[..]%s  memory    context / memory store (planned)\n' "$UI_DIM" "$UI_RESET"
+  ui_rule
+
+  if [ "$ready" -eq 1 ]; then
+    printf 'SETUP=READY\n'
+  else
+    printf '%snext: %s%s\n' "$UI_DIM" "${next:-cvg setup}" "$UI_RESET"
+    printf 'SETUP=INCOMPLETE\n'
+  fi
+}
+
+cvg_setup_tracker() {
+  local t="" team_flag=""
+  while [ $# -gt 0 ]; do
+    case "$1" in
+      --team)   team_flag="${2:-}"; shift 2 ;;
+      --team=*) team_flag="${1#--team=}"; shift ;;
+      -*) ui_err "unknown flag '$1' (expected: --team <key>)"; printf 'SETUP_TRACKER=USAGE_ERROR\n'; exit 2 ;;
+      *) [ -z "$t" ] && t="$1"; shift ;;
+    esac
+  done
+  case "$t" in
+    linear|github|jira) ;;
+    fake) ;;  # test-only no-network backend (records tracker=fake for offline tests)
+    "") ui_err "usage: cvg setup tracker <linear|github|jira> [--team <key>]"; printf 'SETUP_TRACKER=USAGE_ERROR\n'; exit 2 ;;
+    *)  ui_err "unknown tracker '$t' — expected: linear | github | jira"; printf 'SETUP_TRACKER=USAGE_ERROR\n'; exit 2 ;;
+  esac
+  local ad; ad="$(_cvg_tracker_adapter "$t")"
+  [ -f "$ad" ] || { ui_err "adapter not found: $ad"; printf 'SETUP_TRACKER=USAGE_ERROR\n'; exit 2; }
+
+  # Linear has a team to discover; other trackers are a simple preflight + record.
+  if [ "$t" = "linear" ]; then
+    cvg_setup_tracker_linear "$ad" "$team_flag"
+    return
+  fi
+
+  printf '%sconnecting %s …%s\n' "$UI_DIM" "$t" "$UI_RESET"
+  if bash "$ad" preflight; then
+    cvg_config_set tracker "$t"
+    printf '%s[ok]%s recorded default tracker = %s in %s\n' "$UI_GREEN" "$UI_RESET" "$t" "$(cvg_config_file)"
+    printf '%snext: cvg register --check   then   cvg register%s\n' "$UI_DIM" "$UI_RESET"
+    printf 'SETUP_TRACKER=OK\n'
+  else
+    printf '%s[--]%s %s not reachable — export its credentials (shown above) and re-run.\n' "$UI_YELLOW" "$UI_RESET" "$t"
+    printf '%snote: cvg never stores your key; it stays in your environment (or a secrets manager).%s\n' "$UI_DIM" "$UI_RESET"
+    printf 'SETUP_TRACKER=UNREACHABLE\n'
+    exit 1
+  fi
+}
+
+# Linear connect: ONE secret (LINEAR_API_KEY). The team is auto-discovered — a
+# single team auto-selects, several list for `--team <KEY>`, and the KEY (from the
+# Linear URL) resolves to a UUID we record in .cvg/config. The key is never stored.
+cvg_setup_tracker_linear() {
+  local ad="$1" team_flag="$2"
+  if [ -z "${LINEAR_API_KEY:-}" ]; then
+    ui_err "LINEAR_API_KEY unset — create one at linear.app/settings/account/security, then: export LINEAR_API_KEY=lin_api_..."
+    printf 'SETUP_TRACKER=UNREACHABLE\n'; exit 1
+  fi
+  printf '%sconnecting linear …%s\n' "$UI_DIM" "$UI_RESET"
+
+  # Discover teams (key<TAB>name<TAB>uuid). The key already knows them.
+  # Capture stderr instead of swallowing it: when this fails, the adapter's own
+  # message (bad/revoked key, missing tool, GraphQL error) IS the diagnosis.
+  local teams n errf
+  errf="$(mktemp)"
+  teams="$(bash "$ad" teams 2>"$errf" || true)"
+  n="$(printf '%s' "$teams" | grep -c . || true)"; n="${n//[^0-9]/}"; n="${n:-0}"
+  if [ "$n" -eq 0 ]; then
+    ui_err "could not list any Linear teams. The adapter reported:"
+    if [ -s "$errf" ]; then
+      sed 's/^/    /' "$errf" >&2
+    else
+      printf '    (no error output — the API returned an empty team list)\n' >&2
+    fi
+    printf '%s    check: key valid + not revoked · key has Read access · key can see the team%s\n' "$UI_DIM" "$UI_RESET" >&2
+    printf '%s    raw test: curl -s -X POST https://api.linear.app/graphql -H "Authorization: $LINEAR_API_KEY" -H "Content-Type: application/json" -d '"'"'{"query":"{ viewer { name email } }"}'"'"'%s\n' "$UI_DIM" "$UI_RESET" >&2
+    rm -f "$errf"
+    printf 'SETUP_TRACKER=UNREACHABLE\n'; exit 1
+  fi
+  rm -f "$errf"
+
+  # Choose the team: --team wins; else the single team; else ask for --team <KEY>.
+  local chosen="${team_flag:-${LINEAR_TEAM_ID:-}}"
+  if [ -z "$chosen" ]; then
+    if [ "$n" -eq 1 ]; then
+      chosen="$(printf '%s' "$teams" | head -1 | cut -f1)"
+      printf '%sone team found — auto-selecting %s%s\n' "$UI_DIM" "$chosen" "$UI_RESET"
+    else
+      printf '%s%s teams found — re-run with --team <KEY>:%s\n' "$UI_YELLOW" "$n" "$UI_RESET"
+      printf '%s' "$teams" | awk -F'\t' '{printf "    %-8s %s\n", $1, $2}'
+      printf 'SETUP_TRACKER=NEEDS_TEAM\n'; exit 1
+    fi
+  fi
+
+  # Resolve the chosen key (or UUID) to its UUID from the discovered list.
+  local uuid
+  uuid="$(printf '%s' "$teams" | awk -F'\t' -v c="$chosen" 'toupper($1)==toupper(c) || $3==c {print $3; exit}')"
+  if [ -z "$uuid" ]; then
+    ui_err "team '$chosen' not found. Available: $(printf '%s' "$teams" | cut -f1 | paste -sd' ' -)"
+    printf 'SETUP_TRACKER=NEEDS_TEAM\n'; exit 1
+  fi
+
+  # Validate end-to-end with the resolved UUID, then record (never the key).
+  if LINEAR_TEAM_ID="$uuid" bash "$ad" preflight >/dev/null 2>&1; then
+    cvg_config_set tracker linear
+    cvg_config_set linear_team_id "$uuid"
+    local name; name="$(printf '%s' "$teams" | awk -F'\t' -v u="$uuid" '$3==u {print $2; exit}')"
+    printf '%s[ok]%s connected to Linear team %s%s\n' "$UI_GREEN" "$UI_RESET" "$chosen" "${name:+ ($name)}"
+    printf '%s     recorded tracker=linear + team UUID in %s (API key stays in your env)%s\n' "$UI_DIM" "$(cvg_config_file)" "$UI_RESET"
+    printf '%snext: cvg register --check   then   cvg register%s\n' "$UI_DIM" "$UI_RESET"
+    printf 'SETUP_TRACKER=OK\n'
+  else
+    printf '%s[--]%s resolved team %s but preflight failed — check the key'\''s team access.\n' "$UI_YELLOW" "$UI_RESET" "$chosen"
+    printf 'SETUP_TRACKER=UNREACHABLE\n'; exit 1
+  fi
+}
+
+# setup identity — map an execution_backend/agent selector to a tracker
+# identity so register can seed assigneeId (create-only). Subscribers are
+# derived separately from signed_off_by and never consult `.cvg/identity`. The mapped
+# identity may be a person, service account, or future engine identity.
+#   cvg setup identity                       discover available identities
+#   cvg setup identity --map KEY=VALUE ...   write .cvg/identity
+# CHOICES only — an email/UUID is a routing choice, never a credential.
+cvg_setup_identity() {
+  local do_list=0
+  local token="SETUP_IDENTITY"
+  local maps=()
+  while [ $# -gt 0 ]; do
+    case "$1" in
+      --list)   do_list=1; shift ;;
+      --map)
+        if [ $# -lt 2 ]; then
+          ui_err "--map requires KEY=VALUE"
+          printf '%s=USAGE_ERROR\n' "$token"
+          exit 2
+        fi
+        maps+=("$2"); shift 2
+        ;;
+      --map=*)  maps+=("${1#--map=}"); shift ;;
+      -*) ui_err "unknown flag '$1' (expected: --list | --map KEY=VALUE)"
+          printf '%s=USAGE_ERROR\n' "$token"; exit 2 ;;
+      *)  ui_err "unexpected argument '$1'"
+          printf '%s=USAGE_ERROR\n' "$token"; exit 2 ;;
+    esac
+  done
+
+  # --map writes first: strict key grammar, literal replacement, atomic rename.
+  if [ "${#maps[@]}" -gt 0 ]; then
+    local kv key val
+    for kv in "${maps[@]}"; do
+      case "$kv" in
+        *=*) : ;;
+        *)   ui_err "--map needs KEY=VALUE (got '$kv') — e.g. backend:claude=you@org.com · agent:coder=you@org.com · default=you@org.com"
+             printf '%s=USAGE_ERROR\n' "$token"; exit 2 ;;
+      esac
+      key="${kv%%=*}"; val="${kv#*=}"
+      if [ -z "$key" ]; then
+        ui_err "--map needs a non-empty KEY (got '$kv')"
+        printf '%s=USAGE_ERROR\n' "$token"; exit 2
+      fi
+      if ! cvg_identity_set "$key" "$val"; then
+        printf '%s=USAGE_ERROR\n' "$token"; exit 2
+      fi
+      printf '%s[ok]%s mapped %s → %s  %s(%s)%s\n' "$UI_GREEN" "$UI_RESET" "$key" "$val" "$UI_DIM" "$(cvg_identity_file)" "$UI_RESET"
+    done
+    if [ "$do_list" -eq 0 ]; then
+      printf '%s=OK\n' "$token"
+      return 0
+    fi
+  fi
+
+  # Discovery: list the tracker's members (adapter `users` verb: id<TAB>name<TAB>email)
+  # so a human can pick who each backend/agent maps to. Reuses the teams-discovery
+  # idiom: capture stderr so the adapter's own message IS the diagnosis on failure.
+  local tracker ad
+  tracker="$(cvg_config_get tracker)"
+  [ -n "$tracker" ] || tracker="linear"
+  ad="$(_cvg_tracker_adapter "$tracker")"
+  if [ ! -f "$ad" ]; then
+    ui_err "adapter not found: $ad"
+    printf '%s=UNREACHABLE\n' "$token"; exit 1
+  fi
+  cvg_export_linear_team   # so a configured Linear team scopes the user query
+  local users errf n
+  errf="$(mktemp)"
+  users="$(bash "$ad" users 2>"$errf" || true)"
+  n="$(printf '%s' "$users" | grep -c . || true)"; n="${n//[^0-9]/}"; n="${n:-0}"
+  if [ "$n" -eq 0 ]; then
+    ui_err "could not list any $tracker members. The adapter reported:"
+    if [ -s "$errf" ]; then sed 's/^/    /' "$errf" >&2; else printf '    (no error output — the API returned an empty list)\n' >&2; fi
+    rm -f "$errf"
+    printf '%s=UNREACHABLE\n' "$token"; exit 1
+  fi
+  rm -f "$errf"
+
+  printf '%s%s identity%s %s(map an execution backend / agent → a tracker identity)%s\n' "$UI_BOLD" "$tracker" "$UI_RESET" "$UI_DIM" "$UI_RESET"
+  printf '%s' "$users" | awk -F'\t' '{printf "    %-28s %s\n", $2, $3}'
+  ui_rule
+  printf '%smap with (idempotent; choices only, never a secret):%s\n' "$UI_DIM" "$UI_RESET"
+  printf '    cvg setup identity --map backend:claude=<email-or-id>\n'
+  printf '    cvg setup identity --map agent:coder=<email-or-id>\n'
+  printf '    cvg setup identity --map default=<email-or-id>\n'
+
+  # Coverage verdict: OK once anything is mapped, else NEEDS_MAP.
+  local identity_file
+  identity_file="$(cvg_identity_resolved_file)"
+  if [ -s "$identity_file" ] && grep -q '=' "$identity_file" 2>/dev/null; then
+    printf '%s=OK\n' "$token"
+  else
+    printf '%s=NEEDS_MAP\n' "$token"
+  fi
+  return 0
+}
+
+# setup projection — opt in to T3 structure projection (the workspace-mutating path).
+#   cvg setup projection --enable [--project N] [--initiative N] [--milestones L]
+#   cvg setup projection --disable
+# Records projection_enabled/project/initiative/milestones in .cvg/config; register's
+# Step-0 pre-pass then ensures Initiative→Project→Milestones (idempotent, by-name).
+# Default stays DISABLED so a plain `cvg register` is byte-identical to today.
+cvg_setup_projection() {
+  local do_enable=0 do_disable=0
+  local project="" initiative="" milestones=""
+  local got_project=0 got_initiative=0 got_milestones=0
+  while [ $# -gt 0 ]; do
+    case "$1" in
+      --enable)       do_enable=1; shift ;;
+      --disable)      do_disable=1; shift ;;
+      --project)      project="${2:-}"; got_project=1; shift 2 ;;
+      --project=*)    project="${1#--project=}"; got_project=1; shift ;;
+      --initiative)   initiative="${2:-}"; got_initiative=1; shift 2 ;;
+      --initiative=*) initiative="${1#--initiative=}"; got_initiative=1; shift ;;
+      --milestones)   milestones="${2:-}"; got_milestones=1; shift 2 ;;
+      --milestones=*) milestones="${1#--milestones=}"; got_milestones=1; shift ;;
+      -*) ui_err "unknown flag '$1' (expected: --enable | --disable | --project <name> | --initiative <name> | --milestones <list>)"
+          printf 'SETUP_PROJECTION=USAGE_ERROR\n'; exit 2 ;;
+      *)  shift ;;
+    esac
+  done
+
+  if [ "$do_enable" -eq 1 ] && [ "$do_disable" -eq 1 ]; then
+    ui_err "--enable and --disable conflict — projection is turned on or off, never both"
+    printf 'SETUP_PROJECTION=USAGE_ERROR\n'; exit 2
+  fi
+  if [ "$do_enable" -eq 0 ] && [ "$do_disable" -eq 0 ] \
+     && [ "$got_project" -eq 0 ] && [ "$got_initiative" -eq 0 ] && [ "$got_milestones" -eq 0 ]; then
+    ui_err "usage: cvg setup projection [--enable|--disable] [--project <name>] [--initiative <name>] [--milestones <list>]"
+    printf 'SETUP_PROJECTION=USAGE_ERROR\n'; exit 2
+  fi
+
+  # Record the naming choices (harmless strings; recorded on any invocation).
+  if [ "$got_project" -eq 1 ]; then cvg_config_set projection_project "$project"; fi
+  if [ "$got_initiative" -eq 1 ]; then cvg_config_set projection_initiative "$initiative"; fi
+  if [ "$got_milestones" -eq 1 ]; then cvg_config_set projection_milestones "$milestones"; fi
+
+  if [ "$do_disable" -eq 1 ]; then
+    cvg_config_set projection_enabled 0
+    printf '%s[ok]%s projection disabled — plain cvg register is unchanged (no structure, no health)\n' "$UI_GREEN" "$UI_RESET"
+    printf 'SETUP_PROJECTION=DISABLED\n'
+    return 0
+  fi
+
+  if [ "$do_enable" -eq 1 ]; then
+    # Default the phase milestones once, so config fully specifies the projection.
+    if [ -z "$(cvg_config_get projection_milestones)" ]; then
+      cvg_config_set projection_milestones "Capture,Transform,Serve"
+    fi
+    # Preflight the configured tracker: projects need a live team. Opt-in is
+    # deliberate, so an unreachable tracker blocks the enable with a clear token
+    # rather than recording a gate we can't honor. Skipped when no tracker is set.
+    local tracker ad
+    tracker="$(cvg_config_get tracker)"
+    if [ -n "$tracker" ]; then
+      ad="$(_cvg_tracker_adapter "$tracker")"
+      if [ -f "$ad" ]; then
+        cvg_export_linear_team
+        if ! bash "$ad" preflight >/dev/null 2>&1; then
+          ui_err "$tracker not reachable — export its credentials (cvg setup tracker $tracker), then re-run cvg setup projection --enable"
+          printf 'SETUP_PROJECTION=UNREACHABLE\n'; exit 1
+        fi
+      fi
+    fi
+    cvg_config_set projection_enabled 1
+    local pp pi ms
+    pp="$(cvg_config_get projection_project)"
+    pi="$(cvg_config_get projection_initiative)"
+    ms="$(cvg_config_get projection_milestones)"
+    printf '%s[ok]%s projection enabled — register now builds structure on %s\n' "$UI_GREEN" "$UI_RESET" "${tracker:-your tracker}"
+    printf '%s     project: %s · initiative: %s · milestones: %s%s\n' "$UI_DIM" "${pp:-<unset — pass --project>}" "${pi:-<none>}" "$ms" "$UI_RESET"
+    printf '%s     workspace-mutating + append-only health; choices recorded in %s (no keys)%s\n' "$UI_DIM" "$(cvg_config_file)" "$UI_RESET"
+    printf 'SETUP_PROJECTION=OK\n'
+    return 0
+  fi
+
+  # Names recorded, gate left as-is (no --enable/--disable given).
+  printf '%s[ok]%s recorded projection names in %s %s(gate unchanged — cvg setup projection --enable to turn on)%s\n' "$UI_GREEN" "$UI_RESET" "$(cvg_config_file)" "$UI_DIM" "$UI_RESET"
+  printf 'SETUP_PROJECTION=OK\n'
+  return 0
+}
+
+# cvg_review_resolve — record the OWNER's decision on an objection.
+#
+# WHY THIS EXISTS
+# Pass 4 asks for the one thing a machine cannot supply: a human deciding whether
+# each objection is fixed or knowingly accepted. Before this verb the only place
+# to put that decision was the provenance-stamped objection log, by hand — so the
+# realistic outcomes were "nobody records anything" (and on 2026-08-03 the gate
+# read the adversary's own proposal as consent, going GREEN with seven criticals
+# open) or "someone hand-edits the artifact the barrier is supposed to trust".
+#
+# The decision is deliberately NOT inventable: decided_by comes from --by, then
+# .cvg/identity, then git config. If none resolves, this refuses rather than
+# signing on your behalf — an unattributable decision is what we just removed.
+#
+# Token: RESOLVE=OK | RESOLVE=USAGE_ERROR | RESOLVE=ERROR
+cvg_review_resolve() {  # <log> <ids-csv> <FIX|ACCEPT> <by> <owner> <risk> <note>
+  CVG_RS_LOG="$1" CVG_RS_IDS="$2" CVG_RS_DISP="$3" CVG_RS_BY="$4" \
+  CVG_RS_OWNER="$5" CVG_RS_RISK="$6" CVG_RS_NOTE="$7" \
+  CVG_RS_ROOT="$CVG_PROJECT_ROOT_DIR" python3 - <<'PY'
+import json, os, sys, subprocess, datetime, tempfile
+
+log_p = os.environ["CVG_RS_LOG"]; ids = os.environ["CVG_RS_IDS"]
+disp  = os.environ["CVG_RS_DISP"]; by = os.environ["CVG_RS_BY"].strip()
+owner = os.environ["CVG_RS_OWNER"].strip(); risk = os.environ["CVG_RS_RISK"].strip()
+note  = os.environ["CVG_RS_NOTE"].strip(); root = os.environ["CVG_RS_ROOT"]
+
+def die(msg, tok="RESOLVE=USAGE_ERROR", code=2):
+    print("error: %s" % msg, file=sys.stderr); print(tok); sys.exit(code)
+
+if not os.path.exists(log_p):
+    die("no objection log at %s — run cvg review --adversary <engine> first" % log_p)
+
+# decided_by: explicit, then the project's recorded identity, then git. Never invented.
+if not by:
+    ident = os.path.join(root, ".cvg", "identity")
+    if os.path.exists(ident):
+        for line in open(ident, encoding="utf-8"):
+            if line.startswith("default="):
+                by = line.split("=", 1)[1].strip(); break
+if not by:
+    by = subprocess.run(["git", "-C", root, "config", "user.name"],
+                        capture_output=True, text=True).stdout.strip()
+if not by:
+    die("cannot determine who is deciding — pass --by <name>, set .cvg/identity, or "
+        "configure git user.name. A decision nobody can be attributed to is exactly "
+        "what the barrier refuses.")
+
+if disp == "ACCEPT":
+    if not owner: die("--accept requires --owner <name> (who carries the accepted risk)")
+    if not risk:  die("--accept requires --risk <why it is acceptable>")
+    if risk.lower().startswith("open") or "open until" in risk.lower():
+        die("--risk %r still describes an OPEN risk; accepting means the risk is "
+            "understood and carried, not deferred" % risk[:50])
+
+art = json.load(open(log_p, encoding="utf-8"))
+objs = art.get("objections") or []
+by_id = {str(o.get("id")): o for o in objs if isinstance(o, dict)}
+targets = list(by_id) if ids.strip().lower() == "all" else [i.strip() for i in ids.split(",") if i.strip()]
+missing = [t for t in targets if t not in by_id]
+if missing:
+    die("no such objection id(s): %s — the log holds %s" % (", ".join(missing), ", ".join(sorted(by_id)) or "none"))
+
+stamp = datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+for t in targets:
+    o = by_id[t]
+    # The adversary's recommendation is preserved as `proposal` — the record should
+    # show what was advised AND what was decided, so a later reader can see when an
+    # owner overrode the attacker.
+    if "resolution" in o and "proposal" not in o:
+        o["proposal"] = o.pop("resolution")
+    res = {"disposition": disp, "decided_by": by, "decided_at": stamp}
+    if note:  res["note"] = note
+    if disp == "ACCEPT":
+        res["owner"] = owner
+        res["risk_residual"] = risk
+    o["resolution"] = res
+
+# Same-directory atomic write: a half-written barrier artifact is worse than none.
+d = os.path.dirname(log_p) or "."
+fd, tmp = tempfile.mkstemp(dir=d, prefix=".objection-log.", suffix=".tmp")
+with os.fdopen(fd, "w", encoding="utf-8") as fh:
+    json.dump(art, fh, indent=2); fh.write("\n")
+os.replace(tmp, log_p)
+
+undecided = [str(o.get("id")) for o in objs
+             if isinstance(o, dict) and not (o.get("resolution") or {}).get("decided_by")]
+print("recorded %s by %s at %s for: %s" % (disp, by, stamp, ", ".join(targets)))
+print("still undecided: %s" % (", ".join(sorted(undecided)) if undecided else "none — cvg review --check is next"))
+print("RESOLVE=OK")
+PY
+}
+
+# cvg_doctor_evidence — can git show the floor the gates are standing on?
+#
+# WHY THIS EXISTS
+# Three parts of the method quietly assume the workspace is under version control:
+#   Pass 4  stamps sha256 provenance over the plan FILES, so "the adversary
+#           attacked the current plans" is only as durable as the files themselves.
+#   Pass 8  settles by COMMITTING — it stages from the capability envelope's
+#           fs.write grant and writes a receipt last. There is nothing to commit
+#           from if the work was never tracked.
+#   lesson  `cvg lesson --immutable` proves teaching changed nothing by reading
+#           `git status --porcelain`; an untracked-but-referenced artifact fails it
+#           by design, so an untracked floor makes the proof impossible rather
+#           than false.
+# On 2026-08-03 a live use case ran four green gates over a workspace whose ENTIRE
+# descent — BRD, tech-spec, six ADRs, eleven legs — was untracked. One `git clean`
+# from gone, and every provenance claim above resting on nothing. Nothing reported
+# it, because no gate's job was to look.
+#
+# Early exploration without git is legitimate; settling without it is not. So this
+# fails closed and says which pass's evidence is at risk.
+#
+# cvg doctor host — can THIS MACHINE run the delegation path at all?
+#
+# WHY THIS EXISTS. `shellcheck` was absent from a shell's PATH. What happened next:
+#
+#   safe-to-delegate.sh passes --shellcheck-evals UNCONDITIONALLY (line 157), so the
+#   delegation gate BLOCKED → the spec was never stamped, signed_off stayed false
+#   → `cvg bind` refuses an unsigned spec, so no execution profile was written
+#   → `cvg loop` reported "Pass 6 runtime contract is missing … next: cvg bind"
+#
+# Every one of those messages was CORRECT and none of them was the cause. The cause
+# was three verbs upstream and invisible from any of them, and it cost an hour of
+# bisecting commits — including one that CI had passed — before anyone ran the first
+# failing step and read its output. A missing prerequisite should be one command to
+# find, not a bisection.
+#
+# So this checks the toolchain Converge itself needs and, for anything missing, names
+# THE VERBS IT BLOCKS. "shellcheck: MISSING" is not the finding; "you cannot sign a
+# spec, therefore cannot bind, therefore cannot loop" is.
+#
+# Deliberately pure bash: a host doctor must not depend on the tools it is auditing.
+# python3 is one of the things it checks, so it cannot be used to do the checking.
+#
+# Read-only. Token: DOCTOR_HOST=OK|DEGRADED|MISSING
+cvg_doctor_host() {
+  _dh_missing=0   # a REQUIRED tool is absent → fails closed
+  _dh_degraded=0  # an optional-but-load-bearing tool is absent
+
+  printf '== %scvg doctor host%s · can this machine run the delegation path? ==\n\n' \
+    "$UI_BOLD" "$UI_RESET"
+
+  _dh_row() { # _dh_row <state> <tool> <detail> <blocks>
+    case "$1" in
+      ok)      printf '  %sok%s       %-11s %s\n' "$UI_GREEN" "$UI_RESET" "$2" "$3" ;;
+      MISSING) printf '  %sMISSING%s  %-11s %s\n' "$UI_RED" "$UI_RESET" "$2" "$3"
+               [ -n "$4" ] && printf '           %sblocks:%s %s\n' "$UI_DIM" "$UI_RESET" "$4" ;;
+      warn)    printf '  %swarn%s     %-11s %s\n' "$UI_YELLOW" "$UI_RESET" "$2" "$3"
+               [ -n "$4" ] && printf '           %sblocks:%s %s\n' "$UI_DIM" "$UI_RESET" "$4" ;;
+    esac
+  }
+
+  # --- git: provenance, settlement, and worktree isolation all rest on it -----
+  if command -v git >/dev/null 2>&1; then
+    _dh_row ok git "$(git --version 2>/dev/null | awk '{print $3}')"
+  else
+    _dh_row MISSING git "not on PATH" \
+      "everything — Pass 4 provenance, Pass 8 settlement, worktree isolation"
+    _dh_missing=1
+  fi
+
+  # --- the running bash. 3.2 is the declared floor and macOS still ships it ---
+  _dh_row ok bash "${BASH_VERSION:-unknown} (portability floor is 3.2)"
+
+  # --- a bash 4 ANYWHERE: lint-backlog.sh and query-metrics.sh need one -------
+  # F-021: `cvg lint` uses associative arrays. On a stock-macOS host it cannot run
+  # at all, and the README advertised it without a caveat until this was found.
+  _dh_b4=""
+  for _dh_c in bash /opt/homebrew/bin/bash /usr/local/bin/bash /bin/bash; do
+    _dh_m="$("$_dh_c" -c 'echo ${BASH_VERSINFO[0]}' 2>/dev/null || echo 0)"
+    case "$_dh_m" in ''|*[!0-9]*) _dh_m=0 ;; esac
+    if [ "$_dh_m" -ge 4 ]; then _dh_b4="$_dh_c"; break; fi
+  done
+  if [ -n "$_dh_b4" ]; then
+    _dh_row ok 'bash 4+' "$_dh_b4"
+  else
+    _dh_row warn 'bash 4+' "none found — brew install bash" \
+      "cvg lint (LINT=UNSUPPORTED, exit 3) · cvg tasks metrics"
+    _dh_degraded=1
+  fi
+
+  # --- python3: every gate script and the whole task-spec engine --------------
+  if command -v python3 >/dev/null 2>&1; then
+    _dh_pv="$(python3 -c 'import sys;print("%d.%d.%d"%sys.version_info[:3])' 2>/dev/null || echo unknown)"
+    _dh_row ok python3 "$_dh_pv (3.8+; CI pins 3.12)"
+  else
+    _dh_row MISSING python3 "not on PATH" \
+      "every pass gate — validate, gate, bind, doctor, snapshot"
+    _dh_missing=1
+  fi
+
+  # --- shellcheck: the one that cost the hour --------------------------------
+  if command -v shellcheck >/dev/null 2>&1; then
+    _dh_row ok shellcheck "$(shellcheck --version 2>/dev/null | awk '/^version:/{print $2}')"
+  else
+    _dh_row MISSING shellcheck "not on PATH — brew install shellcheck" \
+      "cvg tasks gate (always passes --shellcheck-evals) → so no spec can be
+           SIGNED → so cvg bind refuses it → so cvg loop has no runtime contract"
+    _dh_missing=1
+  fi
+
+  # --- a sha256 tool: Pass 4 provenance and the HMAC envelope ----------------
+  if command -v shasum >/dev/null 2>&1 || command -v sha256sum >/dev/null 2>&1; then
+    _dh_row ok sha256 "$(command -v shasum 2>/dev/null || command -v sha256sum)"
+  else
+    _dh_row MISSING sha256 "neither shasum nor sha256sum" \
+      "Pass 4 plan provenance · the sign-off HMAC envelope"
+    _dh_missing=1
+  fi
+
+  printf '\n'
+  if [ "$_dh_missing" -ne 0 ]; then
+    printf '%sGATE: MISSING%s — a required tool is absent. The failure it produces will\n' \
+      "$UI_RED" "$UI_RESET"
+    printf '  surface several verbs downstream with a message that names the SYMPTOM,\n'
+    printf '  not this cause. Install the tools above before delegating anything.\n'
+    printf 'DOCTOR_HOST=MISSING\n'
+    return 1
+  fi
+  if [ "$_dh_degraded" -ne 0 ]; then
+    printf '%sGATE: DEGRADED%s — the delegation path works; some verbs above do not.\n' \
+      "$UI_YELLOW" "$UI_RESET"
+    printf 'DOCTOR_HOST=DEGRADED\n'
+    return 0
+  fi
+  printf '%sGATE: OK%s — this host can sign, bind, loop and settle.\n' "$UI_GREEN" "$UI_RESET"
+  printf 'DOCTOR_HOST=OK\n'
+  return 0
+}
+
+# Read-only. Token: DOCTOR_EVIDENCE=OK|UNTRACKED|NOT_GIT|ERROR
+cvg_doctor_evidence() {
+  CVG_DE_ROOT="$CVG_PROJECT_ROOT_DIR" python3 - <<'PY'
+import os, subprocess, sys
+
+root = os.environ["CVG_DE_ROOT"]
+ws = os.path.join(root, "cvg")
+
+def out(tok, code):
+    print(f"DOCTOR_EVIDENCE={tok}")
+    sys.exit(code)
+
+print("== cvg doctor evidence · can git show the floor the gates stand on? ==")
+print(f"  workspace: {ws}")
+
+if not os.path.isdir(ws):
+    print("  no cvg/ workspace here — run cvg init first.")
+    out("ERROR", 2)
+
+if subprocess.run(["git", "-C", root, "rev-parse", "--is-inside-work-tree"],
+                  capture_output=True, text=True).returncode != 0:
+    print("  FAIL — this workspace is not inside a git repository.")
+    print("         Exploring without git is fine; SETTLING is not. Pass 4 stamps")
+    print("         provenance over plan files, Pass 8 settles by committing, and")
+    print("         cvg lesson --immutable reads git status. None can hold here.")
+    out("NOT_GIT", 1)
+
+# Which pass does each folder carry evidence for? Naming the pass makes the risk
+# concrete: "3 untracked files" says less than "Pass 4 cannot prove provenance".
+AREAS = [
+    ("cvg/docs/brd",       "0 · Capture"),
+    ("cvg/docs/no-go",     "0 · Capture (no-go)"),
+    ("cvg/docs/tech-spec", "1 · Intent"),
+    ("cvg/docs/adrs",      "2 · Structure"),
+    ("cvg/swimlanes",      "3 · Decompose / 4 · Consensus"),
+    ("cvg/sketch",         "3 · Decompose / 4 · Consensus (legacy)"),
+    ("cvg/tasks",          "5 · Tasking"),
+    ("cvg/execution",      "7 · Bind"),
+    ("cvg/receipts",       "8 · Loop settlement"),
+    ("cvg/docs/lessons",   "companion · lessons"),
+    ("cvg/brain",          "brain · decisions and transcripts"),
+]
+
+# What `cvg init` seeds is the empty CONTAINER, not evidence: placeholders, the
+# workspace index, the two READMEs, and the two DERIVED task indexes (_state.yaml
+# and _metrics.jsonl are rebuilt from the specs, so they are output, not input to
+# any gate). Counting them would make every freshly initialized workspace fail
+# before a single pass had run — and a check that cries wolf on day one is a check
+# nobody keeps. Whether `cvg init`'s own output is committed is a real question,
+# but it is a different one, and conflating them buries the signal this exists for.
+SCAFFOLD = {".gitkeep", "INDEX.md", "README.md", "_state.yaml", "_metrics.jsonl"}
+
+
+def untracked_in(rel):
+    d = os.path.join(root, rel)
+    if not os.path.isdir(d):
+        return None
+    r = subprocess.run(["git", "-C", root, "ls-files", "--others",
+                        "--exclude-standard", "--", rel],
+                       capture_output=True, text=True)
+    if r.returncode != 0:
+        return None
+    files = [f for f in r.stdout.splitlines()
+             if f.strip() and os.path.basename(f) not in SCAFFOLD]
+    return files
+
+total = 0
+worst = []
+print()
+for rel, pass_name in AREAS:
+    files = untracked_in(rel)
+    if files is None:
+        continue
+    if files:
+        total += len(files)
+        worst.append((pass_name, rel, files))
+        print(f"  FAIL  {rel:22} {len(files):3} untracked   → pass {pass_name}")
+    else:
+        print(f"  ok    {rel:22}   all tracked   → pass {pass_name}")
+
+print()
+if total:
+    print(f"GATE: UNTRACKED — {total} evidence file(s) exist only on disk.")
+    for pass_name, rel, files in worst:
+        print(f"  pass {pass_name}: {rel}")
+        for f in files[:4]:
+            print(f"    {f}")
+        if len(files) > 4:
+            print(f"    … and {len(files) - 4} more")
+    print("  Commit them. A gate's verdict is only as durable as the artifact it")
+    print("  read, and an untracked artifact is one `git clean` from unprovable.")
+    out("UNTRACKED", 1)
+print("GATE: OK — every artifact the gates read is tracked; git can show the floor.")
+out("OK", 0)
+PY
+}
+
+# cvg_doctor_plugin — is the Converge a consuming project LOADS the same Converge
+# as its source?
+#
+# WHY THIS EXISTS
+# On 2026-08-03 a live use case returned four green gates while running skills
+# EIGHT commits stale. `cvg` on PATH resolved to a current dev checkout; the plugin
+# cache the project actually loads was pinned a week back. So "it is fixed" and "I
+# do not see it" were BOTH true, and neither side reported the split — it cost
+# several rounds to find by hand. Worse, the cache path is keyed by VERSION
+# (…/cache/<mp>/<plugin>/<version>), so while VERSION does not move an update
+# resolves to the same directory and the drift can persist indefinitely.
+#
+# A tool that cannot answer "which copy of me is actually running?" makes every
+# other verdict it gives unfalsifiable. This answers it.
+#
+# Read-only, offline (never fetches — a network-dependent doctor lies when offline).
+# Token: DOCTOR_PLUGIN=OK|STALE|UNMANAGED|ERROR
+cvg_doctor_plugin() {
+  CVG_DP_HOME="$CVG_HOME_DIR" python3 - <<'PY'
+import json, os, subprocess, sys, hashlib
+
+cfg = os.environ.get("CLAUDE_CONFIG_DIR") or os.path.join(os.path.expanduser("~"), ".claude")
+plugins = os.path.join(cfg, "plugins")
+running = os.environ.get("CVG_DP_HOME", "")
+
+def out(tok, code):
+    print(f"DOCTOR_PLUGIN={tok}")
+    sys.exit(code)
+
+print("== cvg doctor plugin · which Converge does a consuming project load? ==")
+print(f"  running from : {running}")
+
+reg = os.path.join(plugins, "installed_plugins.json")
+if not os.path.isdir(plugins) or not os.path.exists(reg):
+    print("  no plugin installation found — nothing to compare.")
+    print("  (Converge is being used from a checkout or PATH install, not as a plugin.)")
+    out("UNMANAGED", 0)
+
+try:
+    reg_data = json.load(open(reg, encoding="utf-8")).get("plugins", {})
+except (ValueError, OSError) as e:
+    print(f"  FAIL — cannot read {reg}: {e}")
+    out("ERROR", 2)
+
+entries = [(k, e) for k, v in reg_data.items() if k.split("@")[0] == "converge"
+           for e in (v if isinstance(v, list) else [v])]
+if not entries:
+    print("  no converge plugin entry — nothing to compare.")
+    out("UNMANAGED", 0)
+
+def tree_hash(root, skip=(".git", ".in_use")):
+    """Content fingerprint of an install tree — the real claim, not just the sha."""
+    h = hashlib.sha256()
+    for dirpath, dirnames, filenames in os.walk(root):
+        dirnames[:] = sorted(d for d in dirnames if d not in skip)
+        for fn in sorted(filenames):
+            p = os.path.join(dirpath, fn)
+            rel = os.path.relpath(p, root)
+            h.update(rel.encode())
+            try:
+                with open(p, "rb") as fh:
+                    for chunk in iter(lambda: fh.read(65536), b""):
+                        h.update(chunk)
+            except OSError:
+                h.update(b"<unreadable>")
+    return h.hexdigest()
+
+stale = 0
+for key, e in entries:
+    mp = key.split("@", 1)[1] if "@" in key else ""
+    install = e.get("installPath", "")
+    clone = os.path.join(plugins, "marketplaces", mp)
+    print(f"\n  plugin       : {key}")
+    print(f"  loaded from  : {install}")
+    print(f"  version key  : {e.get('version','?')}")
+    if e.get("projectPath"):
+        print(f"  scoped to    : {e['projectPath']}")
+
+    if not os.path.isdir(install):
+        print("  FAIL — the recorded install path does not exist; the plugin cannot load.")
+        stale = 1
+        continue
+    if not os.path.isdir(os.path.join(clone, ".git")):
+        print(f"  WARN — no marketplace clone at {clone}; cannot prove freshness.")
+        continue
+
+    head = subprocess.run(["git", "-C", clone, "rev-parse", "HEAD"],
+                          capture_output=True, text=True).stdout.strip()
+    rec = (e.get("gitCommitSha") or "")
+    print(f"  source HEAD  : {head[:7] or '?'}   (marketplace clone, not fetched)")
+    print(f"  record says  : {rec[:7] or '<none>'}")
+
+    if head and rec and head != rec:
+        print("  FAIL — the install record names a commit the source has moved past.")
+        stale = 1
+
+    if tree_hash(install) != tree_hash(clone):
+        print("  FAIL — loaded CONTENT differs from the source clone.")
+        print("         The version-keyed cache path did not change, so an update")
+        print("         can resolve to this same directory and keep serving it.")
+        stale = 1
+    else:
+        print("  ok   — loaded content is byte-identical to the source clone.")
+
+    if running and os.path.realpath(running) != os.path.realpath(install):
+        print("  note — you are running a DIFFERENT copy than projects load.")
+        print("         Green gates here do not prove the plugin is current.")
+
+print()
+if stale:
+    print("GATE: STALE — refresh the plugin, then re-run. A consuming project is")
+    print("      loading a Converge that is not the source.")
+    out("STALE", 1)
+print("GATE: OK — every consuming project loads the same Converge as its source.")
+out("OK", 0)
+PY
+}
+
+cmd_version() {
+  local ts_ver
+  ts_ver="$(taskspec_version)"
+  printf 'cvg %s%s%s (task-spec %s)\n' "$UI_BOLD" "$CVG_VERSION" "$UI_RESET" "${ts_ver:-unknown}"
+  printf '%stool: %s · project: %s%s\n' "$UI_DIM" "$CVG_HOME_DIR" "$CVG_PROJECT_ROOT_DIR" "$UI_RESET"
+}
+
+cmd_help() {
+  printf '%scvg%s %s— the Converge referee%s  v%s\n' \
+    "$UI_BOLD" "$UI_RESET" "$UI_DIM" "$UI_RESET" "$CVG_VERSION"
+  ui_rule
+  printf 'usage: cvg <command> [args]   %s(flags pass through verbatim)%s\n' "$UI_DIM" "$UI_RESET"
+  printf '\n'
+  printf '%sproject%s\n' "$UI_CYAN" "$UI_RESET"
+  printf '  init                     create the canonical .cvg/ policy + cvg/ workspace;\n'
+  printf '                           non-clobbering and idempotent (CVG_INIT token)\n'
+  printf '\n'
+  printf '%scomposed flow%s\n' "$UI_CYAN" "$UI_RESET"
+  printf '  compose prepare --source <recipe>\n'
+  printf '                           ask Seamwise to prepare decomposition and stop at review\n'
+  printf '  compose review --reviewer <name> --reason <text>\n'
+  printf '                           record human topology acceptance through Seamwise only\n'
+  printf '  compose preview          compile reviewed TaskPlan + lineage, then taskspec plan\n'
+  printf '  compose materialize      taskspec batch + ConvergeCompositionReceipt/v1; never authorizes dispatch\n'
+  printf '  compose status           verify state and print exactly one safe next action\n'
+  printf '\n'
+  printf '%spasses%s\n' "$UI_CYAN" "$UI_RESET"
+  printf '  capture [--draft|--no-go] [brief]\n'
+  printf '                           Pass 0 gate — finds cvg/docs/brd/ (then\n'
+  printf '                           docs/) when no path is given\n'
+  printf '  intent [--draft] [spec]  Pass 1 gate — finds cvg/docs/tech-spec/\n'
+  printf '                           (then docs/) when no path is given\n'
+  printf '  structure [--final] [--dir d]\n'
+  printf '                           Pass 2 gate — finds cvg/docs/adrs/ (then\n'
+  printf '                           docs/adrs/); --final requires nothing proposed\n'
+  printf '  decompose --source <recipe>\n'
+  printf '                           compatibility alias for compose prepare; Seamwise\n'
+  printf '                           alone owns decomposition (COMPOSE token)\n'
+  printf '  review --adversary E     Pass 4 dispatch — a different-family model\n'
+  printf '                           (codex|kimi|claude) attacks the swimlanes headless;\n'
+  printf '                           a comma-list (codex,kimi) dispatches both + merges\n'
+  printf '  review [--check]         Pass 4 gate — the stamped objection log; CHECK_CONSENSUS\n'
+  printf '  review --resolve <id|all> --fix | --accept --owner N --risk W\n'
+  printf '                           record the OWNER decision on an objection — the one\n'
+  printf '                           thing Pass 4 cannot derive. The adversary only ever\n'
+  printf '                           PROPOSES; --check stays RED until a human decides\n'
+  printf '                           (RESOLVE token)\n'
+  printf '  review … [--timeout N]   raise the dispatch wall-clock cap (default 300s;\n'
+  printf '                           a large plan set needs more). Fail-closed either way\n'
+  printf '  doctor                   engine readiness for Pass 4 dispatch (DOCTOR token)\n'
+  printf '  doctor host              can THIS MACHINE sign, bind, loop and settle? git,\n'
+  printf '                           bash, bash 4+, python3, shellcheck, sha256 — and for\n'
+  printf '                           anything missing, the VERBS IT BLOCKS. Run this first\n'
+  printf '                           when a gate fails for a reason that makes no sense\n'
+  printf '  doctor evidence          can git show the floor the gates stand on? Pass 4\n'
+  printf '                           stamps provenance over plan FILES, Pass 8 settles by\n'
+  printf '                           COMMITTING, and cvg lesson --immutable reads git —\n'
+  printf '                           all three need the workspace tracked. Names which\n'
+  printf '                           pass is at risk (DOCTOR_EVIDENCE token)\n'
+  printf '  doctor plugin            is the Converge your PROJECTS load the same one as\n'
+  printf '                           its source? compares the plugin install record and\n'
+  printf '                           its content against the marketplace clone. Read-only\n'
+  printf '                           and offline (DOCTOR_PLUGIN=OK|STALE|UNMANAGED|ERROR)\n'
+  printf '  doctor runtime-contract  attest what THIS host can enforce for Pass 7 —\n'
+  printf '                           isolation primitive, runtime binary, worktree\n'
+  printf '                           (DOCTOR_RUNTIME_CONTRACT=OK|DEGRADED|FAIL)\n'
+  printf '  bind --task <spec>       Pass 7 · Bind — write a task-scoped execution\n'
+  printf '                           profile + portable guards; CHECK_RUNTIME_CONTRACT\n'
+  printf '  verify --task <spec> [--judge E]\n'
+  printf '                           tier-2 adversarial check — a different-family engine\n'
+  printf '                           grades the diff against intent + the holdout it never\n'
+  printf '                           saw; fails closed (CHECK_VERIFY token)\n'
+  printf '  bind --check --task <spec>\n'
+  printf '                           re-check hashes, topology, evidence, and adapters\n'
+  printf '  loop --issue <id> [--agent claude|codex|kimi]\n'
+  printf '                           Pass 8 · Loop — attempt → verify → repeat, bounded by\n'
+  printf '                           iterations · wall-clock · tokens, with a stagnation\n'
+  printf '                           detector. Each attempt gets a FRESH context. Lands in\n'
+  printf '                           exactly one named state: TASK_LOOP=SETTLED |\n'
+  printf '                           LOCAL_SETTLED | NO_OP | BLOCKED | STALLED | EXHAUSTED |\n'
+  printf '                           CANCELLED | ERROR. An error is never a success.\n'
+  printf '  loop --gate-only         verdict only — no agent, no attempts\n'
+  printf '  gate [--path P]          the repo write fence no Task-Spec can widen —\n'
+  printf '                           protected paths + blast-radius cap (CHECK_GATE token)\n'
+  printf '  loop --resume            continue from the durable checkpoint\n'
+  printf '  loop --estimate          the CEILING this run can spend, before you authorize it\n'
+  printf '  loop --isolation inplace\n'
+  printf '                           opt OUT of the default worktree isolation — the\n'
+  printf '                           default runs each attempt in an isolated git worktree,\n'
+  printf '                           so a bad run never touches the tree you are reading\n'
+  printf '  loop --keep-worktree     keep the isolated worktree even after a SETTLED run.\n'
+  printf '                           A settled run commits its work to a branch, so its\n'
+  printf '                           worktree is removed by default; a run that ends with\n'
+  printf '                           UNCOMMITTED work always keeps it, flag or not\n'
+  printf '\n'
+  printf '%steaching companion%s\n' "$UI_CYAN" "$UI_RESET"
+  printf '  lesson [file] [--immutable <taught>...]\n'
+  printf '                           gate the lesson written after ANY pass closed —\n'
+  printf '                           finds cvg/docs/lessons/ (then docs/lessons/) when\n'
+  printf '                           no path is given; --immutable proves teaching\n'
+  printf '                           changed nothing it taught. Optional: it never\n'
+  printf '                           blocks the descent (CHECK_LESSON token)\n'
+  printf '\n'
+  printf '%stask lifecycle%s\n' "$UI_CYAN" "$UI_RESET"
+  printf '  tasks plan --manifest <TaskPlan>\n'
+  printf '                           delegate TaskPlan validation and preview to the\n'
+  printf '                           independently installed Task-Spec engine\n'
+  printf '  tasks new <slug> [options]\n'
+  printf '                           create a Task-Spec in canonical cvg/tasks/\n'
+  printf '  tasks validate [--no-state] <spec>\n'
+  printf '                           structural lint + six-tier sizing (XS/S/M/L leaf\n'
+  printf '                           budgets; XL/XXL nodes need children:); refreshes\n'
+  printf '                           the derived index unless --no-state is passed\n'
+  printf '  tasks gate <spec>        sign-off gate (safe-to-delegate) — refuses an\n'
+  printf '                           XL/XXL node (dispatch its children, not the node)\n'
+  printf '  tasks accept <spec>      acceptance after execution\n'
+  printf '  tasks dod <spec>         definition-of-done + traceability matrix (DOD token)\n'
+  printf '  tasks metrics [filters]  query the append-only task event index\n'
+  printf '\n'
+  printf '  lane <intent>            route work to FAST | NORMAL | FULL — advisory with\n'
+  printf '                           hard floors it can never lower (LANE token)\n'
+  printf '\n'
+  printf '%sregister ① — into the loop%s\n' "$UI_CYAN" "$UI_RESET"
+  printf '  register [--tracker github|linear|jira] [--tasks-dir D] [--no-stamp-refs]\n'
+  printf '                           bridge signed-off tasks onto a tracker board (finds\n'
+  printf '                           cvg/tasks/, then tasks/, when --tasks-dir is omitted)\n'
+  printf '                           (1 spec = 1 issue, depends_on → blocked-by); stamps a\n'
+  printf '                           tracker_ref receipt back into each spec. On Linear also\n'
+  printf '                           seeds assignee/state/subscribers from frontmatter and\n'
+  printf '                           honors an optional projection: block\n'
+  printf '  register --check         gate the mapping (1:1, DAG, no orphans); read-only\n'
+  printf '\n'
+  printf '%squeue%s\n' "$UI_CYAN" "$UI_RESET"
+  printf '  next [--guided] [--lane FULL|NORMAL|FAST]\n'
+  printf '                           where the descent stands and which\n'
+  printf '                           pass comes next, derived from workspace evidence;\n'
+  printf '                           prints the steering prompt + closing gate (NEXT_PASS)\n'
+  printf '                           --guided adds stable CONTINUE / EXPLAIN / INSPECT /\n'
+  printf '                           PAUSE choices and waits at the chat boundary\n'
+  printf '  next pre <N> [--lane FULL|NORMAL|FAST]\n'
+  printf '                           fail-closed door before starting pass N (PASS_PRE)\n'
+  printf '  next post <N>            verify pass N left its artifact, then name its gate\n'
+  printf '  ready [--all]            the FRONTIER — ready AND unblocked. --all lists\n'
+  printf '                           every status:ready spec, blocked or not\n'
+  printf '  snapshot                 canonical read-only WorkspaceSnapshot 3.0;\n'
+  printf '                           --json returns it at data.snapshot (artifact\n'
+  printf '                           references only; layout remains frontend-owned)\n'
+  printf '  lint                     lint the whole backlog (cycles, overlaps)\n'
+  printf '  transition <id> <state>  move a task between statuses\n'
+  printf '\n'
+  printf '%sevals%s\n' "$UI_CYAN" "$UI_RESET"
+  printf '  eval <spec>              run a Task-Spec'\''s own evals\n'
+  printf '\n'
+  printf '%ssetup%s\n' "$UI_CYAN" "$UI_RESET"
+  printf '  setup                    readiness board (workspace · signing · engines ·\n'
+  printf '                           optional integrations); records CHOICES, never keys\n'
+  printf '  setup signing [--force]  provision or rotate the repo-local Tier-1 signing key\n'
+  printf '                           outside version control\n'
+  printf '  setup tracker <t> [--team K]\n'
+  printf '                           connect + record a tracker (linear|github|jira);\n'
+  printf '                           linear auto-discovers your team (export just the key)\n'
+  printf '  setup repo [--branch b]  link the repo (detected from your git remote) so every\n'
+  printf '                           registered issue links back to its spec\n'
+  printf '  setup identity [--list] [--map KEY=VAL]\n'
+  printf '                           discover tracker identities + map execution_backend/\n'
+  printf '                           agent to a person or service account; choices, never keys\n'
+  printf '  setup key [linear|github|jira]\n'
+  printf '                           store the tracker API key ONCE, outside the repo —\n'
+  printf '                           OS keychain first, 0600 file as fallback. Never in\n'
+  printf '                           .cvg/, never in git (TRACKER_KEY token)\n'
+  printf '  setup harness            scaffold the project router (AGENTS.md, ~50 lines,\n'
+  printf '                           routing only — never generated doctrine)\n'
+  printf '  setup projection [--enable|--disable] [--project N] [--initiative N]\n'
+  printf '                           opt in to structure projection (Initiative→Project→\n'
+  printf '                           Milestones); default off — plain register is unchanged\n'
+  printf '  setup engines            per-engine readiness, same check as doctor\n'
+  printf '\n'
+  printf '%smeta%s\n' "$UI_CYAN" "$UI_RESET"
+  printf '  help                     this screen\n'
+  printf '  version                  cvg + wrapped toolchain versions\n'
+  printf '  agent-context            machine-readable manifest (JSON): command tree,\n'
+  printf '                           exit-code taxonomy, tokens, contracts (for agents);\n'
+  printf '                           alias: manifest\n'
+  ui_rule
+  printf '%sglobal flags: --json (uniform envelope, any position) · --dry-run (no mutation)%s\n' "$UI_DIM" "$UI_RESET"
+  printf '%senv: CVG_HOME · CVG_PROJECT_ROOT · CVG_TASKSPEC_BIN · CVG_SEAMWISE_BIN · NO_COLOR / CVG_COLOR=0|1%s\n' "$UI_DIM" "$UI_RESET"
+}
+
+# ---------------------------------------------------------------------------
+# Agent-native output layer (2026 SOTA): --json envelope + --dry-run on mutations
+# ---------------------------------------------------------------------------
+# Both are GLOBAL flags, recognized in ANY position and stripped before routing.
+# The DEFAULT path is byte-parity-untouched; --json is a pure WRAPPER that
+# re-invokes the command, captures its output+exit, and emits one uniform envelope
+# {ok, data, error, meta}. One interception point → zero per-gate refactor, so no
+# proven gate loses its behavior. --dry-run short-circuits a mutating command.
+
+# is_mutating <cmd> [args...] — 0 if the command changes state on disk.
+is_mutating() {
+  local c="$1" sub a; shift
+  case "$c" in
+    init)       return 0 ;;
+    transition) return 0 ;;
+    tasks)
+      sub="${1:-}"; [ $# -gt 0 ] && shift
+      case "$sub" in
+        new|accept|rebuild-state) return 0 ;;
+        validate)
+          for a in "$@"; do [ "$a" = "--no-state" ] && return 1; done
+          return 0
+          ;;
+        gate)
+          for a in "$@"; do
+            case "$a" in --stamp|--stamp-by|--stamp-by=*) return 0 ;; esac
+          done
+          return 1
+          ;;
+        *) return 1 ;;
+      esac
+      ;;
+    decompose)  return 0 ;;
+    review)     for a in "$@"; do case "$a" in --adversary|--adversary=*|--resolve|--resolve=*) return 0 ;; esac; done; return 1 ;;
+    compose)
+      case "${1:-}" in
+        prepare|review|preview|materialize) return 0 ;;
+        *) return 1 ;;
+      esac
+      ;;
+    bind)       for a in "$@"; do [ "$a" = "--check" ] && return 1; done; return 0 ;;
+    # cvg strips --dry-run from "$@" before this guard runs, so scanning args
+    # here would be dead code — consult the parsed flag. The loop kernel owns
+    # its own dry-run because it reports the resolved budgets, which is the part
+    # worth reading before letting a run go unattended.
+    loop)       [ "$CVG_DRY_RUN" -eq 1 ] && return 1
+                for a in "$@"; do
+                  case "$a" in --estimate|--gate-only) return 1 ;; esac
+                done
+                return 0 ;;
+    register)   for a in "$@"; do [ "$a" = "--check" ] && return 1; done; return 0 ;;
+    setup)
+      case "${1:-}" in
+        signing|tracker|repo|projection|key|harness) return 0 ;;
+        identity)
+          shift
+          for a in "$@"; do
+            case "$a" in --map|--map=*) return 0 ;; esac
+          done
+          return 1
+          ;;
+        *) return 1 ;;
+      esac
+      ;;
+    snapshot)    return 1 ;;
+    *)          return 1 ;;
+  esac
+}
+
+# cvg_envelope <cmd> <args-joined> <exit_code> <dry_run> <raw_output_file> <mutating>
+# Emits the uniform {ok,command,token,verdict,exit_code,changed,dry_run,data,error,
+# warnings,meta} envelope. Python stdlib only (no deps). The raw output is passed via
+# a FILE, not stdin — `python3 - <<'PY'` already owns stdin (the program).
+cvg_envelope() {
+  CVG_ENV_VERSION="$CVG_VERSION" python3 - "$1" "$2" "$3" "$4" "${5:-}" "${6:-0}" <<'PY'
+import json, sys, os, re
+cmd, args, rc, dry, rawfile, mutating = (
+    sys.argv[1], sys.argv[2], int(sys.argv[3]), (sys.argv[4] == "1"),
+    sys.argv[5], (sys.argv[6] == "1"),
+)
+raw = open(rawfile, encoding="utf-8", errors="replace").read() if (rawfile and os.path.exists(rawfile)) else ""
+raw = re.sub(r'\x1b\[[0-?]*[ -/]*[@-~]', '', raw)
+token = verdict = None
+changed_override = None
+for line in raw.splitlines():
+    changed_match = re.match(r'^CHANGED=(true|false|1|0)$', line.strip(), re.I)
+    if changed_match:
+        changed_override = changed_match.group(1).lower() in {"true", "1"}
+        continue
+    m = re.match(r'^([A-Z][A-Z0-9_]*)=([A-Za-z0-9_.|-]+)\s*$', line.strip())
+    if m:
+        token, verdict = line.strip(), m.group(2)   # last token wins
+ok = (rc == 0)
+disp = cmd
+parts = args.split()
+if cmd == "tasks":
+    sub = parts[0] if parts else ""
+    disp = ("tasks " + sub).strip()
+elif cmd == "review":
+    pass
+elif cmd == "register":
+    disp = "register --check" if ("--check" in parts) else "register"
+elif cmd == "bind":
+    disp = "bind --check" if ("--check" in parts) else "bind"
+elif cmd == "setup":
+    sub = parts[0] if parts else "status"
+    disp = ("setup " + sub).strip() if sub != "status" else "setup"
+elif cmd == "compose":
+    sub = parts[0] if parts else ""
+    disp = ("compose " + sub).strip()
+PASS = {"capture": 0, "intent": 1, "structure": 2, "decompose": 3, "review": 4, "doctor": 4, "bind": 7, "loop": 8}
+data = {"output": raw.rstrip("\n")}
+next_action = next(
+    (line[len("NEXT="):] for line in raw.splitlines() if line.startswith("NEXT=")),
+    None,
+)
+if next_action is not None:
+    data["next_action"] = next_action
+parsed = None
+try:
+    parsed = json.loads(raw)
+except (TypeError, ValueError):
+    pass
+if cmd == "snapshot" and ok:
+    snapshot = parsed
+    if isinstance(snapshot, dict) and snapshot.get("schemaVersion") == "3.0":
+        data = {"snapshot": snapshot}
+elif cmd in {"agent-context", "manifest"} and isinstance(parsed, dict):
+    data = {"agent_context": parsed}
+unchanged_verdicts = {"UNCHANGED", "EMPTY", "DRY_RUN", "EXISTS", "DISABLED", "UNMANAGED", "NO_OP"}
+changed = mutating and ok and not dry
+if verdict in unchanged_verdicts or (isinstance(verdict, str) and "UNCHANGED" in verdict):
+    changed = False
+if changed_override is not None:
+    changed = changed_override
+error_code = "USAGE_ERROR" if rc == 2 else ("ENGINE_UNAVAILABLE" if rc == 3 else (verdict or "ERROR"))
+env = {
+    "contract": "ConvergeCLIResult/v1",
+    "schema_version": 1,
+    "ok": ok, "command": disp, "converge_pass": PASS.get(cmd),
+    "token": token, "verdict": verdict, "exit_code": rc,
+    "changed": changed, "dry_run": dry,
+    "data": data,
+    "error": (None if ok else {"code": error_code,
+              "message": (raw.strip().splitlines()[-1] if raw.strip() else "command failed")}),
+    "warnings": [],
+    "meta": {"schema_version": "1.0", "tool": "cvg",
+             "cvg_version": os.environ.get("CVG_ENV_VERSION", "0")},
+}
+print(json.dumps(env, indent=2))
+PY
+}
+
+# ---------------------------------------------------------------------------
+# Router
+# ---------------------------------------------------------------------------
+CVG_JSON=0; CVG_DRY_RUN=0
+_ARGS=()
+for _a in "$@"; do
+  case "$_a" in
+    --json)    CVG_JSON=1 ;;
+    --dry-run) CVG_DRY_RUN=1 ;;
+    *)         _ARGS+=("$_a") ;;
+  esac
+done
+# shellcheck disable=SC2086  # intentional: empty-array-safe re-set of positional args (bash 3.2)
+set -- ${_ARGS[@]+"${_ARGS[@]}"}
+CMD="${1:-help}"
+[ $# -gt 0 ] && shift
+
+# --dry-run on a MUTATING command: report the intended action, change nothing.
+if [ "$CVG_DRY_RUN" -eq 1 ] && is_mutating "$CMD" "$@"; then
+  if [ "$CVG_JSON" -eq 1 ]; then
+    cvg_envelope "$CMD" "$*" 0 1 "" 1
+  else
+    printf 'DRY-RUN: would run: cvg %s %s — no changes made.\n' "$CMD" "$*" >&2
+    printf 'DRY_RUN=OK\n'
+  fi
+  exit 0
+fi
+
+# --json: re-invoke the command (flags already stripped), capture output+exit,
+# and envelope EVERY public form, including help, version, and agent-context.
+if [ "$CVG_JSON" -eq 1 ]; then
+      _J_RC=0
+      _J_MUT=0
+      _J_TMP="$(mktemp)"
+      is_mutating "$CMD" "$@" && _J_MUT=1
+      if [ "$CVG_DRY_RUN" -eq 1 ]; then
+        bash "$0" --dry-run "$CMD" "$@" > "$_J_TMP" 2>&1 || _J_RC=$?
+      else
+        bash "$0" "$CMD" "$@" > "$_J_TMP" 2>&1 || _J_RC=$?
+      fi
+      cvg_envelope "$CMD" "$*" "$_J_RC" "$CVG_DRY_RUN" "$_J_TMP" "$_J_MUT"
+      rm -f "$_J_TMP"
+      exit "$_J_RC"
+fi
+
+case "$CMD" in
+  help|--help|-h)
+    if [ $# -gt 0 ]; then
+      ui_err "cvg help takes no arguments"
+      exit 2
+    fi
+    CVG_HOME_DIR="(unresolved)"
+    cmd_help
+    exit 0
+    ;;
+esac
+
+CVG_HOME_DIR="$(resolve_home)" || exit 1
+CVG_PROJECT_ROOT_DIR="$(resolve_project_root)" || exit 1
+export CVG_TOOL_HOME="$CVG_HOME_DIR"
+export CVG_PROJECT_ROOT="$CVG_PROJECT_ROOT_DIR"
+# Compatibility for existing adapters that use CVG_HOME_DIR as their tool root.
+export CVG_HOME_DIR
+if [ "$CMD" = "compose" ] || [ "$CMD" = "decompose" ] || [ "$CMD" = "_observe-decomposition" ]; then
+  TASKSPEC_BIN="${CVG_TASKSPEC_BIN:-$(command -v taskspec 2>/dev/null || true)}"
+else
+  TASKSPEC_BIN="$(resolve_taskspec)" || exit 3
+fi
+export TASKSPEC_BIN
+if [ -z "${TASKSPEC_BACKLOG_DIR:-}" ]; then
+  if [ -d "$CVG_PROJECT_ROOT_DIR/cvg/tasks" ]; then
+    TASKSPEC_BACKLOG_DIR="$CVG_PROJECT_ROOT_DIR/cvg/tasks"
+  elif [ -d "$CVG_PROJECT_ROOT_DIR/tasks" ]; then
+    TASKSPEC_BACKLOG_DIR="$CVG_PROJECT_ROOT_DIR/tasks"
+  else
+    TASKSPEC_BACKLOG_DIR="$CVG_PROJECT_ROOT_DIR/cvg/tasks"
+  fi
+fi
+export TASKSPEC_BACKLOG_DIR
+export TASKSPEC_WORKSPACE_ROOT="$CVG_PROJECT_ROOT_DIR"
+if [ -z "${TASKSPEC_ACCEPTANCE_DIR:-}" ]; then
+  TASKSPEC_ACCEPTANCE_DIR="$(dirname "$TASKSPEC_BACKLOG_DIR")/.taskspec/acceptance"
+fi
+export TASKSPEC_ACCEPTANCE_DIR
+
+case "$CMD" in
+  compose)
+    COMPOSER="$CVG_HOME_DIR/bin/_cvg_compose.py"
+    [ -f "$COMPOSER" ] || {
+      ui_err "Converge composition coordinator is missing under $CVG_HOME_DIR/bin"
+      printf 'COMPOSE=BLOCKED\n'
+      exit 2
+    }
+    exec python3 "$COMPOSER" \
+      --project-root "$CVG_PROJECT_ROOT_DIR" \
+      --cvg-version "$CVG_VERSION" \
+      --seamwise-bin "${CVG_SEAMWISE_BIN:-}" \
+      --taskspec-bin "$TASKSPEC_BIN" \
+      "$@"
+    ;;
+  init)
+    cvg_init "$@"
+    ;;
+  tasks)
+    SUB="${1:-}"
+    [ $# -gt 0 ] && shift
+    case "$SUB" in
+      plan)     route_taskspec plan "$@" ;;
+      new)      route_taskspec new "$@" ;;
+      validate) route_taskspec validate "$@" ;;
+      gate)     route_taskspec gate "$@" ;;
+      accept)   cvg_tasks_accept "$@" ;;
+      dod)      route_taskspec dod "$@" ;;
+      metrics)  route_taskspec metrics "$@" ;;
+      # `_state.yaml` declares itself "Auto-generated by rebuild-state.sh — DO NOT
+      # EDIT DIRECTLY / Source of truth: frontmatter in each tasks/T-*.md", and the
+      # only thing that ran it was `cvg init`, guarded on the file being ABSENT. So
+      # it was generated once and never again: after authoring and sealing four
+      # specs it still carried the scaffolding run's timestamps. The concepts doc
+      # told readers to bypass the CLI for the Task-Spec rebuild script. The
+      # public standalone engine now owns that behavior as `taskspec rebuild-state`.
+      rebuild-state)
+        if [ $# -gt 0 ]; then
+          ui_err "cvg tasks rebuild-state takes no arguments"
+          printf 'TASKS_REBUILD_STATE=USAGE_ERROR\n'
+          exit 2
+        fi
+        route_taskspec rebuild-state
+        ;;
+      *)
+        ui_err "unknown tasks subcommand '${SUB:-}' — expected: new | validate | gate | accept | dod | metrics | rebuild-state"
+        exit 2
+        ;;
+    esac
+    ;;
+  bind)
+    # Pass 7 · Bind. The Task-Spec stays canonical; this command writes or
+    # verifies the thin, hash-bound execution profile and concrete guards.
+    BINDER="$CVG_HOME_DIR/skills/task-to-runtime-contract/scripts/bind-runtime-contract.py"
+    CHECKER="$CVG_HOME_DIR/skills/task-to-runtime-contract/scripts/check-runtime-contract.py"
+    [ -f "$BINDER" ] && [ -f "$CHECKER" ] || {
+      ui_err "task-to-runtime-contract skill is incomplete under $CVG_HOME_DIR/skills"
+      printf 'CHECK_RUNTIME_CONTRACT=FAIL\n'
+      exit 2
+    }
+    BIND_CHECK=0
+    BIND_TASK=""
+    BIND_PROFILE=""
+    BIND_SUPERVISED=0
+    BIND_ARGS=()
+    while [ $# -gt 0 ]; do
+      case "$1" in
+        --check) BIND_CHECK=1; shift ;;
+        --task)
+          [ $# -ge 2 ] || {
+            ui_err "--task requires a Task-Spec path"
+            printf 'CHECK_RUNTIME_CONTRACT=FAIL\n'
+            exit 2
+          }
+          BIND_TASK="$2"; BIND_ARGS+=(--task "$2"); shift 2 ;;
+        --task=*)
+          BIND_TASK="${1#--task=}"; BIND_ARGS+=("$1"); shift ;;
+        --profile)
+          [ $# -ge 2 ] || {
+            ui_err "--profile requires an execution-profile path"
+            printf 'CHECK_RUNTIME_CONTRACT=FAIL\n'
+            exit 2
+          }
+          BIND_PROFILE="$2"; shift 2 ;;
+        --profile=*) BIND_PROFILE="${1#--profile=}"; shift ;;
+        --supervised)
+          BIND_SUPERVISED=1; BIND_ARGS+=("$1"); shift ;;
+        *)
+          if [ "$BIND_CHECK" -eq 1 ]; then
+            ui_err "unknown bind --check argument '$1'"
+            printf 'CHECK_RUNTIME_CONTRACT=FAIL\n'
+            exit 2
+          fi
+          BIND_ARGS+=("$1"); shift ;;
+      esac
+    done
+    if [ "$BIND_CHECK" -eq 1 ]; then
+      if [ -z "$BIND_PROFILE" ]; then
+        if [ -z "$BIND_TASK" ]; then
+          ui_err "bind --check requires --task <spec> or --profile <profile>"
+          printf 'CHECK_RUNTIME_CONTRACT=FAIL\n'
+          exit 2
+        fi
+        BIND_ID="$(basename "$BIND_TASK" .md)"
+        BIND_PROFILE="$CVG_PROJECT_ROOT_DIR/cvg/execution/$BIND_ID/execution-profile.yaml"
+      fi
+      BIND_CHECK_ARGS=(--profile "$BIND_PROFILE" --repo "$CVG_PROJECT_ROOT_DIR" --tool-home "$CVG_HOME_DIR")
+      [ "$BIND_SUPERVISED" -eq 1 ] && BIND_CHECK_ARGS+=(--supervised)
+      exec python3 "$CHECKER" "${BIND_CHECK_ARGS[@]}"
+    fi
+    if [ -z "$BIND_TASK" ]; then
+      ui_err "bind requires --task <Task-Spec>"
+      printf 'CHECK_RUNTIME_CONTRACT=FAIL\n'
+      exit 2
+    fi
+    BIND_ID="$(basename "$BIND_TASK" .md)"
+    # Bind writes canonical, commit-worthy policy. TaskHandoff/v3 is deliberately
+    # NOT minted here: its immutable Git base and workspace only exist after the
+    # Manager/loop has created the final dispatch worktree. The loop mints the
+    # attempt-local handoff immediately before execution.
+    python3 "$BINDER" --repo "$CVG_PROJECT_ROOT_DIR" --tool-home "$CVG_HOME_DIR" "${BIND_ARGS[@]}"
+    ;;
+  capture)
+    # Pass 0 gate: locate the brief, route to the idea-to-brd exit contract.
+    # Gate path is an exact pass-through (exec, zero decoration) — R0.P
+    # proves by byte-diff. Discovery messages exist ONLY on the exit-2 path,
+    # and every exit-2 path still ends in the CHECK_BRD=USAGE_ERROR token
+    # (agents are users — never make a harness parse prose).
+    GATE="$CVG_HOME_DIR/skills/idea-to-brd/scripts/check-brd.sh"
+    CAP_FLAGS=""
+    CAP_TARGET=""
+    CAP_KIND="brd"
+    CAP_DRAFT=0
+    CAP_NOGO=0
+    for A in "$@"; do
+      case "$A" in
+        --draft) CAP_FLAGS="$CAP_FLAGS --draft"; CAP_DRAFT=1 ;;
+        --no-go) CAP_FLAGS="$CAP_FLAGS --no-go"; CAP_NOGO=1; CAP_KIND="no-go" ;;
+        -*)
+          ui_err "unknown capture flag '$A' — expected --draft or --no-go"
+          printf 'CHECK_BRD=USAGE_ERROR\n'
+          exit 2
+          ;;
+        *)       CAP_TARGET="$A" ;;
+      esac
+    done
+    if [ "$CAP_DRAFT" -eq 1 ] && [ "$CAP_NOGO" -eq 1 ]; then
+      ui_err "--draft and --no-go conflict — a record is a BRD draft or a no-go, never both"
+      printf 'CHECK_BRD=USAGE_ERROR\n'
+      exit 2
+    fi
+    if [ -z "$CAP_TARGET" ]; then
+      CAP_N=0
+      CAP_LIST=""
+      # Typed folder first (cvg/docs/brd/*.md — the canonical layout since
+      # 0.1.0: one folder per artifact type), then the legacy flat prefix, so
+      # workspaces created before the layout change keep gating untouched.
+      for F in "cvg/docs/${CAP_KIND}/"*.md "docs/${CAP_KIND}/"*.md \
+               "cvg/docs/${CAP_KIND}-"*.md "docs/${CAP_KIND}-"*.md; do
+        [ -f "$F" ] || continue
+        CAP_N=$((CAP_N + 1))
+        CAP_TARGET="$F"
+        CAP_LIST="${CAP_LIST}  ${F}
+"
+      done
+      if [ "$CAP_N" -eq 0 ]; then
+        ui_err "no ${CAP_KIND} document found under cvg/docs/${CAP_KIND}/ (or the legacy ${CAP_KIND}-*.md) from '$PWD' — pass the file: cvg capture [--draft|--no-go] <file>"
+        printf 'CHECK_BRD=USAGE_ERROR\n'
+        exit 2
+      fi
+      if [ "$CAP_N" -gt 1 ]; then
+        ui_err "ambiguous: $CAP_N ${CAP_KIND} documents found — pass one explicitly:"
+        printf '%s' "$CAP_LIST" >&2
+        printf 'CHECK_BRD=USAGE_ERROR\n'
+        exit 2
+      fi
+    fi
+    # shellcheck disable=SC2086  # CAP_FLAGS is a controlled flag list (--draft/--no-go only)
+    exec bash "$GATE" $CAP_FLAGS "$CAP_TARGET"
+    ;;
+  intent)
+    # Pass 1 gate: locate the tech-spec, route to the brd-docs-to-tech-req
+    # exit contract. Gate path is an exact pass-through (exec, zero
+    # decoration) — R1.P proves by byte-diff. Discovery/flag errors exist
+    # ONLY on the exit-2 path and still end in the machine token.
+    GATE="$CVG_HOME_DIR/skills/brd-docs-to-tech-req/scripts/check-tech-spec.sh"
+    INT_FLAGS=""
+    INT_TARGET=""
+    for A in "$@"; do
+      case "$A" in
+        --draft) INT_FLAGS="$INT_FLAGS --draft" ;;
+        -*)
+          ui_err "unknown intent flag '$A' — expected --draft"
+          printf 'CHECK_TECH_SPEC=USAGE_ERROR\n'
+          exit 2
+          ;;
+        *)       INT_TARGET="$A" ;;
+      esac
+    done
+    if [ -z "$INT_TARGET" ]; then
+      INT_N=0
+      INT_LIST=""
+      # Typed folder first, legacy flat prefix second (see cvg capture).
+      for F in cvg/docs/tech-spec/*.md docs/tech-spec/*.md \
+               cvg/docs/tech-spec-*.md docs/tech-spec-*.md; do
+        [ -f "$F" ] || continue
+        INT_N=$((INT_N + 1))
+        INT_TARGET="$F"
+        INT_LIST="${INT_LIST}  ${F}
+"
+      done
+      if [ "$INT_N" -eq 0 ]; then
+        ui_err "no tech-spec found under cvg/docs/tech-spec/ (or the legacy tech-spec-*.md) from '$PWD' — pass the file: cvg intent [--draft] <file>"
+        printf 'CHECK_TECH_SPEC=USAGE_ERROR\n'
+        exit 2
+      fi
+      if [ "$INT_N" -gt 1 ]; then
+        ui_err "ambiguous: $INT_N tech-spec documents found — pass one explicitly:"
+        printf '%s' "$INT_LIST" >&2
+        printf 'CHECK_TECH_SPEC=USAGE_ERROR\n'
+        exit 2
+      fi
+    fi
+    # shellcheck disable=SC2086  # INT_FLAGS is a controlled flag list (--draft only)
+    exec bash "$GATE" $INT_FLAGS "$INT_TARGET"
+    ;;
+  structure)
+    # Pass 2 gate: locate the ADR set, route to the tech-req-to-adrs checker.
+    # Gate path is an exact pass-through (exec, zero decoration) — R2.P proves
+    # by byte-diff. Discovery/flag errors exist ONLY on the exit-2 path and
+    # still end in the machine token CHECK_ADR=USAGE_ERROR (agents are users).
+    GATE="$CVG_HOME_DIR/skills/tech-req-to-adrs/scripts/scaffold-adr.sh"
+    STR_FLAGS=""
+    STR_DIR=""
+    while [ $# -gt 0 ]; do
+      case "$1" in
+        --final) STR_FLAGS="$STR_FLAGS --final"; shift ;;
+        --dir)
+          if [ $# -lt 2 ]; then
+            ui_err "--dir needs a path — cvg structure [--final] --dir <adr-dir>"
+            printf 'CHECK_ADR=USAGE_ERROR\n'
+            exit 2
+          fi
+          STR_DIR="$2"; shift 2 ;;
+        --dir=*) STR_DIR="${1#--dir=}"; shift ;;
+        -*)
+          ui_err "unknown structure flag '$1' — expected --final or --dir <path>"
+          printf 'CHECK_ADR=USAGE_ERROR\n'
+          exit 2 ;;
+        *)       STR_DIR="$1"; shift ;;
+      esac
+    done
+    if [ -z "$STR_DIR" ]; then
+      STR_N=0
+      STR_LIST=""
+      for D in cvg/docs/adrs docs/adrs; do
+        [ -d "$D" ] || continue
+        ls "$D"/[0-9][0-9][0-9][0-9]-*.md >/dev/null 2>&1 || continue
+        STR_N=$((STR_N + 1))
+        STR_DIR="$D"
+        STR_LIST="${STR_LIST}  ${D}
+"
+      done
+      if [ "$STR_N" -eq 0 ]; then
+        ui_err "no ADR set (docs/adrs/ with NNNN-*.md) found under cvg/docs/ or docs/ from '$PWD' — pass it: cvg structure [--final] --dir <adr-dir>"
+        printf 'CHECK_ADR=USAGE_ERROR\n'
+        exit 2
+      fi
+      if [ "$STR_N" -gt 1 ]; then
+        ui_err "ambiguous: $STR_N ADR directories found — pass one explicitly:"
+        printf '%s' "$STR_LIST" >&2
+        printf 'CHECK_ADR=USAGE_ERROR\n'
+        exit 2
+      fi
+    fi
+    # shellcheck disable=SC2086  # STR_FLAGS is a controlled flag list (--final only)
+    exec bash "$GATE" --check $STR_FLAGS --dir "$STR_DIR"
+    ;;
+  _observe-decomposition)
+    # Private, read-only compatibility observation for snapshots of historical
+    # v0.1 workspaces. This validates existing lane evidence; it never creates
+    # a decomposition and is intentionally absent from the public CLI matrix.
+    GATE="$CVG_HOME_DIR/skills/reqs-to-swimlane-plans/scripts/new-plan.sh"
+    DEC_N=0
+    DEC_DIR=""
+    for D in cvg/swimlanes cvg/sketch swimlanes sketch; do
+      [ -d "$D" ] || continue
+      _cvg_has_lane "$D" || continue
+      DEC_N=$((DEC_N + 1))
+      DEC_DIR="$D"
+    done
+    if [ "$DEC_N" -eq 0 ]; then
+      printf 'CHECK_PLAN=EMPTY\n'
+      exit 2
+    fi
+    if [ "$DEC_N" -gt 1 ]; then
+      ui_err "multiple historical decomposition trees are present"
+      printf 'CHECK_PLAN=USAGE_ERROR\n'
+      exit 2
+    fi
+    exec bash "$GATE" --check --dir "$DEC_DIR"
+    ;;
+  decompose)
+    # Compatibility surface only. Seamwise owns decomposition; Converge passes
+    # the recipe through the same coordinator used by `compose prepare`.
+    DEC_SOURCE=""
+    while [ $# -gt 0 ]; do
+      case "$1" in
+        --source)
+          if [ $# -lt 2 ]; then
+            ui_err "--source needs a recipe — cvg decompose --source <recipe>"
+            printf 'COMPOSE=BLOCKED\n'
+            exit 2
+          fi
+          DEC_SOURCE="$2"; shift 2 ;;
+        --source=*) DEC_SOURCE="${1#--source=}"; shift ;;
+        --dir|--dir=*)
+          ui_err "cvg decompose --dir was retired in 0.2.0; use cvg decompose --source <recipe> or cvg compose prepare --source <recipe>"
+          printf 'COMPOSE=BLOCKED\n'
+          exit 2 ;;
+        -*)
+          ui_err "unknown decompose flag '$1' — expected --source <recipe>"
+          printf 'COMPOSE=BLOCKED\n'
+          exit 2 ;;
+        *)
+          ui_err "decompose requires an explicit --source <recipe>"
+          printf 'COMPOSE=BLOCKED\n'
+          exit 2 ;;
+      esac
+    done
+    if [ -z "$DEC_SOURCE" ]; then
+      ui_err "decompose requires --source <recipe>"
+      printf 'COMPOSE=BLOCKED\n'
+      exit 2
+    fi
+    COMPOSER="$CVG_HOME_DIR/bin/_cvg_compose.py"
+    [ -f "$COMPOSER" ] || {
+      ui_err "Converge composition coordinator is missing under $CVG_HOME_DIR/bin"
+      printf 'COMPOSE=BLOCKED\n'
+      exit 2
+    }
+    exec python3 "$COMPOSER" \
+      --project-root "$CVG_PROJECT_ROOT_DIR" \
+      --cvg-version "$CVG_VERSION" \
+      --seamwise-bin "${CVG_SEAMWISE_BIN:-}" \
+      --taskspec-bin "$TASKSPEC_BIN" \
+      prepare --source "$DEC_SOURCE"
+    ;;
+  review)
+    # Pass 4 · Consensus. Two modes:
+    #   cvg review --adversary codex|kimi|claude   dispatch a headless adversary
+    #   cvg review [--check]                        gate the stamped objection log
+    # The referee frames + dispatches + gates; it never calls an LLM (the engine
+    # CLI authenticates itself). Discovery mirrors decompose.
+    GATE="$CVG_HOME_DIR/skills/sketch-plans-adversarial-review/scripts/check-consensus-gate.sh"
+    DISPATCH="$CVG_HOME_DIR/skills/sketch-plans-adversarial-review/scripts/dispatch-review.sh"
+    DISPATCH_MULTI="$CVG_HOME_DIR/skills/sketch-plans-adversarial-review/scripts/dispatch-review-multi.sh"
+    REV_MODE="check"; REV_ADV=""; REV_DIR=""; REV_TMO=""
+    REV_IDS=""; REV_DISP=""; REV_BY=""; REV_OWNER=""; REV_RISK=""; REV_NOTE=""
+    while [ $# -gt 0 ]; do
+      case "$1" in
+        --check)     REV_MODE="check"; shift ;;
+        --adversary) REV_MODE="dispatch"; REV_ADV="${2:-}"; shift 2 ;;
+        --dir)       REV_DIR="${2:-}"; shift 2 ;;
+        --dir=*)     REV_DIR="${1#--dir=}"; shift ;;
+        # The wrapped dispatcher has always documented a wall-clock cap
+        # (--timeout, default 300s) and the referee used to swallow it, so a
+        # review that outran the cap had NO way to ask for more through the
+        # CLI — you had to reach past cvg to the script, which is exactly what
+        # the CLI exists to stop. A real 11-file plan set hit this on first use.
+        --timeout)   REV_TMO="${2:-}"; shift 2 ;;
+        # Recording the owner's decision — the one input Pass 4 cannot derive.
+        --resolve)   REV_MODE="resolve"; REV_IDS="${2:-}"; shift 2 ;;
+        --fix)       REV_DISP="FIX"; shift ;;
+        --accept)    REV_DISP="ACCEPT"; shift ;;
+        --owner)     REV_OWNER="${2:-}"; shift 2 ;;
+        --risk)      REV_RISK="${2:-}"; shift 2 ;;
+        --note)      REV_NOTE="${2:-}"; shift 2 ;;
+        --by)        REV_BY="${2:-}"; shift 2 ;;
+        --timeout=*) REV_TMO="${1#--timeout=}"; shift ;;
+        -*)          ui_err "unknown review flag '$1' — expected --check | --adversary <e> [--timeout <secs>] | --resolve <id|all> --fix|--accept [--owner N --risk W] [--note T] [--by N]  [--dir <sketch>]"
+                     printf 'CHECK_CONSENSUS=USAGE_ERROR\n'; exit 2 ;;
+        *)           REV_DIR="$1"; shift ;;
+      esac
+    done
+    if [ -z "$REV_DIR" ]; then
+      REV_N=0
+      for D in cvg/swimlanes cvg/sketch swimlanes sketch; do
+        [ -d "$D" ] || continue
+        _cvg_has_lane "$D" || continue
+        REV_N=$((REV_N + 1)); REV_DIR="$D"
+      done
+      if [ "$REV_N" -ne 1 ]; then
+        ui_err "no unique swimlane tree (cvg/swimlanes/<seam>/, or the legacy cvg/sketch/) under cvg/ or . from '$PWD' — pass --dir <sketch>"
+        printf 'CHECK_CONSENSUS=USAGE_ERROR\n'; exit 2
+      fi
+    fi
+    if [ "$REV_MODE" = "resolve" ]; then
+      if [ -z "$REV_IDS" ]; then
+        ui_err "--resolve needs an objection id, a comma-list, or 'all'"
+        printf 'RESOLVE=USAGE_ERROR\n'; exit 2
+      fi
+      case "$REV_DISP" in
+        FIX|ACCEPT) : ;;
+        *) ui_err "--resolve needs --fix or --accept (ACCEPT also needs --owner and --risk)"
+           printf 'RESOLVE=USAGE_ERROR\n'; exit 2 ;;
+      esac
+      cvg_review_resolve "$REV_DIR/.consensus/objection-log.json" \
+        "$REV_IDS" "$REV_DISP" "$REV_BY" "$REV_OWNER" "$REV_RISK" "$REV_NOTE"
+      exit $?
+    fi
+    if [ "$REV_MODE" = "dispatch" ]; then
+      REV_ARGS=(--adversary "$REV_ADV" --dir "$REV_DIR")
+      [ -n "$REV_TMO" ] && REV_ARGS+=(--timeout "$REV_TMO")
+      case "$REV_ADV" in
+        *,*) exec bash "$DISPATCH_MULTI" "${REV_ARGS[@]}" ;;
+        *)   exec bash "$DISPATCH" "${REV_ARGS[@]}" ;;
+      esac
+    else
+      exec bash "$GATE" --dir "$REV_DIR"
+    fi
+    ;;
+  lane)
+    # Route work to the lane it earns. Advisory to a human, hard-floored against
+    # a machine: it can never waive a gate, only pick which passes to run.
+    LANER="$CVG_HOME_DIR/bin/cvg-classify-lane.py"
+    [ -f "$LANER" ] || { ui_err "Converge lane classifier is missing under $CVG_HOME_DIR/bin"; printf 'LANE=USAGE_ERROR\n'; exit 2; }
+    exec python3 "$LANER" "$@"
+    ;;
+  next)
+    # The conductor — where does the descent stand, what comes next. Derived
+    # from workspace evidence, never stored; read-only; gates stay authoritative.
+    SEQUENCER="$CVG_HOME_DIR/skills/evidence-to-next-pass/scripts/next-pass.sh"
+    [ -f "$SEQUENCER" ] || { ui_err "evidence-to-next-pass skill is incomplete under $CVG_HOME_DIR/skills"; printf 'NEXT_PASS=USAGE_ERROR\n'; exit 2; }
+    NEXT_VERB="next"
+    case "${1:-}" in
+      pre|post) NEXT_VERB="$1"; shift ;;
+    esac
+    CVG_PROJECT_ROOT="$CVG_PROJECT_ROOT_DIR" exec bash "$SEQUENCER" "$NEXT_VERB" "$@"
+    ;;
+  snapshot)
+    # One canonical semantic projection for observers. The builder executes
+    # only local read-only gates and parses canonical workspace files; it never
+    # calls a tracker, model, or network service. Global --json keeps the
+    # standard envelope and promotes this document to data.snapshot.
+    if [ $# -gt 0 ]; then
+      ui_err "cvg snapshot takes no arguments"
+      exit 2
+    fi
+    SNAPSHOT_BUILDER="$CVG_HOME_DIR/bin/cvg-snapshot.py"
+    [ -f "$SNAPSHOT_BUILDER" ] || {
+      ui_err "snapshot builder is missing under $CVG_HOME_DIR/bin"
+      exit 2
+    }
+    exec python3 "$SNAPSHOT_BUILDER" \
+      --project-root "$CVG_PROJECT_ROOT_DIR" \
+      --cvg-home "$CVG_HOME_DIR"
+    ;;
+  lesson)
+    # The teaching companion's gate. A lesson belongs to no pass — it teaches
+    # one that already closed — so this verb gates the LESSON's own structure
+    # and says nothing about the descent's position.
+    #
+    # Exact exec pass-through to the checker (zero decoration), like every other
+    # gate. Discovery and flag errors exist ONLY on the exit-2 path, and every
+    # exit-2 path still ends in CHECK_LESSON=USAGE_ERROR — agents are users, so
+    # a harness never has to parse prose to learn why it failed.
+    GATE="$CVG_HOME_DIR/skills/pass-to-lesson/scripts/check-lesson.sh"
+    [ -f "$GATE" ] || { ui_err "pass-to-lesson skill is incomplete under $CVG_HOME_DIR/skills"; printf 'CHECK_LESSON=USAGE_ERROR\n'; exit 2; }
+    LES_TARGET=""
+    LES_IMM=0
+    LES_IMM_ARGS=()
+    while [ $# -gt 0 ]; do
+      case "$1" in
+        --immutable)
+          # --immutable consumes every remaining argument (the taught set),
+          # exactly as the checker's own contract does. Mirroring it here keeps
+          # the two surfaces from drifting into different meanings.
+          LES_IMM=1; shift
+          while [ $# -gt 0 ]; do LES_IMM_ARGS+=("$1"); shift; done
+          ;;
+        -*)
+          ui_err "unknown lesson flag '$1' — expected --immutable <taught-artifact>..."
+          printf 'CHECK_LESSON=USAGE_ERROR\n'
+          exit 2
+          ;;
+        *)
+          if [ -n "$LES_TARGET" ]; then
+            ui_err "one lesson per gate — got '$LES_TARGET' and '$1'; teach one pass at a time"
+            printf 'CHECK_LESSON=USAGE_ERROR\n'
+            exit 2
+          fi
+          LES_TARGET="$1"; shift
+          ;;
+      esac
+    done
+    if [ "$LES_IMM" -eq 1 ] && [ "${#LES_IMM_ARGS[@]}" -eq 0 ]; then
+      ui_err "--immutable needs at least one taught-artifact path — cvg lesson [<lesson>] --immutable <path>..."
+      printf 'CHECK_LESSON=USAGE_ERROR\n'
+      exit 2
+    fi
+    if [ -z "$LES_TARGET" ]; then
+      LES_N=0
+      LES_LIST=""
+      # Typed folder first (cvg/docs/lessons/ — canonical since 0.1.0), then the
+      # legacy flat layout, same rule as every other pass gate. Unlike a pass
+      # artifact, lessons ACCUMULATE by design (one per taught pass), so the
+      # ambiguity path is the normal steady state rather than an error to be
+      # embarrassed by: name the file you just wrote. Newest-wins was rejected
+      # — git does not preserve mtimes, so a fresh clone would gate a different
+      # lesson than the working copy, and a gate that picks its own target
+      # non-deterministically is not a gate.
+      for F in cvg/docs/lessons/*.md docs/lessons/*.md; do
+        [ -f "$F" ] || continue
+        LES_N=$((LES_N + 1))
+        LES_TARGET="$F"
+        LES_LIST="${LES_LIST}  ${F}
+"
+      done
+      if [ "$LES_N" -eq 0 ]; then
+        ui_err "no lesson found under cvg/docs/lessons/ (or the legacy docs/lessons/) from '$PWD' — write one with the pass-to-lesson skill, then: cvg lesson [<file>]"
+        printf 'CHECK_LESSON=USAGE_ERROR\n'
+        exit 2
+      fi
+      if [ "$LES_N" -gt 1 ]; then
+        ui_err "ambiguous: $LES_N lessons found — pass the one you just wrote:"
+        printf '%s' "$LES_LIST" >&2
+        printf 'CHECK_LESSON=USAGE_ERROR\n'
+        exit 2
+      fi
+    fi
+    if [ "$LES_IMM" -eq 1 ]; then
+      exec bash "$GATE" "$LES_TARGET" --immutable "${LES_IMM_ARGS[@]}"
+    fi
+    exec bash "$GATE" "$LES_TARGET"
+    ;;
+  gate)
+    # The repo write fence — the one a Task-Spec cannot widen. Read-only.
+    GATER="$CVG_HOME_DIR/skills/task-to-runtime-contract/scripts/check-gate.py"
+    [ -f "$GATER" ] || { ui_err "task-to-runtime-contract skill is incomplete under $CVG_HOME_DIR/skills"; printf 'CHECK_GATE=ERROR\n'; exit 2; }
+    exec python3 "$GATER" --repo "$CVG_PROJECT_ROOT_DIR" "$@"
+    ;;
+  loop)
+    # Pass 8 · Loop. One assigned task, a bounded RED/GREEN cycle, and one
+    # settlement — local by default, because the profile's external_writes
+    # policy is a real gate. This loop never picks its own work: --issue is
+    # required, and the signed Task-Spec (not the issue body) is the only
+    # instruction source.
+    # The KERNEL is the loop; open-issue-pr.sh is only its settlement half.
+    # --gate-only keeps the old single-shot behaviour for anyone who wants a
+    # verdict without an agent attempting a fix.
+    KERNEL="$CVG_HOME_DIR/skills/task-loop/scripts/loop-kernel.sh"
+    LOOPER="$CVG_HOME_DIR/skills/task-loop/scripts/open-issue-pr.sh"
+    LOOP_GATE_ONLY=0
+    LOOP_ARGS=()
+    LOOP_SCAN=("$@")
+    LOOP_SCAN_I=0
+    LOOP_SCAN_ISSUE=0
+    LOOP_SCAN_HELP=0
+    while [ "$LOOP_SCAN_I" -lt "${#LOOP_SCAN[@]}" ]; do
+      LOOP_SCAN_ARG="${LOOP_SCAN[$LOOP_SCAN_I]}"
+      case "$LOOP_SCAN_ARG" in
+        --issue|--tasks-dir|--agent|--max-iterations|--max-seconds|--max-tokens|--base|--contract|--isolation|--judge|--lane|--model|--effort|--attempt-seconds)
+          if [ $((LOOP_SCAN_I + 1)) -ge "${#LOOP_SCAN[@]}" ]; then
+            ui_err "$LOOP_SCAN_ARG requires a value"
+            printf 'TASK_LOOP=USAGE_ERROR\n'
+            exit 2
+          fi
+          [ "$LOOP_SCAN_ARG" = "--issue" ] && LOOP_SCAN_ISSUE=1
+          LOOP_SCAN_I=$((LOOP_SCAN_I + 2))
+          ;;
+        --issue=*) LOOP_SCAN_ISSUE=1; LOOP_SCAN_I=$((LOOP_SCAN_I + 1)) ;;
+        --tasks-dir=*|--agent=*|--max-iterations=*|--max-seconds=*|--max-tokens=*|--base=*|--contract=*|--isolation=*|--judge=*|--lane=*|--model=*|--effort=*|--attempt-seconds=*)
+          LOOP_SCAN_I=$((LOOP_SCAN_I + 1))
+          ;;
+        --gate-only|--no-agent|--allow-external-writes|--dry-run|--resume|--legacy-no-contract|--keep-worktree|--verify|--no-verify|--estimate)
+          LOOP_SCAN_I=$((LOOP_SCAN_I + 1))
+          ;;
+        -h|--help) LOOP_SCAN_HELP=1; LOOP_SCAN_I=$((LOOP_SCAN_I + 1)) ;;
+        *)
+          ui_err "unknown loop argument '$LOOP_SCAN_ARG'"
+          printf 'TASK_LOOP=USAGE_ERROR\n'
+          exit 2
+          ;;
+      esac
+    done
+    if [ "$LOOP_SCAN_ISSUE" -eq 0 ] && [ "$LOOP_SCAN_HELP" -eq 0 ]; then
+      ui_err "--issue is required. This loop never picks its own task."
+      printf 'TASK_LOOP=USAGE_ERROR\n'
+      exit 2
+    fi
+    if [ "$CVG_DRY_RUN" -ne 1 ]; then
+      cvg_ensure_local_excludes || {
+        ui_err "could not establish local boundaries for attempt evidence"
+        printf 'TASK_LOOP=ERROR\n'
+        exit 4
+      }
+    fi
+    for A in "$@"; do
+      case "$A" in
+        --gate-only) LOOP_GATE_ONLY=1 ;;
+        *)           LOOP_ARGS+=("$A") ;;
+      esac
+    done
+    # The kernel's own dry-run reports the resolved budgets, which is the part
+    # worth seeing before an unattended run. cvg strips --dry-run globally, so
+    # hand it back.
+    [ "$CVG_DRY_RUN" -eq 1 ] && LOOP_ARGS+=(--dry-run)
+    if [ "$LOOP_GATE_ONLY" -eq 1 ]; then
+      [ -f "$LOOPER" ] || { ui_err "task-loop skill is incomplete under $CVG_HOME_DIR/skills"; printf 'TASK_LOOP=USAGE_ERROR\n'; exit 2; }
+      exec bash "$LOOPER" ${LOOP_ARGS[@]+"${LOOP_ARGS[@]}"}
+    fi
+    [ -f "$KERNEL" ] || { ui_err "task-loop skill is incomplete under $CVG_HOME_DIR/skills"; printf 'TASK_LOOP=USAGE_ERROR\n'; exit 2; }
+    exec bash "$KERNEL" ${LOOP_ARGS[@]+"${LOOP_ARGS[@]}"}
+    ;;
+  verify)
+    # Tier-2 adversarial verification — a different-family engine grades the diff
+    # against the spec's intent and the holdout it never saw. Fails closed.
+    VERIFIER="$CVG_HOME_DIR/skills/task-to-runtime-contract/scripts/verify-work.py"
+    [ -f "$VERIFIER" ] || { ui_err "task-to-runtime-contract skill is incomplete under $CVG_HOME_DIR/skills"; printf 'CHECK_VERIFY=ERROR\n'; exit 2; }
+    exec python3 "$VERIFIER" --repo "$CVG_PROJECT_ROOT_DIR" "$@"
+    ;;
+  doctor)
+    # Engine readiness. Bare `cvg doctor` reports the Pass-4 adversary engines;
+    # `cvg doctor runtime-contract` attests what the HOST can actually enforce for
+    # Pass 7 (isolation primitive, runtime binary, worktree) so a contract can fail
+    # closed instead of assuming a control it never had.
+    case "${1:-}" in
+      runtime-contract)
+        shift
+        ATTEST="$CVG_HOME_DIR/skills/task-to-runtime-contract/scripts/attest-runtime.py"
+        [ -f "$ATTEST" ] || {
+          ui_err "task-to-runtime-contract skill is incomplete under $CVG_HOME_DIR/skills"
+          printf 'DOCTOR_RUNTIME_CONTRACT=FAIL\n'
+          exit 2
+        }
+        exec python3 "$ATTEST" "$@"
+        ;;
+      evidence)
+        shift
+        if [ $# -gt 0 ]; then
+          ui_err "cvg doctor evidence takes no arguments"
+          printf 'DOCTOR_EVIDENCE=ERROR\n'
+          exit 2
+        fi
+        cvg_doctor_evidence
+        ;;
+      plugin)
+        shift
+        if [ $# -gt 0 ]; then
+          ui_err "cvg doctor plugin takes no arguments"
+          printf 'DOCTOR_PLUGIN=ERROR\n'
+          exit 2
+        fi
+        cvg_doctor_plugin
+        ;;
+      host)
+        shift
+        if [ $# -gt 0 ]; then
+          ui_err "cvg doctor host takes no arguments"
+          printf 'DOCTOR_HOST=ERROR\n'
+          exit 2
+        fi
+        cvg_doctor_host
+        ;;
+      "") exec bash "$CVG_HOME_DIR/skills/sketch-plans-adversarial-review/scripts/doctor.sh" ;;
+      *)
+        ui_err "unknown doctor subject '${1}' — expected: (none) | host | runtime-contract | plugin | evidence"
+        printf 'DOCTOR=USAGE_ERROR\n'
+        exit 2
+        ;;
+    esac
+    ;;
+  register)
+    # REGISTER ① — bridge signed-off Task-Specs onto a tracker board (Fork B → the Loop).
+    #   cvg register [--tracker T] [--tasks-dir D] [--no-stamp-refs]   write the board (mutating)
+    #   cvg register --check [--tracker T] [--tasks-dir D] [--prune]   gate the mapping (read-only)
+    # The referee frames + drives the pluggable adapter (github|linear|jira); it
+    # holds NO tracker credentials — the adapter authenticates itself, exactly as
+    # the Pass-4 engine CLIs do. --dry-run (global) reports intent and changes
+    # nothing; for the rich OFFLINE preview (cycles, DAG, edge integrity) use
+    # --check, which maps cvg's --dry-run to the verifier's spec-side-only gate.
+    REG="$CVG_HOME_DIR/skills/task-specs-to-issues/scripts/register.sh"
+    REGVERIFY="$CVG_HOME_DIR/skills/task-specs-to-issues/scripts/verify-registration.sh"
+    [ -f "$REG" ] || { ui_err "register driver not found: $REG"; exit 2; }
+    REG_CHECK=0
+    REG_PASS=()
+    for A in "$@"; do
+      case "$A" in
+        --check) REG_CHECK=1 ;;
+        --tracker|--tracker=*|--tasks-dir|--tasks-dir=*|--no-stamp-refs|--prune|--help|-h) REG_PASS+=("$A") ;;
+        -*)
+          ui_err "unknown register argument '$A'"
+          printf 'REGISTER=USAGE_ERROR\n'
+          exit 2
+          ;;
+        *)       REG_PASS+=("$A") ;;
+      esac
+    done
+    # Default --tracker from .cvg/config when the caller didn't specify one
+    # (setup configures; the passes consume). An explicit --tracker always wins.
+    REG_HAS_TRACKER=0
+    if [ "${#REG_PASS[@]}" -gt 0 ]; then
+      for A in "${REG_PASS[@]}"; do
+        case "$A" in --tracker|--tracker=*) REG_HAS_TRACKER=1 ;; esac
+      done
+    fi
+    if [ "$REG_HAS_TRACKER" -eq 0 ]; then
+      CFG_TRACKER="$(cvg_config_get tracker)"
+      if [ -n "$CFG_TRACKER" ]; then
+        REG_PASS=(--tracker "$CFG_TRACKER" ${REG_PASS[@]+"${REG_PASS[@]}"})
+        printf '%susing configured tracker: %s (from .cvg/config)%s\n' "$UI_DIM" "$CFG_TRACKER" "$UI_RESET" >&2
+      fi
+    fi
+    # Find the specs the same way passes 0-3 find their inputs: the cvg/
+    # workspace first, then the bare directory. Pass 6 was the only pass that
+    # did not know about `cvg/`, so `cvg register` failed out of the box in a
+    # standard workspace — the exact layout cvg/INDEX.md prescribes.
+    REG_HAS_DIR=0
+    if [ "${#REG_PASS[@]}" -gt 0 ]; then
+      for A in "${REG_PASS[@]}"; do
+        case "$A" in --tasks-dir|--tasks-dir=*) REG_HAS_DIR=1 ;; esac
+      done
+    fi
+    if [ "$REG_HAS_DIR" -eq 0 ]; then
+      if [ -d "$TASKSPEC_BACKLOG_DIR" ]; then
+        REG_PASS=(--tasks-dir "$TASKSPEC_BACKLOG_DIR" ${REG_PASS[@]+"${REG_PASS[@]}"})
+      fi
+    fi
+    cvg_export_linear_team   # bridge the non-secret Linear team UUID from config (key stays in env)
+    cvg_export_spec_base     # bridge the repo base URL so issues link back to their spec
+    cvg_export_identity      # bridge the .cvg/identity PATH for assignee resolution
+    # A live register may create projection.lock. Establish its local-only Git
+    # boundary before the adapter writes; the read-only parity gate stays pure.
+    [ "$REG_CHECK" -eq 1 ] || cvg_ensure_local_excludes
+    cvg_export_projection    # bridge the projection gate + logical names for T3 structure (default off)
+    if [ "$REG_CHECK" -eq 1 ]; then
+      # Read-only gate. cvg strips --dry-run into CVG_DRY_RUN; re-add it as the
+      # verifier's spec-side-only flag so `cvg register --check --dry-run` is offline.
+      [ "$CVG_DRY_RUN" -eq 1 ] && REG_PASS+=(--dry-run)
+      exec bash "$REGVERIFY" ${REG_PASS[@]+"${REG_PASS[@]}"}
+    else
+      exec bash "$REG" ${REG_PASS[@]+"${REG_PASS[@]}"}
+    fi
+    ;;
+  setup)
+    # SETUP — the guided connectivity surface. `cvg setup` scans every moving part
+    # (engines · trackers · [index · memory, planned]) and reports readiness + the
+    # exact next step. `cvg setup tracker <t>` validates a backend (adapter
+    # preflight) and records the CHOICE in .cvg/config. Referee-safe: records
+    # choices, NEVER credentials — secrets resolve at runtime from the environment.
+    SUB="${1:-status}"
+    [ $# -gt 0 ] && shift
+    case "$SUB" in
+      status)     cvg_setup_status "$@" ;;
+      signing)    cvg_setup_signing "$@" ;;
+      tracker)    cvg_setup_tracker "$@" ;;
+      repo)       cvg_setup_repo "$@" ;;
+      identity)   cvg_setup_identity "$@" ;;
+      key)
+        # Store a tracker key ONCE, outside the repo. cvg still records only
+        # choices in .cvg/ — the secret goes to the OS keychain (or a 0600 file
+        # in ~/.config), never to the repository and never through .cvg/config.
+        KEYTOOL="$CVG_HOME_DIR/skills/task-specs-to-issues/scripts/tracker-key.sh"
+        [ -f "$KEYTOOL" ] || { ui_err "task-specs-to-issues skill is incomplete"; printf 'TRACKER_KEY=ERROR\n'; exit 2; }
+        _kt_tracker="${1:-$(cvg_config_get tracker)}"; : "${_kt_tracker:=linear}"
+        exec bash "$KEYTOOL" set "$_kt_tracker"
+        ;;
+      projection) cvg_setup_projection "$@" ;;
+      harness)
+        # Scaffold the project ROUTER only (~50 lines). cvg never generates
+        # doctrine: auto-written context files measurably degrade agents.
+        SCAFFOLD="$CVG_HOME_DIR/skills/task-to-runtime-contract/scripts/scaffold-router.py"
+        [ -f "$SCAFFOLD" ] || { ui_err "task-to-runtime-contract skill is incomplete"; printf 'SETUP_HARNESS=USAGE_ERROR\n'; exit 2; }
+        exec python3 "$SCAFFOLD" --repo "$CVG_PROJECT_ROOT_DIR" "$@"
+        ;;
+      engines)
+        if [ $# -gt 0 ]; then
+          ui_err "cvg setup engines takes no arguments"
+          printf 'SETUP=USAGE_ERROR\n'
+          exit 2
+        fi
+        exec bash "$CVG_HOME_DIR/skills/sketch-plans-adversarial-review/scripts/doctor.sh"
+        ;;
+      *)          ui_err "unknown setup part '$SUB' — expected: status | signing | tracker <t> | key [t] | repo | identity | projection | harness | engines"
+                  printf 'SETUP=USAGE_ERROR\n'; exit 2 ;;
+    esac
+    ;;
+  eval)       route_taskspec run "$@" ;;
+  lint)       route_taskspec lint "$@" ;;
+  transition) cvg_transition "$@" ;;
+  ready)      route_taskspec ready "$@" ;;
+  version|--version|-v)
+    if [ $# -gt 0 ]; then
+      ui_err "cvg version takes no arguments"
+      exit 2
+    fi
+    cmd_version
+    exit 0
+    ;;
+  agent-context|manifest)
+    if [ $# -gt 0 ]; then
+      ui_err "cvg agent-context takes no arguments"
+      exit 2
+    fi
+    CONTEXT_BUILDER="$CVG_HOME_DIR/bin/cvg-agent-context.py"
+    MATRIX="$CVG_HOME_DIR/contracts/cli-command-matrix.json"
+    [ -f "$CONTEXT_BUILDER" ] && [ -f "$MATRIX" ] || {
+      ui_err "agent-context builder or canonical CLI command matrix is missing"
+      exit 2
+    }
+    exec python3 "$CONTEXT_BUILDER" --matrix "$MATRIX" --version "$CVG_VERSION"
+    ;;
+  *)
+    ui_err "unknown command '$CMD' — run 'cvg help' for the command map"
+    exit 2
+    ;;
+esac

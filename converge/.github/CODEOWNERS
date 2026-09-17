@@ -1,0 +1,10 @@
+# Method control plane and the file that assigns its owners.
+/.github/ @luanmorenommaciel
+
+# Repository policy and executable method gates.
+/.cvg/ @luanmorenommaciel
+/bin/ @luanmorenommaciel
+/install.sh @luanmorenommaciel
+/skills/task-loop/ @luanmorenommaciel
+/skills/task-specs-to-issues/ @luanmorenommaciel
+/skills/task-to-runtime-contract/ @luanmorenommaciel

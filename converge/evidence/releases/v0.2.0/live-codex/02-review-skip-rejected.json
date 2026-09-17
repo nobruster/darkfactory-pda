@@ -1,0 +1,25 @@
+{
+  "contract": "ConvergeCLIResult/v1",
+  "schema_version": 1,
+  "ok": false,
+  "command": "compose preview",
+  "converge_pass": null,
+  "token": "COMPOSE=BLOCKED",
+  "verdict": "BLOCKED",
+  "exit_code": 1,
+  "changed": false,
+  "dry_run": false,
+  "data": {
+    "output": "cvg compose: Seamwise compile is blocked: TASK_GRAPH=BLOCKED\nCHANGED=false\nCOMPOSE=BLOCKED"
+  },
+  "error": {
+    "code": "BLOCKED",
+    "message": "COMPOSE=BLOCKED"
+  },
+  "warnings": [],
+  "meta": {
+    "schema_version": "1.0",
+    "tool": "cvg",
+    "cvg_version": "0.2.0"
+  }
+}

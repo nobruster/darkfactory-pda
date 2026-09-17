@@ -1,0 +1,673 @@
+{
+  "contract": "ConvergeCLICommandMatrix/v1",
+  "schema_version": 1,
+  "command_count": 60,
+  "source_of_truth_for": [
+    "agent-context",
+    "CLI reference",
+    "JSON coverage"
+  ],
+  "commands": [
+    {
+      "name": "init",
+      "converge_pass": null,
+      "wraps": "native (workspace templates)",
+      "emits_tokens": [
+        "CVG_INIT=OK|UNCHANGED|NOT_GIT|UNSAFE_PATH|USAGE_ERROR"
+      ],
+      "mutating": true,
+      "example": "cvg init",
+      "description": "Create the canonical tracked project control plane: .cvg/gate.yaml plus cvg/{brain,docs,swimlanes,tasks,execution,loop,receipts}. Non-clobbering, idempotent, and never writes credentials."
+    },
+    {
+      "name": "capture",
+      "converge_pass": 0,
+      "wraps": "idea-to-brd/check-brd.sh",
+      "emits_tokens": [
+        "CHECK_BRD=PASS|FAIL|USAGE_ERROR"
+      ],
+      "mutating": false,
+      "example": "cvg capture",
+      "description": "Pass 0 gate — the BRD exit contract."
+    },
+    {
+      "name": "intent",
+      "converge_pass": 1,
+      "wraps": "brd-docs-to-tech-req/check-tech-spec.sh",
+      "emits_tokens": [
+        "CHECK_TECH_SPEC=PASS|FAIL|USAGE_ERROR"
+      ],
+      "mutating": false,
+      "example": "cvg intent",
+      "description": "Pass 1 gate — the tech-spec exit contract."
+    },
+    {
+      "name": "structure",
+      "converge_pass": 2,
+      "wraps": "tech-req-to-adrs/scaffold-adr.sh --check",
+      "emits_tokens": [
+        "CHECK_ADR=OK|FAIL|USAGE_ERROR"
+      ],
+      "mutating": false,
+      "example": "cvg structure",
+      "description": "Pass 2 gate — the ADR set."
+    },
+    {
+      "name": "decompose --source <recipe>",
+      "converge_pass": 3,
+      "wraps": "seamwise prepare (compatibility alias)",
+      "emits_tokens": [
+        "COMPOSE=NEEDS_REVIEW|PREVIEW_READY|BLOCKED|ENGINE_UNAVAILABLE"
+      ],
+      "mutating": true,
+      "example": "cvg decompose --source seamwise-recipe.yaml",
+      "description": "Compatibility alias for cvg compose prepare. Converge invokes Seamwise and never decomposes locally; --dir is rejected with a migration error."
+    },
+    {
+      "name": "review --adversary <e[,e]>",
+      "converge_pass": 4,
+      "wraps": "sketch-plans-adversarial-review/dispatch-review[-multi].sh",
+      "emits_tokens": [
+        "REVIEW=OK|ERROR|SKIP|TIMEOUT|USAGE_ERROR"
+      ],
+      "mutating": true,
+      "example": "cvg review --adversary codex,kimi",
+      "description": "Pass 4 dispatch — a different-family adversary (or several, merged) attacks the plans; writes a provenance-stamped objection log."
+    },
+    {
+      "name": "review --check",
+      "converge_pass": 4,
+      "wraps": "sketch-plans-adversarial-review/check-consensus-gate.sh",
+      "emits_tokens": [
+        "CHECK_CONSENSUS=OK|FAIL|EMPTY|USAGE_ERROR"
+      ],
+      "mutating": false,
+      "example": "cvg review --check",
+      "description": "Pass 4 gate — validates the stamped objection log (cross-family, resolutions, fork B, provenance)."
+    },
+    {
+      "name": "doctor",
+      "converge_pass": 4,
+      "wraps": "sketch-plans-adversarial-review/doctor.sh",
+      "emits_tokens": [
+        "DOCTOR=OK|FAIL"
+      ],
+      "mutating": false,
+      "example": "cvg doctor",
+      "description": "Engine readiness for Pass 4 dispatch (>=2 engines, >=1 cross-family)."
+    },
+    {
+      "name": "compose prepare --source <recipe>",
+      "converge_pass": "composed",
+      "wraps": "seamwise prepare",
+      "emits_tokens": [
+        "COMPOSE=NEEDS_REVIEW|PREVIEW_READY|BLOCKED|ENGINE_UNAVAILABLE"
+      ],
+      "mutating": true,
+      "example": "cvg compose prepare --source seamwise-recipe.yaml",
+      "description": "Invoke compatible external Seamwise transformations and stop at the explicit delivery-plan review boundary. It never records review, compiles a TaskPlan, or materializes Task-Specs."
+    },
+    {
+      "name": "compose review --reviewer <name> --reason <text>",
+      "converge_pass": "composed",
+      "wraps": "seamwise review --accept",
+      "emits_tokens": [
+        "COMPOSE=PREVIEW_READY|BLOCKED|ENGINE_UNAVAILABLE"
+      ],
+      "mutating": true,
+      "example": "cvg compose review --reviewer owner --reason \"Topology accepted\"",
+      "description": "Record human acceptance through Seamwise only. It never compiles a TaskPlan or invokes Task-Spec."
+    },
+    {
+      "name": "compose preview",
+      "converge_pass": "composed",
+      "wraps": "seamwise compile + taskspec plan",
+      "emits_tokens": [
+        "COMPOSE=PREVIEW_READY|BLOCKED|ENGINE_UNAVAILABLE"
+      ],
+      "mutating": true,
+      "example": "cvg compose preview",
+      "description": "Compile the reviewed Seamwise projection, validate it through Task-Spec plan, and write no Task-Spec Markdown."
+    },
+    {
+      "name": "compose materialize",
+      "converge_pass": "composed",
+      "wraps": "taskspec plan + taskspec batch",
+      "emits_tokens": [
+        "COMPOSE=MATERIALIZED|BLOCKED|ENGINE_UNAVAILABLE"
+      ],
+      "mutating": true,
+      "example": "cvg compose materialize",
+      "description": "Materialize the reviewed TaskPlan through Task-Spec, validate its receipt, and persist a digest-bound ConvergeCompositionReceipt/v1 with dispatch_authorized=false."
+    },
+    {
+      "name": "compose status",
+      "converge_pass": "composed",
+      "wraps": "seamwise status + local receipt verification",
+      "emits_tokens": [
+        "COMPOSE=NEEDS_REVIEW|PREVIEW_READY|MATERIALIZED|BLOCKED|ENGINE_UNAVAILABLE"
+      ],
+      "mutating": false,
+      "example": "cvg compose status",
+      "description": "Read-only verification of composed state with exactly one safe next action."
+    },
+    {
+      "name": "bind --task <spec>",
+      "converge_pass": 7,
+      "wraps": "task-to-runtime-contract/bind-runtime-contract.py",
+      "emits_tokens": [
+        "CHECK_RUNTIME_CONTRACT=PASS|FAIL"
+      ],
+      "mutating": true,
+      "example": "cvg bind --task tasks/T-...md",
+      "description": "Pass 7 · Bind — verify one signed Task-Spec, select the initial intra-task topology, hash-bind the evidence slice, and emit portable path guards plus vendor adapter manifests."
+    },
+    {
+      "name": "bind --check --task <spec>",
+      "converge_pass": 7,
+      "wraps": "task-to-runtime-contract/check-runtime-contract.py",
+      "emits_tokens": [
+        "CHECK_RUNTIME_CONTRACT=PASS|FAIL"
+      ],
+      "mutating": false,
+      "example": "cvg bind --check --task tasks/T-...md",
+      "description": "Re-check Task-Spec freshness, sign-off, context hashes, topology substance, ownership, and enforcement artifacts."
+    },
+    {
+      "name": "loop --issue <id>",
+      "converge_pass": 8,
+      "wraps": "task-loop/loop-kernel.sh",
+      "emits_tokens": [
+        "TASK_LOOP=SETTLED|LOCAL_SETTLED|NO_OP|BLOCKED|STALLED|EXHAUSTED|CANCELLED|ERROR"
+      ],
+      "mutating": true,
+      "example": "cvg loop --issue T-... --agent codex",
+      "description": "Pass 8 · Loop — attempt/verify/repeat over ONE assigned task, bounded on three axes (iterations, wall-clock, tokens) with a stagnation detector. Each attempt runs in a fresh engine process; state is durable on disk. Never selects its own work. Lands in exactly one named terminal state; an error or an exhausted budget is never reported as success."
+    },
+    {
+      "name": "loop --gate-only --issue <id>",
+      "converge_pass": 8,
+      "wraps": "task-loop/loop-kernel.sh --gate-only",
+      "emits_tokens": [
+        "task settlement gate verdict"
+      ],
+      "mutating": false,
+      "example": "cvg loop --gate-only --issue T-...",
+      "description": "Read-only settlement verdict: resolve the task/profile and evaluate the gate without starting an engine or attempt."
+    },
+    {
+      "name": "loop --estimate --issue <id>",
+      "converge_pass": 8,
+      "wraps": "task-loop/loop-kernel.sh --estimate",
+      "emits_tokens": [
+        "resolved budget ceiling"
+      ],
+      "mutating": false,
+      "example": "cvg loop --estimate --issue T-...",
+      "description": "Read-only preflight showing the bounded iteration, wall-clock, token, lane, model, and verification ceiling before authorization."
+    },
+    {
+      "name": "gate [--path P]",
+      "converge_pass": null,
+      "wraps": "task-to-runtime-contract/check-gate.py",
+      "emits_tokens": [
+        "CHECK_GATE=OK|ABSENT|FORBIDDEN|ERROR"
+      ],
+      "mutating": false,
+      "example": "cvg gate --path src/api.py",
+      "description": "The standing repo write fence — parses the tracked .cvg/gate.yaml policy and answers whether a path may be written. Read-only; the one fence a Task-Spec cannot widen. With no --path it reports whether the policy parses and is active."
+    },
+    {
+      "name": "tasks plan --manifest <TaskPlan>",
+      "converge_pass": "5B",
+      "wraps": "taskspec plan",
+      "emits_tokens": [
+        "TASK_PLAN=OK|INVALID|USAGE_ERROR"
+      ],
+      "mutating": false,
+      "example": "cvg tasks plan --manifest seamwise/task-plan.json",
+      "description": "Thin, read-only delegation to the independently installed Task-Spec engine. Converge passes the TaskPlan arguments unchanged and never derives or renders tasks."
+    },
+    {
+      "name": "tasks new <slug>",
+      "converge_pass": "5B",
+      "wraps": "task-spec/generate-task-spec.sh",
+      "emits_tokens": [
+        "Spec written"
+      ],
+      "mutating": true,
+      "example": "cvg tasks new add-health-endpoint",
+      "description": "Create one Task-Spec in the resolved canonical backlog (cvg/tasks first; legacy tasks only when that existing layout is explicitly selected), append a created event, and rebuild state."
+    },
+    {
+      "name": "tasks validate <spec>",
+      "converge_pass": "5B",
+      "wraps": "task-spec/validate-task-spec.sh",
+      "emits_tokens": [
+        "OK / FAIL (structural + six-tier sizing)"
+      ],
+      "mutating": true,
+      "example": "cvg tasks validate T-...md",
+      "description": "Structural lint + six-tier effort gate (leaf write-surface budgets; XL/XXL nodes need children). On success it refreshes the derived tasks/_state.yaml index."
+    },
+    {
+      "name": "tasks validate --no-state <spec>",
+      "converge_pass": "5B",
+      "wraps": "task-spec/validate-task-spec.sh --no-state",
+      "emits_tokens": [
+        "OK / FAIL (structural + six-tier sizing)"
+      ],
+      "mutating": false,
+      "example": "cvg tasks validate --no-state T-...md",
+      "description": "Read-only structural validation for CI, audits, and sign-off checks; performs the same validation without refreshing tasks/_state.yaml."
+    },
+    {
+      "name": "tasks gate <spec>",
+      "converge_pass": "5B",
+      "wraps": "task-spec/safe-to-delegate.sh",
+      "emits_tokens": [
+        "VERDICT: DELEGATE|DO NOT DELEGATE",
+        "TIER=1|2|3"
+      ],
+      "mutating": false,
+      "example": "cvg tasks gate T-...md",
+      "description": "Sign-off gate; refuses an XL/XXL node (dispatch its children, not the node)."
+    },
+    {
+      "name": "tasks gate --stamp <spec>",
+      "converge_pass": "5B",
+      "wraps": "task-spec/safe-to-delegate.sh --stamp",
+      "emits_tokens": [
+        "VERDICT: DELEGATE|DO NOT DELEGATE",
+        "TIER=1|2|3"
+      ],
+      "mutating": true,
+      "example": "cvg tasks gate --stamp T-...md",
+      "description": "Explicitly sign or re-seal the Task-Spec after the delegation gate passes. This is the mutating form; a plain tasks gate verdict remains read-only."
+    },
+    {
+      "name": "tasks accept <spec>",
+      "converge_pass": "5B",
+      "wraps": "task-spec/accept-task.sh",
+      "emits_tokens": [
+        "ACCEPT / REJECT"
+      ],
+      "mutating": true,
+      "example": "cvg tasks accept T-...md --stamp",
+      "description": "Post-execution acceptance."
+    },
+    {
+      "name": "tasks dod <spec>",
+      "converge_pass": "5B",
+      "wraps": "taskspec dod",
+      "emits_tokens": [
+        "DOD=COMPLETE|GAPS|USAGE_ERROR"
+      ],
+      "mutating": false,
+      "example": "cvg tasks dod T-...md",
+      "description": "Definition-of-Done + traceability matrix (every behavior B-N → its verifying eval); gates DOD=GAPS if a behavior is untraced. The 2026 agent-spec SOTA review artifact."
+    },
+    {
+      "name": "tasks metrics [filters]",
+      "converge_pass": "5B",
+      "wraps": "task-spec/query-metrics.sh",
+      "emits_tokens": [
+        "matching JSONL events"
+      ],
+      "mutating": false,
+      "example": "cvg tasks metrics --status done",
+      "description": "Query the canonical append-only task lifecycle event index."
+    },
+    {
+      "name": "tasks rebuild-state",
+      "converge_pass": "5B",
+      "wraps": "task-spec/rebuild-state.sh",
+      "emits_tokens": [
+        "Rebuilt _state.yaml + per-status counts"
+      ],
+      "mutating": true,
+      "example": "cvg tasks rebuild-state",
+      "description": "Re-derive the tasks/_state.yaml index from the frontmatter of every tasks/T-*.md, which is its only source of truth. `cvg init` builds it once and only when absent, and `tasks validate` refreshes it as a side effect, so a backlog edited by hand or by another tool can leave the derived index behind its specs. Safe to run at any time: the file is disposable by design and this rewrites it from scratch."
+    },
+    {
+      "name": "register [--tracker T] [--no-stamp-refs]",
+      "converge_pass": "①",
+      "wraps": "task-specs-to-issues/register.sh",
+      "emits_tokens": [
+        "REGISTER=OK|FAIL|DRY_RUN|EMPTY"
+      ],
+      "mutating": true,
+      "example": "cvg register --tracker linear",
+      "description": "REGISTER ① — bridge signed-off Task-Specs onto a tracker board (1 spec = 1 issue, depends_on → blocked-by), then stamp a tracker_ref receipt back into each spec. Pluggable adapter github|linear|jira (default linear); the referee holds NO tracker credentials. Idempotent: re-runs upsert, never duplicate. --no-stamp-refs skips the write-back (CI-safe; the issue-side marker stays the key). On Linear, register also seeds native fields from existing frontmatter (assignee from execution_backend/agent via .cvg/identity, state from DAG position, subscribers directly from signed_off_by — assignee/state seed-once, subscribers union-merged) and honors an optional in-frontmatter projection: block (project/milestone/cycle/parent/template/sla; tracker-neutral, HMAC-safe). Structure projection (Initiative→Project→Milestones + append-only health) is opt-in via `cvg setup projection --enable` and OFF by default, so the base behavior is unchanged."
+    },
+    {
+      "name": "register --check",
+      "converge_pass": "①",
+      "wraps": "task-specs-to-issues/verify-registration.sh",
+      "emits_tokens": [
+        "CHECK_REGISTER=OK|FAIL"
+      ],
+      "mutating": false,
+      "example": "cvg register --check --tracker linear",
+      "description": "Gate the mapping is faithful: 1:1 count, every depends_on edge is one blocked-by link, no cycle, no un-gated leak. Read-only; the offline spec-side half runs with --dry-run."
+    },
+    {
+      "name": "setup",
+      "converge_pass": null,
+      "wraps": "native (workspace + signing + doctor + adapter preflight)",
+      "emits_tokens": [
+        "SETUP=READY|INCOMPLETE"
+      ],
+      "mutating": false,
+      "example": "cvg setup",
+      "description": "Readiness board for the canonical workspace, Tier-1 signing, engines, and optional tracker integrations, with the exact next step. Records CHOICES in .cvg/config, never credentials."
+    },
+    {
+      "name": "setup signing [--force]",
+      "converge_pass": null,
+      "wraps": "task-spec/configs/setup-taskspec-signing-key.sh",
+      "emits_tokens": [
+        "SETUP_SIGNING=OK|UNCHANGED|NOT_GIT|UNSAFE_PATH|USAGE_ERROR"
+      ],
+      "mutating": true,
+      "example": "cvg setup signing",
+      "description": "Provision the repository Task-Spec HMAC key under Git-private state so signed specs reach Tier 1. Idempotent unless --force explicitly rotates the key."
+    },
+    {
+      "name": "setup tracker <t> [--team K]",
+      "converge_pass": null,
+      "wraps": "native (+ adapter preflight)",
+      "emits_tokens": [
+        "SETUP_TRACKER=OK|NEEDS_TEAM|UNREACHABLE|USAGE_ERROR"
+      ],
+      "mutating": true,
+      "example": "cvg setup tracker linear",
+      "description": "Validate a tracker via preflight and record it as the default in .cvg/config; cvg register then defaults --tracker from it. For linear: export only LINEAR_API_KEY — the team is auto-discovered (a single team auto-selects; otherwise pass --team <KEY>, the key straight from the Linear URL), resolved to a UUID, and recorded. The API key is never stored."
+    },
+    {
+      "name": "setup key [tracker]",
+      "converge_pass": null,
+      "wraps": "task-specs-to-issues/tracker-key.sh set",
+      "emits_tokens": [
+        "TRACKER_KEY=STORED|ERROR"
+      ],
+      "mutating": true,
+      "example": "cvg setup key linear",
+      "description": "Store the tracker API key ONCE, outside the repository — OS keychain first (macOS Keychain / secret-tool), a 0600 file under ~/.config/converge/ as fallback. Reads the key from stdin, never argv (argv is visible in ps). .cvg/ keeps recording choices, never credentials; with no tracker argument it defaults from .cvg/config."
+    },
+    {
+      "name": "setup repo [--branch b] [--url u]",
+      "converge_pass": null,
+      "wraps": "native (git remote)",
+      "emits_tokens": [
+        "SETUP_REPO=OK|UNDETECTED|USAGE_ERROR"
+      ],
+      "mutating": true,
+      "example": "cvg setup repo",
+      "description": "Link the repo to the tracker: derives a browsable blob base URL from the git remote (github/gitlab/bitbucket shapes) and records it as spec_base_url in .cvg/config, so every registered issue links back to the spec it was projected from. Branch-pinned; --branch/--url override."
+    },
+    {
+      "name": "doctor runtime-contract [--runtime R]",
+      "converge_pass": 7,
+      "wraps": "task-to-runtime-contract/attest-runtime.py",
+      "emits_tokens": [
+        "DOCTOR_RUNTIME_CONTRACT=OK|DEGRADED|FAIL"
+      ],
+      "mutating": false,
+      "example": "cvg doctor runtime-contract --runtime codex",
+      "description": "Attest what THIS host can actually enforce for Pass 7 — the isolation primitive (Seatbelt/Landlock/bubblewrap), whether the runtime binary is installed, and whether git worktrees work. Probes are conservative: an unprovable capability is reported absent, so a contract fails closed instead of assuming a control it never had. DEGRADED means the runtime claims prevent but only detect is provable."
+    },
+    {
+      "name": "lane <intent> [--files N] [--paths p]",
+      "converge_pass": null,
+      "wraps": "task-spec/classify-lane.py",
+      "emits_tokens": [
+        "LANE=FAST|NORMAL|FULL|USAGE_ERROR"
+      ],
+      "mutating": false,
+      "example": "cvg lane \"add a health endpoint\"",
+      "description": "Route work to the lane it earns. FAST = 5,7,8 (small reversible change); NORMAL = 1,2,5,7,8; FULL = 0-8. Deterministic and offline. It ROUTES but never WAIVES: touching auth/money/migrations/secrets/public-API or anything irreversible can never ride FAST, a new seam forces FULL, and no lane dispatches an unsigned spec. Every lane still ends at a green eval plus the path guard."
+    },
+    {
+      "name": "verify --task <spec> [--judge E]",
+      "converge_pass": 8,
+      "wraps": "task-to-runtime-contract/verify-work.py",
+      "emits_tokens": [
+        "CHECK_VERIFY=UPHELD|REFUTED|UNAVAILABLE|ERROR"
+      ],
+      "mutating": false,
+      "example": "cvg verify --task tasks/T-...md --judge codex",
+      "description": "Tier-2 adversarial verification: a DIFFERENT-FAMILY engine reads the diff, the spec's stated intent, and the holdout criteria the implementer never saw (never the worker's transcript) and is prompted to refute. Fails closed — a missing, malformed or timed-out verdict is never a pass. With no second engine the verdict is UNAVAILABLE: permitted for low blast radius, blocked for high unless --accept-unverified records the risk."
+    },
+    {
+      "name": "setup harness",
+      "converge_pass": 7,
+      "wraps": "task-to-runtime-contract/scaffold-router.py",
+      "emits_tokens": [
+        "SETUP_HARNESS=OK|PROPOSED|UNCHANGED|USAGE_ERROR"
+      ],
+      "mutating": true,
+      "example": "cvg setup harness",
+      "description": "Scaffold the project ROUTER (AGENTS.md): identity, folder map, where-to-look table, house rules — routing only, under ~50 lines. cvg never generates doctrine; auto-written context files measurably lower task success while raising cost. Per-task detail is delivered just-in-time by Pass 7B. Non-clobbering: an existing router is untouched and a .proposed sibling is written instead."
+    },
+    {
+      "name": "setup identity [--list]",
+      "converge_pass": null,
+      "wraps": "native (+ adapter users verb)",
+      "emits_tokens": [
+        "SETUP_IDENTITY=OK|NEEDS_MAP|UNREACHABLE|USAGE_ERROR"
+      ],
+      "mutating": false,
+      "example": "cvg setup identity --list",
+      "description": "Discover tracker identities as a ready-to-paste block. Read-only; an unmapped assignee remains a fail-soft optional enrichment."
+    },
+    {
+      "name": "setup identity --map KEY=VAL [--map ...]",
+      "converge_pass": null,
+      "wraps": "native",
+      "emits_tokens": [
+        "SETUP_IDENTITY=OK|USAGE_ERROR"
+      ],
+      "mutating": true,
+      "example": "cvg setup identity --map backend:claude=you@org.com",
+      "description": "Map execution_backend/agent choices to tracker identities in machine-local .cvg/identity. Keys are strictly backend:<engine>, agent:<role>, or default; writes are same-directory atomic and mode 0600."
+    },
+    {
+      "name": "setup projection [--enable|--disable] [--project N] [--initiative N] [--milestones L]",
+      "converge_pass": null,
+      "wraps": "native (+ adapter preflight)",
+      "emits_tokens": [
+        "SETUP_PROJECTION=OK|DISABLED|UNREACHABLE|USAGE_ERROR"
+      ],
+      "mutating": true,
+      "example": "cvg setup projection --enable --project 'Converge Backbone' --initiative 'Q3 Delivery'",
+      "description": "Opt in to T3 structure projection: records projection_enabled/project/initiative/milestones in .cvg/config so register's Step-0 pre-pass ensures Initiative→Project→Milestones (idempotent, by-name) and posts append-only health. Default DISABLED — a plain cvg register is byte-identical to today. Enabling preflights the configured tracker (projects need a live team). CHOICES only, never credentials."
+    },
+    {
+      "name": "setup engines",
+      "converge_pass": 4,
+      "wraps": "sketch-plans-adversarial-review/doctor.sh",
+      "emits_tokens": [
+        "DOCTOR=OK|FAIL"
+      ],
+      "mutating": false,
+      "example": "cvg setup engines",
+      "description": "Per-engine readiness inside the setup surface — the same check as cvg doctor (>=2 engines, >=1 cross-family)."
+    },
+    {
+      "name": "eval <spec>",
+      "converge_pass": "5B",
+      "wraps": "task-spec/run-task-spec.sh",
+      "emits_tokens": [
+        "per-eval pass/fail"
+      ],
+      "mutating": false,
+      "example": "cvg eval T-...md",
+      "description": "Run a Task-Spec's evals."
+    },
+    {
+      "name": "lint",
+      "converge_pass": "5B",
+      "wraps": "task-spec/lint-backlog.sh",
+      "emits_tokens": [
+        "backlog issues"
+      ],
+      "mutating": false,
+      "example": "cvg lint",
+      "description": "Lint the backlog for overlaps/cycles."
+    },
+    {
+      "name": "transition <id> <state>",
+      "converge_pass": "5B",
+      "wraps": "task-spec/transition-status.sh",
+      "emits_tokens": [
+        "status change"
+      ],
+      "mutating": true,
+      "example": "cvg transition T-...md done",
+      "description": "Move a task between statuses (locked + logged)."
+    },
+    {
+      "name": "next [--lane FULL|NORMAL|FAST]",
+      "converge_pass": null,
+      "wraps": "evidence-to-next-pass/next-pass.sh",
+      "emits_tokens": [
+        "NEXT_PASS=0-8|DONE"
+      ],
+      "mutating": false,
+      "example": "cvg next",
+      "description": "The descent conductor: derives which pass is current and which comes next from workspace evidence (each pass leaves artifacts in a known cvg/ folder — no stored state), prints the evidence board, the owning skill and its installed steering prompt (skills/<pass-skill>/references/pass-prompt.md — shipped with the package, never copied into the project), and the gate that closes the pass. Evidence presence is not a verdict: the cvg gates stay authoritative. The same engine's pre/post hooks (scripts/next-pass.sh pre|post N) enforce order fail-closed."
+    },
+    {
+      "name": "next --guided [--lane FULL|NORMAL|FAST]",
+      "converge_pass": null,
+      "wraps": "evidence-to-next-pass/next-pass.sh",
+      "emits_tokens": [
+        "GUIDED_CHAT=AWAITING_CHOICE|DONE",
+        "NEXT_PASS=0-8|DONE"
+      ],
+      "mutating": false,
+      "example": "cvg next --guided --lane FAST",
+      "description": "Opt-in conversational view of the same evidence-derived conductor. It adds stable CONTINUE, EXPLAIN, INSPECT, and PAUSE choices at a pass boundary, instructs the agent to wait rather than infer CONTINUE, persists no chat state, and keeps NEXT_PASS as the final machine token."
+    },
+    {
+      "name": "next pre <N> [--lane FULL|NORMAL|FAST]",
+      "converge_pass": null,
+      "wraps": "evidence-to-next-pass/next-pass.sh",
+      "emits_tokens": [
+        "PASS_PRE=OK|MISSING"
+      ],
+      "mutating": false,
+      "example": "cvg next pre 5 --lane FAST",
+      "description": "Public fail-closed pre-hook for the chat conductor. It refuses pass N until every earlier pass in the selected lane has left its required evidence and never replaces the pass's authoritative gate."
+    },
+    {
+      "name": "next post <N>",
+      "converge_pass": null,
+      "wraps": "evidence-to-next-pass/next-pass.sh",
+      "emits_tokens": [
+        "PASS_POST=OK|INCOMPLETE"
+      ],
+      "mutating": false,
+      "example": "cvg next post 5",
+      "description": "Public post-hook for the chat conductor. It verifies that pass N left its expected artifact, names the authoritative closing gate, and never treats artifact presence as a verdict."
+    },
+    {
+      "name": "snapshot",
+      "converge_pass": null,
+      "wraps": "native (bin/cvg-snapshot.py)",
+      "emits_tokens": [
+        "WorkspaceSnapshot 3.0 at data.snapshot under --json"
+      ],
+      "mutating": false,
+      "example": "cvg snapshot --json",
+      "description": "Build the deterministic, offline-safe, read-only cockpit contract from canonical repository evidence. The stable snapshotId excludes observation timestamps; artifacts are digest-bound references only, layout stays frontend-owned, optional domains report unavailable, and any core method/gate failure fails closed."
+    },
+    {
+      "name": "doctor host",
+      "converge_pass": null,
+      "wraps": "native (pure bash — it must not depend on what it audits)",
+      "emits_tokens": [
+        "DOCTOR_HOST=OK|DEGRADED|MISSING|ERROR"
+      ],
+      "mutating": false,
+      "example": "cvg doctor host",
+      "description": "Can THIS MACHINE run the delegation path? Checks git, the running bash, a bash 4+ (cvg lint needs one), python3, shellcheck and a sha256 tool — and for anything missing, NAMES THE VERBS IT BLOCKS. Written after shellcheck's absence produced this chain: safe-to-delegate passes --shellcheck-evals unconditionally, so the gate BLOCKED and no spec could be signed; cvg bind refuses an unsigned spec, so no execution profile was written; cvg loop then reported a missing runtime contract. Every message in that chain was correct and none of them was the cause, which sat three verbs upstream and cost an hour of bisecting — including a commit CI had passed, because CI installs shellcheck explicitly. Fails closed at exit 1 when a required tool is absent; DEGRADED when only an optional-but-load-bearing one is. Read-only."
+    },
+    {
+      "name": "doctor evidence",
+      "converge_pass": null,
+      "wraps": "native (git ls-files --others over the cvg/ workspace)",
+      "emits_tokens": [
+        "DOCTOR_EVIDENCE=OK|UNTRACKED|NOT_GIT|ERROR"
+      ],
+      "mutating": false,
+      "example": "cvg doctor evidence",
+      "description": "Can git show the floor the gates are standing on? Three parts of the method assume the workspace is version-controlled and none of them checks: Pass 4 stamps sha256 provenance over the plan FILES, Pass 8 settles by COMMITTING (staging from the capability envelope's fs.write grant, receipt written last), and `cvg lesson --immutable` proves teaching changed nothing by reading `git status --porcelain`. Found live: a workspace ran four green gates while its entire descent — BRD, tech-spec, six ADRs, eleven legs — was untracked, one `git clean` from gone, with every provenance claim resting on nothing. Reports per artifact folder and NAMES THE PASS at risk, because \"3 untracked files\" says less than \"Pass 4 cannot prove provenance\". Exploring without git is legitimate; settling is not, so NOT_GIT and UNTRACKED both fail closed at exit 1. Read-only."
+    },
+    {
+      "name": "doctor plugin",
+      "converge_pass": null,
+      "wraps": "native (plugin install record + content fingerprint)",
+      "emits_tokens": [
+        "DOCTOR_PLUGIN=OK|STALE|UNMANAGED|ERROR"
+      ],
+      "mutating": false,
+      "example": "cvg doctor plugin",
+      "description": "Answer the one question that makes every other verdict falsifiable: is the Converge a CONSUMING PROJECT loads the same Converge as its source? Compares the plugin install record's gitCommitSha against the marketplace clone's HEAD, and — the real claim — fingerprints the loaded tree against that clone's content. STALE means a project is running skills that are not the source, which is invisible otherwise: the cache path is keyed by version, so while VERSION does not move an update resolves to the same directory and keeps serving the stale copy. Also warns when you are running a different copy (a dev checkout) than projects load, because green gates there prove nothing about the plugin. UNMANAGED (exit 0) when there is no plugin install to compare. Read-only and offline by design — it never fetches, since a network-dependent doctor lies when offline."
+    },
+    {
+      "name": "lesson [<file>] [--immutable <path>...]",
+      "converge_pass": null,
+      "wraps": "pass-to-lesson/check-lesson.sh",
+      "emits_tokens": [
+        "CHECK_LESSON=PASS|FAIL|USAGE_ERROR"
+      ],
+      "mutating": false,
+      "example": "cvg lesson cvg/docs/lessons/lesson-pass-1-billing.md",
+      "description": "The teaching companion's gate — optional, invocable after ANY pass closes, and it never blocks the descent. Converge delegates the writing of every artifact but not the understanding of it: this gates the lesson a pass earned (all seven sections by exact name, 'what breaks downstream' on every component block, a non-empty decisions table, 3-5 check-yourself questions, and well-formed teaching-mode sections when the lesson declares modes). With --immutable <taught-artifact>... it proves teaching changed nothing it taught (clean git status; outside a repo it warns and skips). Discovery finds cvg/docs/lessons/ then legacy docs/lessons/ when no path is given; lessons accumulate by design, so more than one is a usage error naming them all rather than a non-deterministic newest-wins guess. Steering prompt: skills/pass-to-lesson/references/pass-prompt.md. What the gate cannot see stays human: that every emitted artifact is actually taught, that each rejected alternative is real, and that the owner restated it in their own words."
+    },
+    {
+      "name": "ready [--all]",
+      "converge_pass": "5B",
+      "wraps": "task-spec/list-ready.sh",
+      "emits_tokens": [
+        "frontier task list (+ a hidden-blocked count)"
+      ],
+      "mutating": false,
+      "example": "cvg ready",
+      "description": "List the DISPATCHABLE FRONTIER — status:ready specs whose every depends_on edge is already done. This is the surface a Manager selects work from, so it is dependency-aware by default: listing a spec whose inputs do not exist yet would dispatch work that cannot pass. Fails closed on a dangling or cyclic edge. --all restores the flat listing of every status:ready spec, blocked or not."
+    },
+    {
+      "name": "help",
+      "converge_pass": null,
+      "wraps": "native",
+      "emits_tokens": [],
+      "mutating": false,
+      "example": "cvg help",
+      "description": "Human-readable command map."
+    },
+    {
+      "name": "version",
+      "converge_pass": null,
+      "wraps": "native",
+      "emits_tokens": [
+        "cvg <semver>"
+      ],
+      "mutating": false,
+      "example": "cvg version",
+      "description": "Print the version."
+    },
+    {
+      "name": "agent-context",
+      "converge_pass": null,
+      "wraps": "native",
+      "emits_tokens": [
+        "this JSON document"
+      ],
+      "mutating": false,
+      "example": "cvg agent-context",
+      "description": "This machine-readable manifest (also: cvg manifest)."
+    }
+  ]
+}

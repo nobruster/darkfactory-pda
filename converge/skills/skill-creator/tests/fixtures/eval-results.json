@@ -1,0 +1,17 @@
+{
+  "description": "A minimal valid fixture skill used by the skill-creator test suite to prove quick_validate exits 0 on a conforming skill.",
+  "results": [
+    {
+      "query": "help me validate my new skill before I commit it",
+      "should_trigger": true,
+      "pass": false,
+      "triggers": 0,
+      "runs": 3
+    }
+  ],
+  "summary": {
+    "passed": 0,
+    "failed": 1,
+    "total": 1
+  }
+}

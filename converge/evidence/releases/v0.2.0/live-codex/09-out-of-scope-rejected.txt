@@ -1,0 +1,23 @@
+Repository write fence: /private<WORKSPACE>/.cvg/gate.yaml
+  schema_version   : 2
+  protected_paths  : 16 rule(s) — no Task-Spec may widen these
+      **/.git/**
+      **/.cvg/**
+      **/.env
+      **/.env.*
+      **/secrets/**
+      **/credentials/**
+      **/*_key*
+      **/*_secret*
+      **/id_rsa*
+      **/.terraform/**
+      **/migrations/**
+      **/auth/**
+      **/payments/**
+      **/billing/**
+      .cvg/gate.yaml
+      .github/workflows/**
+  max_changed_files: 12
+
+  REFUSED  auth/x.py  (rule: **/auth/**)
+CHECK_GATE=FORBIDDEN

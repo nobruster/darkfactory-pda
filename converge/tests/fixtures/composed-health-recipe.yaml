@@ -1,0 +1,112 @@
+schema_version: 1
+intent:
+  id: DI-HEALTH-STATUS
+  title: Expose one deterministic Python health status
+  summary: Add a provider-neutral health function whose result is stable and independently tested.
+  claim: proposed
+  source:
+    uri: README.md
+    captured_at: "2026-08-15T00:00:00Z"
+    sha256: 3e0828fde27605afa96ac26fed0062bd936559f003a426f6efaf01a9f620a778
+  success:
+    - Calling health_status returns an explicit ok status.
+    - The focused Python test proves the public return value.
+  out_of_scope:
+    - Network probes or deployment configuration.
+system_map:
+  claim: proposed
+  components:
+    - Python health boundary
+  external_dependencies: []
+  unknowns: []
+evidence:
+  - id: E-HEALTH-INTENT
+    claim: proposed
+    source:
+      uri: README.md
+      captured_at: "2026-08-15T00:00:00Z"
+      sha256: 3e0828fde27605afa96ac26fed0062bd936559f003a426f6efaf01a9f620a778
+    confidence: 1.0
+    summary: The committed fixture defines the single-task health outcome.
+decisions:
+  - id: ADR-HEALTH-SHAPE
+    status: accepted
+    owner: composed-alpha
+    rationale: A pure function is the smallest deterministic proof of the composed boundary.
+seams:
+  - id: SEAM-HEALTH-BOUNDARY
+    name: Health boundary
+    description: Separates the public health result from future transport adapters.
+    evidence: [E-HEALTH-INTENT]
+    responsibility: Return one stable application health status.
+    consumes: [health request]
+    produces: [health status]
+    owner: application-runtime
+    independent_proof: A focused Python test imports and calls the health function.
+    decision_ids: [ADR-HEALTH-SHAPE]
+    rejected_alternatives:
+      - alternative: Add a web framework and route
+        reason: Transport is outside this single-task composition proof.
+    swimlane:
+      id: LANE-HEALTH-BOUNDARY
+      name: Health boundary lane
+      owner: application-runtime
+      legs:
+        - id: LEG-HEALTH-RETURNS-OK
+          observable_state: The Python health boundary returns ok
+          proof: A focused unittest verifies the exact return object.
+          requires: []
+          produces: [health status]
+          tasks:
+            - id: T-20260815-health-status
+              title: Implement the Python health status boundary
+              goal: Give callers one deterministic health result without selecting a transport.
+              done_condition: 'health_status returns {"status": "ok"} and the focused unittest passes.'
+              effort: S
+              profile: standard
+              execution_backend: any
+              required_tools: [git, bash, python3]
+              depends_on: []
+              touches_paths: []
+              creates_paths:
+                - src/health.py
+                - tests/test_health.py
+              behavior:
+                - id: B-1
+                  given: the application process is running
+                  when: health_status is called
+                  then: it returns a mapping whose status is ok
+                - id: B-2
+                  given: health_status is called more than once
+                  when: no external state changes
+                  then: every call returns the same value
+              evals:
+                - id: eval_1
+                  description: The health module exists and parses without build debris
+                  bash: test -f src/health.py && python3 -c "import ast; ast.parse(open('src/health.py', encoding='utf-8').read())"
+                  verifies: [B-1]
+                - id: eval_2
+                  description: The focused unittest proves the ok result
+                  bash: python3 -m unittest tests/test_health.py
+                  verifies: [B-1]
+                - id: eval_3
+                  description: Repeated health calls are deterministic
+                  bash: python3 -m unittest tests/test_health.py -k deterministic
+                  verifies: [B-2]
+              anti_patterns:
+                - action: add a web framework
+                  reason: transport is not part of the authorized task
+                  instead: implement only the pure Python boundary
+                - action: read environment variables
+                  reason: the result would no longer be deterministic
+                  instead: return one explicit literal result
+                - action: write outside src and tests
+                  reason: the declared path policy would be widened
+                  instead: stay inside the two declared files
+              do_not_touch: [README.md]
+              rollback: Remove the two additive health-status files.
+              observability: focused unittest pass count
+steel_thread:
+  - LEG-HEALTH-RETURNS-OK
+objections: []
+contentions: []

@@ -1,0 +1,96 @@
+{
+  "api_version": "taskspec.dev/v1",
+  "approved": true,
+  "kind": "TaskPlan",
+  "metadata": {
+    "delivery_plan_review_sha256": "7a5bcf0a132b0abed9dfa96f3d0d568248e44939880585a35004e88df5ee5ca5",
+    "delivery_plan_sha256": "5ff1482e5078a7647059ef96a0010f485ba07d15a5de99a82e277cdde4c5184d",
+    "name": "DI-HEALTH-STATUS",
+    "producer": "seamwise",
+    "producer_version": "0.2.0-alpha.1",
+    "seamwise_plan_status": "DELIVERY_PLAN=READY",
+    "source": "seamwise/task-plan.json"
+  },
+  "units": [
+    {
+      "agent": "any",
+      "anti_patterns": [
+        "Do not add a web framework: transport is not part of the authorized task; instead implement only the pure Python boundary.",
+        "Do not read environment variables: the result would no longer be deterministic; instead return one explicit literal result.",
+        "Do not write outside src and tests: the declared path policy would be widened; instead stay inside the two declared files."
+      ],
+      "behaviors": [
+        {
+          "given": "the application process is running",
+          "id": "B-1",
+          "then": "it returns a mapping whose status is ok",
+          "when": "health_status is called"
+        },
+        {
+          "given": "health_status is called more than once",
+          "id": "B-2",
+          "then": "every call returns the same value",
+          "when": "no external state changes"
+        }
+      ],
+      "context": "Intent DI-HEALTH-STATUS; seam SEAM-HEALTH-BOUNDARY; swimlane LANE-HEALTH-BOUNDARY; capability leg LEG-HEALTH-RETURNS-OK. Done condition: health_status returns {\"status\": \"ok\"} and the focused unittest passes.",
+      "creates_paths": [
+        "src/health.py",
+        "tests/test_health.py"
+      ],
+      "depends_on": [],
+      "do_not_touch": [
+        "README.md"
+      ],
+      "done_condition": "health_status returns {\"status\": \"ok\"} and the focused unittest passes.",
+      "effort": "S",
+      "evals": [
+        {
+          "command": "test -f src/health.py && python3 -c \"import ast; ast.parse(open('src/health.py', encoding='utf-8').read())\"",
+          "description": "The health module exists and parses without build debris",
+          "expected_duration_sec": 10,
+          "id": "eval_1",
+          "terminal": false,
+          "verifies": [
+            "B-1"
+          ]
+        },
+        {
+          "command": "python3 -m unittest tests/test_health.py",
+          "description": "The focused unittest proves the ok result",
+          "expected_duration_sec": 10,
+          "id": "eval_2",
+          "terminal": false,
+          "verifies": [
+            "B-1"
+          ]
+        },
+        {
+          "command": "python3 -m unittest tests/test_health.py -k deterministic",
+          "description": "Repeated health calls are deterministic",
+          "expected_duration_sec": 10,
+          "id": "eval_3",
+          "terminal": true,
+          "verifies": [
+            "B-2"
+          ]
+        }
+      ],
+      "execution_backend": "any",
+      "goal": "Give callers one deterministic health result without selecting a transport.",
+      "id": "T-20260815-health-status",
+      "observability": "focused unittest pass count",
+      "profile": "standard",
+      "required_tools": [
+        "git",
+        "bash",
+        "python3"
+      ],
+      "rollback": "Remove the two additive health-status files.",
+      "source_note": "seamwise/legs/LEG-HEALTH-RETURNS-OK.md#T-20260815-health-status",
+      "title": "Implement the Python health status boundary",
+      "touches_paths": [],
+      "why": "Give callers one deterministic health result without selecting a transport."
+    }
+  ]
+}

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024" role="img" aria-labelledby="title">
+  <title id="title">Converge app icon on factory black</title>
+  <rect width="1024" height="1024" rx="224" fill="#070A0F"/>
+     <g transform="translate(96 96) scale(0.81)" opacity="1" stroke-linejoin="round">
+    <path d="M512 72 L832 256 L832 332 L714 400 L714 338 L512 222 L310 338 L310 570 L512 686 L714 570 L714 510 L832 442 L832 652 L512 836 L192 652 L192 256 Z" fill="#F5F2EA" stroke="#F5F2EA" stroke-width="20"/>
+    <path d="M714 188 L832 256 L714 324 Z" fill="#F3B64C" stroke="#F3B64C" stroke-width="12"/>
+  </g>
+</svg>

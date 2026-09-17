@@ -1,0 +1,23 @@
+{
+  "contract": "ConvergeCLIResult/v1",
+  "schema_version": 1,
+  "ok": true,
+  "command": "compose status",
+  "converge_pass": null,
+  "token": "COMPOSE=MATERIALIZED",
+  "verdict": "MATERIALIZED",
+  "exit_code": 0,
+  "changed": false,
+  "dry_run": false,
+  "data": {
+    "output": "NEXT=all composed tasks are independently accepted\nCHANGED=false\nCOMPOSE=MATERIALIZED",
+    "next_action": "all composed tasks are independently accepted"
+  },
+  "error": null,
+  "warnings": [],
+  "meta": {
+    "schema_version": "1.0",
+    "tool": "cvg",
+    "cvg_version": "0.2.0-alpha.1"
+  }
+}

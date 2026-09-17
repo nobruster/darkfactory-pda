@@ -40,16 +40,25 @@ daqui:
 | Componente | O que é | Origem |
 |---|---|---|
 | [`fabrica/`](fabrica/) | **O juiz** — oráculo + golden-match. O núcleo: 6 classificações, zero tolerância. | próprio |
-| [`converge/`](converge/) | Motor de convergência e gates (`cvg`) | submódulo |
+| [`converge/`](converge/) | Motor de convergência e gates (`cvg`) | **vendorizado** ⚠️ |
 | [`task-spec/`](task-spec/) | Tarefas assinadas (HMAC) e tiers de aceite | submódulo |
 | [`brief-spec/`](brief-spec/) | Especificação de briefings para agentes | submódulo |
 | [`seamwise/`](seamwise/) | Skills e costura entre agentes | submódulo |
 | [`uc-northwind-pay-edp/`](uc-northwind-pay-edp/) | Caso de uso completo de referência (legado × moderno) | submódulo |
 
-Cinco dos seis são **submódulos git** apontando para os repositórios originais
-de [@luanmorenommaciel](https://github.com/luanmorenommaciel). Ficam
-referenciados por URL e commit, não copiados: a autoria permanece correta e dá
-para puxar atualizações do upstream.
+Quatro são **submódulos git** apontando para os repositórios originais de
+[@luanmorenommaciel](https://github.com/luanmorenommaciel). Ficam referenciados
+por URL e commit, não copiados: a autoria permanece correta e dá para puxar
+atualizações do upstream.
+
+### ⚠️ Converge é a exceção
+
+O repositório de origem do `converge` **saiu do ar** (HTTP 404). Enquanto era
+submódulo, o clone falhava e a pasta vinha vazia. Por isso os arquivos estão
+copiados direto neste repositório, congelados no commit `f6df8af` (v0.2.0),
+licença MIT preservada.
+
+Detalhes e consequências em [`converge/VENDORED.md`](converge/VENDORED.md).
 
 ---
 

@@ -1,0 +1,64 @@
+{
+  "name": "@luanmorenommaciel/converge",
+  "version": "0.2.0",
+  "description": "Compile intent into shipped software — eleven orchestration and assurance skills around the independently versioned Task-Spec engine, plus the cvg referee CLI; done is proven by runnable evals, never claimed.",
+  "bin": {
+    "cvg": "bin/cvg",
+    "cvg-install": "install.sh"
+  },
+  "scripts": {
+    "cockpit:install": "npm --prefix apps/cockpit install",
+    "cockpit:dev": "npm --prefix apps/cockpit run dev --",
+    "cockpit:build": "npm --prefix apps/cockpit run build",
+    "cockpit:check": "npm --prefix apps/cockpit run check",
+    "cockpit:start": "npm --prefix apps/cockpit run start --",
+    "control-room:install": "npm --prefix apps/cockpit install",
+    "control-room:dev": "npm --prefix apps/cockpit run dev --",
+    "control-room:build": "npm --prefix apps/cockpit run build",
+    "control-room:check": "npm --prefix apps/cockpit run check",
+    "control-room:start": "npm --prefix apps/cockpit run start --"
+  },
+  "files": [
+    "bin/",
+    "contracts/",
+    "skills/brd-docs-to-tech-req/",
+    "skills/evidence-to-next-pass/",
+    "skills/idea-to-brd/",
+    "skills/pass-to-lesson/",
+    "skills/reqs-to-swimlane-plans/",
+    "skills/sketch-plans-adversarial-review/",
+    "skills/skill-creator/",
+    "skills/task-loop/",
+    "skills/task-specs-to-issues/",
+    "skills/task-to-runtime-contract/",
+    "skills/tech-req-to-adrs/",
+    "templates/",
+    "install.sh",
+    "VERSION",
+    ".claude-plugin/",
+    "!**/__pycache__/**",
+    "!**/*.pyc",
+    "!**/*.pyo",
+    "!**/.DS_Store",
+    "!**/*.tsbuildinfo"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/luanmorenommaciel/converge.git"
+  },
+  "homepage": "https://github.com/luanmorenommaciel/converge#readme",
+  "bugs": "https://github.com/luanmorenommaciel/converge/issues",
+  "keywords": [
+    "agentic",
+    "task-spec",
+    "evals",
+    "delivery",
+    "referee",
+    "claude-code",
+    "codex",
+    "kimi",
+    "grok"
+  ],
+  "author": "Luan Moreno M. Maciel",
+  "license": "MIT"
+}

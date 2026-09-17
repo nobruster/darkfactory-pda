@@ -1,0 +1,486 @@
+# CI — the gauntlet Converge asks of everyone else.
+#
+# A method whose pitch is "the eval decides done" has to run its own evals in
+# public. The test bodies are credential-free and service-isolated: no live
+# tracker, no model engine, and no external writes. Bootstrap may fetch
+# validation dependencies. Suites that need a live Linear board are NOT run
+# here by design — a gate that needs a secret is a gate that silently skips on
+# a fork's PR, and a silently-skipped gate is worse than no gate.
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  gauntlet:
+    name: gauntlet (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    env:
+      # Optional reference-consumer dependencies remain optional for local
+      # users. In CI, missing schema or cross-engine proof is a hard failure.
+      TASK_SPEC_REQUIRE_JSONSCHEMA: "1"
+      TASK_SPEC_STRICT_CROSS_ENGINE: "1"
+    # macOS ships bash 3.2 and BSD userland; Linux ships bash 5 and GNU. The
+    # core is written for the older, stricter of the two, so both must pass or
+    # the portability claim is decoration.
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest]
+    steps:
+      - name: checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # The real-project acceptance test verifies one append-only
+          # historical path-policy replay against its exact base and head.
+          # A depth-1 checkout would make that evidence unverifiable.
+          fetch-depth: 0
+          # No step pushes or fetches private content after checkout.
+          persist-credentials: false
+
+      - name: install the pinned standalone Task-Spec engine
+        env:
+          GH_TOKEN: ${{ secrets.RELEASE_STACK_READ_TOKEN }}
+        run: |
+          test -n "$GH_TOKEN" || { echo "::error::RELEASE_STACK_READ_TOKEN is required for private engine repositories"; exit 5; }
+          engine_dir="$(mktemp -d -t task-spec-engine.XXXXXX)"
+          gh auth setup-git
+          git clone --quiet https://github.com/luanmorenommaciel/task-spec.git "$engine_dir"
+          git -C "$engine_dir" checkout --quiet --detach 0e6180cfc3009bd4ef9cf7ab050b463e10d4af91
+          bash "$engine_dir/install.sh" --global --copy
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+          {
+            printf 'CVG_TASKSPEC_BIN=%s/.local/bin/taskspec\n' "$HOME"
+            printf 'CVG_TASKSPEC_SOURCE_ROOT=%s\n' "$engine_dir"
+            printf 'COMPOSE_DEMO_REQUIRE_ENGINE_PROVENANCE=1\n'
+          } >> "$GITHUB_ENV"
+
+      - name: set up Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          # Major-only: an exact patch pin breaks the moment a runner image
+          # drops it (3.12.13 vanished from macOS 26.4 arm64). Dependency
+          # locking lives in the hash-locked requirements file, not here.
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: .github/requirements-ci.txt
+
+      - name: install locked Python validation dependencies
+        run: >-
+          python -m pip install
+          --disable-pip-version-check
+          --require-hashes
+          -r .github/requirements-ci.txt
+
+      - name: install the pinned standalone Seamwise engine
+        env:
+          GH_TOKEN: ${{ secrets.RELEASE_STACK_READ_TOKEN }}
+        run: |
+          test -n "$GH_TOKEN" || { echo "::error::RELEASE_STACK_READ_TOKEN is required for private engine repositories"; exit 5; }
+          engine_dir="$(mktemp -d -t seamwise-engine.XXXXXX)"
+          gh auth setup-git
+          git clone --quiet https://github.com/luanmorenommaciel/seamwise.git "$engine_dir"
+          git -C "$engine_dir" checkout --quiet --detach 5a398169c3fefcb65eb1a47c0cb4f967dfdc0515
+          python -m pip install --disable-pip-version-check "$engine_dir"
+          test "$(seamwise --version)" = "seamwise, version 0.2.0"
+          {
+            printf 'CVG_SEAMWISE_BIN=%s\n' "$(command -v seamwise)"
+            printf 'CVG_SEAMWISE_SOURCE_ROOT=%s\n' "$engine_dir"
+          } >> "$GITHUB_ENV"
+
+      - name: set up Node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          # Task-Spec is an independently installed engine; Converge has no root
+          # Node dependency tree to cache here.
+          node-version: "22"
+
+      - name: actionlint
+        if: runner.os == 'Linux'
+        # Go's module checksum database verifies this exact released module.
+        # Keep workflow lint independent of another wrapper action.
+        run: go run github.com/rhysd/actionlint/cmd/actionlint@v1.7.12
+
+      - name: bash version (portability floor is 3.2)
+        run: bash --version | head -1
+
+      - name: shellcheck
+        run: |
+          if ! command -v shellcheck >/dev/null 2>&1; then
+            if [ "$RUNNER_OS" = "macOS" ]; then
+              brew install shellcheck
+            else
+              sudo apt-get update -qq && sudo apt-get install -y -qq shellcheck
+            fi
+          fi
+          files=(bin/cvg install.sh)
+          while IFS= read -r -d '' file; do
+            files+=("$file")
+          done < <(find skills tests scripts -type f -name '*.sh' -print0)
+          shellcheck -S error "${files[@]}"
+
+      - name: every skill is valid
+        # Print WHY, not just which. Discarding the validator's output made all
+        # all skills report a bare "INVALID" on macOS — the real cause was one
+        # ImportError (PyYAML is absent on that image), and the log said nothing
+        # about it. A gate that hides its own reason costs a round-trip to
+        # diagnose and teaches you to distrust it.
+        run: |
+          fail=0
+          indent() {
+            while IFS= read -r line; do
+              printf '    %s\n' "$line"
+            done <<< "$1"
+          }
+          for d in skills/*/; do
+            [ -f "$d/SKILL.md" ] || continue
+            [ "$(basename "$d")" = "task-spec" ] && continue
+            if ! out="$(python3 skills/skill-creator/scripts/quick_validate.py "$d" 2>&1)"; then
+              echo "INVALID: $d"; indent "$out"; fail=1
+            elif [ "$out" != "Skill is valid!" ]; then
+              echo "INVALID: $d"; indent "$out"; fail=1
+            fi
+          done
+          exit $fail
+
+      - name: syntax — every shell script parses
+        run: |
+          fail=0
+          for file in bin/cvg install.sh; do
+            bash -n "$file" || { echo "SYNTAX: $file"; fail=1; }
+          done
+          while IFS= read -r -d '' file; do
+            bash -n "$file" || { echo "SYNTAX: $file"; fail=1; }
+          done < <(find skills tests scripts -type f -name '*.sh' -print0)
+          if [ "$fail" -ne 0 ]; then
+            exit 1
+          fi
+
+      - name: the npm package carries the whole tool surface
+        # `npm i -g github:…` and `npx` ship whatever `files` whitelists. A
+        # missing anchor here means a broken install for every npm consumer.
+        run: bash tests/test-package.sh
+
+      - name: standalone Task-Spec boundary
+        run: |
+          test "$(taskspec version)" = "3.8.0"
+          taskspec demo | tee /tmp/taskspec-demo.txt
+          grep -q '^DEMO=READY$' /tmp/taskspec-demo.txt
+
+      - name: runtime contract (Pass 7)
+        run: bash skills/task-to-runtime-contract/tests/run-tests.sh
+
+      - name: register (Pass 6, offline)
+        run: bash skills/task-specs-to-issues/tests/test-register.sh
+
+      - name: cvg json envelope
+        run: |
+          bash tests/test-cvg-json-envelope.sh
+          python3 tests/test-cvg-json-matrix.py
+
+      - name: composed external-engine boundary
+        run: bash tests/test-compose.sh
+
+      - name: documentation contracts
+        run: bash tests/test-docs.sh
+
+      - name: retained live Codex evidence
+        run: python scripts/validate-live-evidence.py
+
+      - name: deterministic composed settlement demo
+        run: bash scripts/demo-composed.sh
+
+      - name: Codex adapter closes after provider exit
+        run: bash tests/test-codex-engine.sh
+
+      - name: cvg snapshot — canonical Cockpit read model
+        run: bash tests/test-cvg-snapshot.sh
+
+      - name: cvg doctor plugin — a project must not load a stale Converge
+        # The drift that let a use case run four green gates on skills eight
+        # commits old. Hermetic: a throwaway CLAUDE_CONFIG_DIR with a local git
+        # "marketplace"; no network, no real plugin install touched.
+        run: bash tests/test-cvg-doctor-plugin.sh
+
+      - name: cvg doctor host — can this machine sign, bind, loop and settle?
+        # shellcheck's absence from one PATH produced: the delegation gate blocked
+        # (it always passes --shellcheck-evals) → no spec could be SIGNED → bind
+        # refused the unsigned spec → the loop reported a missing runtime contract.
+        # Every message was correct; the cause was three verbs upstream, and finding
+        # it cost an hour of bisecting past a commit CI had passed.
+        run: bash tests/test-cvg-doctor-host.sh
+
+      - name: cvg doctor evidence — can git show the floor the gates stand on?
+        # A use case ran four green gates over a workspace whose entire descent was
+        # untracked. Pass 4 stamps provenance over plan FILES, Pass 8 settles by
+        # COMMITTING, and lesson --immutable reads git status; all three rested on
+        # nothing and no gate's job was to look.
+        run: bash tests/test-cvg-doctor-evidence.sh
+
+      - name: cvg tasks plan — exact Task-Spec delegation
+        # Converge must not derive tasks from local swimlane prose. This proves
+        # the public compatibility form forwards the TaskPlan unchanged.
+        run: bash tests/test-cvg-tasks-plan.sh
+
+      - name: cvg tasks dod — the checklist must not weaken a criterion
+        # The only verb in the task-spec engine with a machine token and no suite,
+        # and it cost what an untested gate costs: `description:` was read with a
+        # class excluding ',', so block prose was cut at its first comma — where
+        # English puts the demanding clause. "exists, is executable, takes no
+        # arguments" rendered as "exists", which `touch` satisfies.
+        run: bash tests/test-cvg-tasks-dod.sh
+
+      - name: cvg lesson — the teaching companion's CLI door
+        # The companion was the one skill with a gate script, a machine token,
+        # and no verb. Byte-parity, the discovery contract, --immutable, and
+        # read-onlyness are all proven here against throwaway repos.
+        run: bash tests/test-cvg-lesson.sh
+
+      - name: install surface
+        run: bash tests/test-install.sh
+
+      - name: clean-room install — empty repo to settled task
+        # Builds a throwaway Git repository, installs pinned copies for
+        # Codex/Kimi/Claude, initializes the control plane, and proves the full
+        # task/profile/loop/acceptance/receipt/state chain with a stub engine.
+        run: bash tests/test-clean-room-install-e2e.sh
+
+      - name: loop kernel (Pass 8) — the brakes
+        # Hermetic: stub engines only. No model is called and no token spent, so
+        # the result cannot drift with a vendor CLI's behaviour.
+        run: bash tests/test-loop-kernel.sh
+
+      - name: one package, one version
+        run: bash tests/test-version-unity.sh
+
+      - name: pass gates (0-4 · the design half)
+        # Every pass gate that HAS a suite runs here. Pass 3 and Pass 4 owned
+        # working suites that CI never invoked, so they could have rotted silently
+        # for weeks — and Pass 4 is THE BARRIER, the last human sign-off. A test
+        # that exists but never runs is worse than a missing one: it reads as
+        # coverage on the tin.
+        run: |
+          bash skills/idea-to-brd/tests/run-tests.sh
+          bash skills/brd-docs-to-tech-req/tests/run-tests.sh
+          bash skills/tech-req-to-adrs/tests/run-tests.sh
+          bash skills/reqs-to-swimlane-plans/tests/run-tests.sh
+          bash skills/sketch-plans-adversarial-review/tests/run-tests.sh
+
+      - name: companions (teaching · skill-creator · conductor)
+        run: |
+          bash skills/pass-to-lesson/tests/run-tests.sh
+          bash skills/skill-creator/tests/test-skill-creator.sh
+          bash skills/evidence-to-next-pass/tests/run-tests.sh
+
+      - name: every suite in the package is wired into this workflow
+        # The gate that keeps this list honest. Without it the next suite someone
+        # adds is invisible to CI by default, which is exactly how the four above
+        # came to be unrun.
+        run: bash tests/test-ci-covers-every-suite.sh
+
+      - name: repository layout — the tree shape is a contract
+        # README.md documents the top level in a table. A table does not fail a
+        # build, so this gates it: an undeclared top-level entry, a home without
+        # a README, or a retired path coming back all fail here.
+        run: bash tests/test-repo-layout.sh
+
+      - name: gate policy — hermetic unit + Git-integration suite
+        # A Python suite, so the shell-suite coverage gate above cannot see it;
+        # wired by hand like the doc lint. It proves parse_gate and the two
+        # checkers refuse what they must, in a throwaway repo.
+        run: python3 skills/task-to-runtime-contract/tests/test-gate-policy.py
+
+      - name: the repo write fence is parseable and active
+        # A gate that stops parsing is a fence that silently disappears.
+        run: |
+          python3 skills/task-to-runtime-contract/scripts/check-gate.py --repo . | tail -3
+          if python3 skills/task-to-runtime-contract/scripts/check-gate.py --repo . \
+            --path auth/x.py >/dev/null; then
+            echo "gate failed to refuse auth/"; exit 1
+          fi
+          echo "gate refuses what it must"
+
+      - name: removed proving grounds cannot remain dependencies
+        run: |
+          needle='uc-''analytics'
+          hits="$(
+            git grep -n "$needle" -- . \
+              ':(exclude)CHANGELOG.md' \
+              ':(exclude)review/**' 2>/dev/null || true
+            while IFS= read -r -d '' file; do
+              grep -InH "$needle" "$file" 2>/dev/null || true
+            done < <(git ls-files --others --exclude-standard -z)
+          )"
+          if [ -n "$hits" ]; then
+            echo "live repository content still references the removed proving ground:"
+            printf '%s\n' "$hits"
+            exit 1
+          fi
+          echo "clean — no shipped or intentionally untracked path depends on the removed proving ground"
+
+  cockpit:
+    name: cockpit (ubuntu)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: install the pinned standalone Task-Spec engine
+        env:
+          GH_TOKEN: ${{ secrets.RELEASE_STACK_READ_TOKEN }}
+        run: |
+          test -n "$GH_TOKEN" || { echo "::error::RELEASE_STACK_READ_TOKEN is required for private engine repositories"; exit 5; }
+          engine_dir="$(mktemp -d -t task-spec-engine.XXXXXX)"
+          gh auth setup-git
+          git clone --quiet https://github.com/luanmorenommaciel/task-spec.git "$engine_dir"
+          git -C "$engine_dir" checkout --quiet --detach 0e6180cfc3009bd4ef9cf7ab050b463e10d4af91
+          bash "$engine_dir/install.sh" --global --copy
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+
+      - name: set up Node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: apps/cockpit/package-lock.json
+
+      - name: install Cockpit dependencies
+        run: npm ci --prefix apps/cockpit
+
+      - name: type, contract, bridge, and component checks
+        run: npm run cockpit:check
+
+      - name: production build
+        run: npm run cockpit:build
+
+  docs:
+    name: docs (ubuntu)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: documentation links, anchors, snippets, versions, and archive truth
+        run: bash tests/test-docs.sh
+
+  package:
+    name: package (ubuntu)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: set up Node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: "22"
+
+      - name: clean package allowlist
+        run: bash tests/test-package.sh
+
+  composed-e2e:
+    name: composed-e2e (${{ matrix.os }})
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest]
+    steps:
+      - name: checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: set up Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: .github/requirements-ci.txt
+
+      - name: install locked validation dependencies
+        run: >-
+          python -m pip install
+          --disable-pip-version-check
+          --require-hashes
+          -r .github/requirements-ci.txt
+
+      - name: set up Node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: apps/cockpit/package-lock.json
+
+      - name: install Cockpit dependencies
+        run: npm ci --prefix apps/cockpit
+
+      - name: install shellcheck
+        run: |
+          if ! command -v shellcheck >/dev/null 2>&1; then
+            if [ "$RUNNER_OS" = "macOS" ]; then
+              brew install shellcheck
+            else
+              sudo apt-get update -qq && sudo apt-get install -y -qq shellcheck
+            fi
+          fi
+
+      - name: install exact external engine candidates
+        env:
+          GH_TOKEN: ${{ secrets.RELEASE_STACK_READ_TOKEN }}
+        run: |
+          test -n "$GH_TOKEN" || { echo "::error::RELEASE_STACK_READ_TOKEN is required for private engine repositories"; exit 5; }
+          taskspec_dir="$(mktemp -d -t task-spec-engine.XXXXXX)"
+          seamwise_dir="$(mktemp -d -t seamwise-engine.XXXXXX)"
+          gh auth setup-git
+          git clone --quiet https://github.com/luanmorenommaciel/task-spec.git "$taskspec_dir"
+          git -C "$taskspec_dir" checkout --quiet --detach 0e6180cfc3009bd4ef9cf7ab050b463e10d4af91
+          bash "$taskspec_dir/install.sh" --global --copy
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+          git clone --quiet https://github.com/luanmorenommaciel/seamwise.git "$seamwise_dir"
+          git -C "$seamwise_dir" checkout --quiet --detach 5a398169c3fefcb65eb1a47c0cb4f967dfdc0515
+          python -m pip install --disable-pip-version-check "$seamwise_dir"
+          {
+            printf 'CVG_TASKSPEC_BIN=%s/.local/bin/taskspec\n' "$HOME"
+            printf 'CVG_SEAMWISE_BIN=%s\n' "$(command -v seamwise)"
+            printf 'CVG_TASKSPEC_SOURCE_ROOT=%s\n' "$taskspec_dir"
+            printf 'CVG_SEAMWISE_SOURCE_ROOT=%s\n' "$seamwise_dir"
+            printf 'COMPOSE_DEMO_REQUIRE_ENGINE_PROVENANCE=1\n'
+          } >> "$GITHUB_ENV"
+
+      - name: composition contract and negative cases
+        run: bash tests/test-compose.sh
+
+      - name: deterministic reviewed intent to accepted software
+        run: bash scripts/demo-composed.sh
+
+      - name: install Chromium
+        working-directory: apps/cockpit
+        run: npx playwright install --with-deps chromium
+
+      - name: browser and accessibility verification
+        working-directory: apps/cockpit
+        run: npm run test:browser

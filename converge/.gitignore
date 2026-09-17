@@ -1,0 +1,102 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# OS
+.DS_Store
+
+# Editor
+*.swp
+
+# Converge task indexes are derived but committed and byte-reproducible. CI can
+# rebuild them to detect drift; do not ignore either canonical or legacy state.
+_fleet.jsonl
+
+# Pass 8 loop scratch. Each attempt writes a brief, a transcript and a durable
+# checkpoint under cvg/loop/<task-id>/ so a crashed run can resume and a human
+# can read what happened — but they are per-run state, not evidence, and an
+# engine transcript is exactly the kind of file that quietly carries a key.
+# HANDOFF.md is deliberately NOT ignored: it is the planned landing a human
+# picks up.
+# The `**/` prefix is load-bearing: a pattern containing a slash is anchored to
+# this file's directory, so a root-anchored `cvg/loop/...` would silently miss
+# nested workspaces.
+**/cvg/loop/*/state.env
+**/cvg/loop/*/STOP
+**/cvg/loop/*/brief-*.md
+**/cvg/loop/*/attempts/
+
+# Build artifacts
+dist/
+node_modules/
+apps/cockpit/dist/
+apps/cockpit/.vite/
+apps/cockpit/*.tsbuildinfo
+
+# Browser QA output is local evidence, not product source.
+output/playwright/
+.playwright-cli/
+test-results/
+playwright-report/
+
+# Scratch page-render artifacts (spine PDF build leftovers — kept on disk, out of git)
+temp/spine-*
+temp/v3-*
+temp/cvg-spine-*
+temp/fig*.html
+temp/genfig*.py
+temp/*.png
+temp/legs-e2e/
+
+# Engine session scratch (kimi/codex run dirs)
+.kimi/
+
+# task-specs-to-issues fake adapter test store (no-network)
+.tsi-fake-store/
+
+# cvg local setup state — tracker choice + the workspace's team UUID, written by
+# `cvg setup`. Not secret (cvg never stores credentials), but workspace-specific:
+# each user runs `cvg setup` for their own board rather than inheriting yours.
+# Machine-local cvg state (tracker choices, identity, projection cache) is
+# ignored, but the repo WRITE FENCE is shipped policy: gate.yaml answers "may ANY
+# task ever write here?" and a fence that does not travel protects one laptop.
+# CI asserts it is parseable and active, and reported CHECK_GATE=ABSENT until now.
+# Any .cvg at any depth is machine-local — EXCEPT the repo-root write fence.
+# Ignore local `.cvg` state everywhere, re-admit the root directory so Git will
+# descend into it, then publish only gate.yaml from it.
+**/.cvg/
+!/.cvg/
+/.cvg/*
+!/.cvg/gate.yaml
+
+# scratch render output (deck PDFs, intermediates)
+tmp/
+
+# Local tool scratch — never part of the method
+.ruff_cache/
+.sc/
+
+# graphify — local developer tooling, not part of the shipped method. The
+# knowledge graph is a derived artifact, and `.claude/settings.json` pins an
+# absolute path to this machine's graphify binary, so neither travels.
+# CLAUDE.md is authored project guidance and is tracked.
+graphify-out/
+.claude/
+
+# Historical v0.1 binaries live on the v0.1.0 GitHub release. A local copy
+# (especially docs/converge.pdf) must not be recommitted by git add -A.
+docs/converge.pdf
+docs/converge-v0.1.pdf
+docs/task-spec-v0.1.pdf
+docs/converge-deck.pdf
+docs/converge-v0.2.0-alpha.1.pdf
+converge-brand-kit-v1.zip
+converge-brand-concepts-round-01.zip
+
+# `make bootstrap` assembles the pinned release pairing here. Both are derived
+# from commits recorded in scripts/bootstrap.sh, so neither travels in git.
+.engines/
+.venv/

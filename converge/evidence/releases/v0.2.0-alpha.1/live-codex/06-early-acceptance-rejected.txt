@@ -1,0 +1,24 @@
+accept-task: cvg/tasks/T-20260815-health-status.md
+────────────────────────────────────────────────────────
+   BLOCK [POLICY_TAMPER] — spec is not signed_off:true
+A. Independent evaluation ...
+   BLOCK [EVAL_FAILED] — Exit Check failed (rc=1)
+       [stderr] ModuleNotFoundError: No module named 'tests/test_health'
+       [stderr]
+       [stderr]
+       [stderr] ----------------------------------------------------------------------
+       [stderr] Ran 1 test in 0.000s
+       [stderr]
+       [stderr] FAILED (errors=1)
+     Exit Check: fail (0s)
+B. Handoff, graph, base commit, and blast radius ...
+   PASS — revision, closure, Git base, and write scope agree
+C. Authorization integrity ...
+   Tier 2 — authorization cannot be cryptographically verified
+E. Sealed evidence policy ...
+   PASS — required evidence matches this attempt
+   BLOCK [TIER_TOO_LOW] — Tier-2 acceptance requires --allow-tier2 --supervised-by <identity> --reason <text>
+────────────────────────────────────────────────────────
+VERDICT: REJECT — 3 gate(s) failed
+ACCEPTANCE_FAILURE=POLICY_TAMPER
+ACCEPTED=0

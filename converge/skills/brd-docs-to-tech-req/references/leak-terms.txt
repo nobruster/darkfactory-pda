@@ -1,0 +1,109 @@
+# leak-terms.txt — premature-technology / stack terms for the Pass 1 leak scan.
+#
+# Pass 1 stays above the stack: naming a technology in a tech-spec is the most
+# common Pass 1 failure (the stack is decided in Pass 3). check-tech-spec.sh
+# loads this file and WARNs on every hit, naming the domain bucket.
+#
+# Format: one term per line, TAB-separated from its domain bucket:
+#   term<TAB>domain
+# Lines starting with '#' and blank lines are ignored. Terms are extended
+# regex fragments matched case-insensitively with word boundaries (grep -wE),
+# so 'spark' does NOT fire on 'sparkline' or 'Dana Sparks'. Because matching
+# is word-boundaried, every term must START and END with a word character
+# (a leading '[.]' can never match under -w).
+#
+# Buckets: data, web/frontend, infra/devops, ml/agents.
+
+# --- data ---------------------------------------------------------------
+dbt	data
+duckdb	data
+postgres	data
+postgresql	data
+mysql	data
+sqlite	data
+mongodb	data
+redis	data
+elasticsearch	data
+cassandra	data
+dynamodb	data
+neo4j	data
+trino	data
+clickhouse	data
+databricks	data
+airflow	data
+snowflake	data
+spark	data
+kafka	data
+redshift	data
+bigquery	data
+sqlmesh	data
+dagster	data
+prefect	data
+parquet	data
+iceberg	data
+pandas	data
+polars	data
+star[- ]schema	data
+snowflake[- ]schema	data
+create[[:space:]]+table	data
+schema[.]sql	data
+looker	data
+tableau	data
+metabase	data
+power[- ]?bi	data
+
+# --- web/frontend ---------------------------------------------------------
+react	web/frontend
+vue	web/frontend
+angular	web/frontend
+svelte	web/frontend
+next[.]?js	web/frontend
+nuxt	web/frontend
+tailwind	web/frontend
+htmx	web/frontend
+fastapi	web/frontend
+flask	web/frontend
+django	web/frontend
+rails	web/frontend
+laravel	web/frontend
+express	web/frontend
+node[.]?js	web/frontend
+graphql	web/frontend
+
+# --- infra/devops ---------------------------------------------------------
+kubernetes	infra/devops
+k8s	infra/devops
+terraform	infra/devops
+docker	infra/devops
+helm	infra/devops
+ansible	infra/devops
+pulumi	infra/devops
+cloudformation	infra/devops
+nginx	infra/devops
+aws	infra/devops
+gcp	infra/devops
+azure	infra/devops
+s3	infra/devops
+
+# --- ml/agents ------------------------------------------------------------
+langchain	ml/agents
+llamaindex	ml/agents
+langgraph	ml/agents
+langsmith	ml/agents
+pinecone	ml/agents
+weaviate	ml/agents
+qdrant	ml/agents
+chroma(db)?	ml/agents
+milvus	ml/agents
+pytorch	ml/agents
+tensorflow	ml/agents
+keras	ml/agents
+hugging[- ]?face	ml/agents
+openai	ml/agents
+anthropic	ml/agents
+ollama	ml/agents
+vllm	ml/agents
+autogen	ml/agents
+crewai	ml/agents
+mcp	ml/agents
+gpt[- ]?[0-9]	ml/agents

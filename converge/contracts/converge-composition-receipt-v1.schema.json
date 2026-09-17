@@ -1,0 +1,95 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://converge.dev/contracts/converge-composition-receipt-v1.schema.json",
+  "title": "ConvergeCompositionReceipt/v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["contract", "schema_version", "versions", "source", "seamwise", "task_spec", "tasks", "dispatch_authorized"],
+  "properties": {
+    "contract": {"const": "ConvergeCompositionReceipt/v1"},
+    "schema_version": {"const": 1},
+    "versions": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["converge", "seamwise", "task_spec"],
+      "properties": {
+        "converge": {"type": "string", "minLength": 1},
+        "seamwise": {"type": "string", "minLength": 1},
+        "task_spec": {"type": "string", "minLength": 1}
+      }
+    },
+    "source": {"$ref": "#/$defs/source"},
+    "seamwise": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["review", "lineage", "task_plan"],
+      "properties": {
+        "review": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["path", "sha256", "plan_sha256", "reviewer"],
+          "properties": {
+            "path": {"type": "string", "minLength": 1},
+            "sha256": {"$ref": "#/$defs/sha256"},
+            "plan_sha256": {"$ref": "#/$defs/sha256"},
+            "reviewer": {"type": "string", "minLength": 1}
+          }
+        },
+        "lineage": {"$ref": "#/$defs/fileHash"},
+        "task_plan": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["path", "digest"],
+          "properties": {
+            "path": {"type": "string", "minLength": 1},
+            "digest": {"$ref": "#/$defs/sha256"}
+          }
+        }
+      }
+    },
+    "task_spec": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["materialization_receipt"],
+      "properties": {"materialization_receipt": {"$ref": "#/$defs/fileHash"}}
+    },
+    "tasks": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["task_id", "path", "sha256"],
+        "properties": {
+          "task_id": {"type": "string", "pattern": "^T-[A-Za-z0-9][A-Za-z0-9._-]*$"},
+          "path": {"type": "string", "minLength": 1},
+          "sha256": {"$ref": "#/$defs/sha256"}
+        }
+      }
+    },
+    "dispatch_authorized": {"const": false}
+  },
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "fileHash": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "sha256"],
+      "properties": {
+        "path": {"type": "string", "minLength": 1},
+        "sha256": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["commit", "path", "sha256"],
+      "properties": {
+        "commit": {"type": "string", "pattern": "^[0-9a-f]{40,64}$"},
+        "path": {"type": "string", "minLength": 1},
+        "sha256": {"$ref": "#/$defs/sha256"}
+      }
+    }
+  }
+}

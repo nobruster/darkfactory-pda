@@ -1,0 +1,12 @@
+safe-to-delegate: cvg/tasks/T-20260815-health-status.md
+────────────────────────────────────────────────────────
+1. Structural validation + shellcheck-evals ...
+   PASS — structurally valid, shellcheck clean
+2. Eval execution (broken-logic guard) ...
+   PASS — evals execute cleanly (0 pass / 4 fail; fails are expected for unbuilt work)
+────────────────────────────────────────────────────────
+VERDICT: DELEGATE — safe to hand off blind.
+   stamped signed_off: true by deterministic-demo at 2026-08-15T18:35:27Z
+   sealed signed_off_sig: hmac-sha256-v3 — Tier 1 crypto trust
+   sign-off: Tier 1 — HMAC v3 verified over TaskRevision/v1 (unsupervised dispatch OK)
+TIER=1

@@ -1,9 +1,6 @@
 [submodule "brief-spec"]
 	path = brief-spec
 	url = https://github.com/luanmorenommaciel/brief-spec.git
-[submodule "converge"]
-	path = converge
-	url = https://github.com/luanmorenommaciel/converge.git
 [submodule "seamwise"]
 	path = seamwise
 	url = https://github.com/luanmorenommaciel/seamwise.git

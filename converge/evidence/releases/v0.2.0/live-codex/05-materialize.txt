@@ -1,0 +1,3 @@
+NEXT=taskspec gate --stamp <task-spec>
+CHANGED=true
+COMPOSE=MATERIALIZED

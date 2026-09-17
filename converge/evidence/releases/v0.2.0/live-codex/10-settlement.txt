@@ -1,0 +1,64 @@
+HANDOFF=WRITTEN contract=TaskHandoff/v3 path=<WORKSPACE>/cvg/execution/T-20260815-health-status/task-handoff.json attempt_id=2e991729-b7eb-49cd-8682-8f34642484ac
+loop: T-20260815-health-status
+spec: cvg/tasks/T-20260815-health-status.md
+budgets: 5 iterations · 1800s wall-clock
+stagnation: 3 identical failures
+tracker: not authorized by the contract (external_writes deny) — local only
+engine: codex
+lane: NORMAL (effort S) → model sonnet · reasoning medium · 450s per attempt
+tier 2: off (--verify to enable)
+────────────────────────────────────────────────────────
+preflight: RED (expected — the work is not built yet)
+terrain: no pack for this lane — the agent will rediscover it (run cvg bind)
+
+── attempt 1/5 ──
+    [pass] eval_1 (0s)
+    [pass] eval_2 (0s)
+    [pass] eval_3 (0s)
+    Exit Check: pass (1s)
+
+GREEN at iteration 1.
+
+── tier 2 ── not requested: settling on the sealed eval alone (--verify to enable)
+
+── settlement ──
+Path policy ready: 2 path(s) inside Task-Spec scope · repository gate 51618e04b5a2e1b7aafe31f0d6bf57892dddbde6:.cvg/gate.yaml.
+CHECK_PATH_POLICY=PASS
+GREEN — issue '<WORKSPACE>/cvg/tasks/T-20260815-health-status.md' (T-20260815-health-status) converged. Opening a PR.
+======================================================================
+cutting branch task/health-status off main.
+Switched to a new branch 'task/health-status'
+staging only the 2 path(s) the contract authorizes.
+[task/health-status 574ae63] T-20260815-health-status: green eval
+ 2 files changed, 26 insertions(+)
+ create mode 100644 src/health.py
+ create mode 100644 tests/test_health.py
+Execution receipt written: cvg/receipts/T-20260815-health-status.json
+EXECUTION_RECEIPT=PASS
+accept-task: <WORKSPACE>/cvg/tasks/T-20260815-health-status.md
+────────────────────────────────────────────────────────
+A. Independent evaluation ...
+   PASS — Exit Check returned 0
+B. Handoff, graph, base commit, and blast radius ...
+   PASS — revision, closure, Git base, and write scope agree
+C. Authorization integrity ...
+   PASS — TaskAuthorization/v3 verifies
+E. Sealed evidence policy ...
+   PASS — required evidence matches this attempt
+────────────────────────────────────────────────────────
+   stamped — {"acceptance_record": "/private<WORKSPACE>/cvg/.taskspec/acceptance/T-20260815-health-status/2e991729-b7eb-49cd-8682-8f34642484ac.json", "acceptance_record_digest": "sha256:9da76f06617dfa90da5c2cc05f5d0a61cd8d4592e2e3685540a6d2bc72991eda", "accepted": true, "attempt_id": "2e991729-b7eb-49cd-8682-8f34642484ac", "contract": "AcceptanceFinalized/v1", "task_id": "T-20260815-health-status", "tier": 1}
+VERDICT: ACCEPT — Tier 1 evidence is bound to the authorized task attempt
+ACCEPTED=1
+[task/health-status f036538] T-20260815-health-status: protected acceptance
+ 3 files changed, 48 insertions(+), 3 deletions(-)
+ create mode 100644 cvg/.taskspec/acceptance/T-20260815-health-status/2e991729-b7eb-49cd-8682-8f34642484ac.json
+
+SETTLED LOCALLY — the commit is on 'task/health-status'.
+external_writes policy is 'deny', so push and PR were NOT performed.
+Re-run with --allow-external-writes (or set the policy to allow) to publish.
+TASK_LOOP=LOCAL_SETTLED
+
+────────────────────────────────────────────────────────
+iterations 1/5 · elapsed 142s/1800s
+TASK_LOOP=LOCAL_SETTLED
+TRACKER=SKIPPED

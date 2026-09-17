@@ -1,0 +1,250 @@
+#!/usr/bin/env bash
+# adapters/linear-agents.sh.scaffold — Linear AGENTS API companion (T4, NOT WIRED).
+#
+# ┌─────────────────────────────────────────────────────────────────────────┐
+# │ THIS IS A SCAFFOLD, NOT A LIVE ADAPTER.                                   │
+# │   * the `.scaffold` extension keeps it out of every `*.sh` glob;          │
+# │   * linear.sh does NOT source it (the companion source-guard only picks   │
+# │     up `linear-native.sh` / `linear-projection.sh` / `linear-structure.sh`);│
+# │   * it is NOT in `_ln_main` dispatch and NOT advertised in agent-context; │
+# │   * it ships un-executable (mode 644) so it cannot be run by accident.    │
+# │ To promote it: read references/agents-api-scaffold.md end-to-end, satisfy │
+# │ the OAuth-agent-app prerequisite, rename to `linear-agents.sh`, and add    │
+# │ the four seams called out below (they are marked `SEAM n:`).              │
+# └─────────────────────────────────────────────────────────────────────────┘
+#
+# WHY THIS IS A SCAFFOLD AND NOT SHIPPED
+# --------------------------------------
+# The live Linear adapter (adapters/linear.sh) authenticates with a PERSONAL API
+# key (LINEAR_API_KEY, `lin_api_...`) sent as the RAW Authorization header. A
+# personal key acts as a HUMAN user and can NEVER be an agent: it cannot be
+# @mentioned, cannot own an AgentSession, and cannot post agent activities.
+#
+# Linear's Agents API requires a fundamentally different credential — an OAuth
+# access token minted through the `actor=app` authorization flow with the
+# `app:assignable` + `app:mentionable` scopes. That token represents an APP USER
+# (the agent itself), is sent as `Authorization: Bearer <token>` (NOT raw), and
+# only exists once someone has (a) created an OAuth application in Linear and
+# (b) walked the consent flow. converge's referee deliberately holds NO creds
+# (the API key lives in the loop's env, never in `.cvg/`), so minting/holding an
+# OAuth agent token — plus the webhook signing secret — is out of the referee's
+# trust model. It belongs to a long-running receiver service, which a stateless
+# CLI is not. Hence: scaffold now, promote when that service exists.
+#
+# WHAT THE AGENTS API GIVES US (the payoff worth scaffolding for)
+# ---------------------------------------------------------------
+#   * assign a spec's issue to the AGENT app user  -> Linear opens an
+#     AgentSession automatically (the assignment IS the trigger to run the loop);
+#   * the loop reports progress natively as agent THOUGHT / ACTION activities,
+#     and closes with a terminal RESPONSE (green) or ERROR (red) instead of a
+#     plain comment — the work shows up in Linear's Agent UI as a live session.
+#
+# This file is a FUNCTION-ONLY companion in the same shape as linear-native.sh:
+# no top-level `set -euo pipefail` (its host linear.sh already sets it) and no
+# top-level executable statements — EXCEPT the exec-guard immediately below,
+# which fires only if someone runs the file directly.
+
+# ---------------------------------------------------------------------------
+# EXEC-GUARD — running this file directly is always a mistake; say so and stop.
+# (Sourcing defines the stubs below but every one refuses without an agent token,
+# so a stray `source` is inert too.)
+# ---------------------------------------------------------------------------
+if [ "${BASH_SOURCE[0]:-$0}" = "$0" ]; then
+  echo "linear-agents.sh.scaffold is a design SCAFFOLD, not a runnable adapter." >&2
+  echo "It needs an OAuth agent app (actor=app) + a webhook receiver to work." >&2
+  echo "See references/agents-api-scaffold.md for the prerequisite and the seams." >&2
+  exit 64  # EX_USAGE — do not treat as success
+fi
+
+# Agent-side env the promoted adapter WOULD consume. NONE of these is ever
+# written to `.cvg/` or bridged by bin/cvg — they are secrets and live only in
+# the receiver/loop runtime (see references/agents-api-scaffold.md § Credentials):
+#   LINEAR_AGENT_TOKEN      OAuth access token from the actor=app flow (Bearer).
+#   LINEAR_AGENT_CLIENT_ID  the OAuth app's client id (for token refresh only).
+#   LINEAR_WEBHOOK_SECRET   the webhook signing secret (inbound HMAC verify).
+#   LINEAR_AGENT_API_URL    override, defaults to the shared Linear GraphQL URL.
+
+# tsi_ln_die is provided by the host linear.sh once this is sourced as a real
+# companion; the scaffold defines a local fallback so it parses standalone.
+if ! command -v tsi_ln_die >/dev/null 2>&1; then
+  tsi_ln_die() { echo "ERROR (linear-agents adapter): $*" >&2; exit 1; }
+fi
+
+# _lna_unwired NAME — the single "not wired yet" gate. Every stub calls it first;
+# it fails LOUD and non-zero so a half-wired agent path can never silently no-op
+# a registration or a loop result. Wiring a stub = delete its `|| return` guard.
+_lna_unwired() {
+  echo "ERROR (linear-agents SCAFFOLD): '$1' is not wired." >&2
+  echo "  T4 (Linear Agents) needs an OAuth agent app + webhook receiver;" >&2
+  echo "  see references/agents-api-scaffold.md before enabling." >&2
+  return 90
+}
+
+# ===========================================================================
+# SEAM 1 — TRANSPORT.  Agents cannot reuse linear.sh's _linear_gql: that helper
+# sends the PERSONAL key RAW. The agent path needs a SEPARATE transport that
+# sends the OAuth token as `Bearer`. Everything else (the `${2:-}`/`{}` trap, the
+# errors[] check) is copied verbatim from _linear_gql so behaviour matches.
+# ===========================================================================
+_lna_gql() {   # _lna_gql QUERY [VARIABLES_JSON]
+  local query="$1"
+  # NB: do NOT write `${2:-{}}` — bash closes the expansion at the FIRST `}`, so
+  # an explicit `{}` comes back as `{}}` (invalid JSON). Same trap as _linear_gql.
+  local variables="${2:-}"
+  [ -n "$variables" ] || variables='{}'
+  [ -n "${LINEAR_AGENT_TOKEN:-}" ] || { _lna_unwired "_lna_gql (no LINEAR_AGENT_TOKEN)"; return $?; }
+  local url payload resp
+  url="${LINEAR_AGENT_API_URL:-${LINEAR_API_URL:-https://api.linear.app/graphql}}"
+  payload="$(jq -n --arg q "$query" --argjson v "$variables" '{query:$q, variables:$v}')"
+  # Bearer — the ONE line that differs from linear.sh's raw-key transport.
+  resp="$(curl -sS -X POST "$url" \
+    -H "Content-Type: application/json" \
+    -H "Authorization: Bearer ${LINEAR_AGENT_TOKEN}" \
+    --data "$payload")" || tsi_ln_die "agent GraphQL transport error"
+  if printf '%s' "$resp" | jq -e '.errors' >/dev/null 2>&1; then
+    echo "$resp" | jq -r '.errors[]?.message' >&2
+    tsi_ln_die "agent GraphQL returned errors"
+  fi
+  printf '%s' "$resp"
+}
+
+# ---------------------------------------------------------------------------
+# WHOAMI — resolve the agent's OWN app-user id. When authenticated as the app
+# (actor=app token), `viewer` IS the app user. This is the id you assign issues
+# to so Linear opens a session (see SEAM 3). Echoes the uuid, empty on failure.
+# ---------------------------------------------------------------------------
+_lna_app_user_id() {
+  _lna_unwired "_lna_app_user_id" || return $?
+  local resp
+  resp="$(_lna_gql 'query{ viewer{ id name email } }' '{}')" || { printf ''; return 1; }
+  printf '%s' "$resp" | jq -r '.data.viewer.id // empty'
+}
+
+# ===========================================================================
+# SEAM 2 — INBOUND WEBHOOK.  For Linear to hand the agent a session it must POST
+# to a URL you register once. webhookCreate subscribes that URL to the agent
+# resource types. NOT ensure-by-name natively, so query webhooks{} and match on
+# `url` first (idempotent, mirrors the ensure-by-name structures in T3).
+#
+# VERIFY the resourceTypes enum against the CURRENT Agents docs at wire-time:
+#   "AgentSessionEvent"  — full session lifecycle (created / prompted).
+#   "AppUserNotification" — the mention/assignment notifications (older surface).
+# The signing secret comes back on the webhook object; stash it as
+# LINEAR_WEBHOOK_SECRET for _lna_verify_signature (never in `.cvg/`).
+# ===========================================================================
+_lna_webhook_ensure() {   # _lna_webhook_ensure URL [LABEL]
+  _lna_unwired "_lna_webhook_ensure" || return $?
+  local url="$1" label="${2:-cvg agent receiver}" resp existing
+  [ -n "$url" ] || tsi_ln_die "_lna_webhook_ensure: URL required"
+  # Idempotency: reuse a webhook already pointing at this url.
+  resp="$(_lna_gql 'query{ webhooks{ nodes{ id url label enabled } } }' '{}')" || { printf ''; return 1; }
+  existing="$(printf '%s' "$resp" | jq -r --arg u "$url" \
+      '[.data.webhooks.nodes[]? | select(.url==$u) | .id][0] // empty')"
+  if [ -n "$existing" ]; then printf '%s' "$existing"; return 0; fi
+  resp="$(_lna_gql \
+    'mutation($input:WebhookCreateInput!){ webhookCreate(input:$input){ success webhook{ id enabled secret } } }' \
+    "$(jq -n --arg url "$url" --arg label "$label" \
+      '{input:{url:$url, label:$label, allPublicTeams:true, resourceTypes:["AgentSessionEvent","AppUserNotification"]}}')")" \
+    || { printf ''; return 1; }
+  # NB: capture .data.webhookCreate.webhook.secret -> export LINEAR_WEBHOOK_SECRET
+  # in the RECEIVER's env (it is shown once). Do NOT persist it under `.cvg/`.
+  printf '%s' "$resp" | jq -r '.data.webhookCreate.webhook.id // empty'
+}
+
+# Verify an inbound webhook's HMAC before trusting its body. Linear signs the
+# RAW request body with HMAC-SHA256 keyed on the webhook secret, in the
+# `Linear-Signature` header (hex). The body also carries `webhookTimestamp` (ms)
+# — the receiver must reject deliveries older than ~60s (replay protection).
+# This is the INBOUND seal; it is unrelated to the task-spec sign-off HMAC.
+# Returns 0 on a match. Real bash (openssl), so the receiver can call it as-is.
+_lna_verify_signature() {   # _lna_verify_signature RAW_BODY SIG_HEX
+  _lna_unwired "_lna_verify_signature" || return $?
+  local body="$1" sig="$2" want
+  [ -n "${LINEAR_WEBHOOK_SECRET:-}" ] || { _lna_unwired "verify (no LINEAR_WEBHOOK_SECRET)"; return $?; }
+  command -v openssl >/dev/null 2>&1 || tsi_ln_die "openssl not found (needed to verify webhook HMAC)"
+  want="$(printf '%s' "$body" | openssl dgst -sha256 -hmac "$LINEAR_WEBHOOK_SECRET" | sed -E 's/^.* //')"
+  [ -n "$want" ] && [ "$want" = "$sig" ]
+}
+
+# ---------------------------------------------------------------------------
+# SESSION READ — what the receiver fetches after a verified AgentSessionEvent to
+# learn the prompt + which ISSUE (hence which spec, via the marker attachment)
+# the session is about. `agentSession(id)` returns the issue, comment context,
+# and prior activities. Echoes the raw JSON for the receiver to parse.
+# ---------------------------------------------------------------------------
+_lna_session_get() {   # _lna_session_get SESSION_ID
+  _lna_unwired "_lna_session_get" || return $?
+  local sid="$1"
+  [ -n "$sid" ] || tsi_ln_die "_lna_session_get: SESSION_ID required"
+  _lna_gql \
+    'query($id:String!){ agentSession(id:$id){ id status issue{ id identifier } comment{ id body } } }' \
+    "$(jq -n --arg id "$sid" '{id:$id}')"
+}
+
+# ===========================================================================
+# SEAM 4 — OUTBOUND ACTIVITIES.  agentActivityCreate is how the agent narrates a
+# run into a session. AgentActivityContentInput is a one-of keyed on `type`:
+#   thought   — internal reasoning shown to the user (non-terminal)
+#   action    — a discrete step: {action, parameter, result} (non-terminal)
+#   response  — the FINAL answer; moves the session to `complete` (TERMINAL)
+#   error     — a failure; moves the session to `error` (TERMINAL)
+# (elicitation — ask the user for input; sets `awaitingInput` — omitted here.)
+# The loop's Pass-8 write path calls thought/action while running, then exactly
+# one of response|error to close the session.  See SEAM 4 in the .md for where
+# this replaces/augments ln_write_result's commentCreate.
+# ===========================================================================
+_lna_activity() {   # _lna_activity SESSION_ID CONTENT_JSON  (internal)
+  _lna_unwired "_lna_activity" || return $?
+  local sid="$1" content="$2"
+  [ -n "$sid" ] || tsi_ln_die "_lna_activity: SESSION_ID required"
+  _lna_gql \
+    'mutation($input:AgentActivityCreateInput!){ agentActivityCreate(input:$input){ success agentActivity{ id } } }' \
+    "$(jq -n --arg sid "$sid" --argjson content "$content" '{input:{agentSessionId:$sid, content:$content}}')" \
+    >/dev/null 2>&1 || true   # narration is cosmetic — never break the loop result
+  return 0
+}
+
+_lna_thought() {   # _lna_thought SESSION_ID BODY
+  _lna_unwired "_lna_thought" || return $?
+  _lna_activity "$1" "$(jq -n --arg b "$2" '{type:"thought", body:$b}')"
+}
+
+_lna_action() {   # _lna_action SESSION_ID ACTION PARAMETER RESULT
+  _lna_unwired "_lna_action" || return $?
+  _lna_activity "$1" "$(jq -n --arg a "$2" --arg p "${3:-}" --arg r "${4:-}" \
+      '{type:"action", action:$a, parameter:$p, result:$r}')"
+}
+
+_lna_response() {   # _lna_response SESSION_ID BODY   (TERMINAL — eval GREEN)
+  _lna_unwired "_lna_response" || return $?
+  _lna_activity "$1" "$(jq -n --arg b "$2" '{type:"response", body:$b}')"
+}
+
+_lna_error() {   # _lna_error SESSION_ID BODY   (TERMINAL — eval RED)
+  _lna_unwired "_lna_error" || return $?
+  _lna_activity "$1" "$(jq -n --arg b "$2" '{type:"error", body:$b, public:true}')"
+}
+
+# ===========================================================================
+# SEAM 3 (assignment) lives in the EXISTING code, not here — that is the point.
+# register.sh already emits `--assignee agent:<role>`, linear.sh resolves it via
+# _ln_identity_lookup + _ln_resolve_user (uuid passthrough). So a one-line
+# `.cvg/identity` entry:
+#       agent:claude=<app-user-uuid>       # from `_lna_app_user_id`
+# makes register assign the issue to the AGENT with ZERO code change, and Linear
+# opens the AgentSession on that assignment. The only missing pieces are the app
+# user existing (OAuth app) and a receiver acting on the session webhook.
+#
+# NO _lna_main / dispatch here BY DESIGN. When promoted, add these verbs to
+# linear.sh's _ln_main (NOT before):
+#   agent-whoami            -> _lna_app_user_id
+#   agent-webhook-ensure U  -> _lna_webhook_ensure "$U"
+#   agent-thought  S B      -> _lna_thought  "$S" "$B"
+#   agent-action   S A P R  -> _lna_action   "$S" "$A" "$P" "$R"
+#   agent-response S B      -> _lna_response "$S" "$B"
+#   agent-error    S B      -> _lna_error    "$S" "$B"
+# and add ONE guarded line to linear.sh's companion-source block, reusing the
+# SAME dir variable that block already uses for linear-native/-projection/-structure
+# ($_ln_dir below is ILLUSTRATIVE — match whatever name linear.sh's guard defines):
+#   [ -f "$_ln_dir/linear-agents.sh" ] && . "$_ln_dir/linear-agents.sh"
+# ===========================================================================

@@ -1,0 +1,5 @@
+interface:
+  display_name: "Task to Runtime Contract"
+  short_description: "Bind a signed task to an enforceable runtime"
+  default_prompt: "Use $task-to-runtime-contract to bind this signed Task-Spec to a checked execution profile."
+

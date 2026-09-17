@@ -1,0 +1,12 @@
+{
+  "contract": "ComposedDemoSnapshot/v1",
+  "agent": "codex",
+  "source_commit": "7c9c03207fd35717f827cfecff24c6e598c1983b",
+  "final_commit": "8c721e8038d44df29b999d731dafdd049025dda6",
+  "working_tree_clean": true,
+  "artifacts": {
+    "src/health.py": "559f31b92e61d48f2c558e599a4cc28c40f79ea1b1f42bf65a5d301f236d3a7e",
+    "tests/test_health.py": "74996f3d0ddb5375f65d8f171da500c8c477680273996eac27e2608d4012160d"
+  },
+  "accepted": true
+}

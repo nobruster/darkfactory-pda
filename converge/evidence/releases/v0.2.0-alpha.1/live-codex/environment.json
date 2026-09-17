@@ -1,0 +1,24 @@
+{
+  "contract": "ComposedDemoEnvironment/v1",
+  "versions": {
+    "converge": "0.2.0-alpha.1",
+    "task_spec": "3.8.0",
+    "seamwise": "seamwise, version 0.2.0-alpha.1",
+    "executor": "codex-cli 0.147.0"
+  },
+  "release_candidate_commits": {
+    "task_spec": "44c23e974b6448cdaf21e7514f297a757154beac",
+    "seamwise": "29a087c63ee97cb07ab4635aaba87ecab48dc2f1"
+  },
+  "release_candidate_provenance_verified": true,
+  "commands": [
+    "cvg compose prepare --source recipe.yaml",
+    "cvg compose review --reviewer release-owner --reason <REDACTED_HUMAN_REASON>",
+    "cvg compose preview",
+    "cvg compose materialize",
+    "taskspec gate --stamp --stamp-by deterministic-demo cvg/tasks/T-20260815-health-status.md",
+    "cvg bind --task cvg/tasks/T-20260815-health-status.md",
+    "cvg loop --issue T-20260815-health-status --agent codex --isolation inplace"
+  ],
+  "credentials_recorded": false
+}

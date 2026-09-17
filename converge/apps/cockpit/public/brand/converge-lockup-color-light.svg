@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="2048" height="512" viewBox="0 0 2048 512" role="img" aria-labelledby="title">
+  <title id="title">Converge full-color lockup for dark surfaces</title>
+  <g transform="translate(68 42) scale(0.42)" opacity="1" stroke-linejoin="round">
+    <path d="M512 72 L832 256 L832 332 L714 400 L714 338 L512 222 L310 338 L310 570 L512 686 L714 570 L714 510 L832 442 L832 652 L512 836 L192 652 L192 256 Z" fill="#F5F2EA" stroke="#F5F2EA" stroke-width="20"/>
+    <path d="M714 188 L832 256 L714 324 Z" fill="#F3B64C" stroke="#F3B64C" stroke-width="12"/>
+  </g>
+     <g transform="translate(560 176) scale(1.18)" fill="none" stroke="#F5F2EA" stroke-width="15" stroke-linecap="square" stroke-linejoin="round" opacity="1">
+    <path d="M82 18 H24 V102 H82" transform="translate(0 0)"/>
+<path d="M26 18 H78 V102 H26 Z" transform="translate(136 0)"/>
+<path d="M22 102 V18 L80 102 V18" transform="translate(272 0)"/>
+<path d="M18 18 L50 102 L82 18" transform="translate(408 0)"/>
+<path d="M82 18 H24 V102 H82 M24 60 H72" transform="translate(544 0)"/>
+<path d="M22 102 V18 H72 V58 H22 M57 58 L84 102" transform="translate(680 0)"/>
+<path d="M82 36 V18 H24 V102 H82 V64 H58" transform="translate(816 0)"/>
+<path d="M82 18 H24 V102 H82 M24 60 H72" transform="translate(952 0)"/>
+  </g>
+</svg>

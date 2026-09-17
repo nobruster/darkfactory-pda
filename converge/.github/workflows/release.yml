@@ -1,0 +1,115 @@
+name: release
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - v0.2.0
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: release gate (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.12"
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: "22"
+      - name: Install validation and host prerequisites
+        run: |
+          python -m pip install --disable-pip-version-check jsonschema==4.25.1
+          if ! command -v shellcheck >/dev/null 2>&1; then
+            if [ "$RUNNER_OS" = macOS ]; then brew install shellcheck; else sudo apt-get update -qq && sudo apt-get install -y -qq shellcheck; fi
+          fi
+          npm ci --prefix apps/cockpit
+      - name: Install exact external engines
+        env:
+          GH_TOKEN: ${{ secrets.RELEASE_STACK_READ_TOKEN }}
+        run: |
+          test -n "$GH_TOKEN" || { echo "::error::RELEASE_STACK_READ_TOKEN is required"; exit 5; }
+          taskspec_dir="$(mktemp -d -t task-spec-engine.XXXXXX)"
+          seamwise_dir="$(mktemp -d -t seamwise-engine.XXXXXX)"
+          gh auth setup-git
+          git clone --quiet https://github.com/luanmorenommaciel/task-spec.git "$taskspec_dir"
+          git -C "$taskspec_dir" checkout --quiet --detach 0e6180cfc3009bd4ef9cf7ab050b463e10d4af91
+          bash "$taskspec_dir/install.sh" --global --copy
+          git clone --quiet https://github.com/luanmorenommaciel/seamwise.git "$seamwise_dir"
+          git -C "$seamwise_dir" checkout --quiet --detach 5a398169c3fefcb65eb1a47c0cb4f967dfdc0515
+          python -m pip install --disable-pip-version-check "$seamwise_dir"
+          {
+            printf 'PATH=%s/.local/bin:%s\n' "$HOME" "$PATH"
+            printf 'CVG_TASKSPEC_BIN=%s/.local/bin/taskspec\n' "$HOME"
+            printf 'CVG_SEAMWISE_BIN=%s\n' "$(command -v seamwise)"
+            printf 'CVG_TASKSPEC_SOURCE_ROOT=%s\n' "$taskspec_dir"
+            printf 'CVG_SEAMWISE_SOURCE_ROOT=%s\n' "$seamwise_dir"
+            printf 'COMPOSE_DEMO_REQUIRE_ENGINE_PROVENANCE=1\n'
+          } >> "$GITHUB_ENV"
+      - name: Run complete release boundary
+        run: make release-check PYTHON=python
+
+  build:
+    name: build release assets
+    runs-on: ubuntu-latest
+    needs: verify
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: "22"
+      - name: Assemble stable assets
+        run: |
+          test "$(cat VERSION)" = "0.2.0"
+          if [[ "$GITHUB_REF_TYPE" = tag ]]; then test "$GITHUB_REF_NAME" = "v$(cat VERSION)"; fi
+          mkdir -p dist release-assets
+          package="$(npm pack --pack-destination dist --silent)"
+          python scripts/release-assets.py \
+            --package "dist/$package" \
+            --evidence evidence/releases/v0.2.0 \
+            --out release-assets \
+            --source-commit "$GITHUB_SHA" \
+            --source-ref "$GITHUB_REF_NAME" \
+            --ci-run-url "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+      - uses: actions/upload-artifact@v7
+        with:
+          name: converge-v0.2.0-release-assets
+          path: release-assets/
+          if-no-files-found: error
+
+  publish:
+    name: publish GitHub release
+    if: github.ref == 'refs/tags/v0.2.0'
+    runs-on: ubuntu-latest
+    needs: build
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v8
+        with:
+          name: converge-v0.2.0-release-assets
+          path: release-assets
+      - name: Publish immutable release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create v0.2.0 release-assets/* \
+            --repo "$GITHUB_REPOSITORY" \
+            --title "Converge 0.2.0" \
+            --generate-notes \
+            --verify-tag

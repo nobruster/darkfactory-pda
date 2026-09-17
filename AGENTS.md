@@ -15,14 +15,18 @@ o juiz, as ferramentas e o exemplo de referência.
 Estrutura:
 
 - `fabrica/` — conteúdo próprio, editável
-- `brief-spec/`, `converge/`, `seamwise/`, `task-spec/`,
-  `uc-northwind-pay-edp/` — **submódulos git de terceiros**
+- `converge/` — **vendorizado** (cópia, não submódulo): o upstream saiu do ar.
+  Editável, e mudanças aqui viram commits deste repositório. Ver
+  [`converge/VENDORED.md`](converge/VENDORED.md)
+- `brief-spec/`, `seamwise/`, `task-spec/`, `uc-northwind-pay-edp/` —
+  **submódulos git de terceiros**
 
 ---
 
 ## Regra 1 — Não edite dentro dos submódulos
 
-As cinco pastas de submódulo são clones de repositórios de
+As **quatro** pastas de submódulo (`brief-spec/`, `seamwise/`, `task-spec/`,
+`uc-northwind-pay-edp/`) são clones de repositórios de
 [@luanmorenommaciel](https://github.com/luanmorenommaciel). Editar ali:
 
 - não gera commit neste repositório — vira mudança pendente no repo de outra
@@ -42,6 +46,11 @@ Para atualizar um submódulo para um commit novo do upstream:
 git submodule update --remote --merge <pasta>
 git commit -am "chore: atualiza <pasta>"
 ```
+
+**Exceção: `converge/` não é submódulo.** O upstream saiu do ar (404) e os
+arquivos foram copiados para cá, congelados em `f6df8af`. Editar ali gera
+commit normal deste repositório — e não há upstream para onde mandar PR.
+Ver [`converge/VENDORED.md`](converge/VENDORED.md).
 
 ---
 

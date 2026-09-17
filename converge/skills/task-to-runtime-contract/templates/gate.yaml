@@ -1,0 +1,25 @@
+# Converge repository write fence.
+#
+# Task-Specs narrow authority. This policy is the standing ceiling that no task
+# may widen. Review it for the consuming repository before unattended execution.
+version: 2
+
+protected_paths:
+  - "**/.git/**"
+  - "**/.cvg/**"
+  - "**/.env"
+  - "**/.env.*"
+  - "**/secrets/**"
+  - "**/credentials/**"
+  - "**/*_key*"
+  - "**/*_secret*"
+  - "**/id_rsa*"
+  - "**/.terraform/**"
+  - "**/migrations/**"
+  - "**/auth/**"
+  - "**/payments/**"
+  - "**/billing/**"
+  - ".cvg/gate.yaml"
+  - ".github/workflows/**"
+
+max_changed_files: 12

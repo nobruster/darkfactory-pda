@@ -1,0 +1,3 @@
+Runtime contract ready: task hash, evidence, topology, and guards verified.
+CHECK_RUNTIME_CONTRACT=PASS
+Runtime contract written: cvg/execution/T-20260815-health-status/execution-profile.yaml

@@ -1,0 +1,31 @@
+{
+  "contract": "SeamwiseTaskPlanLineage/v1",
+  "delivery_plan_sha256": "99f2373857fdfe97008a1628256241e95a8d8755e8b44d86054eff52021fb4cc",
+  "engine_version": "0.2.0-alpha.1",
+  "intent": {
+    "id": "DI-HEALTH-STATUS",
+    "sha256": "0a6c61a0d06d944b3673ac97abdda4236c5b8b6da3ed4fcbc917790080b03b6b"
+  },
+  "review": {
+    "fixture": false,
+    "plan_sha256": "99f2373857fdfe97008a1628256241e95a8d8755e8b44d86054eff52021fb4cc",
+    "reviewed_at": "2026-08-15T18:35:22.414098+00:00",
+    "reviewer": "release-owner",
+    "sha256": "6e20ff6fac1482b378a77a7b9e58cf2308ef2e481747e3c9457f842005ce82f1"
+  },
+  "task_plan": {
+    "contract": "TaskPlan/v1",
+    "digest": "746d2e5658dd717dc9cbdb7af23feeb9e26c095c5c2099f85a5d1db94898d6b8",
+    "path": "seamwise/task-plan.json"
+  },
+  "units": {
+    "T-20260815-health-status": {
+      "intent": "DI-HEALTH-STATUS",
+      "leg": "LEG-HEALTH-RETURNS-OK",
+      "seam": "SEAM-HEALTH-BOUNDARY",
+      "source_sha256": "815b7fbe1046b84ef8be1d9e7275854726e726ca6efcfb2e0f0823030de3909f",
+      "swimlane": "LANE-HEALTH-BOUNDARY",
+      "unit_id": "T-20260815-health-status"
+    }
+  }
+}

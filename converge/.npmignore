@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+*.pyo
+.DS_Store
+*.tsbuildinfo
+node_modules/
+test-results/
+playwright-report/
+tmp/
+output/playwright/
