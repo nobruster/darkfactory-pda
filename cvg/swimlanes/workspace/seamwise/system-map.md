@@ -61,6 +61,41 @@ objections:
   owner: Bruno Nunes
   rationale: B-1 passou a corromper UMA LINHA do arquivo e rodar o pipeline ponta a ponta. O teste anterior
     passaria mesmo se a leitura descartasse a linha.
+- id: OBJ-C41
+  status: FIXED
+  summary: A execução dependia de contrato e fonte sem entrega identificada — a fonte real não está neste
+    workspace.
+  owner: Bruno Nunes
+  rationale: A tarefa do contrato passou a entregar contracts/competencia.yaml e um fixture reduzido.
+    Os testes provam contra eles; a contagem esperada vem do contrato, não do número fixo de 41,7 milhões.
+- id: OBJ-C42
+  status: FIXED
+  summary: O pacote não prometia os dados que explicam uma reprovação por tempo — 650s e 550s teriam o
+    mesmo registro.
+  owner: Bruno Nunes
+  rationale: O pacote passou a registrar a duração observada e o limite aplicado. Uma recusa por tempo
+    é distinguível de uma por controle sem reexecutar.
+- id: OBJ-C43
+  status: FIXED
+  summary: 'Testar as seis classes não provava cobertura: um defeito observado sem classificação seria
+    ignorado.'
+  owner: Bruno Nunes
+  rationale: eval_3 passou a exigir cenário em que um defeito chega sem classificação e o juízo bloqueia
+    — exclusividade da enumeração não prova correspondência com os defeitos.
+- id: OBJ-C44
+  status: FIXED
+  summary: BUILD-ORDER — o juízo prometia prova ponta a ponta, mas a orquestração que entrega o fluxo
+    vem depois dele no grafo.
+  owner: Bruno Nunes
+  rationale: A prova ponta a ponta migrou para a orquestração, que possui o fluxo. O juízo prova sobre
+    agregado derivado, sem depender de artefato futuro. Mesma classe da C11 — corrigir a posse deslocou
+    a dependência.
+- id: OBJ-C45
+  status: FIXED
+  summary: O caminho de float recusado não devolvia agregado, deixando o juízo sem o que comparar.
+  owner: Bruno Nunes
+  rationale: B-1 da agregação passou a exigir o agregado mesmo na recusa, com o campo recusado contado
+    em linhas_invalidas. Recusar não é devolver nada.
 - id: OBJ-C30
   status: FIXED
   summary: A classificação podia sobrepor a recusa obrigatória dos cinco controles — um total divergente

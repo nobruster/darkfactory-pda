@@ -1,6 +1,6 @@
 > Projetado de `LEG-EVIDENCIA-RECONSTROI.md` pelo Seamwise.
 > **Não edite aqui** — edite a recipe e rode `seamwise plan`.
-> origem sha256: `7576500322f7bb89a7c30edb8bd402fc3fb1284aad2aa105bbc93b3bbdb404b9`
+> origem sha256: `de72c311084ab4b48c3c5eb4991f630070139a59119ed4e9fad6dc8e0645b9b2`
 
 ---
 
@@ -21,7 +21,8 @@ tasks:
 - id: T-20260917-evidencia-packet
   title: Gravar o pacote de evidência por execução
   goal: Tornar o veredito auditável sem reexecutar o pipeline.
-  done_condition: O pacote contém veredito, âncora, agregado e classificações, e distingue ACEITO de ACEITO_SEM_ANCORA.
+  done_condition: O pacote contém veredito, causa, âncora, agregado, classificações e a duração observada
+    com o limite aplicado; distingue os quatro desfechos e marca como ausente o que não foi percorrido.
   effort: S
   profile: standard
   execution_backend: any
@@ -40,8 +41,10 @@ tasks:
   - id: B-1
     given: uma execução com âncora medida, e uma que terminou antes da leitura (sem agregado nem classificações)
     when: o pacote é lido de volta
-    then: o veredito é reconstruído sem reexecutar; campos que não existiam no caminho percorrido são
-      AUSENTES e assim marcados, nunca preenchidos com zero ou valor artificial
+    then: o veredito é reconstruído sem reexecutar, incluindo a DURAÇÃO observada e o limite aplicado
+      — uma recusa por tempo é distinguível de uma recusa por controle sem reexecutar; campos que não
+      existiam no caminho percorrido são AUSENTES e assim marcados, nunca preenchidos com zero ou valor
+      artificial
   - id: B-2
     given: qualquer um dos quatro vereditos terminais — ACEITO, ACEITO_SEM_ANCORA, RECUSADO ou ERRO
     when: o pacote é gravado
@@ -78,7 +81,7 @@ tasks:
   - evidence
   rollback: Remover o gravador de evidência e seus testes.
   observability: pacotes gravados por competência
-source_seam_sha256: b1604030a48dac897af701bce537b1825ce81a809c72cc8822ca03f8a9967581
+source_seam_sha256: 788bf665bfaefb0662684a551e6a557bd8dd76fabb3520a1f6b95358f069540d
 ---
 # O pacote reconstrói o veredito sem reexecutar
 
@@ -88,7 +91,7 @@ Ler o pacote reproduz o mesmo veredito; ACEITO_SEM_ANCORA é distinguível de AC
 
 ## Runnable leaves
 
-- `T-20260917-evidencia-packet` — Gravar o pacote de evidência por execução: O pacote contém veredito, âncora, agregado e classificações, e distingue ACEITO de ACEITO_SEM_ANCORA.
+- `T-20260917-evidencia-packet` — Gravar o pacote de evidência por execução: O pacote contém veredito, causa, âncora, agregado, classificações e a duração observada com o limite aplicado; distingue os quatro desfechos e marca como ausente o que não foi percorrido.
 
 The leg names a capability state, not an activity. Each leaf owns one coherent,
 independently provable done-condition.

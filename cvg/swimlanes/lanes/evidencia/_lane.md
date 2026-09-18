@@ -2,7 +2,7 @@ FORK: B (task-driven) — rota única desde a v3.4 — o consenso sempre entrega
 
 > Projetado de `LANE-EVIDENCIA.md` pelo Seamwise.
 > **Não edite aqui** — edite a recipe e rode `seamwise plan`.
-> origem sha256: `82877c0b86ad868d11123902926e90096e59dde9d4136a07950141080fda6af2`
+> origem sha256: `d8c1ceba41ff6b34718aa59c3fdb06b483dda4ac31c4fd54af6293c99527b7fe`
 
 ---
 
@@ -14,7 +14,7 @@ id: LANE-EVIDENCIA
 name: Evidência lane
 owner: evidencia
 seam_id: SEAM-EVIDENCIA
-source_seam_sha256: b1604030a48dac897af701bce537b1825ce81a809c72cc8822ca03f8a9967581
+source_seam_sha256: 788bf665bfaefb0662684a551e6a557bd8dd76fabb3520a1f6b95358f069540d
 legs:
 - LEG-EVIDENCIA-RECONSTROI
 ---

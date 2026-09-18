@@ -1,6 +1,6 @@
 {
   "contract": "SeamwiseTaskPlanLineage/v1",
-  "delivery_plan_sha256": "edb13928789ea5c4429266c6e370ab4c34d2ae4566043ee159d485e3dd5f903b",
+  "delivery_plan_sha256": "7ebde9af3931df8fe4776470480814cc62b7ca5771a7d6952595dba96051de13",
   "engine_version": "0.2.0",
   "intent": {
     "id": "DI-FABRICA-COMPETENCIA",
@@ -8,14 +8,14 @@
   },
   "review": {
     "fixture": false,
-    "plan_sha256": "edb13928789ea5c4429266c6e370ab4c34d2ae4566043ee159d485e3dd5f903b",
-    "reviewed_at": "2026-09-18T01:19:02.146524+00:00",
+    "plan_sha256": "7ebde9af3931df8fe4776470480814cc62b7ca5771a7d6952595dba96051de13",
+    "reviewed_at": "2026-09-18T01:27:09.369853+00:00",
     "reviewer": "Bruno Nunes",
-    "sha256": "876240941dca8f5cd1787bc1629a8a76f82c3a2424f814a96c6a993ade570607"
+    "sha256": "4e763494df08c4382b9a3c335385bf0b9740ed5c73cfa1357dfc40a68ad0a325"
   },
   "task_plan": {
     "contract": "TaskPlan/v1",
-    "digest": "da0e351b8839845a946ee49ab9caceb6c09f9104f71fc2681fbb5b9a25a5bfe7",
+    "digest": "d26a02c0109da3446f961086c32456db218a962bc1dec41a852a05ad8936208a",
     "path": "seamwise/task-plan.json"
   },
   "units": {
@@ -23,7 +23,7 @@
       "intent": "DI-FABRICA-COMPETENCIA",
       "leg": "LEG-AGREGADO-EXATO",
       "seam": "SEAM-AGREGACAO",
-      "source_sha256": "a9f260d6be3c0a0b5a027e431c54220fc9fcdaf3c619252cde50fb6af539bc02",
+      "source_sha256": "27e473f93fcbc177b58cba06b4156b55f42858537c8fb02f570675dc3bae5ed1",
       "swimlane": "LANE-AGREGACAO",
       "unit_id": "T-20260917-agregacao-exata"
     },
@@ -31,7 +31,7 @@
       "intent": "DI-FABRICA-COMPETENCIA",
       "leg": "LEG-CONTRATO-RECUSA-SEM-ANCORA",
       "seam": "SEAM-CONTRATO-ANCORA",
-      "source_sha256": "90d28e908ff2dc78eec7fb3a1b0e8563aa71305dc54cd1dc6798cc526ca237ec",
+      "source_sha256": "3e4636517d9bc62b1b5afc61647d8b2e56e190d12461bdc8529cff6caffe1e3e",
       "swimlane": "LANE-CONTRATO",
       "unit_id": "T-20260917-contrato-ancora"
     },
@@ -39,7 +39,7 @@
       "intent": "DI-FABRICA-COMPETENCIA",
       "leg": "LEG-EVIDENCIA-RECONSTROI",
       "seam": "SEAM-EVIDENCIA",
-      "source_sha256": "7576500322f7bb89a7c30edb8bd402fc3fb1284aad2aa105bbc93b3bbdb404b9",
+      "source_sha256": "de72c311084ab4b48c3c5eb4991f630070139a59119ed4e9fad6dc8e0645b9b2",
       "swimlane": "LANE-EVIDENCIA",
       "unit_id": "T-20260917-evidencia-packet"
     },
@@ -47,7 +47,7 @@
       "intent": "DI-FABRICA-COMPETENCIA",
       "leg": "LEG-JUIZO-ACUSA-CENTAVO",
       "seam": "SEAM-JUIZO",
-      "source_sha256": "3913e6e461cd82edd7d2bb010d273fd59e107d763c15725878d56c2da23d1dd3",
+      "source_sha256": "ce180226fd09dfd7432c44c4c29184301c680269d3727393b9620430e80bb1d6",
       "swimlane": "LANE-JUIZO",
       "unit_id": "T-20260917-juizo-classifica"
     },
@@ -55,7 +55,7 @@
       "intent": "DI-FABRICA-COMPETENCIA",
       "leg": "LEG-LEITURA-NAO-ALTERA-FONTE",
       "seam": "SEAM-LEITURA",
-      "source_sha256": "a0864d099bf99dd9a3bf2aad31d26cd79ef31d58b8f48aae136ceda1c20d13a6",
+      "source_sha256": "32d957c7f92101151e8a746bb1aa5cc5de95e467e3f44dceb69b983327aebd8d",
       "swimlane": "LANE-LEITURA",
       "unit_id": "T-20260917-leitura-competencia"
     },
@@ -63,7 +63,7 @@
       "intent": "DI-FABRICA-COMPETENCIA",
       "leg": "LEG-DESFECHO-SEMPRE-COM-PACOTE",
       "seam": "SEAM-ORQUESTRACAO",
-      "source_sha256": "eea3694aeb251539f1890676fb131553bc17c6388ba19a8b9be519a014df2618",
+      "source_sha256": "3b405a66a3b49dc8842b2b9276f47d8677043ac35595ebb67525519c6588baf8",
       "swimlane": "LANE-ORQUESTRACAO",
       "unit_id": "T-20260917-orquestra-desfecho"
     }

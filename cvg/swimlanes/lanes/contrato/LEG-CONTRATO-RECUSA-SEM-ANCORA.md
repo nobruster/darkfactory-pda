@@ -1,6 +1,6 @@
 > Projetado de `LEG-CONTRATO-RECUSA-SEM-ANCORA.md` pelo Seamwise.
 > **Não edite aqui** — edite a recipe e rode `seamwise plan`.
-> origem sha256: `90d28e908ff2dc78eec7fb3a1b0e8563aa71305dc54cd1dc6798cc526ca237ec`
+> origem sha256: `3e4636517d9bc62b1b5afc61647d8b2e56e190d12461bdc8529cff6caffe1e3e`
 
 ---
 
@@ -21,9 +21,10 @@ tasks:
 - id: T-20260917-contrato-ancora
   title: Carregar o contrato e recusar competência sem âncora
   goal: Fazer a ausência de prova bloquear, em vez de virar verde.
-  done_condition: Competência com âncora carrega os cinco valores; sem âncora retorna NAO_MEDIDO e exit
-    1.
-  effort: S
+  done_condition: A tarefa entrega o contrato em disco — a fonte real não está neste workspace, e o fixture
+    de competência é entregue pela leitura, que é quem lê arquivo. Competência com âncora carrega os cinco
+    controles; sem âncora retorna NAO_MEDIDO como valor.
+  effort: M
   profile: standard
   execution_backend: any
   required_tools:
@@ -36,6 +37,7 @@ tasks:
   creates_paths:
   - src/fabrica/contrato.py
   - tests/test_contrato.py
+  - contracts/competencia.yaml
   behavior:
   - id: B-1
     given: um contrato com os cinco números nomeados (count_linhas, sum_vl_liquido, min, max, linhas_invalidas),
@@ -81,7 +83,7 @@ tasks:
   - cvg/docs/adrs
   rollback: Remover o carregador de contrato e seus testes.
   observability: contagem de competências ancoradas no contrato
-source_seam_sha256: 94901d8029fd3cc2133f3866658109bd10c1a80c6d9d3681320f45353f83199a
+source_seam_sha256: 1ff3fe3f337f93425b2d5d7433e5becc05292cf0ae36e582b70f6252285ddde7
 ---
 # A fábrica recusa construir sem âncora medida
 
@@ -91,7 +93,7 @@ Competência sem âncora no contrato produz NAO_MEDIDO e exit diferente de zero,
 
 ## Runnable leaves
 
-- `T-20260917-contrato-ancora` — Carregar o contrato e recusar competência sem âncora: Competência com âncora carrega os cinco valores; sem âncora retorna NAO_MEDIDO e exit 1.
+- `T-20260917-contrato-ancora` — Carregar o contrato e recusar competência sem âncora: A tarefa entrega o contrato em disco — a fonte real não está neste workspace, e o fixture de competência é entregue pela leitura, que é quem lê arquivo. Competência com âncora carrega os cinco controles; sem âncora retorna NAO_MEDIDO como valor.
 
 The leg names a capability state, not an activity. Each leaf owns one coherent,
 independently provable done-condition.

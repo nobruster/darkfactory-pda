@@ -6,7 +6,7 @@ id: LANE-AGREGACAO
 name: Agregação lane
 owner: agregacao
 seam_id: SEAM-AGREGACAO
-source_seam_sha256: 1ff237af538dd055b74da051e47bbeedd0abb537de2ca3fd9d76edef80c7caff
+source_seam_sha256: 6f39e5cd7a0a601adc08eee8f2ab4d38058ea72bdb75d74be554d4d95c9bcd50
 legs:
 - LEG-AGREGADO-EXATO
 ---

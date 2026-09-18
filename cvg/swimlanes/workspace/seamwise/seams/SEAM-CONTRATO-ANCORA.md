@@ -36,9 +36,10 @@ swimlane:
     - id: T-20260917-contrato-ancora
       title: Carregar o contrato e recusar competência sem âncora
       goal: Fazer a ausência de prova bloquear, em vez de virar verde.
-      done_condition: Competência com âncora carrega os cinco valores; sem âncora retorna NAO_MEDIDO e
-        exit 1.
-      effort: S
+      done_condition: A tarefa entrega o contrato em disco — a fonte real não está neste workspace, e
+        o fixture de competência é entregue pela leitura, que é quem lê arquivo. Competência com âncora
+        carrega os cinco controles; sem âncora retorna NAO_MEDIDO como valor.
+      effort: M
       profile: standard
       execution_backend: any
       required_tools:
@@ -51,6 +52,7 @@ swimlane:
       creates_paths:
       - src/fabrica/contrato.py
       - tests/test_contrato.py
+      - contracts/competencia.yaml
       behavior:
       - id: B-1
         given: um contrato com os cinco números nomeados (count_linhas, sum_vl_liquido, min, max, linhas_invalidas),

@@ -3,8 +3,8 @@
   "approved": true,
   "kind": "TaskPlan",
   "metadata": {
-    "delivery_plan_review_sha256": "876240941dca8f5cd1787bc1629a8a76f82c3a2424f814a96c6a993ade570607",
-    "delivery_plan_sha256": "edb13928789ea5c4429266c6e370ab4c34d2ae4566043ee159d485e3dd5f903b",
+    "delivery_plan_review_sha256": "4e763494df08c4382b9a3c335385bf0b9740ed5c73cfa1357dfc40a68ad0a325",
+    "delivery_plan_sha256": "7ebde9af3931df8fe4776470480814cc62b7ca5771a7d6952595dba96051de13",
     "name": "DI-FABRICA-COMPETENCIA",
     "producer": "seamwise",
     "producer_version": "0.2.0",
@@ -23,7 +23,7 @@
         {
           "given": "um valor de ponto flutuante em campo monetário",
           "id": "B-1",
-          "then": "a entrada é recusada com erro explícito, e o agregado devolvido traz os CINCO controles nomeados que o juízo compara — count_linhas, sum_vl_liquido, min_vl_liquido, max_vl_liquido, linhas_invalidas",
+          "then": "a entrada é recusada com erro explícito E o agregado é devolvido mesmo assim, com os CINCO controles nomeados (count_linhas, sum_vl_liquido, min_vl_liquido, max_vl_liquido, linhas_invalidas) e o campo monetário recusado contado em linhas_invalidas — recusar não é devolver nada",
           "when": "o agregado é calculado"
         },
         {
@@ -117,17 +117,18 @@
           "when": "o contrato é carregado"
         }
       ],
-      "context": "Intent DI-FABRICA-COMPETENCIA; seam SEAM-CONTRATO-ANCORA; swimlane LANE-CONTRATO; capability leg LEG-CONTRATO-RECUSA-SEM-ANCORA. Done condition: Competência com âncora carrega os cinco valores; sem âncora retorna NAO_MEDIDO e exit 1.",
+      "context": "Intent DI-FABRICA-COMPETENCIA; seam SEAM-CONTRATO-ANCORA; swimlane LANE-CONTRATO; capability leg LEG-CONTRATO-RECUSA-SEM-ANCORA. Done condition: A tarefa entrega o contrato em disco — a fonte real não está neste workspace, e o fixture de competência é entregue pela leitura, que é quem lê arquivo. Competência com âncora carrega os cinco controles; sem âncora retorna NAO_MEDIDO como valor.",
       "creates_paths": [
         "src/fabrica/contrato.py",
-        "tests/test_contrato.py"
+        "tests/test_contrato.py",
+        "contracts/competencia.yaml"
       ],
       "depends_on": [],
       "do_not_touch": [
         "cvg/docs/adrs"
       ],
-      "done_condition": "Competência com âncora carrega os cinco valores; sem âncora retorna NAO_MEDIDO e exit 1.",
-      "effort": "S",
+      "done_condition": "A tarefa entrega o contrato em disco — a fonte real não está neste workspace, e o fixture de competência é entregue pela leitura, que é quem lê arquivo. Competência com âncora carrega os cinco controles; sem âncora retorna NAO_MEDIDO como valor.",
+      "effort": "M",
       "evals": [
         {
           "command": "pytest -q tests/test_contrato.py -k \"ancorada or sem_procedencia\"",
@@ -189,7 +190,7 @@
         {
           "given": "uma execução com âncora medida, e uma que terminou antes da leitura (sem agregado nem classificações)",
           "id": "B-1",
-          "then": "o veredito é reconstruído sem reexecutar; campos que não existiam no caminho percorrido são AUSENTES e assim marcados, nunca preenchidos com zero ou valor artificial",
+          "then": "o veredito é reconstruído sem reexecutar, incluindo a DURAÇÃO observada e o limite aplicado — uma recusa por tempo é distinguível de uma recusa por controle sem reexecutar; campos que não existiam no caminho percorrido são AUSENTES e assim marcados, nunca preenchidos com zero ou valor artificial",
           "when": "o pacote é lido de volta"
         },
         {
@@ -199,7 +200,7 @@
           "when": "o pacote é gravado"
         }
       ],
-      "context": "Intent DI-FABRICA-COMPETENCIA; seam SEAM-EVIDENCIA; swimlane LANE-EVIDENCIA; capability leg LEG-EVIDENCIA-RECONSTROI. Done condition: O pacote contém veredito, âncora, agregado e classificações, e distingue ACEITO de ACEITO_SEM_ANCORA.",
+      "context": "Intent DI-FABRICA-COMPETENCIA; seam SEAM-EVIDENCIA; swimlane LANE-EVIDENCIA; capability leg LEG-EVIDENCIA-RECONSTROI. Done condition: O pacote contém veredito, causa, âncora, agregado, classificações e a duração observada com o limite aplicado; distingue os quatro desfechos e marca como ausente o que não foi percorrido.",
       "creates_paths": [
         "src/fabrica/evidencia.py",
         "tests/test_evidencia.py"
@@ -210,7 +211,7 @@
       "do_not_touch": [
         "evidence"
       ],
-      "done_condition": "O pacote contém veredito, âncora, agregado e classificações, e distingue ACEITO de ACEITO_SEM_ANCORA.",
+      "done_condition": "O pacote contém veredito, causa, âncora, agregado, classificações e a duração observada com o limite aplicado; distingue os quatro desfechos e marca como ausente o que não foi percorrido.",
       "effort": "S",
       "evals": [
         {
@@ -271,10 +272,10 @@
       ],
       "behaviors": [
         {
-          "given": "o arquivo da competência com UMA LINHA corrompida, e um caso que redistribui valores mantendo soma e contagem",
+          "given": "um agregado derivado de arquivo com UMA LINHA corrompida em um centavo, e outro que redistribui valores mantendo soma e contagem",
           "id": "B-1",
-          "then": "os CINCO controles são comparados individualmente (count_linhas, sum_vl_liquido, min, max, linhas_invalidas) e qualquer divergência recusa — soma e contagem iguais não bastam",
-          "when": "o pipeline roda de ponta a ponta e o juízo compara contra a âncora"
+          "then": "os CINCO controles são comparados individualmente (count_linhas, sum_vl_liquido, min_vl_liquido, max_vl_liquido, linhas_invalidas) e qualquer divergência recusa — soma e contagem iguais não bastam",
+          "when": "o juízo compara contra a âncora"
         },
         {
           "given": "uma diferença de cada uma das seis classificações, incluindo um controle divergente classificado como CONFIRMED_SOURCE_DEFECT, e o mesmo dado agregado com meio-para-cima",
@@ -319,8 +320,8 @@
           ]
         },
         {
-          "command": "pytest -q tests/test_juizo.py -k classificacoes",
-          "description": "As seis são exaustivas e exclusivas",
+          "command": "pytest -q tests/test_juizo.py -k \"classificacoes or defeito_sem_classe\"",
+          "description": "Defeito observado sem classificação bloqueia; nenhum é ignorado",
           "expected_duration_sec": 10,
           "id": "eval_3",
           "terminal": true,
@@ -364,14 +365,15 @@
         {
           "given": "o arquivo de 2026-03, com um registro cujo campo monetário é ilegível",
           "id": "B-2",
-          "then": "a contagem é 41719140, o registro entra em linhas_invalidas e NÃO entra em sum/min/max, e o defeito sai com identidade, valor original e posição — preservar no arquivo não basta se a informação some na interface",
+          "then": "a contagem bate com a do contrato para aquele arquivo — 41719140 na fonte real de 2026-03, o valor do fixture nos testes —, o registro ilegível entra em linhas_invalidas e NÃO entra em sum/min/max, e o defeito sai com identidade, valor original e posição",
           "when": "os registros são contados e a leitura termina"
         }
       ],
       "context": "Intent DI-FABRICA-COMPETENCIA; seam SEAM-LEITURA; swimlane LANE-LEITURA; capability leg LEG-LEITURA-NAO-ALTERA-FONTE. Done condition: O sha256 do arquivo é idêntico antes e depois, e a contagem de registros bate com a âncora.",
       "creates_paths": [
         "src/fabrica/leitura.py",
-        "tests/test_leitura.py"
+        "tests/test_leitura.py",
+        "tests/fixtures/competencia-min.csv"
       ],
       "depends_on": [
         "T-20260917-contrato-ancora"
@@ -440,10 +442,10 @@
       ],
       "behaviors": [
         {
-          "given": "execução sem âncora, execução ancorada que bate, e execução ancorada com divergência bloqueante",
+          "given": "execução sem âncora, execução ancorada que bate, e o ARQUIVO com uma linha corrompida em um centavo",
           "id": "B-1",
-          "then": "as três gravam pacote — ACEITO_SEM_ANCORA com causa NAO_MEDIDO, ACEITO, e RECUSADO — com códigos de saída distintos, e só ACEITO autoriza publicar",
-          "when": "a orquestração decide o desfecho"
+          "then": "as três gravam pacote — ACEITO_SEM_ANCORA com causa NAO_MEDIDO, ACEITO, e RECUSADO — com códigos de saída distintos; o centavo corrompido chega ao juízo e é recusado PONTA A PONTA, e só ACEITO autoriza publicar",
+          "when": "a orquestração conduz o fluxo inteiro e decide o desfecho"
         },
         {
           "given": "uma exceção REAL levantada dentro da leitura, e um caso em que a leitura cabe no limite mas o resto estoura",

@@ -36,8 +36,8 @@ swimlane:
     - id: T-20260917-evidencia-packet
       title: Gravar o pacote de evidência por execução
       goal: Tornar o veredito auditável sem reexecutar o pipeline.
-      done_condition: O pacote contém veredito, âncora, agregado e classificações, e distingue ACEITO
-        de ACEITO_SEM_ANCORA.
+      done_condition: O pacote contém veredito, causa, âncora, agregado, classificações e a duração observada
+        com o limite aplicado; distingue os quatro desfechos e marca como ausente o que não foi percorrido.
       effort: S
       profile: standard
       execution_backend: any
@@ -56,8 +56,10 @@ swimlane:
       - id: B-1
         given: uma execução com âncora medida, e uma que terminou antes da leitura (sem agregado nem classificações)
         when: o pacote é lido de volta
-        then: o veredito é reconstruído sem reexecutar; campos que não existiam no caminho percorrido
-          são AUSENTES e assim marcados, nunca preenchidos com zero ou valor artificial
+        then: o veredito é reconstruído sem reexecutar, incluindo a DURAÇÃO observada e o limite aplicado
+          — uma recusa por tempo é distinguível de uma recusa por controle sem reexecutar; campos que
+          não existiam no caminho percorrido são AUSENTES e assim marcados, nunca preenchidos com zero
+          ou valor artificial
       - id: B-2
         given: qualquer um dos quatro vereditos terminais — ACEITO, ACEITO_SEM_ANCORA, RECUSADO ou ERRO
         when: o pacote é gravado

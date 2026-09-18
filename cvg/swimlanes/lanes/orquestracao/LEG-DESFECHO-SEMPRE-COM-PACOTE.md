@@ -1,6 +1,6 @@
 > Projetado de `LEG-DESFECHO-SEMPRE-COM-PACOTE.md` pelo Seamwise.
 > **Não edite aqui** — edite a recipe e rode `seamwise plan`.
-> origem sha256: `eea3694aeb251539f1890676fb131553bc17c6388ba19a8b9be519a014df2618`
+> origem sha256: `3b405a66a3b49dc8842b2b9276f47d8677043ac35595ebb67525519c6588baf8`
 
 ---
 
@@ -42,10 +42,12 @@ tasks:
   - tests/test_orquestracao.py
   behavior:
   - id: B-1
-    given: execução sem âncora, execução ancorada que bate, e execução ancorada com divergência bloqueante
-    when: a orquestração decide o desfecho
+    given: execução sem âncora, execução ancorada que bate, e o ARQUIVO com uma linha corrompida em um
+      centavo
+    when: a orquestração conduz o fluxo inteiro e decide o desfecho
     then: as três gravam pacote — ACEITO_SEM_ANCORA com causa NAO_MEDIDO, ACEITO, e RECUSADO — com códigos
-      de saída distintos, e só ACEITO autoriza publicar
+      de saída distintos; o centavo corrompido chega ao juízo e é recusado PONTA A PONTA, e só ACEITO
+      autoriza publicar
   - id: B-2
     given: uma exceção REAL levantada dentro da leitura, e um caso em que a leitura cabe no limite mas
       o resto estoura
@@ -84,7 +86,7 @@ tasks:
   - cvg/docs/adrs
   rollback: Remover a orquestração e seus testes.
   observability: desfechos por tipo e segundos da leitura ao veredito
-source_seam_sha256: 5e028c141408549ed65ea2ddc71ac8450cc619e429badcef8d9c839341815f57
+source_seam_sha256: 3db2401a2e978fb76869d56194a739b4201cd57707a9ece22b756a231f21d065
 ---
 # Todo caminho termina com pacote e código de saída
 

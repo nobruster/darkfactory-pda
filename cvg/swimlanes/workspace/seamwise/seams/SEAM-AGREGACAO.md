@@ -61,9 +61,9 @@ swimlane:
       - id: B-1
         given: um valor de ponto flutuante em campo monetário
         when: o agregado é calculado
-        then: a entrada é recusada com erro explícito, e o agregado devolvido traz os CINCO controles
-          nomeados que o juízo compara — count_linhas, sum_vl_liquido, min_vl_liquido, max_vl_liquido,
-          linhas_invalidas
+        then: a entrada é recusada com erro explícito E o agregado é devolvido mesmo assim, com os CINCO
+          controles nomeados (count_linhas, sum_vl_liquido, min_vl_liquido, max_vl_liquido, linhas_invalidas)
+          e o campo monetário recusado contado em linhas_invalidas — recusar não é devolver nada
       - id: B-2
         given: valores em empate exato, um contexto cujo default já é meio-para-par, um contexto com prec=6,
           e a alternativa de arredondar por campo

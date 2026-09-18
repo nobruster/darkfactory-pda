@@ -125,9 +125,12 @@ seams:
               title: Carregar o contrato e recusar competência sem âncora
               goal: Fazer a ausência de prova bloquear, em vez de virar verde.
               done_condition: >-
-                Competência com âncora carrega os cinco valores; sem âncora
-                retorna NAO_MEDIDO e exit 1.
-              effort: S
+                A tarefa entrega o contrato em disco — a fonte real não está
+                neste workspace, e o fixture de competência é entregue pela
+                leitura, que é quem lê arquivo. Competência com âncora
+                carrega os cinco controles; sem âncora retorna NAO_MEDIDO
+                como valor.
+              effort: M
               profile: standard
               execution_backend: any
               required_tools: [git, bash, python3, pytest]
@@ -136,6 +139,7 @@ seams:
               creates_paths:
                 - src/fabrica/contrato.py
                 - tests/test_contrato.py
+                - contracts/competencia.yaml
               behavior:
                 - id: B-1
                   given: um contrato com os cinco números nomeados (count_linhas, sum_vl_liquido, min, max, linhas_invalidas), a procedência (aprovador, data, comando que mediu) E o layout de leitura (posições, formato monetário, chave do registro)
@@ -216,6 +220,7 @@ seams:
               creates_paths:
                 - src/fabrica/leitura.py
                 - tests/test_leitura.py
+                - tests/fixtures/competencia-min.csv
               behavior:
                 - id: B-1
                   given: o arquivo de uma competência e o layout declarado no contrato (posições, formato monetário, chave do registro)
@@ -224,7 +229,7 @@ seams:
                 - id: B-2
                   given: o arquivo de 2026-03, com um registro cujo campo monetário é ilegível
                   when: os registros são contados e a leitura termina
-                  then: a contagem é 41719140, o registro entra em linhas_invalidas e NÃO entra em sum/min/max, e o defeito sai com identidade, valor original e posição — preservar no arquivo não basta se a informação some na interface
+                  then: a contagem bate com a do contrato para aquele arquivo — 41719140 na fonte real de 2026-03, o valor do fixture nos testes —, o registro ilegível entra em linhas_invalidas e NÃO entra em sum/min/max, e o defeito sai com identidade, valor original e posição
               evals:
                 - id: eval_1
                   description: Fonte byte-idêntica; leitura posicional com cabeçalho repetido
@@ -309,7 +314,7 @@ seams:
                 - id: B-1
                   given: um valor de ponto flutuante em campo monetário
                   when: o agregado é calculado
-                  then: a entrada é recusada com erro explícito, e o agregado devolvido traz os CINCO controles nomeados que o juízo compara — count_linhas, sum_vl_liquido, min_vl_liquido, max_vl_liquido, linhas_invalidas
+                  then: a entrada é recusada com erro explícito E o agregado é devolvido mesmo assim, com os CINCO controles nomeados (count_linhas, sum_vl_liquido, min_vl_liquido, max_vl_liquido, linhas_invalidas) e o campo monetário recusado contado em linhas_invalidas — recusar não é devolver nada
                 - id: B-2
                   given: valores em empate exato, um contexto cujo default já é meio-para-par, um contexto com prec=6, e a alternativa de arredondar por campo
                   when: o total é calculado
@@ -365,10 +370,11 @@ seams:
         - id: LEG-JUIZO-ACUSA-CENTAVO
           observable_state: O juiz recusa um centavo de divergência
           proof: >-
-            Teste que corrompe UMA LINHA do arquivo em um centavo e roda o
-            pipeline de ponta a ponta exige recusa. Partir de um agregado já
-            alterado não serve: passaria mesmo se a leitura descartasse a
-            linha ou a agregação anulasse a diferença (objeção C6).
+            Um agregado derivado de arquivo com UMA LINHA corrompida em um
+            centavo exige recusa, e a diferença é comparada controle a
+            controle. A prova PONTA A PONTA — corromper o arquivo e rodar o
+            fluxo inteiro — pertence à orquestração, que é quem o possui
+            (objeções C6 e C44).
           requires: [agregado da competência, contrato validado, defeitos observados]
           produces: [veredito classificado]
           tasks:
@@ -389,9 +395,9 @@ seams:
                 - tests/test_juizo.py
               behavior:
                 - id: B-1
-                  given: o arquivo da competência com UMA LINHA corrompida, e um caso que redistribui valores mantendo soma e contagem
-                  when: o pipeline roda de ponta a ponta e o juízo compara contra a âncora
-                  then: os CINCO controles são comparados individualmente (count_linhas, sum_vl_liquido, min, max, linhas_invalidas) e qualquer divergência recusa — soma e contagem iguais não bastam
+                  given: um agregado derivado de arquivo com UMA LINHA corrompida em um centavo, e outro que redistribui valores mantendo soma e contagem
+                  when: o juízo compara contra a âncora
+                  then: os CINCO controles são comparados individualmente (count_linhas, sum_vl_liquido, min_vl_liquido, max_vl_liquido, linhas_invalidas) e qualquer divergência recusa — soma e contagem iguais não bastam
                 - id: B-2
                   given: uma diferença de cada uma das seis classificações, incluindo um controle divergente classificado como CONFIRMED_SOURCE_DEFECT, e o mesmo dado agregado com meio-para-cima
                   when: o veredito é calculado
@@ -406,8 +412,8 @@ seams:
                   bash: pytest -q tests/test_juizo.py -k "politica_por_classificacao or arredondamento_muda_veredito"
                   verifies: [B-2]
                 - id: eval_3
-                  description: As seis são exaustivas e exclusivas
-                  bash: pytest -q tests/test_juizo.py -k classificacoes
+                  description: Defeito observado sem classificação bloqueia; nenhum é ignorado
+                  bash: pytest -q tests/test_juizo.py -k "classificacoes or defeito_sem_classe"
                   verifies: [B-1, B-2]
               anti_patterns:
                 - action: introduzir parâmetro de tolerância
@@ -456,8 +462,10 @@ seams:
               title: Gravar o pacote de evidência por execução
               goal: Tornar o veredito auditável sem reexecutar o pipeline.
               done_condition: >-
-                O pacote contém veredito, âncora, agregado e classificações,
-                e distingue ACEITO de ACEITO_SEM_ANCORA.
+                O pacote contém veredito, causa, âncora, agregado,
+                classificações e a duração observada com o limite aplicado;
+                distingue os quatro desfechos e marca como ausente o que não
+                foi percorrido.
               effort: S
               profile: standard
               execution_backend: any
@@ -471,7 +479,7 @@ seams:
                 - id: B-1
                   given: uma execução com âncora medida, e uma que terminou antes da leitura (sem agregado nem classificações)
                   when: o pacote é lido de volta
-                  then: o veredito é reconstruído sem reexecutar; campos que não existiam no caminho percorrido são AUSENTES e assim marcados, nunca preenchidos com zero ou valor artificial
+                  then: o veredito é reconstruído sem reexecutar, incluindo a DURAÇÃO observada e o limite aplicado — uma recusa por tempo é distinguível de uma recusa por controle sem reexecutar; campos que não existiam no caminho percorrido são AUSENTES e assim marcados, nunca preenchidos com zero ou valor artificial
                 - id: B-2
                   given: qualquer um dos quatro vereditos terminais — ACEITO, ACEITO_SEM_ANCORA, RECUSADO ou ERRO
                   when: o pacote é gravado
@@ -559,9 +567,9 @@ seams:
                 - tests/test_orquestracao.py
               behavior:
                 - id: B-1
-                  given: execução sem âncora, execução ancorada que bate, e execução ancorada com divergência bloqueante
-                  when: a orquestração decide o desfecho
-                  then: as três gravam pacote — ACEITO_SEM_ANCORA com causa NAO_MEDIDO, ACEITO, e RECUSADO — com códigos de saída distintos, e só ACEITO autoriza publicar
+                  given: execução sem âncora, execução ancorada que bate, e o ARQUIVO com uma linha corrompida em um centavo
+                  when: a orquestração conduz o fluxo inteiro e decide o desfecho
+                  then: as três gravam pacote — ACEITO_SEM_ANCORA com causa NAO_MEDIDO, ACEITO, e RECUSADO — com códigos de saída distintos; o centavo corrompido chega ao juízo e é recusado PONTA A PONTA, e só ACEITO autoriza publicar
                 - id: B-2
                   given: uma exceção REAL levantada dentro da leitura, e um caso em que a leitura cabe no limite mas o resto estoura
                   when: a orquestração conduz a execução
@@ -660,6 +668,56 @@ objections:
       B-1 passou a corromper UMA LINHA do arquivo e rodar o pipeline ponta
       a ponta. O teste anterior passaria mesmo se a leitura descartasse a
       linha.
+  - id: OBJ-C41
+    status: FIXED
+    summary: >-
+      A execução dependia de contrato e fonte sem entrega identificada — a
+      fonte real não está neste workspace.
+    owner: Bruno Nunes
+    rationale: >-
+      A tarefa do contrato passou a entregar contracts/competencia.yaml e um
+      fixture reduzido. Os testes provam contra eles; a contagem esperada
+      vem do contrato, não do número fixo de 41,7 milhões.
+  - id: OBJ-C42
+    status: FIXED
+    summary: >-
+      O pacote não prometia os dados que explicam uma reprovação por tempo —
+      650s e 550s teriam o mesmo registro.
+    owner: Bruno Nunes
+    rationale: >-
+      O pacote passou a registrar a duração observada e o limite aplicado.
+      Uma recusa por tempo é distinguível de uma por controle sem
+      reexecutar.
+  - id: OBJ-C43
+    status: FIXED
+    summary: >-
+      Testar as seis classes não provava cobertura: um defeito observado sem
+      classificação seria ignorado.
+    owner: Bruno Nunes
+    rationale: >-
+      eval_3 passou a exigir cenário em que um defeito chega sem
+      classificação e o juízo bloqueia — exclusividade da enumeração não
+      prova correspondência com os defeitos.
+  - id: OBJ-C44
+    status: FIXED
+    summary: >-
+      BUILD-ORDER — o juízo prometia prova ponta a ponta, mas a orquestração
+      que entrega o fluxo vem depois dele no grafo.
+    owner: Bruno Nunes
+    rationale: >-
+      A prova ponta a ponta migrou para a orquestração, que possui o fluxo.
+      O juízo prova sobre agregado derivado, sem depender de artefato
+      futuro. Mesma classe da C11 — corrigir a posse deslocou a dependência.
+  - id: OBJ-C45
+    status: FIXED
+    summary: >-
+      O caminho de float recusado não devolvia agregado, deixando o juízo
+      sem o que comparar.
+    owner: Bruno Nunes
+    rationale: >-
+      B-1 da agregação passou a exigir o agregado mesmo na recusa, com o
+      campo recusado contado em linhas_invalidas. Recusar não é devolver
+      nada.
   - id: OBJ-C30
     status: FIXED
     summary: >-

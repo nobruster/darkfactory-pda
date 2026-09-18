@@ -30,9 +30,9 @@ swimlane:
   legs:
   - id: LEG-JUIZO-ACUSA-CENTAVO
     observable_state: O juiz recusa um centavo de divergência
-    proof: 'Teste que corrompe UMA LINHA do arquivo em um centavo e roda o pipeline de ponta a ponta exige
-      recusa. Partir de um agregado já alterado não serve: passaria mesmo se a leitura descartasse a linha
-      ou a agregação anulasse a diferença (objeção C6).'
+    proof: Um agregado derivado de arquivo com UMA LINHA corrompida em um centavo exige recusa, e a diferença
+      é comparada controle a controle. A prova PONTA A PONTA — corromper o arquivo e rodar o fluxo inteiro
+      — pertence à orquestração, que é quem o possui (objeções C6 e C44).
     requires:
     - agregado da competência
     - contrato validado
@@ -60,11 +60,12 @@ swimlane:
       - tests/test_juizo.py
       behavior:
       - id: B-1
-        given: o arquivo da competência com UMA LINHA corrompida, e um caso que redistribui valores mantendo
-          soma e contagem
-        when: o pipeline roda de ponta a ponta e o juízo compara contra a âncora
-        then: os CINCO controles são comparados individualmente (count_linhas, sum_vl_liquido, min, max,
-          linhas_invalidas) e qualquer divergência recusa — soma e contagem iguais não bastam
+        given: um agregado derivado de arquivo com UMA LINHA corrompida em um centavo, e outro que redistribui
+          valores mantendo soma e contagem
+        when: o juízo compara contra a âncora
+        then: os CINCO controles são comparados individualmente (count_linhas, sum_vl_liquido, min_vl_liquido,
+          max_vl_liquido, linhas_invalidas) e qualquer divergência recusa — soma e contagem iguais não
+          bastam
       - id: B-2
         given: uma diferença de cada uma das seis classificações, incluindo um controle divergente classificado
           como CONFIRMED_SOURCE_DEFECT, e o mesmo dado agregado com meio-para-cima
@@ -85,8 +86,8 @@ swimlane:
         verifies:
         - B-2
       - id: eval_3
-        description: As seis são exaustivas e exclusivas
-        bash: pytest -q tests/test_juizo.py -k classificacoes
+        description: Defeito observado sem classificação bloqueia; nenhum é ignorado
+        bash: pytest -q tests/test_juizo.py -k "classificacoes or defeito_sem_classe"
         verifies:
         - B-1
         - B-2

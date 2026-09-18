@@ -32,6 +32,7 @@ tasks:
   creates_paths:
   - src/fabrica/leitura.py
   - tests/test_leitura.py
+  - tests/fixtures/competencia-min.csv
   behavior:
   - id: B-1
     given: o arquivo de uma competência e o layout declarado no contrato (posições, formato monetário,
@@ -42,9 +43,9 @@ tasks:
   - id: B-2
     given: o arquivo de 2026-03, com um registro cujo campo monetário é ilegível
     when: os registros são contados e a leitura termina
-    then: a contagem é 41719140, o registro entra em linhas_invalidas e NÃO entra em sum/min/max, e o
-      defeito sai com identidade, valor original e posição — preservar no arquivo não basta se a informação
-      some na interface
+    then: a contagem bate com a do contrato para aquele arquivo — 41719140 na fonte real de 2026-03, o
+      valor do fixture nos testes —, o registro ilegível entra em linhas_invalidas e NÃO entra em sum/min/max,
+      e o defeito sai com identidade, valor original e posição
   evals:
   - id: eval_1
     description: Fonte byte-idêntica; leitura posicional com cabeçalho repetido
@@ -78,7 +79,7 @@ tasks:
   observability: contagem de registros lidos por competência, defeitos observados por tipo, e segundos
     do início da leitura ao veredito (o limite de R-6, sem o qual tudo passa mesmo levando horas — objeção
     C7)
-source_seam_sha256: 51b39c18aaa9d1c2c6fa5f6f96a9e25a4e0254d0122b7be47aab9826780dfa0e
+source_seam_sha256: 5156a0eb0352db7ac3f204e7646ca51d91691a4dd2cd5258699b3b52c8e64ed9
 ---
 # A leitura não altera a fonte e conta o esperado
 

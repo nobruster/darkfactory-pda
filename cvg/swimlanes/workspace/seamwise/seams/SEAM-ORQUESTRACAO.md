@@ -62,10 +62,12 @@ swimlane:
       - tests/test_orquestracao.py
       behavior:
       - id: B-1
-        given: execução sem âncora, execução ancorada que bate, e execução ancorada com divergência bloqueante
-        when: a orquestração decide o desfecho
+        given: execução sem âncora, execução ancorada que bate, e o ARQUIVO com uma linha corrompida em
+          um centavo
+        when: a orquestração conduz o fluxo inteiro e decide o desfecho
         then: as três gravam pacote — ACEITO_SEM_ANCORA com causa NAO_MEDIDO, ACEITO, e RECUSADO — com
-          códigos de saída distintos, e só ACEITO autoriza publicar
+          códigos de saída distintos; o centavo corrompido chega ao juízo e é recusado PONTA A PONTA,
+          e só ACEITO autoriza publicar
       - id: B-2
         given: uma exceção REAL levantada dentro da leitura, e um caso em que a leitura cabe no limite
           mas o resto estoura

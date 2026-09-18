@@ -1,6 +1,6 @@
 > Projetado de `LEG-JUIZO-ACUSA-CENTAVO.md` pelo Seamwise.
 > **Não edite aqui** — edite a recipe e rode `seamwise plan`.
-> origem sha256: `3913e6e461cd82edd7d2bb010d273fd59e107d763c15725878d56c2da23d1dd3`
+> origem sha256: `ce180226fd09dfd7432c44c4c29184301c680269d3727393b9620430e80bb1d6`
 
 ---
 
@@ -12,9 +12,9 @@ id: LEG-JUIZO-ACUSA-CENTAVO
 seam_id: SEAM-JUIZO
 swimlane_id: LANE-JUIZO
 observable_state: O juiz recusa um centavo de divergência
-proof: 'Teste que corrompe UMA LINHA do arquivo em um centavo e roda o pipeline de ponta a ponta exige
-  recusa. Partir de um agregado já alterado não serve: passaria mesmo se a leitura descartasse a linha
-  ou a agregação anulasse a diferença (objeção C6).'
+proof: Um agregado derivado de arquivo com UMA LINHA corrompida em um centavo exige recusa, e a diferença
+  é comparada controle a controle. A prova PONTA A PONTA — corromper o arquivo e rodar o fluxo inteiro
+  — pertence à orquestração, que é quem o possui (objeções C6 e C44).
 requires:
 - agregado da competência
 - contrato validado
@@ -42,11 +42,11 @@ tasks:
   - tests/test_juizo.py
   behavior:
   - id: B-1
-    given: o arquivo da competência com UMA LINHA corrompida, e um caso que redistribui valores mantendo
-      soma e contagem
-    when: o pipeline roda de ponta a ponta e o juízo compara contra a âncora
-    then: os CINCO controles são comparados individualmente (count_linhas, sum_vl_liquido, min, max, linhas_invalidas)
-      e qualquer divergência recusa — soma e contagem iguais não bastam
+    given: um agregado derivado de arquivo com UMA LINHA corrompida em um centavo, e outro que redistribui
+      valores mantendo soma e contagem
+    when: o juízo compara contra a âncora
+    then: os CINCO controles são comparados individualmente (count_linhas, sum_vl_liquido, min_vl_liquido,
+      max_vl_liquido, linhas_invalidas) e qualquer divergência recusa — soma e contagem iguais não bastam
   - id: B-2
     given: uma diferença de cada uma das seis classificações, incluindo um controle divergente classificado
       como CONFIRMED_SOURCE_DEFECT, e o mesmo dado agregado com meio-para-cima
@@ -67,8 +67,8 @@ tasks:
     verifies:
     - B-2
   - id: eval_3
-    description: As seis são exaustivas e exclusivas
-    bash: pytest -q tests/test_juizo.py -k classificacoes
+    description: Defeito observado sem classificação bloqueia; nenhum é ignorado
+    bash: pytest -q tests/test_juizo.py -k "classificacoes or defeito_sem_classe"
     verifies:
     - B-1
     - B-2
@@ -87,13 +87,13 @@ tasks:
   - contracts
   rollback: Remover o juízo e seus testes.
   observability: vereditos por classificação
-source_seam_sha256: c591e98509ba64835843b55ac4e8064bda64a9a3fd8fe5f1fbd0b5907ec5849a
+source_seam_sha256: d6e6643b53be6a4147efc3881981cee88eb78d723e62c65f4e7ca1f30ba77ef7
 ---
 # O juiz recusa um centavo de divergência
 
 ## Observable proof
 
-Teste que corrompe UMA LINHA do arquivo em um centavo e roda o pipeline de ponta a ponta exige recusa. Partir de um agregado já alterado não serve: passaria mesmo se a leitura descartasse a linha ou a agregação anulasse a diferença (objeção C6).
+Um agregado derivado de arquivo com UMA LINHA corrompida em um centavo exige recusa, e a diferença é comparada controle a controle. A prova PONTA A PONTA — corromper o arquivo e rodar o fluxo inteiro — pertence à orquestração, que é quem o possui (objeções C6 e C44).
 
 ## Runnable leaves
 
