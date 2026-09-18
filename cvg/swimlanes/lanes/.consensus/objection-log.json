@@ -1,0 +1,204 @@
+{
+  "schema_version": "1.0",
+  "pass": "4-consensus",
+  "adversary": {
+    "engine_id": "codex",
+    "model": "codex",
+    "family": "openai",
+    "engine_version": "codex-cli 0.155.0",
+    "sandbox_mode": "read-only"
+  },
+  "author": {
+    "model": "claude",
+    "family": "anthropic"
+  },
+  "verdict": "REVISE",
+  "prompt_sha256": "04ff056a88e24f3dbb449fe56899c15cdb24208b3ea2a4592ab54932a6377f00",
+  "inputs": [
+    {
+      "path": "agregacao/LEG-AGREGADO-EXATO.md",
+      "sha256": "008f05fa44215c65f087f129d8e2af80490fa7e2cf3c34f08cd9c7e35dc70915"
+    },
+    {
+      "path": "agregacao/_lane.md",
+      "sha256": "de6f7094cc0c82c1470fcbedb1f749c55455f8b8ecdaf8d6d1e6360aeadcd5d2"
+    },
+    {
+      "path": "contrato/LEG-CONTRATO-RECUSA-SEM-ANCORA.md",
+      "sha256": "bb450bf2b5d5d15137c35e01cab91c82271b1bc440051e3e1cc09b037645cef7"
+    },
+    {
+      "path": "contrato/_lane.md",
+      "sha256": "6b0ba9677c4625468fd920f57159f95e1b7073c697cc7b50a86050dfcf3423c3"
+    },
+    {
+      "path": "evidencia/LEG-EVIDENCIA-RECONSTROI.md",
+      "sha256": "5d5f5c724b2ead057eeffe380258101719d163916614429957a7b2c0179b0b66"
+    },
+    {
+      "path": "evidencia/_lane.md",
+      "sha256": "999a2e5d152543d5cd0768f5fff7d35e4ec746aec42ecccdc9762b2934540767"
+    },
+    {
+      "path": "juizo/LEG-JUIZO-ACUSA-CENTAVO.md",
+      "sha256": "7dc4e9cb7993b961a43637e58f833d59d594843971d78cbee35d354d16770eaf"
+    },
+    {
+      "path": "juizo/_lane.md",
+      "sha256": "86987aa08f51fc018a29460ac11b1685add8527a205ddaa1850964cc17c6fdc3"
+    },
+    {
+      "path": "leitura/LEG-LEITURA-NAO-ALTERA-FONTE.md",
+      "sha256": "5211b4b0eff84efce676711bcab61208f34b825b530ba7383fa5a270a57389d7"
+    },
+    {
+      "path": "leitura/_lane.md",
+      "sha256": "cf5972eaaba26ed009537c2b1cb853a5a18fc47315be555fa901714b34cd9fd0"
+    },
+    {
+      "path": "orquestracao/LEG-DESFECHO-SEMPRE-COM-PACOTE.md",
+      "sha256": "1afeb2815fe712063bcd4c9d1179f4df5c1c2959447c545b6904e393eafe5908"
+    },
+    {
+      "path": "orquestracao/_lane.md",
+      "sha256": "7652a17a4db02382622365bedc71bfdff4397213fd8c6ac519140df8fa17d03e"
+    }
+  ],
+  "objections": [
+    {
+      "id": "C101",
+      "severity": "high",
+      "rank": 1,
+      "attack_class": "drift",
+      "swimlane": "LANE-CONTRATO",
+      "leg": "LEG-CONTRATO-RECUSA-SEM-ANCORA",
+      "location": {
+        "plan_file": "cvg/swimlanes/lanes/contrato/LEG-CONTRATO-RECUSA-SEM-ANCORA.md",
+        "section": "tasks[0].behavior B-1; eval_1 e eval_3"
+      },
+      "title": "A entrada monet\u00e1ria da \u00e2ncora n\u00e3o tem prova de recusa de float",
+      "evidence": "B-1 exige cinco n\u00fameros, proced\u00eancia e layout; os testes verificam presen\u00e7a, proced\u00eancia e igualdade com o contrato em disco.",
+      "body": "O contrato sai como validado sem requisito verific\u00e1vel sobre o tipo dos valores monet\u00e1rios carregados do YAML. Uma implementa\u00e7\u00e3o que desserialize um n\u00famero monet\u00e1rio como float e depois o converta para Decimal pode satisfazer esses testes, sobretudo se integridade reutilizar o mesmo carregador. Isso viola a recusa de float tamb\u00e9m no lado da \u00e2ncora e permite que a refer\u00eancia perca precis\u00e3o antes de chegar ao juiz. A recusa prevista na agrega\u00e7\u00e3o protege outra entrada.",
+      "cites": [
+        "cvg/docs/tech-spec/tech-spec-exemplo-fabrica.md \u00a7 Requirements, R-3",
+        "cvg/docs/adrs/0001-money-rounds-half-to-even-at-two-decimals.md \u00a7 Decision",
+        "cvg/docs/adrs/0002-the-first-anchor-is-competencia-2026-03-measured-at-source.md \u00a7 Decision"
+      ]
+    },
+    {
+      "id": "C102",
+      "severity": "high",
+      "rank": 2,
+      "attack_class": "cross-lane-interface",
+      "swimlane": "LANE-LEITURA",
+      "leg": "LEG-LEITURA-NAO-ALTERA-FONTE",
+      "location": {
+        "plan_file": "cvg/swimlanes/lanes/leitura/LEG-LEITURA-NAO-ALTERA-FONTE.md",
+        "section": "produces; tasks[0].behavior B-2"
+      },
+      "title": "O registro ileg\u00edvel n\u00e3o tem representa\u00e7\u00e3o definida na entrada do agregador",
+      "evidence": "B-2 determina que o registro ileg\u00edvel entre em linhas_invalidas e n\u00e3o entre em sum/min/max; produces declara apenas registros lidos e defeitos observados.",
+      "body": "N\u00e3o est\u00e1 definido se registros lidos inclui o registro inv\u00e1lido, como o sinaliza ou como sua contagem alcan\u00e7a a agrega\u00e7\u00e3o. O agregador recebe registros lidos e promete produzir os cinco controles, mas n\u00e3o declara consumir os defeitos observados. Um leitor que entregue somente registros monet\u00e1rios v\u00e1lidos e reporte o inv\u00e1lido separadamente satisfaz uma leitura plaus\u00edvel de B-2; o agregador perde count_linhas e linhas_invalidas. Outra implementa\u00e7\u00e3o pode contar o defeito duas vezes. O caso de float no agregador n\u00e3o demonstra o percurso do campo ileg\u00edvel identificado pelo leitor.",
+      "cites": [
+        "cvg/swimlanes/lanes/agregacao/LEG-AGREGADO-EXATO.md \u00a7 requires e behavior B-1",
+        "cvg/docs/adrs/0002-the-first-anchor-is-competencia-2026-03-measured-at-source.md \u00a7 Consequences",
+        "cvg/docs/tech-spec/tech-spec-exemplo-fabrica.md \u00a7 Requirements, R-2"
+      ]
+    },
+    {
+      "id": "C103",
+      "severity": "high",
+      "rank": 3,
+      "attack_class": "drift",
+      "swimlane": "LANE-JUIZO",
+      "leg": "LEG-JUIZO-ACUSA-CENTAVO",
+      "location": {
+        "plan_file": "cvg/swimlanes/lanes/juizo/LEG-JUIZO-ACUSA-CENTAVO.md",
+        "section": "tasks[0].behavior B-2; eval_2 e eval_3"
+      },
+      "title": "Cobertura das seis classes n\u00e3o prova exatamente uma classe por diferen\u00e7a",
+      "evidence": "B-2 recebe uma diferen\u00e7a de cada classifica\u00e7\u00e3o; eval_3 cobre defeito sem classifica\u00e7\u00e3o.",
+      "body": "Os casos previstos cobrem zero classifica\u00e7\u00f5es e cada classe isoladamente, mas n\u00e3o duas classifica\u00e7\u00f5es vinculadas \u00e0 mesma diferen\u00e7a. Um juiz que aceite uma lista duplicada ou sobrescreva uma classifica\u00e7\u00e3o pela \u00faltima pode passar todos os casos descritos. Para um defeito fora dos controles, MODERN_DEFECT seguido de CONFIRMED_SOURCE_DEFECT pode acabar autorizado, dependendo da implementa\u00e7\u00e3o. R-2 exige cardinalidade exatamente um, n\u00e3o apenas presen\u00e7a de uma classe reconhecida.",
+      "cites": [
+        "cvg/docs/tech-spec/tech-spec-exemplo-fabrica.md \u00a7 Requirements, R-2",
+        "AGENTS.md \u00a7 Regra 4"
+      ]
+    },
+    {
+      "id": "C104",
+      "severity": "high",
+      "rank": 4,
+      "attack_class": "unverified-assumption",
+      "swimlane": "LANE-AGREGACAO",
+      "leg": "LEG-AGREGADO-EXATO",
+      "location": {
+        "plan_file": "cvg/swimlanes/lanes/agregacao/LEG-AGREGADO-EXATO.md",
+        "section": "tasks[0].evals eval_3"
+      },
+      "title": "A reprodu\u00e7\u00e3o da \u00e2ncora real depende de uma entrada indispon\u00edvel",
+      "evidence": "eval_3 promete: O total de 2026-03 reproduz a \u00e2ncora medida. A tarefa de contrato declara que a fonte real n\u00e3o est\u00e1 neste workspace; a leitura entrega competencia-min.csv.",
+      "body": "O teste prometido n\u00e3o tem entrada identificada capaz de demonstrar a reprodu\u00e7\u00e3o do total real. Um fixture m\u00ednimo permite verificar aritm\u00e9tica, mas n\u00e3o demonstra que a agrega\u00e7\u00e3o da compet\u00eancia de 41.719.140 registros reproduz a medi\u00e7\u00e3o independente. Construir valores sint\u00e9ticos para fechar 78771556568.72 tornaria esse teste circular como evid\u00eancia da compet\u00eancia real. A disponibilidade e a identidade da fonte s\u00e3o quest\u00f5es abertas para essa prova; o plano n\u00e3o pode contabiliz\u00e1-la como entregue pelo fixture.",
+      "cites": [
+        "cvg/swimlanes/lanes/contrato/LEG-CONTRATO-RECUSA-SEM-ANCORA.md \u00a7 tasks[0].done_condition",
+        "cvg/swimlanes/lanes/leitura/LEG-LEITURA-NAO-ALTERA-FONTE.md \u00a7 creates_paths e behavior B-2",
+        "cvg/docs/adrs/0002-the-first-anchor-is-competencia-2026-03-measured-at-source.md \u00a7 Decision e Evidence"
+      ]
+    },
+    {
+      "id": "C105",
+      "severity": "high",
+      "rank": 5,
+      "attack_class": "drift",
+      "swimlane": "LANE-ORQUESTRACAO",
+      "leg": "LEG-DESFECHO-SEMPRE-COM-PACOTE",
+      "location": {
+        "plan_file": "cvg/swimlanes/lanes/orquestracao/LEG-DESFECHO-SEMPRE-COM-PACOTE.md",
+        "section": "tasks[0].done_condition; behavior B-2; eval_2"
+      },
+      "title": "Reprovar por demora n\u00e3o demonstra conclus\u00e3o da compet\u00eancia em dez minutos",
+      "evidence": "B-2 exige reprova\u00e7\u00e3o acima de 600s no total; eval_2 cobre excecao_vira_erro ou tempo_total.",
+      "body": "O plano demonstra a pol\u00edtica do limite, mas n\u00e3o o requisito de desempenho. Uma implementa\u00e7\u00e3o que leve horas e depois produza RECUSADO satisfaz a reprova\u00e7\u00e3o descrita. N\u00e3o h\u00e1 prova prevista da dura\u00e7\u00e3o observada sobre a compet\u00eancia completa, nem condi\u00e7\u00f5es identificadas para essa medi\u00e7\u00e3o. A afirma\u00e7\u00e3o de cobertura de R-6 excede o que o teste de controle temporal estabelece.",
+      "cites": [
+        "cvg/docs/tech-spec/tech-spec-exemplo-fabrica.md \u00a7 Requirements, R-6",
+        "cvg/docs/tech-spec/tech-spec-exemplo-fabrica.md \u00a7 Success metrics"
+      ]
+    },
+    {
+      "id": "C106",
+      "severity": "medium",
+      "rank": 6,
+      "attack_class": "data-loss",
+      "swimlane": "LANE-EVIDENCIA",
+      "leg": "LEG-EVIDENCIA-RECONSTROI",
+      "location": {
+        "plan_file": "cvg/swimlanes/lanes/evidencia/LEG-EVIDENCIA-RECONSTROI.md",
+        "section": "tasks[0].behavior B-1/B-2; evals; anti_patterns"
+      },
+      "title": "Os testes de grava\u00e7\u00e3o n\u00e3o exercitam a preserva\u00e7\u00e3o de uma execu\u00e7\u00e3o anterior",
+      "evidence": "O plano exige pacote por execu\u00e7\u00e3o e pro\u00edbe editar pacote antigo; os evals cobrem reconstru\u00e7\u00e3o, sem \u00e2ncora e campos obrigat\u00f3rios.",
+      "body": "N\u00e3o existe caso descrito de duas execu\u00e7\u00f5es da mesma compet\u00eancia. Um gravador que use apenas a compet\u00eancia como nome e sobrescreva o arquivo passa os testes de leitura de volta, mas destr\u00f3i o primeiro pacote quando uma nova execu\u00e7\u00e3o muda o veredito. A preserva\u00e7\u00e3o j\u00e1 exigida pelo pr\u00f3prio plano permanece sem prova execut\u00e1vel.",
+      "cites": [
+        "cvg/docs/tech-spec/tech-spec-exemplo-fabrica.md \u00a7 Requirements, R-7",
+        "cvg/docs/tech-spec/tech-spec-exemplo-fabrica.md \u00a7 Problem restated",
+        "cvg/swimlanes/lanes/evidencia/LEG-EVIDENCIA-RECONSTROI.md \u00a7 anti_patterns"
+      ]
+    }
+  ],
+  "cross_lane_interfaces": [],
+  "fork": {
+    "choice": "B",
+    "reason": "Declara\u00e7\u00e3o existente nos seis _lane.md e no ADR 0003; registrada sem escolha pelo advers\u00e1rio.",
+    "per_plan_declared": true
+  },
+  "open_questions": [
+    {
+      "q": "Qual entrada real identificada estar\u00e1 dispon\u00edvel para provar reprodu\u00e7\u00e3o da \u00e2ncora de 2026-03 e dura\u00e7\u00e3o da compet\u00eancia completa? Encaminhar ao planejamento sem fabricar dados ou medi\u00e7\u00e3o.",
+      "blocks_build": true
+    },
+    {
+      "q": "Como o dispatch representa obje\u00e7\u00f5es ainda abertas, dado que o schema exige resolution com decis\u00e3o humana? Este registro omite resolution deliberadamente e n\u00e3o pode ser tratado como consenso aprovado.",
+      "blocks_build": true
+    }
+  ],
+  "rounds_run": 1
+}
