@@ -78,8 +78,8 @@ swimlane:
         verifies:
         - B-2
       - id: eval_3
-        description: R-6 — a leitura da competência completa em até 540 segundos
-        bash: pytest -q tests/test_leitura.py -k tempo_de_leitura
+        description: A leitura reporta seus segundos para a orquestração medir o total
+        bash: pytest -q tests/test_leitura.py -k reporta_duracao
         verifies:
         - B-1
         - B-2

@@ -5,6 +5,7 @@
 3. [`LEG-AGREGADO-EXATO`](legs/LEG-AGREGADO-EXATO.md)
 4. [`LEG-JUIZO-ACUSA-CENTAVO`](legs/LEG-JUIZO-ACUSA-CENTAVO.md)
 5. [`LEG-EVIDENCIA-RECONSTROI`](legs/LEG-EVIDENCIA-RECONSTROI.md)
+6. [`LEG-DESFECHO-SEMPRE-COM-PACOTE`](legs/LEG-DESFECHO-SEMPRE-COM-PACOTE.md)
 
 This is a derived critical capability path. It records ordering, not
 implementation completion or dispatch authority.

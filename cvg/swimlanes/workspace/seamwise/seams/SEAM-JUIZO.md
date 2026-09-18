@@ -66,10 +66,10 @@ swimlane:
         then: os CINCO controles são comparados individualmente (count_linhas, sum_vl_liquido, min, max,
           linhas_invalidas) e qualquer divergência recusa — soma e contagem iguais não bastam
       - id: B-2
-        given: uma diferença sem classificação, e o mesmo dado agregado com meio-para-cima em vez de meio-para-par
+        given: uma diferença de cada uma das seis classificações, e o mesmo dado agregado com meio-para-cima
         when: o veredito é calculado
-        then: a primeira é UNRESOLVED e bloqueia; a segunda produz VEREDITO diferente — total diferente
-          não basta, o juízo poderia re-arredondar e anular
+        then: MODERN_DEFECT, CONTRACT_AMBIGUITY e UNRESOLVED bloqueiam; os três CONFIRMED/APPROVED não
+          bloqueiam mas ficam registrados; e o arredondamento errado muda o VEREDITO, não só o total
       evals:
       - id: eval_1
         description: Um centavo na linha recusa; extremos alterados com soma igual também
@@ -77,12 +77,12 @@ swimlane:
         verifies:
         - B-1
       - id: eval_2
-        description: Diferença não classificada bloqueia; arredondamento errado muda o veredito
-        bash: pytest -q tests/test_juizo.py -k "unresolved or arredondamento_muda_veredito"
+        description: Cada uma das seis decide publicar ou bloquear; arredondamento muda o veredito
+        bash: pytest -q tests/test_juizo.py -k "politica_por_classificacao or arredondamento_muda_veredito"
         verifies:
         - B-2
       - id: eval_3
-        description: As seis classificações são exaustivas e exclusivas
+        description: As seis são exaustivas e exclusivas
         bash: pytest -q tests/test_juizo.py -k classificacoes
         verifies:
         - B-1

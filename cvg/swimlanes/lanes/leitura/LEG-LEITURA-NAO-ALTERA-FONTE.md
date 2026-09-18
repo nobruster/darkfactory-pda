@@ -1,6 +1,6 @@
 > Projetado de `LEG-LEITURA-NAO-ALTERA-FONTE.md` pelo Seamwise.
 > **Não edite aqui** — edite a recipe e rode `seamwise plan`.
-> origem sha256: `a9d7d2a732572cf8af9f90599173acb7c467ed5c0378dc23f6074862da6d17f8`
+> origem sha256: `45df9d3573390c142582225fb9c9339a36a9ba04d7d841758b1b44c4eaca7209`
 
 ---
 
@@ -62,8 +62,8 @@ tasks:
     verifies:
     - B-2
   - id: eval_3
-    description: R-6 — a leitura da competência completa em até 540 segundos
-    bash: pytest -q tests/test_leitura.py -k tempo_de_leitura
+    description: A leitura reporta seus segundos para a orquestração medir o total
+    bash: pytest -q tests/test_leitura.py -k reporta_duracao
     verifies:
     - B-1
     - B-2
@@ -83,7 +83,7 @@ tasks:
   observability: contagem de registros lidos por competência, defeitos observados por tipo, e segundos
     do início da leitura ao veredito (o limite de R-6, sem o qual tudo passa mesmo levando horas — objeção
     C7)
-source_seam_sha256: ef9c8c7d1e884645427f53da7e3dc72fd2e56e8c15eee81cb9c218b6aabcebe0
+source_seam_sha256: f37398a6a04d1430da4f1c25115e09fc3924d4ea919b0f6fbe0bba63a9c81a2f
 ---
 # A leitura não altera a fonte e conta o esperado
 

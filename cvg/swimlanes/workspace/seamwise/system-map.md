@@ -18,6 +18,7 @@ proposed_steel_thread:
 - LEG-AGREGADO-EXATO
 - LEG-JUIZO-ACUSA-CENTAVO
 - LEG-EVIDENCIA-RECONSTROI
+- LEG-DESFECHO-SEMPRE-COM-PACOTE
 objections:
 - id: OBJ-C1
   status: FIXED
@@ -60,6 +61,42 @@ objections:
   owner: Bruno Nunes
   rationale: B-1 passou a corromper UMA LINHA do arquivo e rodar o pipeline ponta a ponta. O teste anterior
     passaria mesmo se a leitura descartasse a linha.
+- id: OBJ-C14
+  status: FIXED
+  summary: O encerramento sem âncora foi delegado a um "orquestrador" que nenhuma das cinco tarefas assumia.
+  owner: Bruno Nunes
+  rationale: 'Criada a sexta costura, SEAM-ORQUESTRACAO, com tarefa própria. Ela possui o fluxo: decide
+    o desfecho, o código de saída, e garante o pacote em todo caminho.'
+- id: OBJ-C15
+  status: FIXED
+  summary: O juízo exigia cinco controles que o produtor não prometia entregar — não havia schema de saída.
+  owner: Bruno Nunes
+  rationale: B-1 da agregação passou a exigir os cinco controles NOMEADOS no agregado devolvido.
+- id: OBJ-C16
+  status: FIXED
+  summary: Os três vereditos enumerados excluíam a recusa com âncora — justamente quando o juiz acusa.
+  owner: Bruno Nunes
+  rationale: 'São quatro terminais (ADR 0005): ACEITO, ACEITO_SEM_ANCORA, RECUSADO e ERRO. A recusa com
+    âncora grava como RECUSADO.'
+- id: OBJ-C17
+  status: FIXED
+  summary: 'O teste de R-6 media só a leitura: 530s de leitura mais 120s do resto passaria e violaria
+    o requisito.'
+  owner: Bruno Nunes
+  rationale: A medição saiu da leitura (que agora só reporta sua duração) e foi para a orquestração, que
+    mede do início ao veredito contra os 600s.
+- id: OBJ-C18
+  status: FIXED
+  summary: Exclusividade das classificações não provava bloqueio de MODERN_DEFECT nem CONTRACT_AMBIGUITY.
+  owner: Bruno Nunes
+  rationale: 'B-2 do juízo passou a exigir a política de cada uma das seis: três bloqueiam, três registram
+    sem bloquear.'
+- id: OBJ-C19
+  status: FIXED
+  summary: O veredito público sem âncora divergia de R-1 — NAO_MEDIDO e ACEITO_SEM_ANCORA sem relação
+    declarada.
+  owner: Bruno Nunes
+  rationale: 'ADR 0005 resolve: ACEITO_SEM_ANCORA é o veredito, NAO_MEDIDO é a causa. Camadas, não alternativas.'
 - id: OBJ-C8
   status: FIXED
   summary: A execução sem âncora tinha dois vereditos incompatíveis — o contrato mandava NAO_MEDIDO, a

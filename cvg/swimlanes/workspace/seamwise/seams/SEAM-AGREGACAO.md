@@ -61,7 +61,9 @@ swimlane:
       - id: B-1
         given: um valor de ponto flutuante em campo monetário
         when: o agregado é calculado
-        then: a entrada é recusada com erro explícito
+        then: a entrada é recusada com erro explícito, e o agregado devolvido traz os CINCO controles
+          nomeados que o juízo compara — count_linhas, sum_vl_liquido, min_vl_liquido, max_vl_liquido,
+          linhas_invalidas
       - id: B-2
         given: valores em empate exato, um contexto decimal cujo default já é meio-para-par, e a alternativa
           de arredondar por campo
@@ -71,8 +73,8 @@ swimlane:
           dá 4,68 por campo e 4,69 só no total), provando a granularidade do ADR 0004
       evals:
       - id: eval_1
-        description: Float em campo monetário é recusado
-        bash: pytest -q tests/test_agregacao.py -k recusa_float
+        description: Float recusado; o agregado traz os cinco controles nomeados
+        bash: pytest -q tests/test_agregacao.py -k "recusa_float or cinco_controles"
         verifies:
         - B-1
       - id: eval_2

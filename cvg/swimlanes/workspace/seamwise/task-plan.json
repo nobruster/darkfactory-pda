@@ -3,8 +3,8 @@
   "approved": true,
   "kind": "TaskPlan",
   "metadata": {
-    "delivery_plan_review_sha256": "2f4fb2e611d648a3552c7d19fc781d3e6d15a58d485119e945fb9f87a9e2e179",
-    "delivery_plan_sha256": "4768b6787de4a44dbea7193d256af28cf24b708fea6cc57ea4ddd6a3450eb512",
+    "delivery_plan_review_sha256": "c6dc8d39336e683e7e673cf301fa128148990ccdceb0a9fd24f33c85ff31d22f",
+    "delivery_plan_sha256": "75bb492fda78784ec46ce686ab1bb08331bfe8fd11fa7220cd70d1017215af1d",
     "name": "DI-FABRICA-COMPETENCIA",
     "producer": "seamwise",
     "producer_version": "0.2.0",
@@ -23,7 +23,7 @@
         {
           "given": "um valor de ponto flutuante em campo monetário",
           "id": "B-1",
-          "then": "a entrada é recusada com erro explícito",
+          "then": "a entrada é recusada com erro explícito, e o agregado devolvido traz os CINCO controles nomeados que o juízo compara — count_linhas, sum_vl_liquido, min_vl_liquido, max_vl_liquido, linhas_invalidas",
           "when": "o agregado é calculado"
         },
         {
@@ -48,8 +48,8 @@
       "effort": "M",
       "evals": [
         {
-          "command": "pytest -q tests/test_agregacao.py -k recusa_float",
-          "description": "Float em campo monetário é recusado",
+          "command": "pytest -q tests/test_agregacao.py -k \"recusa_float or cinco_controles\"",
+          "description": "Float recusado; o agregado traz os cinco controles nomeados",
           "expected_duration_sec": 10,
           "id": "eval_1",
           "terminal": false,
@@ -193,9 +193,9 @@
           "when": "o pacote é lido de volta"
         },
         {
-          "given": "qualquer veredito terminal — ACEITO, ACEITO_SEM_ANCORA ou NAO_MEDIDO",
+          "given": "qualquer um dos quatro vereditos terminais — ACEITO, ACEITO_SEM_ANCORA, RECUSADO ou ERRO",
           "id": "B-2",
-          "then": "o pacote existe e registra QUAL dos três foi, com os campos que existirem; NAO_MEDIDO grava sem agregado e nunca aparece como ACEITO",
+          "then": "o pacote registra o VEREDITO e, separadamente, a CAUSA — NAO_MEDIDO por exemplo — conforme ADR 0005; a recusa com âncora grava como RECUSADO, e NAO_MEDIDO nunca aparece no campo veredito",
           "when": "o pacote é gravado"
         }
       ],
@@ -277,9 +277,9 @@
           "when": "o pipeline roda de ponta a ponta e o juízo compara contra a âncora"
         },
         {
-          "given": "uma diferença sem classificação, e o mesmo dado agregado com meio-para-cima em vez de meio-para-par",
+          "given": "uma diferença de cada uma das seis classificações, e o mesmo dado agregado com meio-para-cima",
           "id": "B-2",
-          "then": "a primeira é UNRESOLVED e bloqueia; a segunda produz VEREDITO diferente — total diferente não basta, o juízo poderia re-arredondar e anular",
+          "then": "MODERN_DEFECT, CONTRACT_AMBIGUITY e UNRESOLVED bloqueiam; os três CONFIRMED/APPROVED não bloqueiam mas ficam registrados; e o arredondamento errado muda o VEREDITO, não só o total",
           "when": "o veredito é calculado"
         }
       ],
@@ -309,8 +309,8 @@
           ]
         },
         {
-          "command": "pytest -q tests/test_juizo.py -k \"unresolved or arredondamento_muda_veredito\"",
-          "description": "Diferença não classificada bloqueia; arredondamento errado muda o veredito",
+          "command": "pytest -q tests/test_juizo.py -k \"politica_por_classificacao or arredondamento_muda_veredito\"",
+          "description": "Cada uma das seis decide publicar ou bloquear; arredondamento muda o veredito",
           "expected_duration_sec": 10,
           "id": "eval_2",
           "terminal": false,
@@ -320,7 +320,7 @@
         },
         {
           "command": "pytest -q tests/test_juizo.py -k classificacoes",
-          "description": "As seis classificações são exaustivas e exclusivas",
+          "description": "As seis são exaustivas e exclusivas",
           "expected_duration_sec": 10,
           "id": "eval_3",
           "terminal": true,
@@ -403,8 +403,8 @@
           ]
         },
         {
-          "command": "pytest -q tests/test_leitura.py -k tempo_de_leitura",
-          "description": "R-6 — a leitura da competência completa em até 540 segundos",
+          "command": "pytest -q tests/test_leitura.py -k reporta_duracao",
+          "description": "A leitura reporta seus segundos para a orquestração medir o total",
           "expected_duration_sec": 10,
           "id": "eval_3",
           "terminal": true,
@@ -430,6 +430,90 @@
       "title": "Ler a competência sem alterar a fonte",
       "touches_paths": [],
       "why": "Extrair registros preservando os bytes originais."
+    },
+    {
+      "agent": "any",
+      "anti_patterns": [
+        "Do not encerrar o processo dentro de uma etapa: o pacote prometido nunca é gravado; instead retornar o veredito e deixar a orquestração decidir.",
+        "Do not medir o tempo por etapa: leitura em 530s mais o resto em 120s viola R-6 e passa; instead medir do início da leitura ao veredito.",
+        "Do not tratar ACEITO_SEM_ANCORA como autorização: a palavra aceito nomeia o término, não a prova; instead só ACEITO autoriza, e só com os cinco controles conferidos."
+      ],
+      "behaviors": [
+        {
+          "given": "execução sem âncora, execução ancorada que bate, e execução ancorada com divergência bloqueante",
+          "id": "B-1",
+          "then": "as três gravam pacote — ACEITO_SEM_ANCORA com causa NAO_MEDIDO, ACEITO, e RECUSADO — com códigos de saída distintos, e só ACEITO autoriza publicar",
+          "when": "a orquestração decide o desfecho"
+        },
+        {
+          "given": "uma competência completa, e um caso em que a leitura cabe no limite mas o resto estoura",
+          "id": "B-2",
+          "then": "R-6 reprova acima de 600s no TOTAL — etapa rápida com o resto lento não passa",
+          "when": "o tempo é medido do início da leitura ao veredito"
+        }
+      ],
+      "context": "Intent DI-FABRICA-COMPETENCIA; seam SEAM-ORQUESTRACAO; swimlane LANE-ORQUESTRACAO; capability leg LEG-DESFECHO-SEMPRE-COM-PACOTE. Done condition: Os quatro desfechos gravam pacote e saem com código próprio; a execução completa é medida contra os 600s de R-6.",
+      "creates_paths": [
+        "src/fabrica/orquestracao.py",
+        "tests/test_orquestracao.py"
+      ],
+      "depends_on": [
+        "T-20260917-evidencia-packet"
+      ],
+      "do_not_touch": [
+        "cvg/docs/adrs"
+      ],
+      "done_condition": "Os quatro desfechos gravam pacote e saem com código próprio; a execução completa é medida contra os 600s de R-6.",
+      "effort": "M",
+      "evals": [
+        {
+          "command": "pytest -q tests/test_orquestracao.py -k desfechos",
+          "description": "Os quatro desfechos gravam pacote com código de saída próprio",
+          "expected_duration_sec": 10,
+          "id": "eval_1",
+          "terminal": false,
+          "verifies": [
+            "B-1"
+          ]
+        },
+        {
+          "command": "pytest -q tests/test_orquestracao.py -k tempo_total",
+          "description": "R-6 mede o total, não a etapa",
+          "expected_duration_sec": 10,
+          "id": "eval_2",
+          "terminal": false,
+          "verifies": [
+            "B-2"
+          ]
+        },
+        {
+          "command": "pytest -q tests/test_orquestracao.py -k autoriza_publicar",
+          "description": "Só ACEITO autoriza publicar",
+          "expected_duration_sec": 10,
+          "id": "eval_3",
+          "terminal": true,
+          "verifies": [
+            "B-1",
+            "B-2"
+          ]
+        }
+      ],
+      "execution_backend": "any",
+      "goal": "Dar dono ao fluxo — sem ele a lacuna migra de costura em costura.",
+      "id": "T-20260917-orquestra-desfecho",
+      "observability": "desfechos por tipo e segundos da leitura ao veredito",
+      "profile": "standard",
+      "required_tools": [
+        "git",
+        "bash",
+        "python3",
+        "pytest"
+      ],
+      "rollback": "Remover a orquestração e seus testes.",
+      "source_note": "seamwise/legs/LEG-DESFECHO-SEMPRE-COM-PACOTE.md#T-20260917-orquestra-desfecho",
+      "title": "Decidir o desfecho e garantir o pacote em todo caminho",
+      "touches_paths": [],
+      "why": "Dar dono ao fluxo — sem ele a lacuna migra de costura em costura."
     }
   ]
 }

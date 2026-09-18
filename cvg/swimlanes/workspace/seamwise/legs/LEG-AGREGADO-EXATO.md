@@ -34,7 +34,8 @@ tasks:
   - id: B-1
     given: um valor de ponto flutuante em campo monetário
     when: o agregado é calculado
-    then: a entrada é recusada com erro explícito
+    then: a entrada é recusada com erro explícito, e o agregado devolvido traz os CINCO controles nomeados
+      que o juízo compara — count_linhas, sum_vl_liquido, min_vl_liquido, max_vl_liquido, linhas_invalidas
   - id: B-2
     given: valores em empate exato, um contexto decimal cujo default já é meio-para-par, e a alternativa
       de arredondar por campo
@@ -44,8 +45,8 @@ tasks:
       4,68 por campo e 4,69 só no total), provando a granularidade do ADR 0004
   evals:
   - id: eval_1
-    description: Float em campo monetário é recusado
-    bash: pytest -q tests/test_agregacao.py -k recusa_float
+    description: Float recusado; o agregado traz os cinco controles nomeados
+    bash: pytest -q tests/test_agregacao.py -k "recusa_float or cinco_controles"
     verifies:
     - B-1
   - id: eval_2
@@ -73,7 +74,7 @@ tasks:
   - cvg/docs/adrs
   rollback: Remover o agregador e seus testes.
   observability: total agregado por competência
-source_seam_sha256: dfd5a4abbf50b33e7034e72de928ba28629e2871c75c3f77c65141ebf664214f
+source_seam_sha256: c137eb3fadc449712d848a11e2d210c0e9d22db5bc9a6749629cf20ff725efda
 ---
 # O agregado é exato e recusa float
 

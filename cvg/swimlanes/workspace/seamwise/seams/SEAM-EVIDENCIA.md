@@ -58,10 +58,10 @@ swimlane:
         when: o pacote é lido de volta
         then: o veredito é reconstruído sem reexecutar o pipeline
       - id: B-2
-        given: qualquer veredito terminal — ACEITO, ACEITO_SEM_ANCORA ou NAO_MEDIDO
+        given: qualquer um dos quatro vereditos terminais — ACEITO, ACEITO_SEM_ANCORA, RECUSADO ou ERRO
         when: o pacote é gravado
-        then: o pacote existe e registra QUAL dos três foi, com os campos que existirem; NAO_MEDIDO grava
-          sem agregado e nunca aparece como ACEITO
+        then: o pacote registra o VEREDITO e, separadamente, a CAUSA — NAO_MEDIDO por exemplo — conforme
+          ADR 0005; a recusa com âncora grava como RECUSADO, e NAO_MEDIDO nunca aparece no campo veredito
       evals:
       - id: eval_1
         description: O pacote reconstrói o veredito

@@ -1,6 +1,6 @@
 {
   "contract": "SeamwiseTaskPlanLineage/v1",
-  "delivery_plan_sha256": "4768b6787de4a44dbea7193d256af28cf24b708fea6cc57ea4ddd6a3450eb512",
+  "delivery_plan_sha256": "75bb492fda78784ec46ce686ab1bb08331bfe8fd11fa7220cd70d1017215af1d",
   "engine_version": "0.2.0",
   "intent": {
     "id": "DI-FABRICA-COMPETENCIA",
@@ -8,14 +8,14 @@
   },
   "review": {
     "fixture": false,
-    "plan_sha256": "4768b6787de4a44dbea7193d256af28cf24b708fea6cc57ea4ddd6a3450eb512",
-    "reviewed_at": "2026-09-18T01:02:52.394114+00:00",
+    "plan_sha256": "75bb492fda78784ec46ce686ab1bb08331bfe8fd11fa7220cd70d1017215af1d",
+    "reviewed_at": "2026-09-18T01:12:54.215497+00:00",
     "reviewer": "Bruno Nunes",
-    "sha256": "2f4fb2e611d648a3552c7d19fc781d3e6d15a58d485119e945fb9f87a9e2e179"
+    "sha256": "c6dc8d39336e683e7e673cf301fa128148990ccdceb0a9fd24f33c85ff31d22f"
   },
   "task_plan": {
     "contract": "TaskPlan/v1",
-    "digest": "b2e24984cd264cd368fa4692440045ea94d0db8391bbacaac0a7a44ecdb7c8a8",
+    "digest": "e31d5961d2ce821265880efc8a2b437d4f38ece84eb584fcf2c7a65f9b139c33",
     "path": "seamwise/task-plan.json"
   },
   "units": {
@@ -23,7 +23,7 @@
       "intent": "DI-FABRICA-COMPETENCIA",
       "leg": "LEG-AGREGADO-EXATO",
       "seam": "SEAM-AGREGACAO",
-      "source_sha256": "c1669110aea457fc396b00e28f0bcf7f1c1d38a15cc8397da888adee41bcaf89",
+      "source_sha256": "8c2a38f38b30e507816ba172a27d8f382ad099d9886e8a05d7aaace54d36fdc0",
       "swimlane": "LANE-AGREGACAO",
       "unit_id": "T-20260917-agregacao-exata"
     },
@@ -39,7 +39,7 @@
       "intent": "DI-FABRICA-COMPETENCIA",
       "leg": "LEG-EVIDENCIA-RECONSTROI",
       "seam": "SEAM-EVIDENCIA",
-      "source_sha256": "84ed8680bd18a367b21971d45245f54396c7b6130832bff8b59376abba08efb5",
+      "source_sha256": "d8476501de197f2dfeec921f3cf6bf3f238df877443be0ebfd70dd9a384fe849",
       "swimlane": "LANE-EVIDENCIA",
       "unit_id": "T-20260917-evidencia-packet"
     },
@@ -47,7 +47,7 @@
       "intent": "DI-FABRICA-COMPETENCIA",
       "leg": "LEG-JUIZO-ACUSA-CENTAVO",
       "seam": "SEAM-JUIZO",
-      "source_sha256": "d885c5f403cc2021f93777dac5f12948cac9b052db183421873fb6647ad11f8a",
+      "source_sha256": "ed7807fe92cb5c13e1727e2a3e8222a954613a93955e0c734f4b37b33be348d9",
       "swimlane": "LANE-JUIZO",
       "unit_id": "T-20260917-juizo-classifica"
     },
@@ -55,9 +55,17 @@
       "intent": "DI-FABRICA-COMPETENCIA",
       "leg": "LEG-LEITURA-NAO-ALTERA-FONTE",
       "seam": "SEAM-LEITURA",
-      "source_sha256": "a9d7d2a732572cf8af9f90599173acb7c467ed5c0378dc23f6074862da6d17f8",
+      "source_sha256": "45df9d3573390c142582225fb9c9339a36a9ba04d7d841758b1b44c4eaca7209",
       "swimlane": "LANE-LEITURA",
       "unit_id": "T-20260917-leitura-competencia"
+    },
+    "T-20260917-orquestra-desfecho": {
+      "intent": "DI-FABRICA-COMPETENCIA",
+      "leg": "LEG-DESFECHO-SEMPRE-COM-PACOTE",
+      "seam": "SEAM-ORQUESTRACAO",
+      "source_sha256": "6cb9407aeb6e73091b7f5dcf432dd6e6cb259cd62f0e00238108b41fbb7aeefc",
+      "swimlane": "LANE-ORQUESTRACAO",
+      "unit_id": "T-20260917-orquestra-desfecho"
     }
   }
 }

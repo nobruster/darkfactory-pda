@@ -1,6 +1,6 @@
 schema_version: 1
 status: DELIVERY_PLAN=READY
-seam_map_sha256: 13f8b32bae341fbc1e44636125cc78043e0ab11d8364b5e8512a769a914d35c3
+seam_map_sha256: 1da52cd9b55591f6e7fe5c6743e59ad0a5024390ef6394cdb07c469360b66d79
 swimlanes:
 - id: LANE-CONTRATO
   seam_id: SEAM-CONTRATO-ANCORA
@@ -11,22 +11,27 @@ swimlanes:
   seam_id: SEAM-LEITURA
   owner: leitura
   path: seamwise/swimlanes/LANE-LEITURA.md
-  sha256: fc07ebeef4f4d43819bd58c7824ec0ec2a7b5fdce2cd1a3f1d52e36ecc0b3e63
+  sha256: 13af67a48758d6cbc7683d3a70f3b98c50834c06ddef1fd7db29d5c2f0fee0e4
 - id: LANE-AGREGACAO
   seam_id: SEAM-AGREGACAO
   owner: agregacao
   path: seamwise/swimlanes/LANE-AGREGACAO.md
-  sha256: 22dd3349d37586b0dda78e9b6dd7cd856e31d14923a342c74812c5ff1ab84ee7
+  sha256: aa4dcb7ea3628a06c7e91a4fc300f07fedbecf896b566a68c26a5a7284599282
 - id: LANE-JUIZO
   seam_id: SEAM-JUIZO
   owner: juizo
   path: seamwise/swimlanes/LANE-JUIZO.md
-  sha256: 6d76b9f1171d2c75721d12cf1f3e5e3f34df4d6ac307bf07da4b84e0d015f2a7
+  sha256: e687a92bc2647917146442277f6a866442f9215b8381d5d1d2e64e1fe5d42535
 - id: LANE-EVIDENCIA
   seam_id: SEAM-EVIDENCIA
   owner: evidencia
   path: seamwise/swimlanes/LANE-EVIDENCIA.md
-  sha256: 14b7cdaca7c350f985ce19b9675af3d13a071365143a26ed26855383307e66d9
+  sha256: 9392fe63ab4ddc8743031e6aeecbe13627e6b7cb53917f6650c2d58c6ae45598
+- id: LANE-ORQUESTRACAO
+  seam_id: SEAM-ORQUESTRACAO
+  owner: orquestracao
+  path: seamwise/swimlanes/LANE-ORQUESTRACAO.md
+  sha256: 910ddfd1dbcce6564407073550cb56d33eb4941b28a1638e7d6c081159d32d02
 legs:
 - id: LEG-CONTRATO-RECUSA-SEM-ANCORA
   seam_id: SEAM-CONTRATO-ANCORA
@@ -37,28 +42,34 @@ legs:
   seam_id: SEAM-LEITURA
   swimlane_id: LANE-LEITURA
   path: seamwise/legs/LEG-LEITURA-NAO-ALTERA-FONTE.md
-  sha256: a9d7d2a732572cf8af9f90599173acb7c467ed5c0378dc23f6074862da6d17f8
+  sha256: 45df9d3573390c142582225fb9c9339a36a9ba04d7d841758b1b44c4eaca7209
 - id: LEG-AGREGADO-EXATO
   seam_id: SEAM-AGREGACAO
   swimlane_id: LANE-AGREGACAO
   path: seamwise/legs/LEG-AGREGADO-EXATO.md
-  sha256: c1669110aea457fc396b00e28f0bcf7f1c1d38a15cc8397da888adee41bcaf89
+  sha256: 8c2a38f38b30e507816ba172a27d8f382ad099d9886e8a05d7aaace54d36fdc0
 - id: LEG-JUIZO-ACUSA-CENTAVO
   seam_id: SEAM-JUIZO
   swimlane_id: LANE-JUIZO
   path: seamwise/legs/LEG-JUIZO-ACUSA-CENTAVO.md
-  sha256: d885c5f403cc2021f93777dac5f12948cac9b052db183421873fb6647ad11f8a
+  sha256: ed7807fe92cb5c13e1727e2a3e8222a954613a93955e0c734f4b37b33be348d9
 - id: LEG-EVIDENCIA-RECONSTROI
   seam_id: SEAM-EVIDENCIA
   swimlane_id: LANE-EVIDENCIA
   path: seamwise/legs/LEG-EVIDENCIA-RECONSTROI.md
-  sha256: 84ed8680bd18a367b21971d45245f54396c7b6130832bff8b59376abba08efb5
+  sha256: d8476501de197f2dfeec921f3cf6bf3f238df877443be0ebfd70dd9a384fe849
+- id: LEG-DESFECHO-SEMPRE-COM-PACOTE
+  seam_id: SEAM-ORQUESTRACAO
+  swimlane_id: LANE-ORQUESTRACAO
+  path: seamwise/legs/LEG-DESFECHO-SEMPRE-COM-PACOTE.md
+  sha256: 6cb9407aeb6e73091b7f5dcf432dd6e6cb259cd62f0e00238108b41fbb7aeefc
 steel_thread:
 - LEG-CONTRATO-RECUSA-SEM-ANCORA
 - LEG-LEITURA-NAO-ALTERA-FONTE
 - LEG-AGREGADO-EXATO
 - LEG-JUIZO-ACUSA-CENTAVO
 - LEG-EVIDENCIA-RECONSTROI
+- LEG-DESFECHO-SEMPRE-COM-PACOTE
 objections:
 - id: OBJ-C1
   status: FIXED
@@ -101,6 +112,42 @@ objections:
   owner: Bruno Nunes
   rationale: B-1 passou a corromper UMA LINHA do arquivo e rodar o pipeline ponta a ponta. O teste anterior
     passaria mesmo se a leitura descartasse a linha.
+- id: OBJ-C14
+  status: FIXED
+  summary: O encerramento sem âncora foi delegado a um "orquestrador" que nenhuma das cinco tarefas assumia.
+  owner: Bruno Nunes
+  rationale: 'Criada a sexta costura, SEAM-ORQUESTRACAO, com tarefa própria. Ela possui o fluxo: decide
+    o desfecho, o código de saída, e garante o pacote em todo caminho.'
+- id: OBJ-C15
+  status: FIXED
+  summary: O juízo exigia cinco controles que o produtor não prometia entregar — não havia schema de saída.
+  owner: Bruno Nunes
+  rationale: B-1 da agregação passou a exigir os cinco controles NOMEADOS no agregado devolvido.
+- id: OBJ-C16
+  status: FIXED
+  summary: Os três vereditos enumerados excluíam a recusa com âncora — justamente quando o juiz acusa.
+  owner: Bruno Nunes
+  rationale: 'São quatro terminais (ADR 0005): ACEITO, ACEITO_SEM_ANCORA, RECUSADO e ERRO. A recusa com
+    âncora grava como RECUSADO.'
+- id: OBJ-C17
+  status: FIXED
+  summary: 'O teste de R-6 media só a leitura: 530s de leitura mais 120s do resto passaria e violaria
+    o requisito.'
+  owner: Bruno Nunes
+  rationale: A medição saiu da leitura (que agora só reporta sua duração) e foi para a orquestração, que
+    mede do início ao veredito contra os 600s.
+- id: OBJ-C18
+  status: FIXED
+  summary: Exclusividade das classificações não provava bloqueio de MODERN_DEFECT nem CONTRACT_AMBIGUITY.
+  owner: Bruno Nunes
+  rationale: 'B-2 do juízo passou a exigir a política de cada uma das seis: três bloqueiam, três registram
+    sem bloquear.'
+- id: OBJ-C19
+  status: FIXED
+  summary: O veredito público sem âncora divergia de R-1 — NAO_MEDIDO e ACEITO_SEM_ANCORA sem relação
+    declarada.
+  owner: Bruno Nunes
+  rationale: 'ADR 0005 resolve: ACEITO_SEM_ANCORA é o veredito, NAO_MEDIDO é a causa. Camadas, não alternativas.'
 - id: OBJ-C8
   status: FIXED
   summary: A execução sem âncora tinha dois vereditos incompatíveis — o contrato mandava NAO_MEDIDO, a
@@ -153,5 +200,5 @@ objections:
     da lane.
 contentions: []
 steel_thread_path: seamwise/steel-thread.md
-steel_thread_sha256: 7bf8287daa939642e1b5b039f612f99d98203a1280919ccd775a7928e2795420
-review_authority_sha256: ebe00cb16081654e9637175e1f9bc5971ab2904c3ae574a29c02ba902b96fc6a
+steel_thread_sha256: 9f731847917b817babbd4738c4047ab9b89e0120a8dcb04a6bfd9dd4636e5ea2
+review_authority_sha256: fb994c3016d0effaedacd6ae14a508588a6d7bd865b5fa7d4eb048113ff58bdd
