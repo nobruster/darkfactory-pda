@@ -24,6 +24,36 @@ Estrutura:
 
 ---
 
+## Onde a descida está agora
+
+Há um **caso real em andamento** neste repositório — um BRD conduzido pelo
+motor do Converge, Pass 0 a 8.
+
+📍 **[`cvg/ESTADO.md`](cvg/ESTADO.md)** — leia antes de mexer em `cvg/`.
+Registra o passe atual, o veredito de cada gate, e o que falta.
+
+| Passe | Veredito |
+|---|---|
+| 0 · Capture | 🟢 `CHECK_BRD=PASS` |
+| 1 · Intent | 🟢 `CHECK_TECH_SPEC=PASS` |
+| 2 · Structure | 🟢 `CHECK_ADR=OK` |
+| 3 · Decompose | 🟢 `TASK_GRAPH=READY` — 6 tarefas |
+| 4 · Consensus | 🟢 `CHECK_CONSENSUS=OK` — 36 objeções decididas |
+| 5 · Tasking | ⬜ próximo — 🛑 Barreira D (selo HMAC por folha) |
+
+⚠️ **O `[+]` do conductor não é veredito.** `cvg next` confere que o arquivo
+existe; quem decide é o gate de cada passe. Ver `converge/README.md:166`.
+
+Para rodar qualquer passe — **de dentro do WSL**:
+
+```bash
+export PATH="$HOME/.local/bin:$PATH"
+export CVG_TASKSPEC_BIN="$PWD/task-spec-3.8.1/bin/taskspec"
+converge/bin/cvg next --guided
+```
+
+---
+
 ## Regra 1 — Código de terceiros: edite com consciência
 
 As cinco pastas vendorizadas vieram de repositórios de
@@ -145,8 +175,20 @@ Toda diferença recebe exatamente uma das seis classificações
 `0.1 + 0.2 != 0.3` em binário. É assim que um centavo some sem nada acusar.
 
 O juiz **recusa** float em campo monetário. Dinheiro trafega como string ou
-`Decimal`, e o arredondamento é explícito (`HALF_EVEN` vs `HALF_UP` é decisão
-de contrato, não de implementação).
+`Decimal`, e o arredondamento é explícito.
+
+**Decimal sozinho não basta.** Três decisões, nesta ordem de precedência,
+registradas em ADR — todas com contra-exemplo verificado:
+
+| # | Decisão | Por quê |
+|---|---|---|
+| [0006](cvg/docs/adrs/0006-decimal-context-precision-is-declared-not-inherited.md) | **precisão declarada**, nunca herdada | em `prec=6`, `10000.00 + 0.01` vira `10000.0` — e quantizar depois devolve `10000.00`, não `10000.01`. A perda é **anterior** ao arredondamento |
+| [0004](cvg/docs/adrs/0004-rounding-happens-once-on-the-final-total-not-per-field.md) | arredonda **uma vez**, no total | `2,345 + 2,345` dá 4,68 por campo e 4,69 no total — ambos meio-para-par |
+| [0001](cvg/docs/adrs/0001-money-rounds-half-to-even-at-two-decimals.md) | **meio-para-par** (HALF_EVEN) | meio-para-cima empurra todo empate na mesma direção e vira tendência em volume |
+
+O contexto decimal é **global e mutável**: qualquer biblioteca importada pode
+alterá-lo, e o agregador passa a perder centavos sem que uma linha do seu
+código mude. Por isso a precisão entra no contrato, não no default.
 
 ---
 
@@ -199,6 +241,24 @@ nova deve ter o seu verificador de cercas.**
 **Revisão de ADR se faz com ADR novo, nunca editando o antigo.** Um ADR
 corrigido em silêncio apaga o registro de que a decisão mudou — e o motivo da
 mudança é a parte que importa.
+
+### Os ADRs deste caso
+
+Decisões vinculantes já tomadas. Todas com evidência executável e a leitura
+rejeitada registrada:
+
+| # | Decisão |
+|---|---|
+| [0000](cvg/docs/adrs/0000-context.md) | o terreno é greenfield; nenhuma fonte conectada, nenhuma âncora medida aqui |
+| [0001](cvg/docs/adrs/0001-money-rounds-half-to-even-at-two-decimals.md) | dinheiro arredonda meio-para-par, 2 casas |
+| [0002](cvg/docs/adrs/0002-the-first-anchor-is-competencia-2026-03-measured-at-source.md) | a primeira âncora é 2026-03, medida na fonte |
+| [0003](cvg/docs/adrs/0003-seamwise-lanes-are-projected-into-the-converge-dir-per-lane-layout.md) | as lanes do Seamwise são projetadas no layout do Converge |
+| [0004](cvg/docs/adrs/0004-rounding-happens-once-on-the-final-total-not-per-field.md) | arredonda uma vez, sobre o total |
+| [0005](cvg/docs/adrs/0005-no-anchor-runs-end-as-aceito-sem-ancora-with-nao-medido-as-the-internal-cause.md) | sem âncora: veredito `ACEITO_SEM_ANCORA`, causa `NAO_MEDIDO` |
+| [0006](cvg/docs/adrs/0006-decimal-context-precision-is-declared-not-inherited.md) | a precisão do contexto decimal é declarada |
+
+Os ADRs 0004, 0005 e 0006 **nasceram de objeções do adversário** no Pass 4 —
+lacunas que o autor do plano não via.
 
 ---
 
