@@ -13,8 +13,8 @@ Atualizado em 17/09/2026.
 | 0 · Capture | `cvg capture` | 🟢 `CHECK_BRD=PASS` |
 | 1 · Intent | `cvg intent` | 🟢 `CHECK_TECH_SPEC=PASS` |
 | 2 · Structure | `cvg structure --final` | 🟢 `CHECK_ADR=OK` |
-| 3 · Decompose | `seamwise compile` | 🟢 `TASK_GRAPH=READY` — 5 tarefas |
-| 4 · Consensus | `cvg review --check` | 🔴 `CHECK_CONSENSUS=EMPTY` — 🛑 **parado** |
+| 3 · Decompose | `seamwise compile` | 🟢 `TASK_GRAPH=READY` — 6 tarefas |
+| 4 · Consensus | `cvg review --check` | 🟢 `CHECK_CONSENSUS=OK` — **GREEN** |
 | 5 · Tasking | `taskspec gate --stamp` | ⬜ |
 | 7 · Bind | `cvg bind` | ⬜ |
 | 8 · Loop | `cvg loop` | ⬜ |
@@ -30,7 +30,8 @@ reason     : PASSOU com os valores exatos
 reviewed_at: 2026-09-17T23:19:52Z
 ```
 
-O `compile` produziu **5 tarefas** ligadas ao digest do plano revisado:
+O `compile` produziu **6 tarefas** ligadas ao digest do plano revisado — a
+sexta nasceu da objeção C14, no Pass 4:
 
 | Tarefa | O que faz |
 |---|---|
@@ -39,6 +40,7 @@ O `compile` produziu **5 tarefas** ligadas ao digest do plano revisado:
 | `T-20260917-agregacao-exata` | soma com meio-para-par |
 | `T-20260917-juizo-classifica` | compara e classifica |
 | `T-20260917-evidencia-packet` | grava evidência reconstruível |
+| `T-20260917-orquestra-desfecho` | conduz o fluxo e decide o desfecho |
 
 Antes da revisão, `compile` devolvia `TASK_GRAPH=BLOCKED` com
 `[review_missing]`. A barreira era real.
@@ -77,119 +79,92 @@ Registrado em
 evidência verificada: dos três empates testados, dois divergem em um centavo
 entre as duas regras.
 
-## Pass 4 · Consenso 🛑 **parado — dois blockers medidos**
-
-Rodado nesta máquina em 17/09/2026. Nenhum dos dois foi contornado.
-
-### Blocker 1 — não há adversário nesta máquina
+## Pass 4 · Consenso 🟢 **GREEN**
 
 ```
-$ cvg doctor
-  SKIP  codex   (openai)    not installed (codex)
-  SKIP  kimi    (moonshot)  not installed (kimi)
-  SKIP  claude  (anthropic) not installed (claude)
-engines ready: 0   cross-family: 0
-DOCTOR=FAIL
+GATE: GREEN — consensus reached (different-family attack, all objections
+resolved, fork named, provenance intact)
+CHECK_CONSENSUS=OK
 ```
 
-O Pass 4 exige **≥ 2 engines, ≥ 1 de família diferente** da autora
-(anthropic). O `dispatch-review.sh` chama a **CLI própria** do engine, que
-se autentica sozinha.
+Seis rodadas de ataque adversarial, **36 objeções** decididas.
 
-**Existe um binário Linux do Claude nesta máquina**, fora do PATH, dentro da
-extensão do VSCode:
+### O que foi preciso para chegar aqui
 
-```
-~/.vscode-server/extensions/anthropic.claude-code-2.1.275-linux-x64/resources/native-binary/claude
-```
+Dois blockers, ambos derrubados:
 
-Ele roda e responde `2.1.275`. Ligado pelo override documentado
-(`CVG_CLAUDE_CMD`), o doctor muda de contagem e **não** de veredito:
+**1. Não havia adversário.** `DOCTOR=FAIL`, zero engines. Não há Node de
+Linux nesta máquina (o `npm` visível é o do Windows). Resolvido sem `sudo`:
+tarball oficial do Node em `~/.local`, depois `@openai/codex` e
+`@anthropic-ai/claude-code`.
 
-```
-  PASS  claude  (anthropic) 2.1.275 (Claude Code)
-engines ready: 1   cross-family: 0
-DOCTOR=FAIL
-```
+A autenticação teve duas armadilhas: o `~/.bashrc` do Ubuntu sai na linha 8
+quando o shell não é interativo (a chave foi para `~/.profile`), e o `codex`
+via a chave no ambiente mas exigia `~/.codex/auth.json` — resolvido com
+`printenv OPENAI_API_KEY | codex login --with-api-key`, que lê por stdin.
 
-Porque `claude` é **da mesma família da autora**. O check [1] do gate recusa
-como self-review, e o próprio dispatcher avisa. O binário que faltava achar
-é justamente o que não pode ser o adversário — o que falta é um engine
-**cross-family** (`codex` ou `kimi`).
+**2. As duas cadeias discordavam do layout.** O `seamwise` emite lanes como
+arquivo plano; o Converge espera diretório com PRD. O gate acusava, mas o
+**dispatcher não**: ele montaria o prompt com zero planos.
 
-Nenhum `node` de Linux nesta máquina (o `npm` visível é o do Windows, em
-`/mnt/c`), então instalar uma CLI via npm exige passo extra.
+Resolvido pela ponte em
+[`fabrica/ponte/`](../fabrica/ponte/lanes_para_converge.py) — ADR 0003.
 
-Sem engine, `cvg review --adversary` devolve `REVIEW=SKIP` e não escreve
-log. Sem log, o gate para:
+### A série de objeções
 
-```
-$ check-consensus-gate.sh --dir cvg/swimlanes/workspace/seamwise/swimlanes
-GATE: no objection log at .../.consensus/objection-log.json
-CHECK_CONSENSUS=EMPTY
-```
+| Rodada | 1ª | 2ª | 3ª | 4ª | 5ª | 6ª |
+|---|---|---|---|---|---|---|
+| Objeções | 7 | 6 | 6 | 6 | 5 | 6 |
 
-**Não se fabrica o objection-log à mão.** O gate confere a família do
-adversário, re-hasheia os planos que ele atacou e exige `decided_by` humano
-por objeção. Escrever o log manualmente é a Regra 3 — editar o oráculo para
-o portão passar. É justamente o que quebrou em 2026-08-03.
+**Não converge — e isso é esperado.** Um revisor adversarial competente
+sempre encontra algo num plano em prosa. O Pass 4 fecha quando o dono decide,
+não quando o adversário desiste.
 
-### Blocker 2 — as duas cadeias discordam do layout das lanes
+O que mudou foi a **natureza**. As três primeiras rodadas acusavam
+**estrutura**; as três últimas, **cobertura de teste**.
 
-Independente do engine, e mais silencioso. O `seamwise` emite lanes como
-**arquivos planos**:
+### O que as objeções estruturais mudaram
 
-```
-seamwise/swimlanes/LANE-CONTRATO.md
-```
+| Achado | Consequência |
+|---|---|
+| **C11 / C44** — build-order | A correção de C2 criou ciclo entre a primeira e a última tarefa. Encerrar virou decisão de fluxo, não de etapa |
+| **C14** — ninguém possui o fluxo | Criada a **sexta costura**, `SEAM-ORQUESTRACAO` |
+| **C19** — dois nomes, nenhuma relação | **ADR 0005**: `ACEITO_SEM_ANCORA` é o veredito, `NAO_MEDIDO` é a causa. Daí saiu que os terminais são **quatro** |
+| **C12** — granularidade | **ADR 0004**: `2,345+2,345` dá 4,68 por campo e 4,69 no total, ambos meio-para-par |
+| **C31** — precisão do contexto | **ADR 0006**: em `prec=6`, `10000.00 + 0.01` vira `10000.0`, e quantizar depois não recupera |
 
-O Converge espera lanes como **subdiretórios com PRD**:
+A C31 foi a mais grave: o mesmo defeito do float, por outra porta. O contexto
+decimal é global e mutável — qualquer biblioteca importada pode abri-la.
 
-```
-swimlanes/<seam>/_lane.md      (canônico)
-swimlanes/swimlane-<seam>/swimlane-<seam>.plan.md   (legado)
-```
+### A decisão de fechamento
 
-Consequência medida:
+**30 objeções corrigidas** no plano. **6 aceitas** com risco declarado por
+Bruno Nunes:
 
-| Componente | Padrão | Resultado no layout atual |
-|---|---|---|
-| `dispatch-review.sh` | `<tree>/*/*.md` | **zero planos** — o adversário atacaria o vazio |
-| gate, check [5] | `<seam>/_lane.md` | `FAIL` — "no swimlane PRDs … nothing to gate" |
+> *cobertura de teste se prova no Pass 5 com evals executáveis; um eval só
+> vira prova quando existe código que ele execute.*
 
-O gate **acusa** (check [5] falha), então isto não passa despercebido. Mas o
-dispatcher **não acusa**: ele montaria o prompt sem nenhum plano e o
-adversário produziria objeções sobre nada. O gate depois recusaria por outro
-motivo — o resultado certo pela razão errada.
+As seis pedem cenários de teste — e cenário de teste se escreve no Pass 5. É
+o que a Barreira C aceita: risco assumido com dono. O que ela não aceita é
+objeção **não decidida**.
 
-É a costura aberta que o `AGENTS.md` registra na Regra 1.6: *"as duas cadeias
-ainda não se chamam"*. Aqui ela tem um custo concreto e reproduzível.
-
-### Para destravar
-
-1. Instalar uma CLI **cross-family** (`codex` ou `kimi`) no **Linux/WSL**, não
-   no Windows. `cvg doctor` precisa dizer `DOCTOR=OK`. O `claude` da extensão
-   não substitui isso: conta como engine, mas não como adversário.
-2. Decidir a ponte de layout — e **registrar em ADR**, porque é decisão
-   vinculante entre duas ferramentas de terceiros:
-   - adaptador em `fabrica/` que projeta as lanes planas do seamwise na
-     forma `<seam>/_lane.md` que o Converge gatea (Regra 1, opção 1); ou
-   - editar direto o `converge/` vendorizado — cujo upstream saiu do ar —
-     e anotar a divergência no `VENDORED.md`.
-
-   A primeira preserva as duas cópias; a segunda é mais curta e o
-   `converge/` é o único onde editar direto é o caminho normal.
-3. Só então `cvg review --adversary`, e uma decisão humana por objeção.
-
-⚠️ O dispatch precisa rodar **de dentro do WSL**, com:
-
-```bash
-export CVG_TASKSPEC_BIN="$PWD/task-spec-3.8.1/bin/taskspec"
-```
+⚠️ **O conductor mostra `[.] pass 4`** porque procura o log em
+`cvg/swimlanes/`, e o nosso está em `cvg/swimlanes/lanes/`. Quem decide é
+`cvg review --check`, e ele diz `OK`. *"Evidence presence is not a verdict."*
 
 ⚠️ **A âncora veio de outro repositório.** Uma fábrica nova mede a sua
 própria: copiar número entre projetos é herdar um fato sem a evidência que o
 sustenta.
+
+### Próximo: Pass 5 · Tasking
+
+```bash
+export CVG_TASKSPEC_BIN="$PWD/task-spec-3.8.1/bin/taskspec"
+task-spec-3.8.1/bin/taskspec gate --stamp tasks/T-<id>.md
+```
+
+🛑 **Barreira D** — cada folha é autorizada individualmente por HMAC. Não
+carimbe `signed_off` nem `accepted` à mão.
 
 ## O que já ficou provado
 
@@ -201,6 +176,13 @@ Rodado nesta máquina, não presumido:
 - O gate do Pass 1 **acusa** blocker sem resolução substantiva
 - O roteamento de modelo existe em código: FAST→Haiku, NORMAL→Sonnet,
   FULL→Opus (`converge/skills/task-to-runtime-contract/scripts/cost-profile.py:52`)
-- O gate do Pass 4 **acusa** duas vezes sem engine nenhum: `CHECK_CONSENSUS=EMPTY`
-  por falta de log, e o check [5] por falta de PRD de lane. Fail-closed confirmado
-  na prática — nenhum dos dois cede a um atalho
+- O gate do Pass 4 **acusava** duas vezes sem engine nenhum:
+  `CHECK_CONSENSUS=EMPTY` por falta de log, e o check [5] por falta de PRD de
+  lane. Fail-closed confirmado na prática — nenhum dos dois cedeu a atalho,
+  e os dois só abriram depois que o bloqueio real foi resolvido
+- O adversário cross-family **acha defeito que o autor não vê**: em seis
+  rodadas, 36 objeções, incluindo um ciclo de construção que uma correção
+  minha criou (C11) e a perda de centavo por precisão de contexto (C31) —
+  o mesmo defeito do float, por outra porta
+- **O ciclo de consenso não converge sozinho.** 7 → 6 → 6 → 6 → 5 → 6. Fecha
+  quando o dono decide, não quando o adversário desiste

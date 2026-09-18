@@ -83,7 +83,14 @@
         "cvg/docs/tech-spec/tech-spec-exemplo-fabrica.md \u00a7 Requirements, R-3",
         "cvg/docs/adrs/0001-money-rounds-half-to-even-at-two-decimals.md \u00a7 Decision",
         "cvg/docs/adrs/0002-the-first-anchor-is-competencia-2026-03-measured-at-source.md \u00a7 Decision"
-      ]
+      ],
+      "resolution": {
+        "disposition": "ACCEPT",
+        "decided_by": "Bruno Nunes",
+        "decided_at": "2026-09-18T01:30:28Z",
+        "owner": "Bruno Nunes",
+        "risk_residual": "cobertura de teste se prova no Pass 5 com evals executaveis; um eval so vira prova quando existe codigo que ele execute"
+      }
     },
     {
       "id": "C102",
@@ -103,7 +110,14 @@
         "cvg/swimlanes/lanes/agregacao/LEG-AGREGADO-EXATO.md \u00a7 requires e behavior B-1",
         "cvg/docs/adrs/0002-the-first-anchor-is-competencia-2026-03-measured-at-source.md \u00a7 Consequences",
         "cvg/docs/tech-spec/tech-spec-exemplo-fabrica.md \u00a7 Requirements, R-2"
-      ]
+      ],
+      "resolution": {
+        "disposition": "ACCEPT",
+        "decided_by": "Bruno Nunes",
+        "decided_at": "2026-09-18T01:30:28Z",
+        "owner": "Bruno Nunes",
+        "risk_residual": "cobertura de teste se prova no Pass 5 com evals executaveis; um eval so vira prova quando existe codigo que ele execute"
+      }
     },
     {
       "id": "C103",
@@ -122,7 +136,14 @@
       "cites": [
         "cvg/docs/tech-spec/tech-spec-exemplo-fabrica.md \u00a7 Requirements, R-2",
         "AGENTS.md \u00a7 Regra 4"
-      ]
+      ],
+      "resolution": {
+        "disposition": "ACCEPT",
+        "decided_by": "Bruno Nunes",
+        "decided_at": "2026-09-18T01:30:28Z",
+        "owner": "Bruno Nunes",
+        "risk_residual": "cobertura de teste se prova no Pass 5 com evals executaveis; um eval so vira prova quando existe codigo que ele execute"
+      }
     },
     {
       "id": "C104",
@@ -142,7 +163,14 @@
         "cvg/swimlanes/lanes/contrato/LEG-CONTRATO-RECUSA-SEM-ANCORA.md \u00a7 tasks[0].done_condition",
         "cvg/swimlanes/lanes/leitura/LEG-LEITURA-NAO-ALTERA-FONTE.md \u00a7 creates_paths e behavior B-2",
         "cvg/docs/adrs/0002-the-first-anchor-is-competencia-2026-03-measured-at-source.md \u00a7 Decision e Evidence"
-      ]
+      ],
+      "resolution": {
+        "disposition": "ACCEPT",
+        "decided_by": "Bruno Nunes",
+        "decided_at": "2026-09-18T01:30:28Z",
+        "owner": "Bruno Nunes",
+        "risk_residual": "cobertura de teste se prova no Pass 5 com evals executaveis; um eval so vira prova quando existe codigo que ele execute"
+      }
     },
     {
       "id": "C105",
@@ -161,7 +189,14 @@
       "cites": [
         "cvg/docs/tech-spec/tech-spec-exemplo-fabrica.md \u00a7 Requirements, R-6",
         "cvg/docs/tech-spec/tech-spec-exemplo-fabrica.md \u00a7 Success metrics"
-      ]
+      ],
+      "resolution": {
+        "disposition": "ACCEPT",
+        "decided_by": "Bruno Nunes",
+        "decided_at": "2026-09-18T01:30:28Z",
+        "owner": "Bruno Nunes",
+        "risk_residual": "cobertura de teste se prova no Pass 5 com evals executaveis; um eval so vira prova quando existe codigo que ele execute"
+      }
     },
     {
       "id": "C106",
@@ -181,7 +216,14 @@
         "cvg/docs/tech-spec/tech-spec-exemplo-fabrica.md \u00a7 Requirements, R-7",
         "cvg/docs/tech-spec/tech-spec-exemplo-fabrica.md \u00a7 Problem restated",
         "cvg/swimlanes/lanes/evidencia/LEG-EVIDENCIA-RECONSTROI.md \u00a7 anti_patterns"
-      ]
+      ],
+      "resolution": {
+        "disposition": "ACCEPT",
+        "decided_by": "Bruno Nunes",
+        "decided_at": "2026-09-18T01:30:28Z",
+        "owner": "Bruno Nunes",
+        "risk_residual": "cobertura de teste se prova no Pass 5 com evals executaveis; um eval so vira prova quando existe codigo que ele execute"
+      }
     }
   ],
   "cross_lane_interfaces": [],
