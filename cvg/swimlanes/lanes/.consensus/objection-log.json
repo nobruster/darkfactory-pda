@@ -1,0 +1,205 @@
+{
+  "schema_version": "1.0",
+  "pass": "4-consensus",
+  "adversary": {
+    "engine_id": "codex",
+    "model": "codex",
+    "family": "openai",
+    "engine_version": "codex-cli 0.155.0",
+    "sandbox_mode": "read-only"
+  },
+  "author": {
+    "model": "claude",
+    "family": "anthropic"
+  },
+  "verdict": "REVISE",
+  "prompt_sha256": "0ae562f3f80e66f56bd367f7abda50a498d1848c4b57db2d86766934c3c4faa6",
+  "inputs": [
+    {
+      "path": "agregacao/_lane.md",
+      "sha256": "97cc9942566ee33be977cfd96b3341e3cb1b6abb3c4e06489a023b4a035787f8"
+    },
+    {
+      "path": "contrato/_lane.md",
+      "sha256": "6633011a2781fc24d6260243f7220b9429aefb13781fa32fa57cd4bcf8761672"
+    },
+    {
+      "path": "evidencia/_lane.md",
+      "sha256": "4f05f5ffbb97b39a2a126180c9588f52bc63ab9de2a30e78294149176aa8751a"
+    },
+    {
+      "path": "juizo/_lane.md",
+      "sha256": "aebc1019eff3483dd61c8185026f02d3e9b31244aca5f544cdbeae653149d6f3"
+    },
+    {
+      "path": "leitura/_lane.md",
+      "sha256": "0cc548395feaeb4a59ffcc37b1aa5dc5ee2c8d8b05df2d921f2eda9ddc73b654"
+    }
+  ],
+  "objections": [
+    {
+      "id": "C1",
+      "severity": "high",
+      "rank": 1,
+      "attack_class": "other",
+      "swimlane": "LANE-AGREGACAO",
+      "leg": "LEG-AGREGADO-EXATO",
+      "location": {
+        "plan_file": "cvg/swimlanes/lanes/agregacao/_lane.md",
+        "section": "frontmatter.legs"
+      },
+      "title": "O pacote entregue cont\u00e9m \u00edndices, mas n\u00e3o os planos dos legs",
+      "body": "O \u00edndice referencia um leg sem entregar seu arquivo em lanes/. A mesma aus\u00eancia foi constatada separadamente em contrato, evidencia, juizo e leitura. Cada \u00edndice declara propriedade e um identificador, mas n\u00e3o requisitos de interface, tarefas ou provas. Um despacho limitado aos cinco arquivos fornecidos n\u00e3o revisa o conte\u00fado que ser\u00e1 implementado; altera\u00e7\u00f5es nos legs do workspace tamb\u00e9m n\u00e3o alteram os hashes desses \u00edndices. A leitura suplementar realizada nesta revis\u00e3o n\u00e3o comprova que o despacho normal inclui esses artefatos.",
+      "evidence": "legs: [LEG-AGREGADO-EXATO]. A enumera\u00e7\u00e3o de cvg/swimlanes/lanes encontrou somente os cinco _lane.md; os arquivos LEG-* est\u00e3o em workspace/seamwise/legs/.",
+      "cites": [
+        "Attack Playbook \u00a7 Output contract & dispatch \u2014 Attack per swimlane, then per leg",
+        "cvg/swimlanes/lanes/contrato/_lane.md \u00a7 legs",
+        "cvg/swimlanes/lanes/evidencia/_lane.md \u00a7 legs",
+        "cvg/swimlanes/lanes/juizo/_lane.md \u00a7 legs",
+        "cvg/swimlanes/lanes/leitura/_lane.md \u00a7 legs"
+      ]
+    },
+    {
+      "id": "C2",
+      "severity": "high",
+      "rank": 2,
+      "attack_class": "cross-lane-interface",
+      "swimlane": "LANE-EVIDENCIA",
+      "leg": "LEG-EVIDENCIA-RECONSTROI",
+      "location": {
+        "plan_file": "cvg/swimlanes/workspace/seamwise/legs/LEG-EVIDENCIA-RECONSTROI.md",
+        "section": "requires; tasks.behavior B-2"
+      },
+      "title": "A evid\u00eancia sem \u00e2ncora depende de um resultado que o fluxo n\u00e3o produz",
+      "body": "O gravador exige veredito classificado e promete registrar ACEITO_SEM_ANCORA. Entretanto, o contrato termina o processo com NAO_MEDIDO antes de qualquer leitura. N\u00e3o h\u00e1 transfer\u00eancia declarada desse resultado para a evid\u00eancia nem respons\u00e1vel por emitir o veredito externo antes da sa\u00edda. Se os m\u00f3dulos seguirem literalmente os planos, a execu\u00e7\u00e3o sem \u00e2ncora termina sem o pacote prometido. Um teste isolado que entrega ACEITO_SEM_ANCORA diretamente ao gravador pode passar sem exercitar esse caminho.",
+      "evidence": "Evid\u00eancia: 'given: uma execu\u00e7\u00e3o sem \u00e2ncora ... then: o veredito registrado \u00e9 ACEITO_SEM_ANCORA'. Contrato: 'NAO_MEDIDO e exit diferente de zero, antes de qualquer leitura de dado'.",
+      "cites": [
+        "cvg/swimlanes/workspace/seamwise/legs/LEG-CONTRATO-RECUSA-SEM-ANCORA.md \u00a7 Observable proof",
+        "cvg/docs/tech-spec/tech-spec-exemplo-fabrica.md \u00a7 Requirements R-1 e R-7",
+        "AGENTS.md \u00a7 Regra 2"
+      ]
+    },
+    {
+      "id": "C3",
+      "severity": "high",
+      "rank": 3,
+      "attack_class": "unverified-assumption",
+      "swimlane": "LANE-CONTRATO",
+      "leg": "LEG-CONTRATO-RECUSA-SEM-ANCORA",
+      "location": {
+        "plan_file": "cvg/swimlanes/workspace/seamwise/legs/LEG-CONTRATO-RECUSA-SEM-ANCORA.md",
+        "section": "tasks.done_condition; behavior B-1; evals eval_3"
+      },
+      "title": "Presen\u00e7a de valores \u00e9 tratada como prova de \u00e2ncora medida",
+      "body": "O plano devolve 'cinco valores', sem enumer\u00e1-los ou estabelecer como a valida\u00e7\u00e3o comprova medi\u00e7\u00e3o independente, confirma\u00e7\u00e3o do neg\u00f3cio e data. O teste de integridade apenas compara com o contrato em disco. Assim, uma entrada numericamente preenchida, mas sem a aprova\u00e7\u00e3o exigida, pode satisfazer todas as condi\u00e7\u00f5es descritas e ser entregue como contrato validado. O plano n\u00e3o demonstra a distin\u00e7\u00e3o entre n\u00famero presente e \u00e2ncora autorizada.",
+      "evidence": "'os cinco valores da \u00e2ncora s\u00e3o devolvidos'; 'A \u00e2ncora carregada bate com o contrato em disco'.",
+      "cites": [
+        "cvg/docs/tech-spec/tech-spec-exemplo-fabrica.md \u00a7 Data named",
+        "cvg/docs/tech-spec/tech-spec-exemplo-fabrica.md \u00a7 Requirements R-1",
+        "cvg/swimlanes/workspace/seamwise/decisions/ADR-0002-ANCORA-2026-03.md \u00a7 Rationale",
+        "AGENTS.md \u00a7 Regras 2 e 3"
+      ]
+    },
+    {
+      "id": "C4",
+      "severity": "high",
+      "rank": 4,
+      "attack_class": "cross-lane-interface",
+      "swimlane": "LANE-LEITURA",
+      "leg": "LEG-LEITURA-NAO-ALTERA-FONTE",
+      "location": {
+        "plan_file": "cvg/swimlanes/workspace/seamwise/legs/LEG-LEITURA-NAO-ALTERA-FONTE.md",
+        "section": "produces; tasks.evals eval_3; anti_patterns"
+      },
+      "title": "O defeito preservado n\u00e3o tem caminho declarado at\u00e9 sua classifica\u00e7\u00e3o",
+      "body": "A leitura promete preservar um registro malformado e deixar o ju\u00edzo classific\u00e1-lo, mas sua sa\u00edda \u00e9 apenas 'registros lidos'. A agrega\u00e7\u00e3o reduz essa entrada a 'agregado da compet\u00eancia', e o ju\u00edzo consome somente agregado e contrato. N\u00e3o est\u00e1 definido como identidade, valor original e ocorr\u00eancia do defeito atravessam essa redu\u00e7\u00e3o. O arquivo pode permanecer intacto enquanto a informa\u00e7\u00e3o necess\u00e1ria para classificar cada diferen\u00e7a desaparece da interface.",
+      "evidence": "Leitura: 'preservar e deixar o ju\u00edzo classificar'. Agrega\u00e7\u00e3o produz apenas 'agregado da compet\u00eancia'. Ju\u00edzo requer 'agregado da compet\u00eancia' e 'contrato validado'.",
+      "cites": [
+        "cvg/swimlanes/workspace/seamwise/legs/LEG-AGREGADO-EXATO.md \u00a7 produces",
+        "cvg/swimlanes/workspace/seamwise/legs/LEG-JUIZO-ACUSA-CENTAVO.md \u00a7 requires",
+        "cvg/docs/tech-spec/tech-spec-exemplo-fabrica.md \u00a7 Requirements R-2",
+        "AGENTS.md \u00a7 Regra 4"
+      ]
+    },
+    {
+      "id": "C5",
+      "severity": "high",
+      "rank": 5,
+      "attack_class": "drift",
+      "swimlane": "LANE-AGREGACAO",
+      "leg": "LEG-AGREGADO-EXATO",
+      "location": {
+        "plan_file": "cvg/swimlanes/workspace/seamwise/legs/LEG-AGREGADO-EXATO.md",
+        "section": "Observable proof; tasks.behavior B-2; evals eval_2"
+      },
+      "title": "A prova de arredondamento verifica total diferente, mas R-3 exige veredito diferente",
+      "body": "O plano reduz a obriga\u00e7\u00e3o de R-3 a demonstrar que HALF_EVEN e HALF_UP geram totais distintos. Isso n\u00e3o prova que o caminho de decis\u00e3o usa o resultado correto: o agregador pode passar e o ju\u00edzo recastar, arredondar novamente ou ignorar a diferen\u00e7a. Falta cobertura da consequ\u00eancia exigida pela especifica\u00e7\u00e3o no veredito.",
+      "evidence": "Plano: 'HALF_EVEN e HALF_UP produzem totais diferentes no mesmo dado'. R-3: 'o mesmo dado arredondado meio-para-cima produz veredito diferente'.",
+      "cites": [
+        "cvg/docs/tech-spec/tech-spec-exemplo-fabrica.md \u00a7 Requirements R-3",
+        "cvg/swimlanes/workspace/seamwise/decisions/ADR-0001-HALF-EVEN.md \u00a7 Rationale"
+      ]
+    },
+    {
+      "id": "C6",
+      "severity": "high",
+      "rank": 6,
+      "attack_class": "drift",
+      "swimlane": "LANE-JUIZO",
+      "leg": "LEG-JUIZO-ACUSA-CENTAVO",
+      "location": {
+        "plan_file": "cvg/swimlanes/workspace/seamwise/legs/LEG-JUIZO-ACUSA-CENTAVO.md",
+        "section": "Observable proof versus tasks.behavior B-1"
+      },
+      "title": "A corrup\u00e7\u00e3o de uma linha foi substitu\u00edda por altera\u00e7\u00e3o direta do agregado",
+      "body": "A prova anunciada e R-5 exigem introduzir um centavo em uma linha. O comportamento execut\u00e1vel come\u00e7a com um agregado j\u00e1 alterado. Esse teste verifica a compara\u00e7\u00e3o final, mas pode passar quando a leitura descarta a linha ou a agrega\u00e7\u00e3o elimina sua diferen\u00e7a. Portanto, a tarefa pode ser conclu\u00edda sem demonstrar a detec\u00e7\u00e3o prometida antes da publica\u00e7\u00e3o.",
+      "evidence": "Observable proof: 'Teste que corrompe uma linha em um centavo'. B-1: 'given: um agregado com um centavo alterado'.",
+      "cites": [
+        "cvg/docs/tech-spec/tech-spec-exemplo-fabrica.md \u00a7 Requirements R-5",
+        "cvg/swimlanes/workspace/seamwise/legs/LEG-JUIZO-ACUSA-CENTAVO.md \u00a7 tasks.evals eval_1"
+      ]
+    },
+    {
+      "id": "C7",
+      "severity": "high",
+      "rank": 7,
+      "attack_class": "drift",
+      "swimlane": "LANE-LEITURA",
+      "leg": "LEG-LEITURA-NAO-ALTERA-FONTE",
+      "location": {
+        "plan_file": "cvg/swimlanes/workspace/seamwise/legs/LEG-LEITURA-NAO-ALTERA-FONTE.md",
+        "section": "tasks.done_condition; evals; observability"
+      },
+      "title": "O requisito de dez minutos n\u00e3o tem prova nem responsabilidade atribu\u00edda",
+      "body": "A leitura assume 41.719.140 registros, mas verifica somente hash, contagem e preserva\u00e7\u00e3o de defeitos. Nenhum dos cinco legs define medi\u00e7\u00e3o do in\u00edcio da leitura ao veredito ou condi\u00e7\u00e3o de aceita\u00e7\u00e3o para R-6. Todos os testes previstos podem passar mesmo que uma compet\u00eancia leve horas. N\u00e3o foi medida uma viola\u00e7\u00e3o de desempenho; a obje\u00e7\u00e3o \u00e9 a aus\u00eancia de cobertura do requisito obrigat\u00f3rio.",
+      "evidence": "Leitura: 'contagem de registros igual a 41719140 para 2026-03'; observability: 'contagem de registros lidos por compet\u00eancia'. R-6 exige conclus\u00e3o em at\u00e9 10 minutos.",
+      "cites": [
+        "cvg/docs/tech-spec/tech-spec-exemplo-fabrica.md \u00a7 Requirements R-6",
+        "cvg/docs/tech-spec/tech-spec-exemplo-fabrica.md \u00a7 Success metrics",
+        "cvg/swimlanes/workspace/seamwise/legs/LEG-AGREGADO-EXATO.md \u00a7 tasks.evals",
+        "cvg/swimlanes/workspace/seamwise/legs/LEG-JUIZO-ACUSA-CENTAVO.md \u00a7 tasks.evals"
+      ]
+    }
+  ],
+  "cross_lane_interfaces": [],
+  "fork": {
+    "choice": "B",
+    "reason": "Declara\u00e7\u00e3o preexistente nos cinco planos; apenas transcrita, sem escolha pelo advers\u00e1rio.",
+    "per_plan_declared": true
+  },
+  "open_questions": [
+    {
+      "q": "Como representar obje\u00e7\u00f5es ainda n\u00e3o decididas no contrato de sa\u00edda, se o schema exige resolu\u00e7\u00e3o humana j\u00e1 conclu\u00edda?",
+      "blocks_build": true
+    },
+    {
+      "q": "Qual artefato do Pass 3 \u00e9 can\u00f4nico para despacho e decomposi\u00e7\u00e3o: os \u00edndices em lanes/ ou os legs encontrados no workspace Seamwise?",
+      "blocks_build": true
+    },
+    {
+      "q": "Como conciliar a parada NAO_MEDIDO exigida pelo reposit\u00f3rio com o veredito ACEITO_SEM_ANCORA e o pacote por execu\u00e7\u00e3o exigidos pela especifica\u00e7\u00e3o?",
+      "blocks_build": true
+    }
+  ],
+  "rounds_run": 1
+}
