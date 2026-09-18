@@ -1,0 +1,201 @@
+{
+  "schema_version": "1.0",
+  "pass": "4-consensus",
+  "adversary": {
+    "engine_id": "codex",
+    "model": "codex",
+    "family": "openai",
+    "engine_version": "codex-cli 0.155.0",
+    "sandbox_mode": "read-only"
+  },
+  "author": {
+    "model": "claude",
+    "family": "anthropic"
+  },
+  "verdict": "REVISE",
+  "prompt_sha256": "659ad57238c3986a8d92af52fc696cfd84b3764b7b20a19c9a9efb9d00b74d5f",
+  "inputs": [
+    {
+      "path": "agregacao/LEG-AGREGADO-EXATO.md",
+      "sha256": "f396393e5d177c6a16fcbe279beef72d3bcba57d0ee95f1ff0e46600b913ad70"
+    },
+    {
+      "path": "agregacao/_lane.md",
+      "sha256": "53d857ee9f412bab3e143d3fee74f8b3a680d938b34c3d5a61b60ac876ddbfee"
+    },
+    {
+      "path": "contrato/LEG-CONTRATO-RECUSA-SEM-ANCORA.md",
+      "sha256": "a9617a93230138099887f2e43cfab136242372cc69db13ee557e2ab70fcd7abc"
+    },
+    {
+      "path": "contrato/_lane.md",
+      "sha256": "928b13a2827504c780495a5281d6b61f616833bf96c2fe5c24895a77b506f982"
+    },
+    {
+      "path": "evidencia/LEG-EVIDENCIA-RECONSTROI.md",
+      "sha256": "0c086fc442a496fa856e9058c00559d1e5825a6019b052058e7f1e6046651c59"
+    },
+    {
+      "path": "evidencia/_lane.md",
+      "sha256": "158f64c329e99d310948c3f9cd5f9a8fe103d8a9495526273a3aafca12f01ef2"
+    },
+    {
+      "path": "juizo/LEG-JUIZO-ACUSA-CENTAVO.md",
+      "sha256": "f5c2fe5368bf2f2b2f420fd9961ddd6388e78028037133ecd7301c9ebd1832a4"
+    },
+    {
+      "path": "juizo/_lane.md",
+      "sha256": "6530758f61c0816344772445e8d1c7b143bc2567405b655a43ed417bd71746d2"
+    },
+    {
+      "path": "leitura/LEG-LEITURA-NAO-ALTERA-FONTE.md",
+      "sha256": "5beb30ff305eb5944f600ecfca4a0fb6bc96009c1dd19856b5bb5ba5fa77ce27"
+    },
+    {
+      "path": "leitura/_lane.md",
+      "sha256": "601284796a71e06e2622dfe4906ca23598750014d9ce4a0c55969b4d8c78a6d8"
+    }
+  ],
+  "objections": [
+    {
+      "id": "C14",
+      "rank": 1,
+      "severity": "high",
+      "attack_class": "cross-lane-interface",
+      "swimlane": "LANE-CONTRATO",
+      "leg": "LEG-CONTRATO-RECUSA-SEM-ANCORA",
+      "location": {
+        "plan_file": "cvg/swimlanes/lanes/contrato/LEG-CONTRATO-RECUSA-SEM-ANCORA.md",
+        "section": "proof; produces; tasks.done_condition; behavior B-2"
+      },
+      "title": "O encerramento sem \u00e2ncora foi delegado a um orquestrador sem tarefa respons\u00e1vel",
+      "evidence": "B-2 determina que o contrato n\u00e3o encerra o processo: 'quem encerra \u00e9 o orquestrador'. A prova e a done_condition exigem exit diferente de zero. A \u00fanica sa\u00edda declarada \u00e9 'contrato validado'.",
+      "body": "Nenhuma das cinco tarefas assume a orquestra\u00e7\u00e3o. O carregador pode passar todos os seus testes retornando NAO_MEDIDO, enquanto o chamador continua a leitura, termina com sucesso ou deixa de gravar evid\u00eancia. A evid\u00eancia declara somente 'veredito classificado' como entrada, sem formalizar o caminho antecipado. A ordem de constru\u00e7\u00e3o das tarefas n\u00e3o prova esse controle em execu\u00e7\u00e3o.",
+      "cites": [
+        "cvg/docs/tech-spec/tech-spec-exemplo-fabrica.md \u00a7 Requirements, R-1 e R-7",
+        "cvg/swimlanes/lanes/evidencia/LEG-EVIDENCIA-RECONSTROI.md \u00a7 requires e behavior B-2",
+        "cvg/swimlanes/fabrica-recipe.yaml \u00a7 objections, OBJ-C2 e OBJ-C11"
+      ]
+    },
+    {
+      "id": "C15",
+      "rank": 2,
+      "severity": "high",
+      "attack_class": "cross-lane-interface",
+      "swimlane": "LANE-AGREGACAO",
+      "leg": "LEG-AGREGADO-EXATO",
+      "location": {
+        "plan_file": "cvg/swimlanes/lanes/agregacao/LEG-AGREGADO-EXATO.md",
+        "section": "produces; tasks.done_condition; behavior B-1/B-2; evals"
+      },
+      "title": "O juiz exige cinco controles que o produtor n\u00e3o promete entregar",
+      "evidence": "A agrega\u00e7\u00e3o produz 'agregado da compet\u00eancia', mas sua done_condition e seus evals exigem apenas total monet\u00e1rio e arredondamento. O ju\u00edzo B-1 exige count_linhas, sum_vl_liquido, min, max e linhas_invalidas.",
+      "body": "Um agregador que devolve apenas Decimal satisfaz os comportamentos expl\u00edcitos desta folha e n\u00e3o atende ao consumidor. N\u00e3o h\u00e1 schema de sa\u00edda com nomes e tipos dos cinco controles, nem responsabilidade expl\u00edcita por contabilizar inv\u00e1lidos e calcular extremos. A integra\u00e7\u00e3o pode falhar por campos ausentes ou comparar controles calculados sobre popula\u00e7\u00f5es diferentes.",
+      "cites": [
+        "cvg/swimlanes/lanes/juizo/LEG-JUIZO-ACUSA-CENTAVO.md \u00a7 behavior B-1",
+        "cvg/docs/adrs/0002-the-first-anchor-is-competencia-2026-03-measured-at-source.md \u00a7 Decision e Consequences"
+      ]
+    },
+    {
+      "id": "C16",
+      "rank": 3,
+      "severity": "high",
+      "attack_class": "cross-lane-interface",
+      "swimlane": "LANE-EVIDENCIA",
+      "leg": "LEG-EVIDENCIA-RECONSTROI",
+      "location": {
+        "plan_file": "cvg/swimlanes/lanes/evidencia/LEG-EVIDENCIA-RECONSTROI.md",
+        "section": "behavior B-2; eval_2; eval_3"
+      },
+      "title": "O conjunto declarado de vereditos terminais exclui a recusa com \u00e2ncora",
+      "evidence": "B-2 enumera 'qualquer veredito terminal \u2014 ACEITO, ACEITO_SEM_ANCORA ou NAO_MEDIDO' e exige registrar 'QUAL dos tr\u00eas foi'.",
+      "body": "O ju\u00edzo precisa recusar uma compet\u00eancia ancorada com diverg\u00eancia de um centavo ou UNRESOLVED. Nenhum dos tr\u00eas estados enumerados representa essa execu\u00e7\u00e3o. Uma implementa\u00e7\u00e3o fiel \u00e0 enumera\u00e7\u00e3o pode rejeitar a grava\u00e7\u00e3o ou registrar um estado incorreto justamente quando o juiz acusa. Os evals n\u00e3o exigem o pacote de uma execu\u00e7\u00e3o ancorada recusada.",
+      "cites": [
+        "cvg/docs/tech-spec/tech-spec-exemplo-fabrica.md \u00a7 Requirements, R-5 e R-7",
+        "cvg/swimlanes/lanes/juizo/LEG-JUIZO-ACUSA-CENTAVO.md \u00a7 behavior B-1/B-2"
+      ]
+    },
+    {
+      "id": "C17",
+      "rank": 4,
+      "severity": "high",
+      "attack_class": "drift",
+      "swimlane": "LANE-LEITURA",
+      "leg": "LEG-LEITURA-NAO-ALTERA-FONTE",
+      "location": {
+        "plan_file": "cvg/swimlanes/lanes/leitura/LEG-LEITURA-NAO-ALTERA-FONTE.md",
+        "section": "eval_3; observability"
+      },
+      "title": "O teste atribu\u00eddo a R-6 mede uma etapa, n\u00e3o a confer\u00eancia completa",
+      "evidence": "eval_3 exige 'a leitura da compet\u00eancia completa em at\u00e9 540 segundos'; observability menciona segundos do in\u00edcio da leitura ao veredito.",
+      "body": "R-6 exige at\u00e9 600 segundos do in\u00edcio da leitura ao veredito. Leitura em 530 segundos seguida de agrega\u00e7\u00e3o e ju\u00edzo em 120 segundos passa no eval declarado e viola R-6. Observabilidade n\u00e3o imp\u00f5e limite. O registro OBJ-C7 afirma que existe B-4 com reprova\u00e7\u00e3o acima de 600 segundos, mas a folha entregue cont\u00e9m somente B-1 e B-2.",
+      "cites": [
+        "cvg/docs/tech-spec/tech-spec-exemplo-fabrica.md \u00a7 Requirements, R-6",
+        "cvg/swimlanes/fabrica-recipe.yaml \u00a7 objections, OBJ-C7 e OBJ-C11"
+      ]
+    },
+    {
+      "id": "C18",
+      "rank": 5,
+      "severity": "high",
+      "attack_class": "unverified-assumption",
+      "swimlane": "LANE-JUIZO",
+      "leg": "LEG-JUIZO-ACUSA-CENTAVO",
+      "location": {
+        "plan_file": "cvg/swimlanes/lanes/juizo/LEG-JUIZO-ACUSA-CENTAVO.md",
+        "section": "behavior B-2; eval_3"
+      },
+      "title": "Exclusividade das classifica\u00e7\u00f5es n\u00e3o prova bloqueio de MODERN_DEFECT e CONTRACT_AMBIGUITY",
+      "evidence": "B-2 exige bloqueio de UNRESOLVED; eval_3 exige que as seis classifica\u00e7\u00f5es sejam exaustivas e exclusivas. Nenhum comportamento explicita a decis\u00e3o para MODERN_DEFECT ou CONTRACT_AMBIGUITY.",
+      "body": "Comparar os cinco controles n\u00e3o detecta toda altera\u00e7\u00e3o de registros: permutar valores entre duas identidades pode preservar contagem, soma, extremos e inv\u00e1lidos. Se o defeito chegar ao juiz como MODERN_DEFECT, uma implementa\u00e7\u00e3o que bloqueia apenas controles divergentes e UNRESOLVED pode aceitar. Enumerar seis classes corretamente n\u00e3o demonstra a pol\u00edtica de publica\u00e7\u00e3o de cada uma.",
+      "cites": [
+        "AGENTS.md \u00a7 Regra 6",
+        "AGENTS.md \u00a7 Regra 4",
+        "cvg/docs/tech-spec/tech-spec-exemplo-fabrica.md \u00a7 Requirements, R-2",
+        "cvg/docs/adrs/0004-rounding-happens-once-on-the-final-total-not-per-field.md \u00a7 Consequences"
+      ]
+    },
+    {
+      "id": "C19",
+      "rank": 6,
+      "severity": "medium",
+      "attack_class": "drift",
+      "swimlane": "LANE-CONTRATO",
+      "leg": "LEG-CONTRATO-RECUSA-SEM-ANCORA",
+      "location": {
+        "plan_file": "cvg/swimlanes/lanes/contrato/LEG-CONTRATO-RECUSA-SEM-ANCORA.md",
+        "section": "proof; behavior B-2"
+      },
+      "title": "O veredito p\u00fablico sem \u00e2ncora continua divergindo de R-1",
+      "evidence": "O contrato retorna NAO_MEDIDO; R-1 determina: 'Sem \u00e2ncora, o veredito \u00e9 ACEITO_SEM_ANCORA'. A evid\u00eancia aceita ambos como terminais.",
+      "body": "Persistir ambos os estados n\u00e3o define qual representa a execu\u00e7\u00e3o sem \u00e2ncora. Mesmo que ambos bloqueiem publica\u00e7\u00e3o, um consumidor implementado pela spec e outro implementado pelo plano discordar\u00e3o sobre o resultado esperado. A rela\u00e7\u00e3o entre estado interno NAO_MEDIDO e veredito externo ACEITO_SEM_ANCORA permanece uma decis\u00e3o aberta, n\u00e3o resolvida pela amplia\u00e7\u00e3o da enumera\u00e7\u00e3o.",
+      "cites": [
+        "cvg/docs/tech-spec/tech-spec-exemplo-fabrica.md \u00a7 Requirements, R-1",
+        "AGENTS.md \u00a7 Regra 2",
+        "cvg/swimlanes/lanes/evidencia/LEG-EVIDENCIA-RECONSTROI.md \u00a7 behavior B-2",
+        "cvg/swimlanes/fabrica-recipe.yaml \u00a7 objections, OBJ-C8"
+      ]
+    }
+  ],
+  "cross_lane_interfaces": [],
+  "fork": {
+    "choice": "B",
+    "reason": "Declara\u00e7\u00e3o existente nos cinco _lane.md e no ADR 0003; reproduzida como proveni\u00eancia, sem escolha pelo advers\u00e1rio.",
+    "per_plan_declared": true
+  },
+  "open_questions": [
+    {
+      "q": "Qual tarefa existente assume o caminho contrato \u2192 evid\u00eancia \u2192 exit, incluindo a proibi\u00e7\u00e3o de leitura sem \u00e2ncora?",
+      "blocks_build": true
+    },
+    {
+      "q": "Qual \u00e9 a rela\u00e7\u00e3o autorizada entre NAO_MEDIDO e ACEITO_SEM_ANCORA diante de R-1 e da Regra 2?",
+      "blocks_build": true
+    },
+    {
+      "q": "Como registrar o ataque antes da decis\u00e3o humana, se o schema exige resolution decidida em toda obje\u00e7\u00e3o? Este registro omite resolution deliberadamente e n\u00e3o est\u00e1 apto a passar no gate.",
+      "blocks_build": true
+    }
+  ],
+  "rounds_run": 1
+}
