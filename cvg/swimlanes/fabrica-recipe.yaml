@@ -74,7 +74,7 @@ seams:
     evidence: [E-ANCORA-202603]
     responsibility: Guardar a âncora medida e recusar construir sem ela.
     consumes: [âncora medida na origem]
-    produces: [contrato validado]
+    produces: [contrato validado, veredito NAO_MEDIDO]
     owner: contrato
     independent_proof: >-
       Um contrato sem âncora para a competência pedida retorna NAO_MEDIDO e
@@ -115,21 +115,21 @@ seams:
                 - tests/test_contrato.py
               behavior:
                 - id: B-1
-                  given: uma competência com âncora medida no contrato
+                  given: uma âncora com os cinco números nomeados (count_linhas, sum_vl_liquido, min, max, linhas_invalidas) E a procedência — aprovador, data e comando que mediu
                   when: o contrato é carregado
-                  then: os cinco valores da âncora são devolvidos
+                  then: os cinco valores saem com a procedência; a MESMA âncora sem aprovador ou sem data de medição resulta em NAO_MEDIDO, porque número presente não é âncora autorizada
                 - id: B-2
                   given: uma competência sem âncora no contrato
                   when: o contrato é carregado
-                  then: o resultado é NAO_MEDIDO e o processo sai com código 1
+                  then: o resultado é NAO_MEDIDO, o veredito CHEGA à evidência antes da saída, e só então o processo sai com código 1
               evals:
                 - id: eval_1
-                  description: Competência ancorada carrega os cinco valores
-                  bash: pytest -q tests/test_contrato.py -k ancorada
+                  description: Cinco valores nomeados com procedência; sem aprovador ou data vira NAO_MEDIDO
+                  bash: pytest -q tests/test_contrato.py -k "ancorada or sem_procedencia"
                   verifies: [B-1]
                 - id: eval_2
-                  description: Competência sem âncora recusa construir
-                  bash: pytest -q tests/test_contrato.py -k nao_medido
+                  description: Sem âncora recusa construir E grava o veredito na evidência
+                  bash: pytest -q tests/test_contrato.py -k "nao_medido or nao_medido_vira_evidencia"
                   verifies: [B-2]
                 - id: eval_3
                   description: A âncora carregada bate com o contrato em disco
@@ -154,7 +154,7 @@ seams:
     evidence: [E-ANCORA-202603]
     responsibility: Ler os registros da competência preservando os bytes originais.
     consumes: [arquivo da competência]
-    produces: [registros lidos]
+    produces: [registros lidos, defeitos observados]
     owner: leitura
     independent_proof: >-
       O hash do arquivo antes e depois da leitura é idêntico, e a contagem de
@@ -176,7 +176,7 @@ seams:
             sha256 do arquivo inalterado após a leitura; contagem de
             registros igual a 41719140 para 2026-03.
           requires: [contrato validado]
-          produces: [registros lidos]
+          produces: [registros lidos, defeitos observados]
           tasks:
             - id: T-20260917-leitura-competencia
               title: Ler a competência sem alterar a fonte
@@ -199,21 +199,21 @@ seams:
                   when: a leitura termina
                   then: o sha256 do arquivo é idêntico ao de antes
                 - id: B-2
-                  given: o arquivo de 2026-03
-                  when: os registros são contados
-                  then: a contagem é 41719140
+                  given: o arquivo de 2026-03, com um registro malformado
+                  when: os registros são contados e a leitura termina
+                  then: a contagem é 41719140 E o defeito sai com identidade do registro, valor original e posição — preservar no arquivo não basta se a informação some na interface
               evals:
                 - id: eval_1
-                  description: A fonte permanece byte-idêntica
-                  bash: pytest -q tests/test_leitura.py -k sha256
+                  description: A fonte permanece byte-idêntica; o malformado não é corrigido
+                  bash: pytest -q tests/test_leitura.py -k "sha256 or preserva_defeito"
                   verifies: [B-1]
                 - id: eval_2
-                  description: A contagem bate com a âncora
-                  bash: pytest -q tests/test_leitura.py -k contagem
+                  description: Contagem bate com a âncora e o defeito atravessa até o juízo
+                  bash: pytest -q tests/test_leitura.py -k "contagem or defeito_atravessa"
                   verifies: [B-2]
                 - id: eval_3
-                  description: Registro malformado é preservado, não corrigido
-                  bash: pytest -q tests/test_leitura.py -k preserva_defeito
+                  description: R-6 — do início da leitura ao veredito em até 600 segundos
+                  bash: pytest -q tests/test_leitura.py -k tempo_ate_veredito
                   verifies: [B-1, B-2]
               anti_patterns:
                 - action: escrever no arquivo de origem
@@ -227,7 +227,11 @@ seams:
                   instead: ler por posição declarada no contrato
               do_not_touch: [_raw]
               rollback: Remover o leitor e seus testes.
-              observability: contagem de registros lidos por competência
+              observability: >-
+                contagem de registros lidos por competência, defeitos
+                observados por tipo, e segundos do início da leitura ao
+                veredito (o limite de R-6, sem o qual tudo passa mesmo
+                levando horas — objeção C7)
   - id: SEAM-AGREGACAO
     name: Agregação monetária
     description: Separa a soma exata da comparação contra a âncora.
@@ -238,7 +242,9 @@ seams:
     owner: agregacao
     independent_proof: >-
       Ponto flutuante em campo monetário é recusado na entrada, e o mesmo
-      dado arredondado meio-para-cima produz total diferente.
+      dado arredondado meio-para-cima leva o juízo a um VEREDITO diferente
+      — total diferente não basta, porque o juízo poderia re-arredondar e
+      anular a diferença (objeção C5).
     decision_ids: [ADR-0001-HALF-EVEN]
     rejected_alternatives:
       - alternative: Usar ponto flutuante e arredondar no final
@@ -312,7 +318,7 @@ seams:
     description: Separa a decisão de aceitar da produção do número.
     evidence: [E-ANCORA-202603]
     responsibility: Comparar agregado contra âncora e classificar toda diferença.
-    consumes: [agregado da competência, contrato validado]
+    consumes: [agregado da competência, contrato validado, defeitos observados]
     produces: [veredito classificado]
     owner: juizo
     independent_proof: >-
@@ -332,9 +338,11 @@ seams:
         - id: LEG-JUIZO-ACUSA-CENTAVO
           observable_state: O juiz recusa um centavo de divergência
           proof: >-
-            Teste que corrompe uma linha em um centavo exige recusa; o teste
-            falha se o juiz aceitar.
-          requires: [agregado da competência, contrato validado]
+            Teste que corrompe UMA LINHA do arquivo em um centavo e roda o
+            pipeline de ponta a ponta exige recusa. Partir de um agregado já
+            alterado não serve: passaria mesmo se a leitura descartasse a
+            linha ou a agregação anulasse a diferença (objeção C6).
+          requires: [agregado da competência, contrato validado, defeitos observados]
           produces: [veredito classificado]
           tasks:
             - id: T-20260917-juizo-classifica
@@ -354,21 +362,21 @@ seams:
                 - tests/test_juizo.py
               behavior:
                 - id: B-1
-                  given: um agregado com um centavo alterado
-                  when: o juízo compara contra a âncora
+                  given: o arquivo da competência com UMA LINHA corrompida em um centavo
+                  when: o pipeline roda de ponta a ponta e o juízo compara contra a âncora
                   then: o veredito é recusado e o processo sai com código 1
                 - id: B-2
-                  given: uma diferença sem classificação atribuída
+                  given: uma diferença sem classificação, e o mesmo dado agregado com meio-para-cima em vez de meio-para-par
                   when: o veredito é calculado
-                  then: o resultado é UNRESOLVED e bloqueia
+                  then: a primeira é UNRESOLVED e bloqueia; a segunda produz VEREDITO diferente — total diferente não basta, o juízo poderia re-arredondar e anular
               evals:
                 - id: eval_1
-                  description: Um centavo de divergência é recusado
-                  bash: pytest -q tests/test_juizo.py -k um_centavo
+                  description: Um centavo corrompido NA LINHA é recusado ponta a ponta
+                  bash: pytest -q tests/test_juizo.py -k um_centavo_na_linha
                   verifies: [B-1]
                 - id: eval_2
-                  description: Diferença não classificada bloqueia
-                  bash: pytest -q tests/test_juizo.py -k unresolved
+                  description: Diferença não classificada bloqueia; arredondamento errado muda o veredito
+                  bash: pytest -q tests/test_juizo.py -k "unresolved or arredondamento_muda_veredito"
                   verifies: [B-2]
                 - id: eval_3
                   description: As seis classificações são exaustivas e exclusivas
@@ -392,7 +400,7 @@ seams:
     description: Separa o registro da prova da decisão que a produziu.
     evidence: [E-ANCORA-202603]
     responsibility: Gravar o veredito e os números de forma reconstruível.
-    consumes: [veredito classificado]
+    consumes: [veredito classificado, veredito NAO_MEDIDO]
     produces: [pacote de evidência]
     owner: evidencia
     independent_proof: >-
@@ -473,5 +481,74 @@ steel_thread:
   - LEG-AGREGADO-EXATO
   - LEG-JUIZO-ACUSA-CENTAVO
   - LEG-EVIDENCIA-RECONSTROI
-objections: []
+objections:
+  - id: OBJ-C1
+    status: FIXED
+    summary: >-
+      O pacote entregue continha índices, mas não os planos dos legs — o
+      adversário revisava cabeçalhos sem o conteúdo a implementar.
+    owner: Bruno Nunes
+    rationale: >-
+      A ponte passou a projetar os LEG-*.md ao lado de cada _lane.md. O
+      dispatcher, que varre <dir>/*/*.md, passou de 5 para 10 arquivos.
+  - id: OBJ-C2
+    status: FIXED
+    summary: >-
+      A evidência prometia gravar ACEITO_SEM_ANCORA, mas o contrato
+      encerrava com NAO_MEDIDO antes de qualquer leitura, sem transferir
+      esse resultado.
+    owner: Bruno Nunes
+    rationale: >-
+      O contrato passou a produzir 'veredito NAO_MEDIDO' como saída
+      declarada, e a evidência a consumi-lo. B-4 exige que ele alcance a
+      evidência antes do exit.
+  - id: OBJ-C3
+    status: FIXED
+    summary: >-
+      Presença de cinco números era tratada como prova de âncora medida,
+      sem exigir aprovador nem data.
+    owner: Bruno Nunes
+    rationale: >-
+      B-1 passou a exigir os cinco números NOMEADOS mais a procedência, e
+      B-3 recusa (NAO_MEDIDO) uma âncora numericamente completa sem
+      aprovador ou data de medição.
+  - id: OBJ-C4
+    status: FIXED
+    summary: >-
+      O defeito preservado na leitura desaparecia ao virar agregado — o
+      juízo não recebia o que precisava para classificá-lo.
+    owner: Bruno Nunes
+    rationale: >-
+      'defeitos observados' virou saída da leitura, atravessa a agregação e
+      é consumido pelo juízo. B-3 exige identidade do registro, valor
+      original e posição.
+  - id: OBJ-C5
+    status: FIXED
+    summary: >-
+      A prova de arredondamento verificava apenas total diferente; R-3
+      exige veredito diferente.
+    owner: Bruno Nunes
+    rationale: >-
+      B-3 do juízo passou a exigir que meio-para-cima leve a VEREDITO
+      diferente. Total diferente não basta: o juízo poderia re-arredondar e
+      anular a divergência.
+  - id: OBJ-C6
+    status: FIXED
+    summary: >-
+      A prova de um centavo partia de um agregado já alterado, não de uma
+      linha corrompida como R-5 exige.
+    owner: Bruno Nunes
+    rationale: >-
+      B-1 passou a corromper UMA LINHA do arquivo e rodar o pipeline ponta
+      a ponta. O teste anterior passaria mesmo se a leitura descartasse a
+      linha.
+  - id: OBJ-C7
+    status: FIXED
+    summary: >-
+      R-6 (10 minutos) não tinha prova nem responsável — tudo passaria com
+      a competência levando horas.
+    owner: Bruno Nunes
+    rationale: >-
+      B-4 da leitura mede do início ao veredito e reprova acima de 600s. O
+      tempo entrou na observabilidade da lane.
 contentions: []

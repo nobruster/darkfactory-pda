@@ -1,3 +1,9 @@
+> Projetado de `LEG-AGREGADO-EXATO.md` pelo Seamwise.
+> **Não edite aqui** — edite a recipe e rode `seamwise plan`.
+> origem sha256: `0bd350aecb23bb3dffc4c2c69bf59294ff134b74fed4f93160497397b30e939c`
+
+---
+
 ---
 schema_version: 1
 kind: capability-leg

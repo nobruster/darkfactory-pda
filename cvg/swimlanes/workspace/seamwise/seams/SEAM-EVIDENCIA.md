@@ -10,6 +10,7 @@ evidence:
 responsibility: Gravar o veredito e os números de forma reconstruível.
 consumes:
 - veredito classificado
+- veredito NAO_MEDIDO
 produces:
 - pacote de evidência
 owner: evidencia

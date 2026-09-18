@@ -12,6 +12,7 @@ consumes:
 - arquivo da competência
 produces:
 - registros lidos
+- defeitos observados
 owner: leitura
 independent_proof: O hash do arquivo antes e depois da leitura é idêntico, e a contagem de registros lidos
   bate com a contagem da âncora.
@@ -32,6 +33,7 @@ swimlane:
     - contrato validado
     produces:
     - registros lidos
+    - defeitos observados
     tasks:
     - id: T-20260917-leitura-competencia
       title: Ler a competência sem alterar a fonte
@@ -58,23 +60,24 @@ swimlane:
         when: a leitura termina
         then: o sha256 do arquivo é idêntico ao de antes
       - id: B-2
-        given: o arquivo de 2026-03
-        when: os registros são contados
-        then: a contagem é 41719140
+        given: o arquivo de 2026-03, com um registro malformado
+        when: os registros são contados e a leitura termina
+        then: a contagem é 41719140 E o defeito sai com identidade do registro, valor original e posição
+          — preservar no arquivo não basta se a informação some na interface
       evals:
       - id: eval_1
-        description: A fonte permanece byte-idêntica
-        bash: pytest -q tests/test_leitura.py -k sha256
+        description: A fonte permanece byte-idêntica; o malformado não é corrigido
+        bash: pytest -q tests/test_leitura.py -k "sha256 or preserva_defeito"
         verifies:
         - B-1
       - id: eval_2
-        description: A contagem bate com a âncora
-        bash: pytest -q tests/test_leitura.py -k contagem
+        description: Contagem bate com a âncora e o defeito atravessa até o juízo
+        bash: pytest -q tests/test_leitura.py -k "contagem or defeito_atravessa"
         verifies:
         - B-2
       - id: eval_3
-        description: Registro malformado é preservado, não corrigido
-        bash: pytest -q tests/test_leitura.py -k preserva_defeito
+        description: R-6 — do início da leitura ao veredito em até 600 segundos
+        bash: pytest -q tests/test_leitura.py -k tempo_ate_veredito
         verifies:
         - B-1
         - B-2
@@ -91,7 +94,9 @@ swimlane:
       do_not_touch:
       - _raw
       rollback: Remover o leitor e seus testes.
-      observability: contagem de registros lidos por competência
+      observability: contagem de registros lidos por competência, defeitos observados por tipo, e segundos
+        do início da leitura ao veredito (o limite de R-6, sem o qual tudo passa mesmo levando horas —
+        objeção C7)
 ---
 # Leitura da competência
 

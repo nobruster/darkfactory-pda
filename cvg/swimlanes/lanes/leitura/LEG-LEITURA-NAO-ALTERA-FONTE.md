@@ -1,3 +1,9 @@
+> Projetado de `LEG-LEITURA-NAO-ALTERA-FONTE.md` pelo Seamwise.
+> **Não edite aqui** — edite a recipe e rode `seamwise plan`.
+> origem sha256: `226e96854b0af182af3d92370150a8328b67440c471ba6e6083df82bc70345db`
+
+---
+
 ---
 schema_version: 1
 kind: capability-leg

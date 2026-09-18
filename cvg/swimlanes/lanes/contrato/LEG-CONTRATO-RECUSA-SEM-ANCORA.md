@@ -1,3 +1,9 @@
+> Projetado de `LEG-CONTRATO-RECUSA-SEM-ANCORA.md` pelo Seamwise.
+> **Não edite aqui** — edite a recipe e rode `seamwise plan`.
+> origem sha256: `060ea64f257cc12265db0f5fbe36e02aa66b7c2e4ac94cba32d12506b9cf1a18`
+
+---
+
 ---
 schema_version: 1
 kind: capability-leg

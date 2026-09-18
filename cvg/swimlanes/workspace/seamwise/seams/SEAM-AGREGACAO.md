@@ -14,7 +14,8 @@ produces:
 - agregado da competência
 owner: agregacao
 independent_proof: Ponto flutuante em campo monetário é recusado na entrada, e o mesmo dado arredondado
-  meio-para-cima produz total diferente.
+  meio-para-cima leva o juízo a um VEREDITO diferente — total diferente não basta, porque o juízo poderia
+  re-arredondar e anular a diferença (objeção C5).
 decision_ids:
 - ADR-0001-HALF-EVEN
 rejected_alternatives:
@@ -103,7 +104,7 @@ Somar valores monetários com aritmética exata declarada.
 
 ## Independent proof
 
-Ponto flutuante em campo monetário é recusado na entrada, e o mesmo dado arredondado meio-para-cima produz total diferente.
+Ponto flutuante em campo monetário é recusado na entrada, e o mesmo dado arredondado meio-para-cima leva o juízo a um VEREDITO diferente — total diferente não basta, porque o juízo poderia re-arredondar e anular a diferença (objeção C5).
 
 ## Rejected alternatives
 

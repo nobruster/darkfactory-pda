@@ -81,8 +81,31 @@ def seam_de(lane: Path) -> str:
     return (nome[5:] if nome.upper().startswith("LANE-") else nome).lower()
 
 
-def projetar(origem: Path, destino: Path) -> tuple[str, str]:
-    """Escreve <destino>/<seam>/_lane.md com a linha FORK no topo.
+def legs_da_lane(lane: Path) -> list[str]:
+    """Os ids de leg listados no frontmatter da lane."""
+    ids: list[str] = []
+    dentro = False
+    for linha in lane.read_text(encoding="utf-8").splitlines():
+        if linha.strip() == "legs:":
+            dentro = True
+            continue
+        if dentro:
+            m = re.match(r"^\s*-\s+(\S+)", linha)
+            if m:
+                ids.append(m.group(1))
+            else:
+                break
+    return ids
+
+
+def projetar(origem: Path, destino: Path, pasta_legs: Path | None) -> tuple[str, str]:
+    """Escreve <destino>/<seam>/_lane.md com a linha FORK no topo, e ao lado
+    dele os LEG-*.md que a lane referencia.
+
+    Levar os legs junto não é cosmético: o dispatcher varre `<dir>/*/*.md` e
+    o adversário revisa o que encontrar. Projetar só o índice fez o Pass 4
+    atacar cabeçalhos sem o conteúdo que será implementado — objeção C1, de
+    2026-09-17.
 
     Devolve (seam, sha256 da ORIGEM) — é o hash da origem que prova de onde
     veio, não o do arquivo projetado.
@@ -104,6 +127,22 @@ def projetar(origem: Path, destino: Path) -> tuple[str, str]:
         f"---\n\n"
     )
     (pasta / "_lane.md").write_text(cabecalho + corpo, encoding="utf-8")
+
+    if pasta_legs is not None:
+        for leg_id in legs_da_lane(origem):
+            leg = pasta_legs / f"{leg_id}.md"
+            if not leg.exists():
+                continue
+            leg_sha = sha256(leg)
+            nota = (
+                f"> Projetado de `{leg.name}` pelo Seamwise.\n"
+                f"> **Não edite aqui** — edite a recipe e rode `seamwise plan`.\n"
+                f"> origem sha256: `{leg_sha}`\n\n---\n\n"
+            )
+            (pasta / leg.name).write_text(
+                nota + leg.read_text(encoding="utf-8"), encoding="utf-8"
+            )
+
     return seam, origem_sha
 
 
@@ -119,10 +158,18 @@ def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--de", required=True, help="pasta das lanes planas do seamwise")
     ap.add_argument("--para", required=True, help="pasta destino, no layout do converge")
+    ap.add_argument(
+        "--legs",
+        help="pasta dos LEG-*.md (padrão: ../legs ao lado de --de). "
+        "Sem eles o adversário revisa só os índices — objeção C1.",
+    )
     ap.add_argument("--check", action="store_true", help="só verifica; não escreve")
     args = ap.parse_args()
 
     de, para = Path(args.de), Path(args.para)
+    pasta_legs = Path(args.legs) if args.legs else de.parent / "legs"
+    if not pasta_legs.is_dir():
+        pasta_legs = None
 
     if not de.is_dir():
         print(f"erro: origem não existe: {de}", file=sys.stderr)
@@ -153,7 +200,29 @@ def main() -> int:
             if not (FORK_RE.search(cab) and DRIVEN_RE.search(cab)):
                 problemas.append(f"  SEM FORK {prd}")
                 continue
-            print(f"  ok       {origem.name} -> {prd.parent.name}/_lane.md")
+
+            # os legs também: um leg defasado é conteúdo desatualizado sendo
+            # revisado como se fosse o atual
+            falhou_leg = False
+            if pasta_legs is not None:
+                for leg_id in legs_da_lane(origem):
+                    leg = pasta_legs / f"{leg_id}.md"
+                    if not leg.exists():
+                        continue
+                    proj = prd.parent / leg.name
+                    if not proj.exists():
+                        problemas.append(f"  FALTA    {leg.name} -> {proj}")
+                        falhou_leg = True
+                    elif sha_registrado(proj) != sha256(leg):
+                        problemas.append(
+                            f"  DEFASADO {leg.name} — a origem mudou desde a projeção"
+                        )
+                        falhou_leg = True
+            if falhou_leg:
+                continue
+
+            n_legs = len(list(prd.parent.glob("LEG-*.md")))
+            print(f"  ok       {origem.name} -> {prd.parent.name}/ (+{n_legs} leg)")
 
         if problemas:
             print("\n".join(problemas))
@@ -165,9 +234,14 @@ def main() -> int:
         print("PONTE_LANES=OK")
         return 0
 
+    if pasta_legs is None:
+        print("  AVISO: pasta de legs não encontrada — só os índices serão")
+        print("         projetados, e o adversário revisará menos (ver C1).")
+
     for origem in origens:
-        seam, _ = projetar(origem, para)
-        print(f"  {origem.name} -> {para}/{seam}/_lane.md")
+        seam, _ = projetar(origem, para, pasta_legs)
+        n = len(list((para / seam).glob("LEG-*.md")))
+        print(f"  {origem.name} -> {para}/{seam}/ (_lane.md + {n} leg)")
 
     print(f"\n{len(origens)} lane(s) projetadas.")
     print(f"Confira com: --check --de {de} --para {para}")

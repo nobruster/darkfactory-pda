@@ -1,3 +1,9 @@
+> Projetado de `LEG-JUIZO-ACUSA-CENTAVO.md` pelo Seamwise.
+> **Não edite aqui** — edite a recipe e rode `seamwise plan`.
+> origem sha256: `391f610ab2763b22c131de3eada8ded3d43b0aa6909e27d847b3180cd60ee902`
+
+---
+
 ---
 schema_version: 1
 kind: capability-leg

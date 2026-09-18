@@ -3,9 +3,9 @@ status: SEAM_MAP=READY
 intent_id: DI-FABRICA-COMPETENCIA
 source_recipe:
   name: fabrica-recipe.yaml
-  sha256: 95e2894907538a8a18a0c7cc19c9eb0f6618a6f4f56c594c3327ea2d3f253d2f
+  sha256: 903d517c118b7d05e954d41f26a71b2e686c47dedfc501f4d25563a58a3f86aa
 intent_sha256: 72bb6a2fd183a705d6e27083153b3020a2ddc7193e71584cb3025cf9f0d25a66
-system_map_sha256: 4eb05e10175c805ca58832cb6d3ba1d6f651d99fd66ed0e356ee6c0a8ca5bef8
+system_map_sha256: 6708626dbef9ac4ca1efe29bc6a69b0a26c7d59ea919cbaea08c4439a4d84d70
 evidence_sha256: 02dd50a8106fa1eabe31d8c25387a3fa0d5ac34afd8e965b1da09464061cc132
 decisions:
 - id: ADR-0001-HALF-EVEN
@@ -23,32 +23,32 @@ seams:
   evidence:
   - E-ANCORA-202603
   swimlane_id: LANE-CONTRATO
-  sha256: 4daea285d89dc2539661e1279d747c216a34bdab45c61b75fa698179656c3b45
+  sha256: fe6717183e4d19e368d79982795a09be4996fa8580917815b509bf68d4aba467
 - id: SEAM-LEITURA
   path: seamwise/seams/SEAM-LEITURA.md
   owner: leitura
   evidence:
   - E-ANCORA-202603
   swimlane_id: LANE-LEITURA
-  sha256: fe4a3d93819553fd0686d836105214b801b26832ce44a7edf188b17bed90128e
+  sha256: 35fc90700abd4f23b193f6c146579dc7d35c0a503edc77e5d7eac87040add772
 - id: SEAM-AGREGACAO
   path: seamwise/seams/SEAM-AGREGACAO.md
   owner: agregacao
   evidence:
   - E-ADR-ARREDONDAMENTO
   swimlane_id: LANE-AGREGACAO
-  sha256: b48a8c1ccc439cb17c484183fcb1562f0043b0d2caad08d50c376da8b1d1f472
+  sha256: e1d2085c6a796c122dce56dcfc7500649e108918cbb871bf68ad8382978fe363
 - id: SEAM-JUIZO
   path: seamwise/seams/SEAM-JUIZO.md
   owner: juizo
   evidence:
   - E-ANCORA-202603
   swimlane_id: LANE-JUIZO
-  sha256: 8eb328041f2e216e1e2a8ccfcfb6deea2cdb8604c867993c314d8d3abf522cb7
+  sha256: ed493cacf515e84d9c5c1000b9183342c87d634f45175695f03a712eff6fab87
 - id: SEAM-EVIDENCIA
   path: seamwise/seams/SEAM-EVIDENCIA.md
   owner: evidencia
   evidence:
   - E-ANCORA-202603
   swimlane_id: LANE-EVIDENCIA
-  sha256: 621eee49cc00c6e6d1992b21ebb0ff6215ba720ac0a83feb610b6d7b70d5b4c2
+  sha256: 36114cef37620e56132da3210491f8c52ea2ebe04c2261eb32e772767af45b8d

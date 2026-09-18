@@ -3,8 +3,8 @@
   "approved": true,
   "kind": "TaskPlan",
   "metadata": {
-    "delivery_plan_review_sha256": "9ffa48279d129b061a5315d73a4739ef237843c7ab842fe87c4f84c9a37b0956",
-    "delivery_plan_sha256": "d9ffeae5e96eee704a61d4679f7c5115fbe565019597f9e00bb2b947145f7c60",
+    "delivery_plan_review_sha256": "283e7970f8ddab10bb6f3b12cbae745f6e285aae7566dc66dffb74dd6055727f",
+    "delivery_plan_sha256": "d3dab00c48599e9c5ea60645babce20f4cdcdcd5d29565445c7d7fb9772ada48",
     "name": "DI-FABRICA-COMPETENCIA",
     "producer": "seamwise",
     "producer_version": "0.2.0",
@@ -105,15 +105,15 @@
       ],
       "behaviors": [
         {
-          "given": "uma competência com âncora medida no contrato",
+          "given": "uma âncora com os cinco números nomeados (count_linhas, sum_vl_liquido, min, max, linhas_invalidas) E a procedência — aprovador, data e comando que mediu",
           "id": "B-1",
-          "then": "os cinco valores da âncora são devolvidos",
+          "then": "os cinco valores saem com a procedência; a MESMA âncora sem aprovador ou sem data de medição resulta em NAO_MEDIDO, porque número presente não é âncora autorizada",
           "when": "o contrato é carregado"
         },
         {
           "given": "uma competência sem âncora no contrato",
           "id": "B-2",
-          "then": "o resultado é NAO_MEDIDO e o processo sai com código 1",
+          "then": "o resultado é NAO_MEDIDO, o veredito CHEGA à evidência antes da saída, e só então o processo sai com código 1",
           "when": "o contrato é carregado"
         }
       ],
@@ -130,8 +130,8 @@
       "effort": "S",
       "evals": [
         {
-          "command": "pytest -q tests/test_contrato.py -k ancorada",
-          "description": "Competência ancorada carrega os cinco valores",
+          "command": "pytest -q tests/test_contrato.py -k \"ancorada or sem_procedencia\"",
+          "description": "Cinco valores nomeados com procedência; sem aprovador ou data vira NAO_MEDIDO",
           "expected_duration_sec": 10,
           "id": "eval_1",
           "terminal": false,
@@ -140,8 +140,8 @@
           ]
         },
         {
-          "command": "pytest -q tests/test_contrato.py -k nao_medido",
-          "description": "Competência sem âncora recusa construir",
+          "command": "pytest -q tests/test_contrato.py -k \"nao_medido or nao_medido_vira_evidencia\"",
+          "description": "Sem âncora recusa construir E grava o veredito na evidência",
           "expected_duration_sec": 10,
           "id": "eval_2",
           "terminal": false,
@@ -271,15 +271,15 @@
       ],
       "behaviors": [
         {
-          "given": "um agregado com um centavo alterado",
+          "given": "o arquivo da competência com UMA LINHA corrompida em um centavo",
           "id": "B-1",
           "then": "o veredito é recusado e o processo sai com código 1",
-          "when": "o juízo compara contra a âncora"
+          "when": "o pipeline roda de ponta a ponta e o juízo compara contra a âncora"
         },
         {
-          "given": "uma diferença sem classificação atribuída",
+          "given": "uma diferença sem classificação, e o mesmo dado agregado com meio-para-cima em vez de meio-para-par",
           "id": "B-2",
-          "then": "o resultado é UNRESOLVED e bloqueia",
+          "then": "a primeira é UNRESOLVED e bloqueia; a segunda produz VEREDITO diferente — total diferente não basta, o juízo poderia re-arredondar e anular",
           "when": "o veredito é calculado"
         }
       ],
@@ -299,8 +299,8 @@
       "effort": "M",
       "evals": [
         {
-          "command": "pytest -q tests/test_juizo.py -k um_centavo",
-          "description": "Um centavo de divergência é recusado",
+          "command": "pytest -q tests/test_juizo.py -k um_centavo_na_linha",
+          "description": "Um centavo corrompido NA LINHA é recusado ponta a ponta",
           "expected_duration_sec": 10,
           "id": "eval_1",
           "terminal": false,
@@ -309,8 +309,8 @@
           ]
         },
         {
-          "command": "pytest -q tests/test_juizo.py -k unresolved",
-          "description": "Diferença não classificada bloqueia",
+          "command": "pytest -q tests/test_juizo.py -k \"unresolved or arredondamento_muda_veredito\"",
+          "description": "Diferença não classificada bloqueia; arredondamento errado muda o veredito",
           "expected_duration_sec": 10,
           "id": "eval_2",
           "terminal": false,
@@ -362,10 +362,10 @@
           "when": "a leitura termina"
         },
         {
-          "given": "o arquivo de 2026-03",
+          "given": "o arquivo de 2026-03, com um registro malformado",
           "id": "B-2",
-          "then": "a contagem é 41719140",
-          "when": "os registros são contados"
+          "then": "a contagem é 41719140 E o defeito sai com identidade do registro, valor original e posição — preservar no arquivo não basta se a informação some na interface",
+          "when": "os registros são contados e a leitura termina"
         }
       ],
       "context": "Intent DI-FABRICA-COMPETENCIA; seam SEAM-LEITURA; swimlane LANE-LEITURA; capability leg LEG-LEITURA-NAO-ALTERA-FONTE. Done condition: O sha256 do arquivo é idêntico antes e depois, e a contagem de registros bate com a âncora.",
@@ -383,8 +383,8 @@
       "effort": "M",
       "evals": [
         {
-          "command": "pytest -q tests/test_leitura.py -k sha256",
-          "description": "A fonte permanece byte-idêntica",
+          "command": "pytest -q tests/test_leitura.py -k \"sha256 or preserva_defeito\"",
+          "description": "A fonte permanece byte-idêntica; o malformado não é corrigido",
           "expected_duration_sec": 10,
           "id": "eval_1",
           "terminal": false,
@@ -393,8 +393,8 @@
           ]
         },
         {
-          "command": "pytest -q tests/test_leitura.py -k contagem",
-          "description": "A contagem bate com a âncora",
+          "command": "pytest -q tests/test_leitura.py -k \"contagem or defeito_atravessa\"",
+          "description": "Contagem bate com a âncora e o defeito atravessa até o juízo",
           "expected_duration_sec": 10,
           "id": "eval_2",
           "terminal": false,
@@ -403,8 +403,8 @@
           ]
         },
         {
-          "command": "pytest -q tests/test_leitura.py -k preserva_defeito",
-          "description": "Registro malformado é preservado, não corrigido",
+          "command": "pytest -q tests/test_leitura.py -k tempo_ate_veredito",
+          "description": "R-6 — do início da leitura ao veredito em até 600 segundos",
           "expected_duration_sec": 10,
           "id": "eval_3",
           "terminal": true,
@@ -417,7 +417,7 @@
       "execution_backend": "any",
       "goal": "Extrair registros preservando os bytes originais.",
       "id": "T-20260917-leitura-competencia",
-      "observability": "contagem de registros lidos por competência",
+      "observability": "contagem de registros lidos por competência, defeitos observados por tipo, e segundos do início da leitura ao veredito (o limite de R-6, sem o qual tudo passa mesmo levando horas — objeção C7)",
       "profile": "standard",
       "required_tools": [
         "git",

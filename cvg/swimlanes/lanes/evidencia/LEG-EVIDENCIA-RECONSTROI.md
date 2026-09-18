@@ -1,3 +1,9 @@
+> Projetado de `LEG-EVIDENCIA-RECONSTROI.md` pelo Seamwise.
+> **Não edite aqui** — edite a recipe e rode `seamwise plan`.
+> origem sha256: `db14c76aa03e581be552dca946d45de3301aca15dd10db5aaac5b25c986bb185`
+
+---
+
 ---
 schema_version: 1
 kind: capability-leg

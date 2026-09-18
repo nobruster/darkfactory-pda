@@ -12,6 +12,7 @@ consumes:
 - âncora medida na origem
 produces:
 - contrato validado
+- veredito NAO_MEDIDO
 owner: contrato
 independent_proof: Um contrato sem âncora para a competência pedida retorna NAO_MEDIDO e o processo termina
   em código diferente de zero.
@@ -53,22 +54,25 @@ swimlane:
       - tests/test_contrato.py
       behavior:
       - id: B-1
-        given: uma competência com âncora medida no contrato
+        given: uma âncora com os cinco números nomeados (count_linhas, sum_vl_liquido, min, max, linhas_invalidas)
+          E a procedência — aprovador, data e comando que mediu
         when: o contrato é carregado
-        then: os cinco valores da âncora são devolvidos
+        then: os cinco valores saem com a procedência; a MESMA âncora sem aprovador ou sem data de medição
+          resulta em NAO_MEDIDO, porque número presente não é âncora autorizada
       - id: B-2
         given: uma competência sem âncora no contrato
         when: o contrato é carregado
-        then: o resultado é NAO_MEDIDO e o processo sai com código 1
+        then: o resultado é NAO_MEDIDO, o veredito CHEGA à evidência antes da saída, e só então o processo
+          sai com código 1
       evals:
       - id: eval_1
-        description: Competência ancorada carrega os cinco valores
-        bash: pytest -q tests/test_contrato.py -k ancorada
+        description: Cinco valores nomeados com procedência; sem aprovador ou data vira NAO_MEDIDO
+        bash: pytest -q tests/test_contrato.py -k "ancorada or sem_procedencia"
         verifies:
         - B-1
       - id: eval_2
-        description: Competência sem âncora recusa construir
-        bash: pytest -q tests/test_contrato.py -k nao_medido
+        description: Sem âncora recusa construir E grava o veredito na evidência
+        bash: pytest -q tests/test_contrato.py -k "nao_medido or nao_medido_vira_evidencia"
         verifies:
         - B-2
       - id: eval_3

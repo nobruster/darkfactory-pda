@@ -11,6 +11,7 @@ responsibility: Comparar agregado contra âncora e classificar toda diferença.
 consumes:
 - agregado da competência
 - contrato validado
+- defeitos observados
 produces:
 - veredito classificado
 owner: juizo
@@ -29,10 +30,13 @@ swimlane:
   legs:
   - id: LEG-JUIZO-ACUSA-CENTAVO
     observable_state: O juiz recusa um centavo de divergência
-    proof: Teste que corrompe uma linha em um centavo exige recusa; o teste falha se o juiz aceitar.
+    proof: 'Teste que corrompe UMA LINHA do arquivo em um centavo e roda o pipeline de ponta a ponta exige
+      recusa. Partir de um agregado já alterado não serve: passaria mesmo se a leitura descartasse a linha
+      ou a agregação anulasse a diferença (objeção C6).'
     requires:
     - agregado da competência
     - contrato validado
+    - defeitos observados
     produces:
     - veredito classificado
     tasks:
@@ -56,22 +60,23 @@ swimlane:
       - tests/test_juizo.py
       behavior:
       - id: B-1
-        given: um agregado com um centavo alterado
-        when: o juízo compara contra a âncora
+        given: o arquivo da competência com UMA LINHA corrompida em um centavo
+        when: o pipeline roda de ponta a ponta e o juízo compara contra a âncora
         then: o veredito é recusado e o processo sai com código 1
       - id: B-2
-        given: uma diferença sem classificação atribuída
+        given: uma diferença sem classificação, e o mesmo dado agregado com meio-para-cima em vez de meio-para-par
         when: o veredito é calculado
-        then: o resultado é UNRESOLVED e bloqueia
+        then: a primeira é UNRESOLVED e bloqueia; a segunda produz VEREDITO diferente — total diferente
+          não basta, o juízo poderia re-arredondar e anular
       evals:
       - id: eval_1
-        description: Um centavo de divergência é recusado
-        bash: pytest -q tests/test_juizo.py -k um_centavo
+        description: Um centavo corrompido NA LINHA é recusado ponta a ponta
+        bash: pytest -q tests/test_juizo.py -k um_centavo_na_linha
         verifies:
         - B-1
       - id: eval_2
-        description: Diferença não classificada bloqueia
-        bash: pytest -q tests/test_juizo.py -k unresolved
+        description: Diferença não classificada bloqueia; arredondamento errado muda o veredito
+        bash: pytest -q tests/test_juizo.py -k "unresolved or arredondamento_muda_veredito"
         verifies:
         - B-2
       - id: eval_3

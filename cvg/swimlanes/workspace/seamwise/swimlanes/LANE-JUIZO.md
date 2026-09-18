@@ -6,7 +6,7 @@ id: LANE-JUIZO
 name: Juízo lane
 owner: juizo
 seam_id: SEAM-JUIZO
-source_seam_sha256: 8eb328041f2e216e1e2a8ccfcfb6deea2cdb8604c867993c314d8d3abf522cb7
+source_seam_sha256: ed493cacf515e84d9c5c1000b9183342c87d634f45175695f03a712eff6fab87
 legs:
 - LEG-JUIZO-ACUSA-CENTAVO
 ---
