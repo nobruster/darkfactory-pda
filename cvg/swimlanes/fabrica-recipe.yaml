@@ -67,6 +67,13 @@ decisions:
     rationale: >-
       A âncora é medida na origem por fora do pipeline. Medi-la com o
       pipeline seria o pipeline conferindo a si mesmo.
+  - id: ADR-0006-PRECISAO-DECLARADA
+    status: accepted
+    owner: Bruno Nunes
+    rationale: >-
+      A precisão do contexto decimal é declarada, não herdada. Em prec=6,
+      10000.00 + 0.01 vira 10000.0 e quantizar depois não recupera — a
+      perda é anterior ao arredondamento.
   - id: ADR-0005-VEREDITO-SEM-ANCORA
     status: accepted
     owner: Bruno Nunes
@@ -133,7 +140,7 @@ seams:
                 - id: B-1
                   given: um contrato com os cinco números nomeados (count_linhas, sum_vl_liquido, min, max, linhas_invalidas), a procedência (aprovador, data, comando que mediu) E o layout de leitura (posições, formato monetário, chave do registro)
                   when: o contrato é carregado
-                  then: âncora, procedência e layout saem juntos; a MESMA âncora sem aprovador, sem data ou sem layout resulta em NAO_MEDIDO — número presente não é âncora autorizada
+                  then: âncora, procedência e layout saem juntos, com os cinco controles sob os MESMOS nomes que o agregado usa — count_linhas, sum_vl_liquido, min_vl_liquido, max_vl_liquido, linhas_invalidas; a MESMA âncora sem aprovador, sem data ou sem layout resulta em NAO_MEDIDO
                 - id: B-2
                   given: uma competência sem âncora no contrato
                   when: o contrato é carregado
@@ -215,9 +222,9 @@ seams:
                   when: a leitura termina
                   then: o sha256 do arquivo é idêntico ao de antes, e cada campo lido vem da POSIÇÃO declarada — cabeçalho repetido não decide nada
                 - id: B-2
-                  given: o arquivo de 2026-03, com um registro malformado
+                  given: o arquivo de 2026-03, com um registro cujo campo monetário é ilegível
                   when: os registros são contados e a leitura termina
-                  then: a contagem é 41719140 E o defeito sai com identidade do registro, valor original e posição — preservar no arquivo não basta se a informação some na interface
+                  then: a contagem é 41719140, o registro entra em linhas_invalidas e NÃO entra em sum/min/max, e o defeito sai com identidade, valor original e posição — preservar no arquivo não basta se a informação some na interface
               evals:
                 - id: eval_1
                   description: Fonte byte-idêntica; leitura posicional com cabeçalho repetido
@@ -304,17 +311,17 @@ seams:
                   when: o agregado é calculado
                   then: a entrada é recusada com erro explícito, e o agregado devolvido traz os CINCO controles nomeados que o juízo compara — count_linhas, sum_vl_liquido, min_vl_liquido, max_vl_liquido, linhas_invalidas
                 - id: B-2
-                  given: valores em empate exato, um contexto decimal cujo default já é meio-para-par, e a alternativa de arredondar por campo
+                  given: valores em empate exato, um contexto cujo default já é meio-para-par, um contexto com prec=6, e a alternativa de arredondar por campo
                   when: o total é calculado
-                  then: o modo é passado EXPLICITAMENTE — um teste que troca o default do contexto para meio-para-cima falha se a implementação o herdar; e arredondar por campo produz total diferente (2,345+2,345 dá 4,68 por campo e 4,69 só no total), provando a granularidade do ADR 0004
+                  then: precisão E modo são DECLARADOS, não herdados — com prec=6 a soma acusa a perda (10000.00 + 0.01 vira 10000.0, e quantizar depois não recupera, ADR 0006); trocar o default do contexto para meio-para-cima faz o teste falhar se a implementação o herdar; e arredondar por campo dá 4,68 contra 4,69 no total (ADR 0004)
               evals:
                 - id: eval_1
                   description: Float recusado; o agregado traz os cinco controles nomeados
                   bash: pytest -q tests/test_agregacao.py -k "recusa_float or cinco_controles"
                   verifies: [B-1]
                 - id: eval_2
-                  description: Modo explícito (falha se herdar o contexto) e granularidade do total
-                  bash: pytest -q tests/test_agregacao.py -k "modo_explicito or granularidade"
+                  description: Precisão e modo declarados; prec=6 acusa; granularidade do total
+                  bash: pytest -q tests/test_agregacao.py -k "precisao_declarada or modo_explicito or granularidade"
                   verifies: [B-2]
                 - id: eval_3
                   description: O total de 2026-03 reproduz a âncora medida
@@ -386,9 +393,9 @@ seams:
                   when: o pipeline roda de ponta a ponta e o juízo compara contra a âncora
                   then: os CINCO controles são comparados individualmente (count_linhas, sum_vl_liquido, min, max, linhas_invalidas) e qualquer divergência recusa — soma e contagem iguais não bastam
                 - id: B-2
-                  given: uma diferença de cada uma das seis classificações, e o mesmo dado agregado com meio-para-cima
+                  given: uma diferença de cada uma das seis classificações, incluindo um controle divergente classificado como CONFIRMED_SOURCE_DEFECT, e o mesmo dado agregado com meio-para-cima
                   when: o veredito é calculado
-                  then: MODERN_DEFECT, CONTRACT_AMBIGUITY e UNRESOLVED bloqueiam; os três CONFIRMED/APPROVED não bloqueiam mas ficam registrados; e o arredondamento errado muda o VEREDITO, não só o total
+                  then: PRECEDÊNCIA — divergência em qualquer dos cinco controles RECUSA, mesmo classificada como CONFIRMED ou APPROVED; a classificação explica, nunca autoriza. Fora dos controles, MODERN_DEFECT, CONTRACT_AMBIGUITY e UNRESOLVED bloqueiam e as três CONFIRMED/APPROVED apenas registram. E o arredondamento errado muda o VEREDITO, não só o total
               evals:
                 - id: eval_1
                   description: Um centavo na linha recusa; extremos alterados com soma igual também
@@ -462,9 +469,9 @@ seams:
                 - tests/test_evidencia.py
               behavior:
                 - id: B-1
-                  given: uma execução com âncora medida
+                  given: uma execução com âncora medida, e uma que terminou antes da leitura (sem agregado nem classificações)
                   when: o pacote é lido de volta
-                  then: o veredito é reconstruído sem reexecutar o pipeline
+                  then: o veredito é reconstruído sem reexecutar; campos que não existiam no caminho percorrido são AUSENTES e assim marcados, nunca preenchidos com zero ou valor artificial
                 - id: B-2
                   given: qualquer um dos quatro vereditos terminais — ACEITO, ACEITO_SEM_ANCORA, RECUSADO ou ERRO
                   when: o pacote é gravado
@@ -556,17 +563,17 @@ seams:
                   when: a orquestração decide o desfecho
                   then: as três gravam pacote — ACEITO_SEM_ANCORA com causa NAO_MEDIDO, ACEITO, e RECUSADO — com códigos de saída distintos, e só ACEITO autoriza publicar
                 - id: B-2
-                  given: uma competência completa, e um caso em que a leitura cabe no limite mas o resto estoura
-                  when: o tempo é medido do início da leitura ao veredito
-                  then: R-6 reprova acima de 600s no TOTAL — etapa rápida com o resto lento não passa
+                  given: uma exceção REAL levantada dentro da leitura, e um caso em que a leitura cabe no limite mas o resto estoura
+                  when: a orquestração conduz a execução
+                  then: a exceção vira desfecho ERRO com pacote gravado — não escapa encerrando o processo; e R-6 reprova acima de 600s no TOTAL, etapa rápida com o resto lento não passa. Falha do próprio gravador é o único caso sem pacote, e sai com código distinto
               evals:
                 - id: eval_1
                   description: Os quatro desfechos gravam pacote com código de saída próprio
                   bash: pytest -q tests/test_orquestracao.py -k desfechos
                   verifies: [B-1]
                 - id: eval_2
-                  description: R-6 mede o total, não a etapa
-                  bash: pytest -q tests/test_orquestracao.py -k tempo_total
+                  description: Exceção real vira ERRO com pacote; R-6 mede o total, não a etapa
+                  bash: pytest -q tests/test_orquestracao.py -k "excecao_vira_erro or tempo_total"
                   verifies: [B-2]
                 - id: eval_3
                   description: Só ACEITO autoriza publicar
@@ -653,6 +660,62 @@ objections:
       B-1 passou a corromper UMA LINHA do arquivo e rodar o pipeline ponta
       a ponta. O teste anterior passaria mesmo se a leitura descartasse a
       linha.
+  - id: OBJ-C30
+    status: FIXED
+    summary: >-
+      A classificação podia sobrepor a recusa obrigatória dos cinco
+      controles — um total divergente marcado CONFIRMED autorizaria.
+    owner: Bruno Nunes
+    rationale: >-
+      B-2 do juízo declara a PRECEDÊNCIA: divergência em qualquer controle
+      recusa, mesmo classificada. A classificação explica, nunca autoriza.
+  - id: OBJ-C31
+    status: FIXED
+    summary: >-
+      Modo explícito não garantia soma exata — a precisão do contexto
+      decide antes.
+    owner: Bruno Nunes
+    rationale: >-
+      ADR 0006 (novo). Verificado: em prec=6, 10000.00 + 0.01 vira 10000.0,
+      e quantizar depois devolve 10000.00, não 10000.01. A perda é anterior
+      ao arredondamento. Um teste força prec=6 e exige que a soma acuse.
+  - id: OBJ-C32
+    status: FIXED
+    summary: >-
+      O pacote exigia campos que não existem nos términos antecipados —
+      o gravador rejeitaria o próprio caso que deve registrar.
+    owner: Bruno Nunes
+    rationale: >-
+      B-1 da evidência passou a exigir que campos não percorridos sejam
+      AUSENTES e marcados como tal, nunca preenchidos com zero ou valor
+      artificial que comprometeria a reconstrução.
+  - id: OBJ-C33
+    status: FIXED
+    summary: >-
+      ERRO não tinha cenário de falha real — testar a enumeração não prova
+      que exceções chegam ao finalizador.
+    owner: Bruno Nunes
+    rationale: >-
+      B-2 da orquestração passou a exigir uma exceção REAL dentro da
+      leitura, que deve virar ERRO com pacote. Falha do próprio gravador é
+      o único caso sem pacote, e sai com código distinto.
+  - id: OBJ-C34
+    status: FIXED
+    summary: >-
+      Registro monetário malformado não tinha participação definida nos
+      cinco controles.
+    owner: Bruno Nunes
+    rationale: >-
+      B-2 da leitura declara: entra em linhas_invalidas e NÃO entra em
+      sum/min/max.
+  - id: OBJ-C35
+    status: FIXED
+    summary: >-
+      Os nomes dos extremos divergiam entre contrato e agregado.
+    owner: Bruno Nunes
+    rationale: >-
+      B-1 do contrato passou a exigir os cinco controles sob os MESMOS
+      nomes que o agregado usa.
   - id: OBJ-C14
     status: FIXED
     summary: >-

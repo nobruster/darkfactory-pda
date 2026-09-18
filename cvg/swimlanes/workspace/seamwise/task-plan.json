@@ -3,8 +3,8 @@
   "approved": true,
   "kind": "TaskPlan",
   "metadata": {
-    "delivery_plan_review_sha256": "c6dc8d39336e683e7e673cf301fa128148990ccdceb0a9fd24f33c85ff31d22f",
-    "delivery_plan_sha256": "75bb492fda78784ec46ce686ab1bb08331bfe8fd11fa7220cd70d1017215af1d",
+    "delivery_plan_review_sha256": "876240941dca8f5cd1787bc1629a8a76f82c3a2424f814a96c6a993ade570607",
+    "delivery_plan_sha256": "edb13928789ea5c4429266c6e370ab4c34d2ae4566043ee159d485e3dd5f903b",
     "name": "DI-FABRICA-COMPETENCIA",
     "producer": "seamwise",
     "producer_version": "0.2.0",
@@ -27,9 +27,9 @@
           "when": "o agregado é calculado"
         },
         {
-          "given": "valores em empate exato, um contexto decimal cujo default já é meio-para-par, e a alternativa de arredondar por campo",
+          "given": "valores em empate exato, um contexto cujo default já é meio-para-par, um contexto com prec=6, e a alternativa de arredondar por campo",
           "id": "B-2",
-          "then": "o modo é passado EXPLICITAMENTE — um teste que troca o default do contexto para meio-para-cima falha se a implementação o herdar; e arredondar por campo produz total diferente (2,345+2,345 dá 4,68 por campo e 4,69 só no total), provando a granularidade do ADR 0004",
+          "then": "precisão E modo são DECLARADOS, não herdados — com prec=6 a soma acusa a perda (10000.00 + 0.01 vira 10000.0, e quantizar depois não recupera, ADR 0006); trocar o default do contexto para meio-para-cima faz o teste falhar se a implementação o herdar; e arredondar por campo dá 4,68 contra 4,69 no total (ADR 0004)",
           "when": "o total é calculado"
         }
       ],
@@ -58,8 +58,8 @@
           ]
         },
         {
-          "command": "pytest -q tests/test_agregacao.py -k \"modo_explicito or granularidade\"",
-          "description": "Modo explícito (falha se herdar o contexto) e granularidade do total",
+          "command": "pytest -q tests/test_agregacao.py -k \"precisao_declarada or modo_explicito or granularidade\"",
+          "description": "Precisão e modo declarados; prec=6 acusa; granularidade do total",
           "expected_duration_sec": 10,
           "id": "eval_2",
           "terminal": false,
@@ -107,7 +107,7 @@
         {
           "given": "um contrato com os cinco números nomeados (count_linhas, sum_vl_liquido, min, max, linhas_invalidas), a procedência (aprovador, data, comando que mediu) E o layout de leitura (posições, formato monetário, chave do registro)",
           "id": "B-1",
-          "then": "âncora, procedência e layout saem juntos; a MESMA âncora sem aprovador, sem data ou sem layout resulta em NAO_MEDIDO — número presente não é âncora autorizada",
+          "then": "âncora, procedência e layout saem juntos, com os cinco controles sob os MESMOS nomes que o agregado usa — count_linhas, sum_vl_liquido, min_vl_liquido, max_vl_liquido, linhas_invalidas; a MESMA âncora sem aprovador, sem data ou sem layout resulta em NAO_MEDIDO",
           "when": "o contrato é carregado"
         },
         {
@@ -187,9 +187,9 @@
       ],
       "behaviors": [
         {
-          "given": "uma execução com âncora medida",
+          "given": "uma execução com âncora medida, e uma que terminou antes da leitura (sem agregado nem classificações)",
           "id": "B-1",
-          "then": "o veredito é reconstruído sem reexecutar o pipeline",
+          "then": "o veredito é reconstruído sem reexecutar; campos que não existiam no caminho percorrido são AUSENTES e assim marcados, nunca preenchidos com zero ou valor artificial",
           "when": "o pacote é lido de volta"
         },
         {
@@ -277,9 +277,9 @@
           "when": "o pipeline roda de ponta a ponta e o juízo compara contra a âncora"
         },
         {
-          "given": "uma diferença de cada uma das seis classificações, e o mesmo dado agregado com meio-para-cima",
+          "given": "uma diferença de cada uma das seis classificações, incluindo um controle divergente classificado como CONFIRMED_SOURCE_DEFECT, e o mesmo dado agregado com meio-para-cima",
           "id": "B-2",
-          "then": "MODERN_DEFECT, CONTRACT_AMBIGUITY e UNRESOLVED bloqueiam; os três CONFIRMED/APPROVED não bloqueiam mas ficam registrados; e o arredondamento errado muda o VEREDITO, não só o total",
+          "then": "PRECEDÊNCIA — divergência em qualquer dos cinco controles RECUSA, mesmo classificada como CONFIRMED ou APPROVED; a classificação explica, nunca autoriza. Fora dos controles, MODERN_DEFECT, CONTRACT_AMBIGUITY e UNRESOLVED bloqueiam e as três CONFIRMED/APPROVED apenas registram. E o arredondamento errado muda o VEREDITO, não só o total",
           "when": "o veredito é calculado"
         }
       ],
@@ -362,9 +362,9 @@
           "when": "a leitura termina"
         },
         {
-          "given": "o arquivo de 2026-03, com um registro malformado",
+          "given": "o arquivo de 2026-03, com um registro cujo campo monetário é ilegível",
           "id": "B-2",
-          "then": "a contagem é 41719140 E o defeito sai com identidade do registro, valor original e posição — preservar no arquivo não basta se a informação some na interface",
+          "then": "a contagem é 41719140, o registro entra em linhas_invalidas e NÃO entra em sum/min/max, e o defeito sai com identidade, valor original e posição — preservar no arquivo não basta se a informação some na interface",
           "when": "os registros são contados e a leitura termina"
         }
       ],
@@ -446,10 +446,10 @@
           "when": "a orquestração decide o desfecho"
         },
         {
-          "given": "uma competência completa, e um caso em que a leitura cabe no limite mas o resto estoura",
+          "given": "uma exceção REAL levantada dentro da leitura, e um caso em que a leitura cabe no limite mas o resto estoura",
           "id": "B-2",
-          "then": "R-6 reprova acima de 600s no TOTAL — etapa rápida com o resto lento não passa",
-          "when": "o tempo é medido do início da leitura ao veredito"
+          "then": "a exceção vira desfecho ERRO com pacote gravado — não escapa encerrando o processo; e R-6 reprova acima de 600s no TOTAL, etapa rápida com o resto lento não passa. Falha do próprio gravador é o único caso sem pacote, e sai com código distinto",
+          "when": "a orquestração conduz a execução"
         }
       ],
       "context": "Intent DI-FABRICA-COMPETENCIA; seam SEAM-ORQUESTRACAO; swimlane LANE-ORQUESTRACAO; capability leg LEG-DESFECHO-SEMPRE-COM-PACOTE. Done condition: Os quatro desfechos gravam pacote e saem com código próprio; a execução completa é medida contra os 600s de R-6.",
@@ -477,8 +477,8 @@
           ]
         },
         {
-          "command": "pytest -q tests/test_orquestracao.py -k tempo_total",
-          "description": "R-6 mede o total, não a etapa",
+          "command": "pytest -q tests/test_orquestracao.py -k \"excecao_vira_erro or tempo_total\"",
+          "description": "Exceção real vira ERRO com pacote; R-6 mede o total, não a etapa",
           "expected_duration_sec": 10,
           "id": "eval_2",
           "terminal": false,

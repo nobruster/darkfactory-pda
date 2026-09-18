@@ -66,10 +66,13 @@ swimlane:
         then: os CINCO controles são comparados individualmente (count_linhas, sum_vl_liquido, min, max,
           linhas_invalidas) e qualquer divergência recusa — soma e contagem iguais não bastam
       - id: B-2
-        given: uma diferença de cada uma das seis classificações, e o mesmo dado agregado com meio-para-cima
+        given: uma diferença de cada uma das seis classificações, incluindo um controle divergente classificado
+          como CONFIRMED_SOURCE_DEFECT, e o mesmo dado agregado com meio-para-cima
         when: o veredito é calculado
-        then: MODERN_DEFECT, CONTRACT_AMBIGUITY e UNRESOLVED bloqueiam; os três CONFIRMED/APPROVED não
-          bloqueiam mas ficam registrados; e o arredondamento errado muda o VEREDITO, não só o total
+        then: PRECEDÊNCIA — divergência em qualquer dos cinco controles RECUSA, mesmo classificada como
+          CONFIRMED ou APPROVED; a classificação explica, nunca autoriza. Fora dos controles, MODERN_DEFECT,
+          CONTRACT_AMBIGUITY e UNRESOLVED bloqueiam e as três CONFIRMED/APPROVED apenas registram. E o
+          arredondamento errado muda o VEREDITO, não só o total
       evals:
       - id: eval_1
         description: Um centavo na linha recusa; extremos alterados com soma igual também

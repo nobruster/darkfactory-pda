@@ -32,9 +32,10 @@ tasks:
   - tests/test_evidencia.py
   behavior:
   - id: B-1
-    given: uma execução com âncora medida
+    given: uma execução com âncora medida, e uma que terminou antes da leitura (sem agregado nem classificações)
     when: o pacote é lido de volta
-    then: o veredito é reconstruído sem reexecutar o pipeline
+    then: o veredito é reconstruído sem reexecutar; campos que não existiam no caminho percorrido são
+      AUSENTES e assim marcados, nunca preenchidos com zero ou valor artificial
   - id: B-2
     given: qualquer um dos quatro vereditos terminais — ACEITO, ACEITO_SEM_ANCORA, RECUSADO ou ERRO
     when: o pacote é gravado
@@ -71,7 +72,7 @@ tasks:
   - evidence
   rollback: Remover o gravador de evidência e seus testes.
   observability: pacotes gravados por competência
-source_seam_sha256: a6d5ef69c16d497a2213d22f741ceeaf205c7bd43ad8c7841d05aec34425a5ad
+source_seam_sha256: b1604030a48dac897af701bce537b1825ce81a809c72cc8822ca03f8a9967581
 ---
 # O pacote reconstrói o veredito sem reexecutar
 

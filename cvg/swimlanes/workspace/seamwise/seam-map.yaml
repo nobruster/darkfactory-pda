@@ -3,9 +3,9 @@ status: SEAM_MAP=READY
 intent_id: DI-FABRICA-COMPETENCIA
 source_recipe:
   name: fabrica-recipe.yaml
-  sha256: 3a77e4705cecf40a3bb08ae1eb0338377cabd636cc5c4a4cdfc5a49e68079643
+  sha256: 1a3e99da8b1cdd5e83124bfe5e971d2b1214ea77ef2191e5456fbac7ade2b259
 intent_sha256: 72bb6a2fd183a705d6e27083153b3020a2ddc7193e71584cb3025cf9f0d25a66
-system_map_sha256: f3060c809cf68fdf126e3c760551b1786991d7cb82d6abd407dd4525d78c4422
+system_map_sha256: e30617fa06bad1fd1a329c5675219e7b336e03ac2da43d4cb53fc20becd38d10
 evidence_sha256: 02dd50a8106fa1eabe31d8c25387a3fa0d5ac34afd8e965b1da09464061cc132
 decisions:
 - id: ADR-0001-HALF-EVEN
@@ -16,6 +16,10 @@ decisions:
   path: seamwise/decisions/ADR-0002-ANCORA-2026-03.md
   status: accepted
   sha256: 856df1cbb3e62482362a2f3a83dea0fcfcdc9caee6cc35a1c02165971c137403
+- id: ADR-0006-PRECISAO-DECLARADA
+  path: seamwise/decisions/ADR-0006-PRECISAO-DECLARADA.md
+  status: accepted
+  sha256: a7a6e64cf309fea2020801795eeebe9c5dd32b773670dcd17ca8388095ce8cd9
 - id: ADR-0005-VEREDITO-SEM-ANCORA
   path: seamwise/decisions/ADR-0005-VEREDITO-SEM-ANCORA.md
   status: accepted
@@ -31,39 +35,39 @@ seams:
   evidence:
   - E-ANCORA-202603
   swimlane_id: LANE-CONTRATO
-  sha256: 435ab91f97168e850f815e6bc56908a7989a5dae91de8911e7eca572741f5a67
+  sha256: 94901d8029fd3cc2133f3866658109bd10c1a80c6d9d3681320f45353f83199a
 - id: SEAM-LEITURA
   path: seamwise/seams/SEAM-LEITURA.md
   owner: leitura
   evidence:
   - E-ANCORA-202603
   swimlane_id: LANE-LEITURA
-  sha256: f37398a6a04d1430da4f1c25115e09fc3924d4ea919b0f6fbe0bba63a9c81a2f
+  sha256: 51b39c18aaa9d1c2c6fa5f6f96a9e25a4e0254d0122b7be47aab9826780dfa0e
 - id: SEAM-AGREGACAO
   path: seamwise/seams/SEAM-AGREGACAO.md
   owner: agregacao
   evidence:
   - E-ADR-ARREDONDAMENTO
   swimlane_id: LANE-AGREGACAO
-  sha256: c137eb3fadc449712d848a11e2d210c0e9d22db5bc9a6749629cf20ff725efda
+  sha256: 1ff237af538dd055b74da051e47bbeedd0abb537de2ca3fd9d76edef80c7caff
 - id: SEAM-JUIZO
   path: seamwise/seams/SEAM-JUIZO.md
   owner: juizo
   evidence:
   - E-ANCORA-202603
   swimlane_id: LANE-JUIZO
-  sha256: 0df54dbe8631c62e2807d8128ef4b3bbf847dacbb127a6a795f15f620aeaab9f
+  sha256: c591e98509ba64835843b55ac4e8064bda64a9a3fd8fe5f1fbd0b5907ec5849a
 - id: SEAM-EVIDENCIA
   path: seamwise/seams/SEAM-EVIDENCIA.md
   owner: evidencia
   evidence:
   - E-ANCORA-202603
   swimlane_id: LANE-EVIDENCIA
-  sha256: a6d5ef69c16d497a2213d22f741ceeaf205c7bd43ad8c7841d05aec34425a5ad
+  sha256: b1604030a48dac897af701bce537b1825ce81a809c72cc8822ca03f8a9967581
 - id: SEAM-ORQUESTRACAO
   path: seamwise/seams/SEAM-ORQUESTRACAO.md
   owner: orquestracao
   evidence:
   - E-ANCORA-202603
   swimlane_id: LANE-ORQUESTRACAO
-  sha256: 3b06d55d35422ae4fc4816abeeae6fb659a801f32a03cf9ddfeb37205fe8e91e
+  sha256: 5e028c141408549ed65ea2ddc71ac8450cc619e429badcef8d9c839341815f57

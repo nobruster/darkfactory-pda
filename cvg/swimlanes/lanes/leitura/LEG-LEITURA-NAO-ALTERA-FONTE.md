@@ -1,6 +1,6 @@
 > Projetado de `LEG-LEITURA-NAO-ALTERA-FONTE.md` pelo Seamwise.
 > **Não edite aqui** — edite a recipe e rode `seamwise plan`.
-> origem sha256: `45df9d3573390c142582225fb9c9339a36a9ba04d7d841758b1b44c4eaca7209`
+> origem sha256: `a0864d099bf99dd9a3bf2aad31d26cd79ef31d58b8f48aae136ceda1c20d13a6`
 
 ---
 
@@ -46,10 +46,11 @@ tasks:
     then: o sha256 do arquivo é idêntico ao de antes, e cada campo lido vem da POSIÇÃO declarada — cabeçalho
       repetido não decide nada
   - id: B-2
-    given: o arquivo de 2026-03, com um registro malformado
+    given: o arquivo de 2026-03, com um registro cujo campo monetário é ilegível
     when: os registros são contados e a leitura termina
-    then: a contagem é 41719140 E o defeito sai com identidade do registro, valor original e posição —
-      preservar no arquivo não basta se a informação some na interface
+    then: a contagem é 41719140, o registro entra em linhas_invalidas e NÃO entra em sum/min/max, e o
+      defeito sai com identidade, valor original e posição — preservar no arquivo não basta se a informação
+      some na interface
   evals:
   - id: eval_1
     description: Fonte byte-idêntica; leitura posicional com cabeçalho repetido
@@ -83,7 +84,7 @@ tasks:
   observability: contagem de registros lidos por competência, defeitos observados por tipo, e segundos
     do início da leitura ao veredito (o limite de R-6, sem o qual tudo passa mesmo levando horas — objeção
     C7)
-source_seam_sha256: f37398a6a04d1430da4f1c25115e09fc3924d4ea919b0f6fbe0bba63a9c81a2f
+source_seam_sha256: 51b39c18aaa9d1c2c6fa5f6f96a9e25a4e0254d0122b7be47aab9826780dfa0e
 ---
 # A leitura não altera a fonte e conta o esperado
 

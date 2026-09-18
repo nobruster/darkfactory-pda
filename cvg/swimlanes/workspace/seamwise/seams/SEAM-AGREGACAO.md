@@ -65,12 +65,13 @@ swimlane:
           nomeados que o juízo compara — count_linhas, sum_vl_liquido, min_vl_liquido, max_vl_liquido,
           linhas_invalidas
       - id: B-2
-        given: valores em empate exato, um contexto decimal cujo default já é meio-para-par, e a alternativa
-          de arredondar por campo
+        given: valores em empate exato, um contexto cujo default já é meio-para-par, um contexto com prec=6,
+          e a alternativa de arredondar por campo
         when: o total é calculado
-        then: o modo é passado EXPLICITAMENTE — um teste que troca o default do contexto para meio-para-cima
-          falha se a implementação o herdar; e arredondar por campo produz total diferente (2,345+2,345
-          dá 4,68 por campo e 4,69 só no total), provando a granularidade do ADR 0004
+        then: precisão E modo são DECLARADOS, não herdados — com prec=6 a soma acusa a perda (10000.00
+          + 0.01 vira 10000.0, e quantizar depois não recupera, ADR 0006); trocar o default do contexto
+          para meio-para-cima faz o teste falhar se a implementação o herdar; e arredondar por campo dá
+          4,68 contra 4,69 no total (ADR 0004)
       evals:
       - id: eval_1
         description: Float recusado; o agregado traz os cinco controles nomeados
@@ -78,8 +79,8 @@ swimlane:
         verifies:
         - B-1
       - id: eval_2
-        description: Modo explícito (falha se herdar o contexto) e granularidade do total
-        bash: pytest -q tests/test_agregacao.py -k "modo_explicito or granularidade"
+        description: Precisão e modo declarados; prec=6 acusa; granularidade do total
+        bash: pytest -q tests/test_agregacao.py -k "precisao_declarada or modo_explicito or granularidade"
         verifies:
         - B-2
       - id: eval_3

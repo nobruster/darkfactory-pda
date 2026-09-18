@@ -1,68 +1,68 @@
 schema_version: 1
 status: DELIVERY_PLAN=READY
-seam_map_sha256: 1da52cd9b55591f6e7fe5c6743e59ad0a5024390ef6394cdb07c469360b66d79
+seam_map_sha256: 99b1c48f0b82307c8038c01d4186afc4af74bed183aa751e7eb0887140f86b32
 swimlanes:
 - id: LANE-CONTRATO
   seam_id: SEAM-CONTRATO-ANCORA
   owner: contrato
   path: seamwise/swimlanes/LANE-CONTRATO.md
-  sha256: a68e6ecee8db3ffee4e218806b137bfceaf96e8098652dc30390cf8d7b2759c1
+  sha256: 5d8b7e1d75ac0186f5968b2522292cfd18ae500ee78194efa0a7fc2f803a147c
 - id: LANE-LEITURA
   seam_id: SEAM-LEITURA
   owner: leitura
   path: seamwise/swimlanes/LANE-LEITURA.md
-  sha256: 13af67a48758d6cbc7683d3a70f3b98c50834c06ddef1fd7db29d5c2f0fee0e4
+  sha256: 58ca42f23bc7865b5d376e584672c70ffa11ff84a03051998bd63e18200f9a74
 - id: LANE-AGREGACAO
   seam_id: SEAM-AGREGACAO
   owner: agregacao
   path: seamwise/swimlanes/LANE-AGREGACAO.md
-  sha256: aa4dcb7ea3628a06c7e91a4fc300f07fedbecf896b566a68c26a5a7284599282
+  sha256: c78e2cb75278d11387c9bd962449305945d6f8f7b09d9ce00bf6f27879e8ab7e
 - id: LANE-JUIZO
   seam_id: SEAM-JUIZO
   owner: juizo
   path: seamwise/swimlanes/LANE-JUIZO.md
-  sha256: e687a92bc2647917146442277f6a866442f9215b8381d5d1d2e64e1fe5d42535
+  sha256: 189cc6c02aa2d2e3bb259b7eca505ac15b2fa7930473317e1ec9e99745dc9476
 - id: LANE-EVIDENCIA
   seam_id: SEAM-EVIDENCIA
   owner: evidencia
   path: seamwise/swimlanes/LANE-EVIDENCIA.md
-  sha256: 9392fe63ab4ddc8743031e6aeecbe13627e6b7cb53917f6650c2d58c6ae45598
+  sha256: 82877c0b86ad868d11123902926e90096e59dde9d4136a07950141080fda6af2
 - id: LANE-ORQUESTRACAO
   seam_id: SEAM-ORQUESTRACAO
   owner: orquestracao
   path: seamwise/swimlanes/LANE-ORQUESTRACAO.md
-  sha256: 910ddfd1dbcce6564407073550cb56d33eb4941b28a1638e7d6c081159d32d02
+  sha256: e568117e750e476c214fbd9291c46a7348a2665f1d73cff6ab76ef9540f4be81
 legs:
 - id: LEG-CONTRATO-RECUSA-SEM-ANCORA
   seam_id: SEAM-CONTRATO-ANCORA
   swimlane_id: LANE-CONTRATO
   path: seamwise/legs/LEG-CONTRATO-RECUSA-SEM-ANCORA.md
-  sha256: dbcfed62586decd33167241f078427f01ca352011195d63353e0f17d35b23701
+  sha256: 90d28e908ff2dc78eec7fb3a1b0e8563aa71305dc54cd1dc6798cc526ca237ec
 - id: LEG-LEITURA-NAO-ALTERA-FONTE
   seam_id: SEAM-LEITURA
   swimlane_id: LANE-LEITURA
   path: seamwise/legs/LEG-LEITURA-NAO-ALTERA-FONTE.md
-  sha256: 45df9d3573390c142582225fb9c9339a36a9ba04d7d841758b1b44c4eaca7209
+  sha256: a0864d099bf99dd9a3bf2aad31d26cd79ef31d58b8f48aae136ceda1c20d13a6
 - id: LEG-AGREGADO-EXATO
   seam_id: SEAM-AGREGACAO
   swimlane_id: LANE-AGREGACAO
   path: seamwise/legs/LEG-AGREGADO-EXATO.md
-  sha256: 8c2a38f38b30e507816ba172a27d8f382ad099d9886e8a05d7aaace54d36fdc0
+  sha256: a9f260d6be3c0a0b5a027e431c54220fc9fcdaf3c619252cde50fb6af539bc02
 - id: LEG-JUIZO-ACUSA-CENTAVO
   seam_id: SEAM-JUIZO
   swimlane_id: LANE-JUIZO
   path: seamwise/legs/LEG-JUIZO-ACUSA-CENTAVO.md
-  sha256: ed7807fe92cb5c13e1727e2a3e8222a954613a93955e0c734f4b37b33be348d9
+  sha256: 3913e6e461cd82edd7d2bb010d273fd59e107d763c15725878d56c2da23d1dd3
 - id: LEG-EVIDENCIA-RECONSTROI
   seam_id: SEAM-EVIDENCIA
   swimlane_id: LANE-EVIDENCIA
   path: seamwise/legs/LEG-EVIDENCIA-RECONSTROI.md
-  sha256: d8476501de197f2dfeec921f3cf6bf3f238df877443be0ebfd70dd9a384fe849
+  sha256: 7576500322f7bb89a7c30edb8bd402fc3fb1284aad2aa105bbc93b3bbdb404b9
 - id: LEG-DESFECHO-SEMPRE-COM-PACOTE
   seam_id: SEAM-ORQUESTRACAO
   swimlane_id: LANE-ORQUESTRACAO
   path: seamwise/legs/LEG-DESFECHO-SEMPRE-COM-PACOTE.md
-  sha256: 6cb9407aeb6e73091b7f5dcf432dd6e6cb259cd62f0e00238108b41fbb7aeefc
+  sha256: eea3694aeb251539f1890676fb131553bc17c6388ba19a8b9be519a014df2618
 steel_thread:
 - LEG-CONTRATO-RECUSA-SEM-ANCORA
 - LEG-LEITURA-NAO-ALTERA-FONTE
@@ -112,6 +112,44 @@ objections:
   owner: Bruno Nunes
   rationale: B-1 passou a corromper UMA LINHA do arquivo e rodar o pipeline ponta a ponta. O teste anterior
     passaria mesmo se a leitura descartasse a linha.
+- id: OBJ-C30
+  status: FIXED
+  summary: A classificação podia sobrepor a recusa obrigatória dos cinco controles — um total divergente
+    marcado CONFIRMED autorizaria.
+  owner: Bruno Nunes
+  rationale: 'B-2 do juízo declara a PRECEDÊNCIA: divergência em qualquer controle recusa, mesmo classificada.
+    A classificação explica, nunca autoriza.'
+- id: OBJ-C31
+  status: FIXED
+  summary: Modo explícito não garantia soma exata — a precisão do contexto decide antes.
+  owner: Bruno Nunes
+  rationale: 'ADR 0006 (novo). Verificado: em prec=6, 10000.00 + 0.01 vira 10000.0, e quantizar depois
+    devolve 10000.00, não 10000.01. A perda é anterior ao arredondamento. Um teste força prec=6 e exige
+    que a soma acuse.'
+- id: OBJ-C32
+  status: FIXED
+  summary: O pacote exigia campos que não existem nos términos antecipados — o gravador rejeitaria o próprio
+    caso que deve registrar.
+  owner: Bruno Nunes
+  rationale: B-1 da evidência passou a exigir que campos não percorridos sejam AUSENTES e marcados como
+    tal, nunca preenchidos com zero ou valor artificial que comprometeria a reconstrução.
+- id: OBJ-C33
+  status: FIXED
+  summary: ERRO não tinha cenário de falha real — testar a enumeração não prova que exceções chegam ao
+    finalizador.
+  owner: Bruno Nunes
+  rationale: B-2 da orquestração passou a exigir uma exceção REAL dentro da leitura, que deve virar ERRO
+    com pacote. Falha do próprio gravador é o único caso sem pacote, e sai com código distinto.
+- id: OBJ-C34
+  status: FIXED
+  summary: Registro monetário malformado não tinha participação definida nos cinco controles.
+  owner: Bruno Nunes
+  rationale: 'B-2 da leitura declara: entra em linhas_invalidas e NÃO entra em sum/min/max.'
+- id: OBJ-C35
+  status: FIXED
+  summary: Os nomes dos extremos divergiam entre contrato e agregado.
+  owner: Bruno Nunes
+  rationale: B-1 do contrato passou a exigir os cinco controles sob os MESMOS nomes que o agregado usa.
 - id: OBJ-C14
   status: FIXED
   summary: O encerramento sem âncora foi delegado a um "orquestrador" que nenhuma das cinco tarefas assumia.
@@ -201,4 +239,4 @@ objections:
 contentions: []
 steel_thread_path: seamwise/steel-thread.md
 steel_thread_sha256: 9f731847917b817babbd4738c4047ab9b89e0120a8dcb04a6bfd9dd4636e5ea2
-review_authority_sha256: fb994c3016d0effaedacd6ae14a508588a6d7bd865b5fa7d4eb048113ff58bdd
+review_authority_sha256: 2214599923c7a0c384ce363519c22965dbb55643881db6091f99d570f8e22616

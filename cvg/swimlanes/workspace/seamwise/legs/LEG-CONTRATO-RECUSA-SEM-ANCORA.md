@@ -36,8 +36,9 @@ tasks:
       a procedência (aprovador, data, comando que mediu) E o layout de leitura (posições, formato monetário,
       chave do registro)
     when: o contrato é carregado
-    then: âncora, procedência e layout saem juntos; a MESMA âncora sem aprovador, sem data ou sem layout
-      resulta em NAO_MEDIDO — número presente não é âncora autorizada
+    then: âncora, procedência e layout saem juntos, com os cinco controles sob os MESMOS nomes que o agregado
+      usa — count_linhas, sum_vl_liquido, min_vl_liquido, max_vl_liquido, linhas_invalidas; a MESMA âncora
+      sem aprovador, sem data ou sem layout resulta em NAO_MEDIDO
   - id: B-2
     given: uma competência sem âncora no contrato
     when: o contrato é carregado
@@ -74,7 +75,7 @@ tasks:
   - cvg/docs/adrs
   rollback: Remover o carregador de contrato e seus testes.
   observability: contagem de competências ancoradas no contrato
-source_seam_sha256: 435ab91f97168e850f815e6bc56908a7989a5dae91de8911e7eca572741f5a67
+source_seam_sha256: 94901d8029fd3cc2133f3866658109bd10c1a80c6d9d3681320f45353f83199a
 ---
 # A fábrica recusa construir sem âncora medida
 

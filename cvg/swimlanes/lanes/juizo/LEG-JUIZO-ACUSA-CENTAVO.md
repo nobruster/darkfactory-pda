@@ -1,6 +1,6 @@
 > Projetado de `LEG-JUIZO-ACUSA-CENTAVO.md` pelo Seamwise.
 > **Não edite aqui** — edite a recipe e rode `seamwise plan`.
-> origem sha256: `ed7807fe92cb5c13e1727e2a3e8222a954613a93955e0c734f4b37b33be348d9`
+> origem sha256: `3913e6e461cd82edd7d2bb010d273fd59e107d763c15725878d56c2da23d1dd3`
 
 ---
 
@@ -48,10 +48,13 @@ tasks:
     then: os CINCO controles são comparados individualmente (count_linhas, sum_vl_liquido, min, max, linhas_invalidas)
       e qualquer divergência recusa — soma e contagem iguais não bastam
   - id: B-2
-    given: uma diferença de cada uma das seis classificações, e o mesmo dado agregado com meio-para-cima
+    given: uma diferença de cada uma das seis classificações, incluindo um controle divergente classificado
+      como CONFIRMED_SOURCE_DEFECT, e o mesmo dado agregado com meio-para-cima
     when: o veredito é calculado
-    then: MODERN_DEFECT, CONTRACT_AMBIGUITY e UNRESOLVED bloqueiam; os três CONFIRMED/APPROVED não bloqueiam
-      mas ficam registrados; e o arredondamento errado muda o VEREDITO, não só o total
+    then: PRECEDÊNCIA — divergência em qualquer dos cinco controles RECUSA, mesmo classificada como CONFIRMED
+      ou APPROVED; a classificação explica, nunca autoriza. Fora dos controles, MODERN_DEFECT, CONTRACT_AMBIGUITY
+      e UNRESOLVED bloqueiam e as três CONFIRMED/APPROVED apenas registram. E o arredondamento errado
+      muda o VEREDITO, não só o total
   evals:
   - id: eval_1
     description: Um centavo na linha recusa; extremos alterados com soma igual também
@@ -84,7 +87,7 @@ tasks:
   - contracts
   rollback: Remover o juízo e seus testes.
   observability: vereditos por classificação
-source_seam_sha256: 0df54dbe8631c62e2807d8128ef4b3bbf847dacbb127a6a795f15f620aeaab9f
+source_seam_sha256: c591e98509ba64835843b55ac4e8064bda64a9a3fd8fe5f1fbd0b5907ec5849a
 ---
 # O juiz recusa um centavo de divergência
 

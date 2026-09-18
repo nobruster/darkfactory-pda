@@ -1,10 +1,10 @@
 {
   "disposition": "accepted",
-  "draft_sha256": "576a5580f975a6d26c4a20a4e4a2803de000fca88b8018686ebc48a358ca7890",
+  "draft_sha256": "7b4c69a549c683d563ab8042124b947226b085141a0b0b114de16e4b0e16bc6d",
   "fixture": false,
-  "plan_sha256": "75bb492fda78784ec46ce686ab1bb08331bfe8fd11fa7220cd70d1017215af1d",
+  "plan_sha256": "edb13928789ea5c4429266c6e370ab4c34d2ae4566043ee159d485e3dd5f903b",
   "reason": "7 objecoes do adversario cross-family corrigidas na recipe",
-  "reviewed_at": "2026-09-18T01:12:54.215497+00:00",
+  "reviewed_at": "2026-09-18T01:19:02.146524+00:00",
   "reviewer": "Bruno Nunes",
   "schema_version": 1
 }

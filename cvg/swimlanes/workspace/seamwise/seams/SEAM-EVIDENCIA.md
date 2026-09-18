@@ -54,9 +54,10 @@ swimlane:
       - tests/test_evidencia.py
       behavior:
       - id: B-1
-        given: uma execução com âncora medida
+        given: uma execução com âncora medida, e uma que terminou antes da leitura (sem agregado nem classificações)
         when: o pacote é lido de volta
-        then: o veredito é reconstruído sem reexecutar o pipeline
+        then: o veredito é reconstruído sem reexecutar; campos que não existiam no caminho percorrido
+          são AUSENTES e assim marcados, nunca preenchidos com zero ou valor artificial
       - id: B-2
         given: qualquer um dos quatro vereditos terminais — ACEITO, ACEITO_SEM_ANCORA, RECUSADO ou ERRO
         when: o pacote é gravado

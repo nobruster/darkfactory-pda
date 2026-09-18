@@ -57,8 +57,9 @@ swimlane:
           a procedência (aprovador, data, comando que mediu) E o layout de leitura (posições, formato
           monetário, chave do registro)
         when: o contrato é carregado
-        then: âncora, procedência e layout saem juntos; a MESMA âncora sem aprovador, sem data ou sem
-          layout resulta em NAO_MEDIDO — número presente não é âncora autorizada
+        then: âncora, procedência e layout saem juntos, com os cinco controles sob os MESMOS nomes que
+          o agregado usa — count_linhas, sum_vl_liquido, min_vl_liquido, max_vl_liquido, linhas_invalidas;
+          a MESMA âncora sem aprovador, sem data ou sem layout resulta em NAO_MEDIDO
       - id: B-2
         given: uma competência sem âncora no contrato
         when: o contrato é carregado

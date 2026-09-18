@@ -62,10 +62,11 @@ swimlane:
         then: o sha256 do arquivo é idêntico ao de antes, e cada campo lido vem da POSIÇÃO declarada —
           cabeçalho repetido não decide nada
       - id: B-2
-        given: o arquivo de 2026-03, com um registro malformado
+        given: o arquivo de 2026-03, com um registro cujo campo monetário é ilegível
         when: os registros são contados e a leitura termina
-        then: a contagem é 41719140 E o defeito sai com identidade do registro, valor original e posição
-          — preservar no arquivo não basta se a informação some na interface
+        then: a contagem é 41719140, o registro entra em linhas_invalidas e NÃO entra em sum/min/max,
+          e o defeito sai com identidade, valor original e posição — preservar no arquivo não basta se
+          a informação some na interface
       evals:
       - id: eval_1
         description: Fonte byte-idêntica; leitura posicional com cabeçalho repetido

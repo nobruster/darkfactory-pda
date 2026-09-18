@@ -61,6 +61,44 @@ objections:
   owner: Bruno Nunes
   rationale: B-1 passou a corromper UMA LINHA do arquivo e rodar o pipeline ponta a ponta. O teste anterior
     passaria mesmo se a leitura descartasse a linha.
+- id: OBJ-C30
+  status: FIXED
+  summary: A classificação podia sobrepor a recusa obrigatória dos cinco controles — um total divergente
+    marcado CONFIRMED autorizaria.
+  owner: Bruno Nunes
+  rationale: 'B-2 do juízo declara a PRECEDÊNCIA: divergência em qualquer controle recusa, mesmo classificada.
+    A classificação explica, nunca autoriza.'
+- id: OBJ-C31
+  status: FIXED
+  summary: Modo explícito não garantia soma exata — a precisão do contexto decide antes.
+  owner: Bruno Nunes
+  rationale: 'ADR 0006 (novo). Verificado: em prec=6, 10000.00 + 0.01 vira 10000.0, e quantizar depois
+    devolve 10000.00, não 10000.01. A perda é anterior ao arredondamento. Um teste força prec=6 e exige
+    que a soma acuse.'
+- id: OBJ-C32
+  status: FIXED
+  summary: O pacote exigia campos que não existem nos términos antecipados — o gravador rejeitaria o próprio
+    caso que deve registrar.
+  owner: Bruno Nunes
+  rationale: B-1 da evidência passou a exigir que campos não percorridos sejam AUSENTES e marcados como
+    tal, nunca preenchidos com zero ou valor artificial que comprometeria a reconstrução.
+- id: OBJ-C33
+  status: FIXED
+  summary: ERRO não tinha cenário de falha real — testar a enumeração não prova que exceções chegam ao
+    finalizador.
+  owner: Bruno Nunes
+  rationale: B-2 da orquestração passou a exigir uma exceção REAL dentro da leitura, que deve virar ERRO
+    com pacote. Falha do próprio gravador é o único caso sem pacote, e sai com código distinto.
+- id: OBJ-C34
+  status: FIXED
+  summary: Registro monetário malformado não tinha participação definida nos cinco controles.
+  owner: Bruno Nunes
+  rationale: 'B-2 da leitura declara: entra em linhas_invalidas e NÃO entra em sum/min/max.'
+- id: OBJ-C35
+  status: FIXED
+  summary: Os nomes dos extremos divergiam entre contrato e agregado.
+  owner: Bruno Nunes
+  rationale: B-1 do contrato passou a exigir os cinco controles sob os MESMOS nomes que o agregado usa.
 - id: OBJ-C14
   status: FIXED
   summary: O encerramento sem âncora foi delegado a um "orquestrador" que nenhuma das cinco tarefas assumia.

@@ -67,9 +67,12 @@ swimlane:
         then: as três gravam pacote — ACEITO_SEM_ANCORA com causa NAO_MEDIDO, ACEITO, e RECUSADO — com
           códigos de saída distintos, e só ACEITO autoriza publicar
       - id: B-2
-        given: uma competência completa, e um caso em que a leitura cabe no limite mas o resto estoura
-        when: o tempo é medido do início da leitura ao veredito
-        then: R-6 reprova acima de 600s no TOTAL — etapa rápida com o resto lento não passa
+        given: uma exceção REAL levantada dentro da leitura, e um caso em que a leitura cabe no limite
+          mas o resto estoura
+        when: a orquestração conduz a execução
+        then: a exceção vira desfecho ERRO com pacote gravado — não escapa encerrando o processo; e R-6
+          reprova acima de 600s no TOTAL, etapa rápida com o resto lento não passa. Falha do próprio gravador
+          é o único caso sem pacote, e sai com código distinto
       evals:
       - id: eval_1
         description: Os quatro desfechos gravam pacote com código de saída próprio
@@ -77,8 +80,8 @@ swimlane:
         verifies:
         - B-1
       - id: eval_2
-        description: R-6 mede o total, não a etapa
-        bash: pytest -q tests/test_orquestracao.py -k tempo_total
+        description: Exceção real vira ERRO com pacote; R-6 mede o total, não a etapa
+        bash: pytest -q tests/test_orquestracao.py -k "excecao_vira_erro or tempo_total"
         verifies:
         - B-2
       - id: eval_3
