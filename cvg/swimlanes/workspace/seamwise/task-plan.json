@@ -3,8 +3,8 @@
   "approved": true,
   "kind": "TaskPlan",
   "metadata": {
-    "delivery_plan_review_sha256": "283e7970f8ddab10bb6f3b12cbae745f6e285aae7566dc66dffb74dd6055727f",
-    "delivery_plan_sha256": "d3dab00c48599e9c5ea60645babce20f4cdcdcd5d29565445c7d7fb9772ada48",
+    "delivery_plan_review_sha256": "2f4fb2e611d648a3552c7d19fc781d3e6d15a58d485119e945fb9f87a9e2e179",
+    "delivery_plan_sha256": "4768b6787de4a44dbea7193d256af28cf24b708fea6cc57ea4ddd6a3450eb512",
     "name": "DI-FABRICA-COMPETENCIA",
     "producer": "seamwise",
     "producer_version": "0.2.0",
@@ -27,10 +27,10 @@
           "when": "o agregado é calculado"
         },
         {
-          "given": "valores em empate exato de arredondamento",
+          "given": "valores em empate exato, um contexto decimal cujo default já é meio-para-par, e a alternativa de arredondar por campo",
           "id": "B-2",
-          "then": "o resultado difere do calculado com meio-para-cima",
-          "when": "o total é calculado com meio-para-par"
+          "then": "o modo é passado EXPLICITAMENTE — um teste que troca o default do contexto para meio-para-cima falha se a implementação o herdar; e arredondar por campo produz total diferente (2,345+2,345 dá 4,68 por campo e 4,69 só no total), provando a granularidade do ADR 0004",
+          "when": "o total é calculado"
         }
       ],
       "context": "Intent DI-FABRICA-COMPETENCIA; seam SEAM-AGREGACAO; swimlane LANE-AGREGACAO; capability leg LEG-AGREGADO-EXATO. Done condition: Float é recusado na entrada e o total usa meio-para-par a duas casas.",
@@ -58,8 +58,8 @@
           ]
         },
         {
-          "command": "pytest -q tests/test_agregacao.py -k half_even",
-          "description": "Meio-para-par difere de meio-para-cima",
+          "command": "pytest -q tests/test_agregacao.py -k \"modo_explicito or granularidade\"",
+          "description": "Modo explícito (falha se herdar o contexto) e granularidade do total",
           "expected_duration_sec": 10,
           "id": "eval_2",
           "terminal": false,
@@ -105,15 +105,15 @@
       ],
       "behaviors": [
         {
-          "given": "uma âncora com os cinco números nomeados (count_linhas, sum_vl_liquido, min, max, linhas_invalidas) E a procedência — aprovador, data e comando que mediu",
+          "given": "um contrato com os cinco números nomeados (count_linhas, sum_vl_liquido, min, max, linhas_invalidas), a procedência (aprovador, data, comando que mediu) E o layout de leitura (posições, formato monetário, chave do registro)",
           "id": "B-1",
-          "then": "os cinco valores saem com a procedência; a MESMA âncora sem aprovador ou sem data de medição resulta em NAO_MEDIDO, porque número presente não é âncora autorizada",
+          "then": "âncora, procedência e layout saem juntos; a MESMA âncora sem aprovador, sem data ou sem layout resulta em NAO_MEDIDO — número presente não é âncora autorizada",
           "when": "o contrato é carregado"
         },
         {
           "given": "uma competência sem âncora no contrato",
           "id": "B-2",
-          "then": "o resultado é NAO_MEDIDO, o veredito CHEGA à evidência antes da saída, e só então o processo sai com código 1",
+          "then": "RETORNA o veredito NAO_MEDIDO como valor — não grava nem encerra o processo; quem persiste é a evidência, e quem encerra é o orquestrador",
           "when": "o contrato é carregado"
         }
       ],
@@ -140,8 +140,8 @@
           ]
         },
         {
-          "command": "pytest -q tests/test_contrato.py -k \"nao_medido or nao_medido_vira_evidencia\"",
-          "description": "Sem âncora recusa construir E grava o veredito na evidência",
+          "command": "pytest -q tests/test_contrato.py -k \"nao_medido and not evidencia\"",
+          "description": "Sem âncora retorna NAO_MEDIDO como valor, sem escrever em disco",
           "expected_duration_sec": 10,
           "id": "eval_2",
           "terminal": false,
@@ -193,9 +193,9 @@
           "when": "o pacote é lido de volta"
         },
         {
-          "given": "uma execução sem âncora",
+          "given": "qualquer veredito terminal — ACEITO, ACEITO_SEM_ANCORA ou NAO_MEDIDO",
           "id": "B-2",
-          "then": "o veredito registrado é ACEITO_SEM_ANCORA",
+          "then": "o pacote existe e registra QUAL dos três foi, com os campos que existirem; NAO_MEDIDO grava sem agregado e nunca aparece como ACEITO",
           "when": "o pacote é gravado"
         }
       ],
@@ -271,9 +271,9 @@
       ],
       "behaviors": [
         {
-          "given": "o arquivo da competência com UMA LINHA corrompida em um centavo",
+          "given": "o arquivo da competência com UMA LINHA corrompida, e um caso que redistribui valores mantendo soma e contagem",
           "id": "B-1",
-          "then": "o veredito é recusado e o processo sai com código 1",
+          "then": "os CINCO controles são comparados individualmente (count_linhas, sum_vl_liquido, min, max, linhas_invalidas) e qualquer divergência recusa — soma e contagem iguais não bastam",
           "when": "o pipeline roda de ponta a ponta e o juízo compara contra a âncora"
         },
         {
@@ -299,8 +299,8 @@
       "effort": "M",
       "evals": [
         {
-          "command": "pytest -q tests/test_juizo.py -k um_centavo_na_linha",
-          "description": "Um centavo corrompido NA LINHA é recusado ponta a ponta",
+          "command": "pytest -q tests/test_juizo.py -k \"um_centavo_na_linha or cinco_controles\"",
+          "description": "Um centavo na linha recusa; extremos alterados com soma igual também",
           "expected_duration_sec": 10,
           "id": "eval_1",
           "terminal": false,
@@ -356,9 +356,9 @@
       ],
       "behaviors": [
         {
-          "given": "o arquivo de uma competência",
+          "given": "o arquivo de uma competência e o layout declarado no contrato (posições, formato monetário, chave do registro)",
           "id": "B-1",
-          "then": "o sha256 do arquivo é idêntico ao de antes",
+          "then": "o sha256 do arquivo é idêntico ao de antes, e cada campo lido vem da POSIÇÃO declarada — cabeçalho repetido não decide nada",
           "when": "a leitura termina"
         },
         {
@@ -383,8 +383,8 @@
       "effort": "M",
       "evals": [
         {
-          "command": "pytest -q tests/test_leitura.py -k \"sha256 or preserva_defeito\"",
-          "description": "A fonte permanece byte-idêntica; o malformado não é corrigido",
+          "command": "pytest -q tests/test_leitura.py -k \"sha256 or posicional\"",
+          "description": "Fonte byte-idêntica; leitura posicional com cabeçalho repetido",
           "expected_duration_sec": 10,
           "id": "eval_1",
           "terminal": false,
@@ -393,8 +393,8 @@
           ]
         },
         {
-          "command": "pytest -q tests/test_leitura.py -k \"contagem or defeito_atravessa\"",
-          "description": "Contagem bate com a âncora e o defeito atravessa até o juízo",
+          "command": "pytest -q tests/test_leitura.py -k \"contagem or defeito_identificado\"",
+          "description": "Contagem bate com a âncora e o defeito sai com identidade",
           "expected_duration_sec": 10,
           "id": "eval_2",
           "terminal": false,
@@ -403,8 +403,8 @@
           ]
         },
         {
-          "command": "pytest -q tests/test_leitura.py -k tempo_ate_veredito",
-          "description": "R-6 — do início da leitura ao veredito em até 600 segundos",
+          "command": "pytest -q tests/test_leitura.py -k tempo_de_leitura",
+          "description": "R-6 — a leitura da competência completa em até 540 segundos",
           "expected_duration_sec": 10,
           "id": "eval_3",
           "terminal": true,

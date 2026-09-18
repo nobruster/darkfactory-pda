@@ -2,7 +2,7 @@ FORK: B (task-driven) — rota única desde a v3.4 — o consenso sempre entrega
 
 > Projetado de `LANE-AGREGACAO.md` pelo Seamwise.
 > **Não edite aqui** — edite a recipe e rode `seamwise plan`.
-> origem sha256: `0aa0d00cde3a8c68629fb644817d984a7111897c461e8ef6eacf4adeb4007996`
+> origem sha256: `22dd3349d37586b0dda78e9b6dd7cd856e31d14923a342c74812c5ff1ab84ee7`
 
 ---
 
@@ -14,7 +14,7 @@ id: LANE-AGREGACAO
 name: Agregação lane
 owner: agregacao
 seam_id: SEAM-AGREGACAO
-source_seam_sha256: e1d2085c6a796c122dce56dcfc7500649e108918cbb871bf68ad8382978fe363
+source_seam_sha256: dfd5a4abbf50b33e7034e72de928ba28629e2871c75c3f77c65141ebf664214f
 legs:
 - LEG-AGREGADO-EXATO
 ---

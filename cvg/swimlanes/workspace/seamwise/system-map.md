@@ -60,6 +60,49 @@ objections:
   owner: Bruno Nunes
   rationale: B-1 passou a corromper UMA LINHA do arquivo e rodar o pipeline ponta a ponta. O teste anterior
     passaria mesmo se a leitura descartasse a linha.
+- id: OBJ-C8
+  status: FIXED
+  summary: A execução sem âncora tinha dois vereditos incompatíveis — o contrato mandava NAO_MEDIDO, a
+    evidência esperava ACEITO_SEM_ANCORA.
+  owner: Bruno Nunes
+  rationale: A evidência passou a gravar QUALQUER veredito terminal dos três, registrando qual foi, com
+    os campos que existirem. NAO_MEDIDO grava sem agregado e nunca aparece como ACEITO.
+- id: OBJ-C9
+  status: FIXED
+  summary: O juízo não provava comparação dos cinco controles do ADR 0002 — redistribuir valores mantendo
+    soma e contagem alterava extremos sem recusa.
+  owner: Bruno Nunes
+  rationale: B-1 passou a exigir comparação individual dos cinco, com um caso que mantém soma e contagem
+    e ainda assim deve recusar.
+- id: OBJ-C10
+  status: FIXED
+  summary: O leitor consumia posições que o contrato não prometia fornecer; contagem certa e hash inalterado
+    não provam que a coluna certa foi lida.
+  owner: Bruno Nunes
+  rationale: O layout de leitura (posições, formato monetário, chave) virou parte do contrato, e sua ausência
+    resulta em NAO_MEDIDO. B-1 da leitura exige leitura posicional mesmo com cabeçalho repetido.
+- id: OBJ-C11
+  status: FIXED
+  summary: 'Ciclo de construção: a primeira folha precisava provar gravação de evidência, mas o gravador
+    é a última tarefa.'
+  owner: Bruno Nunes
+  rationale: 'Defeito introduzido pela correção de C2. Separadas as responsabilidades: o contrato RETORNA
+    o veredito como valor, sem gravar nem encerrar; quem persiste é a evidência. O eval de tempo da leitura
+    passou a medir só a leitura, não até o veredito.'
+- id: OBJ-C12
+  status: FIXED
+  summary: 'A granularidade do arredondamento não estava reconciliada: 2,345 + 2,345 dá 4,68 por campo
+    e 4,69 só no total, ambos HALF_EVEN.'
+  owner: Bruno Nunes
+  rationale: Registrado no ADR 0004 — arredonda uma vez, sobre o total final, e a mesma granularidade
+    vale para a medição da âncora. Contra-exemplo verificado; com três valores o desvio dobra.
+- id: OBJ-C13
+  status: FIXED
+  summary: Comparar meio-para-par com meio-para-cima não detectava herança do default — um contexto já
+    configurado passaria, violando R-3.
+  owner: Bruno Nunes
+  rationale: B-2 da agregação passou a exigir modo EXPLÍCITO, com um teste que troca o default do contexto
+    e falha se a implementação o herdar.
 - id: OBJ-C7
   status: FIXED
   summary: R-6 (10 minutos) não tinha prova nem responsável — tudo passaria com a competência levando

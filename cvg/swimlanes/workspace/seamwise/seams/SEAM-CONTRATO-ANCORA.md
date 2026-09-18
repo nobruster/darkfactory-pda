@@ -7,12 +7,11 @@ name: Contrato e âncora
 description: Separa a verdade declarada do código que a consome.
 evidence:
 - E-ANCORA-202603
-responsibility: Guardar a âncora medida e recusar construir sem ela.
+responsibility: Guardar a âncora medida e o layout de leitura, e recusar construir sem eles.
 consumes:
 - âncora medida na origem
 produces:
 - contrato validado
-- veredito NAO_MEDIDO
 owner: contrato
 independent_proof: Um contrato sem âncora para a competência pedida retorna NAO_MEDIDO e o processo termina
   em código diferente de zero.
@@ -54,16 +53,17 @@ swimlane:
       - tests/test_contrato.py
       behavior:
       - id: B-1
-        given: uma âncora com os cinco números nomeados (count_linhas, sum_vl_liquido, min, max, linhas_invalidas)
-          E a procedência — aprovador, data e comando que mediu
+        given: um contrato com os cinco números nomeados (count_linhas, sum_vl_liquido, min, max, linhas_invalidas),
+          a procedência (aprovador, data, comando que mediu) E o layout de leitura (posições, formato
+          monetário, chave do registro)
         when: o contrato é carregado
-        then: os cinco valores saem com a procedência; a MESMA âncora sem aprovador ou sem data de medição
-          resulta em NAO_MEDIDO, porque número presente não é âncora autorizada
+        then: âncora, procedência e layout saem juntos; a MESMA âncora sem aprovador, sem data ou sem
+          layout resulta em NAO_MEDIDO — número presente não é âncora autorizada
       - id: B-2
         given: uma competência sem âncora no contrato
         when: o contrato é carregado
-        then: o resultado é NAO_MEDIDO, o veredito CHEGA à evidência antes da saída, e só então o processo
-          sai com código 1
+        then: RETORNA o veredito NAO_MEDIDO como valor — não grava nem encerra o processo; quem persiste
+          é a evidência, e quem encerra é o orquestrador
       evals:
       - id: eval_1
         description: Cinco valores nomeados com procedência; sem aprovador ou data vira NAO_MEDIDO
@@ -71,8 +71,8 @@ swimlane:
         verifies:
         - B-1
       - id: eval_2
-        description: Sem âncora recusa construir E grava o veredito na evidência
-        bash: pytest -q tests/test_contrato.py -k "nao_medido or nao_medido_vira_evidencia"
+        description: Sem âncora retorna NAO_MEDIDO como valor, sem escrever em disco
+        bash: pytest -q tests/test_contrato.py -k "nao_medido and not evidencia"
         verifies:
         - B-2
       - id: eval_3
@@ -102,7 +102,7 @@ Separa a verdade declarada do código que a consome.
 
 ## Responsibility
 
-Guardar a âncora medida e recusar construir sem ela.
+Guardar a âncora medida e o layout de leitura, e recusar construir sem eles.
 
 ## Independent proof
 

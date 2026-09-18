@@ -67,14 +67,23 @@ decisions:
     rationale: >-
       A âncora é medida na origem por fora do pipeline. Medi-la com o
       pipeline seria o pipeline conferindo a si mesmo.
+  - id: ADR-0004-ARREDONDA-NO-TOTAL
+    status: accepted
+    owner: Bruno Nunes
+    rationale: >-
+      Arredonda uma vez, sobre o total final. Por campo, 2,345 + 2,345 dá
+      4,68 contra 4,69 — ambos meio-para-par. A mesma granularidade vale
+      para a medição da âncora, senão a comparação mede a granularidade.
 seams:
   - id: SEAM-CONTRATO-ANCORA
     name: Contrato e âncora
     description: Separa a verdade declarada do código que a consome.
     evidence: [E-ANCORA-202603]
-    responsibility: Guardar a âncora medida e recusar construir sem ela.
+    responsibility: >-
+      Guardar a âncora medida e o layout de leitura, e recusar construir sem
+      eles.
     consumes: [âncora medida na origem]
-    produces: [contrato validado, veredito NAO_MEDIDO]
+    produces: [contrato validado]
     owner: contrato
     independent_proof: >-
       Um contrato sem âncora para a competência pedida retorna NAO_MEDIDO e
@@ -115,21 +124,21 @@ seams:
                 - tests/test_contrato.py
               behavior:
                 - id: B-1
-                  given: uma âncora com os cinco números nomeados (count_linhas, sum_vl_liquido, min, max, linhas_invalidas) E a procedência — aprovador, data e comando que mediu
+                  given: um contrato com os cinco números nomeados (count_linhas, sum_vl_liquido, min, max, linhas_invalidas), a procedência (aprovador, data, comando que mediu) E o layout de leitura (posições, formato monetário, chave do registro)
                   when: o contrato é carregado
-                  then: os cinco valores saem com a procedência; a MESMA âncora sem aprovador ou sem data de medição resulta em NAO_MEDIDO, porque número presente não é âncora autorizada
+                  then: âncora, procedência e layout saem juntos; a MESMA âncora sem aprovador, sem data ou sem layout resulta em NAO_MEDIDO — número presente não é âncora autorizada
                 - id: B-2
                   given: uma competência sem âncora no contrato
                   when: o contrato é carregado
-                  then: o resultado é NAO_MEDIDO, o veredito CHEGA à evidência antes da saída, e só então o processo sai com código 1
+                  then: RETORNA o veredito NAO_MEDIDO como valor — não grava nem encerra o processo; quem persiste é a evidência, e quem encerra é o orquestrador
               evals:
                 - id: eval_1
                   description: Cinco valores nomeados com procedência; sem aprovador ou data vira NAO_MEDIDO
                   bash: pytest -q tests/test_contrato.py -k "ancorada or sem_procedencia"
                   verifies: [B-1]
                 - id: eval_2
-                  description: Sem âncora recusa construir E grava o veredito na evidência
-                  bash: pytest -q tests/test_contrato.py -k "nao_medido or nao_medido_vira_evidencia"
+                  description: Sem âncora retorna NAO_MEDIDO como valor, sem escrever em disco
+                  bash: pytest -q tests/test_contrato.py -k "nao_medido and not evidencia"
                   verifies: [B-2]
                 - id: eval_3
                   description: A âncora carregada bate com o contrato em disco
@@ -195,25 +204,25 @@ seams:
                 - tests/test_leitura.py
               behavior:
                 - id: B-1
-                  given: o arquivo de uma competência
+                  given: o arquivo de uma competência e o layout declarado no contrato (posições, formato monetário, chave do registro)
                   when: a leitura termina
-                  then: o sha256 do arquivo é idêntico ao de antes
+                  then: o sha256 do arquivo é idêntico ao de antes, e cada campo lido vem da POSIÇÃO declarada — cabeçalho repetido não decide nada
                 - id: B-2
                   given: o arquivo de 2026-03, com um registro malformado
                   when: os registros são contados e a leitura termina
                   then: a contagem é 41719140 E o defeito sai com identidade do registro, valor original e posição — preservar no arquivo não basta se a informação some na interface
               evals:
                 - id: eval_1
-                  description: A fonte permanece byte-idêntica; o malformado não é corrigido
-                  bash: pytest -q tests/test_leitura.py -k "sha256 or preserva_defeito"
+                  description: Fonte byte-idêntica; leitura posicional com cabeçalho repetido
+                  bash: pytest -q tests/test_leitura.py -k "sha256 or posicional"
                   verifies: [B-1]
                 - id: eval_2
-                  description: Contagem bate com a âncora e o defeito atravessa até o juízo
-                  bash: pytest -q tests/test_leitura.py -k "contagem or defeito_atravessa"
+                  description: Contagem bate com a âncora e o defeito sai com identidade
+                  bash: pytest -q tests/test_leitura.py -k "contagem or defeito_identificado"
                   verifies: [B-2]
                 - id: eval_3
-                  description: R-6 — do início da leitura ao veredito em até 600 segundos
-                  bash: pytest -q tests/test_leitura.py -k tempo_ate_veredito
+                  description: R-6 — a leitura da competência completa em até 540 segundos
+                  bash: pytest -q tests/test_leitura.py -k tempo_de_leitura
                   verifies: [B-1, B-2]
               anti_patterns:
                 - action: escrever no arquivo de origem
@@ -245,11 +254,15 @@ seams:
       dado arredondado meio-para-cima leva o juízo a um VEREDITO diferente
       — total diferente não basta, porque o juízo poderia re-arredondar e
       anular a diferença (objeção C5).
-    decision_ids: [ADR-0001-HALF-EVEN]
+    decision_ids: [ADR-0001-HALF-EVEN, ADR-0004-ARREDONDA-NO-TOTAL]
     rejected_alternatives:
       - alternative: Usar ponto flutuante e arredondar no final
         reason: >-
           0.1 + 0.2 != 0.3 em binário; o centavo some sem nada acusar.
+      - alternative: Arredondar cada campo na entrada
+        reason: >-
+          Cada arredondamento é uma perda e elas somam — 2,345 + 2,345 dá
+          4,68 por campo contra 4,69 só no total, ambos meio-para-par.
     swimlane:
       id: LANE-AGREGACAO
       name: Agregação lane
@@ -284,17 +297,17 @@ seams:
                   when: o agregado é calculado
                   then: a entrada é recusada com erro explícito
                 - id: B-2
-                  given: valores em empate exato de arredondamento
-                  when: o total é calculado com meio-para-par
-                  then: o resultado difere do calculado com meio-para-cima
+                  given: valores em empate exato, um contexto decimal cujo default já é meio-para-par, e a alternativa de arredondar por campo
+                  when: o total é calculado
+                  then: o modo é passado EXPLICITAMENTE — um teste que troca o default do contexto para meio-para-cima falha se a implementação o herdar; e arredondar por campo produz total diferente (2,345+2,345 dá 4,68 por campo e 4,69 só no total), provando a granularidade do ADR 0004
               evals:
                 - id: eval_1
                   description: Float em campo monetário é recusado
                   bash: pytest -q tests/test_agregacao.py -k recusa_float
                   verifies: [B-1]
                 - id: eval_2
-                  description: Meio-para-par difere de meio-para-cima
-                  bash: pytest -q tests/test_agregacao.py -k half_even
+                  description: Modo explícito (falha se herdar o contexto) e granularidade do total
+                  bash: pytest -q tests/test_agregacao.py -k "modo_explicito or granularidade"
                   verifies: [B-2]
                 - id: eval_3
                   description: O total de 2026-03 reproduz a âncora medida
@@ -362,17 +375,17 @@ seams:
                 - tests/test_juizo.py
               behavior:
                 - id: B-1
-                  given: o arquivo da competência com UMA LINHA corrompida em um centavo
+                  given: o arquivo da competência com UMA LINHA corrompida, e um caso que redistribui valores mantendo soma e contagem
                   when: o pipeline roda de ponta a ponta e o juízo compara contra a âncora
-                  then: o veredito é recusado e o processo sai com código 1
+                  then: os CINCO controles são comparados individualmente (count_linhas, sum_vl_liquido, min, max, linhas_invalidas) e qualquer divergência recusa — soma e contagem iguais não bastam
                 - id: B-2
                   given: uma diferença sem classificação, e o mesmo dado agregado com meio-para-cima em vez de meio-para-par
                   when: o veredito é calculado
                   then: a primeira é UNRESOLVED e bloqueia; a segunda produz VEREDITO diferente — total diferente não basta, o juízo poderia re-arredondar e anular
               evals:
                 - id: eval_1
-                  description: Um centavo corrompido NA LINHA é recusado ponta a ponta
-                  bash: pytest -q tests/test_juizo.py -k um_centavo_na_linha
+                  description: Um centavo na linha recusa; extremos alterados com soma igual também
+                  bash: pytest -q tests/test_juizo.py -k "um_centavo_na_linha or cinco_controles"
                   verifies: [B-1]
                 - id: eval_2
                   description: Diferença não classificada bloqueia; arredondamento errado muda o veredito
@@ -400,7 +413,7 @@ seams:
     description: Separa o registro da prova da decisão que a produziu.
     evidence: [E-ANCORA-202603]
     responsibility: Gravar o veredito e os números de forma reconstruível.
-    consumes: [veredito classificado, veredito NAO_MEDIDO]
+    consumes: [veredito classificado]
     produces: [pacote de evidência]
     owner: evidencia
     independent_proof: >-
@@ -446,9 +459,9 @@ seams:
                   when: o pacote é lido de volta
                   then: o veredito é reconstruído sem reexecutar o pipeline
                 - id: B-2
-                  given: uma execução sem âncora
+                  given: qualquer veredito terminal — ACEITO, ACEITO_SEM_ANCORA ou NAO_MEDIDO
                   when: o pacote é gravado
-                  then: o veredito registrado é ACEITO_SEM_ANCORA
+                  then: o pacote existe e registra QUAL dos três foi, com os campos que existirem; NAO_MEDIDO grava sem agregado e nunca aparece como ACEITO
               evals:
                 - id: eval_1
                   description: O pacote reconstrói o veredito
@@ -542,6 +555,67 @@ objections:
       B-1 passou a corromper UMA LINHA do arquivo e rodar o pipeline ponta
       a ponta. O teste anterior passaria mesmo se a leitura descartasse a
       linha.
+  - id: OBJ-C8
+    status: FIXED
+    summary: >-
+      A execução sem âncora tinha dois vereditos incompatíveis — o contrato
+      mandava NAO_MEDIDO, a evidência esperava ACEITO_SEM_ANCORA.
+    owner: Bruno Nunes
+    rationale: >-
+      A evidência passou a gravar QUALQUER veredito terminal dos três,
+      registrando qual foi, com os campos que existirem. NAO_MEDIDO grava
+      sem agregado e nunca aparece como ACEITO.
+  - id: OBJ-C9
+    status: FIXED
+    summary: >-
+      O juízo não provava comparação dos cinco controles do ADR 0002 —
+      redistribuir valores mantendo soma e contagem alterava extremos sem
+      recusa.
+    owner: Bruno Nunes
+    rationale: >-
+      B-1 passou a exigir comparação individual dos cinco, com um caso que
+      mantém soma e contagem e ainda assim deve recusar.
+  - id: OBJ-C10
+    status: FIXED
+    summary: >-
+      O leitor consumia posições que o contrato não prometia fornecer;
+      contagem certa e hash inalterado não provam que a coluna certa foi
+      lida.
+    owner: Bruno Nunes
+    rationale: >-
+      O layout de leitura (posições, formato monetário, chave) virou parte
+      do contrato, e sua ausência resulta em NAO_MEDIDO. B-1 da leitura
+      exige leitura posicional mesmo com cabeçalho repetido.
+  - id: OBJ-C11
+    status: FIXED
+    summary: >-
+      Ciclo de construção: a primeira folha precisava provar gravação de
+      evidência, mas o gravador é a última tarefa.
+    owner: Bruno Nunes
+    rationale: >-
+      Defeito introduzido pela correção de C2. Separadas as
+      responsabilidades: o contrato RETORNA o veredito como valor, sem
+      gravar nem encerrar; quem persiste é a evidência. O eval de tempo da
+      leitura passou a medir só a leitura, não até o veredito.
+  - id: OBJ-C12
+    status: FIXED
+    summary: >-
+      A granularidade do arredondamento não estava reconciliada: 2,345 +
+      2,345 dá 4,68 por campo e 4,69 só no total, ambos HALF_EVEN.
+    owner: Bruno Nunes
+    rationale: >-
+      Registrado no ADR 0004 — arredonda uma vez, sobre o total final, e a
+      mesma granularidade vale para a medição da âncora. Contra-exemplo
+      verificado; com três valores o desvio dobra.
+  - id: OBJ-C13
+    status: FIXED
+    summary: >-
+      Comparar meio-para-par com meio-para-cima não detectava herança do
+      default — um contexto já configurado passaria, violando R-3.
+    owner: Bruno Nunes
+    rationale: >-
+      B-2 da agregação passou a exigir modo EXPLÍCITO, com um teste que
+      troca o default do contexto e falha se a implementação o herdar.
   - id: OBJ-C7
     status: FIXED
     summary: >-

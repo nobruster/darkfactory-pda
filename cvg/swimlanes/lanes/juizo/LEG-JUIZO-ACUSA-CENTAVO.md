@@ -1,6 +1,6 @@
 > Projetado de `LEG-JUIZO-ACUSA-CENTAVO.md` pelo Seamwise.
 > **Não edite aqui** — edite a recipe e rode `seamwise plan`.
-> origem sha256: `391f610ab2763b22c131de3eada8ded3d43b0aa6909e27d847b3180cd60ee902`
+> origem sha256: `d885c5f403cc2021f93777dac5f12948cac9b052db183421873fb6647ad11f8a`
 
 ---
 
@@ -42,9 +42,11 @@ tasks:
   - tests/test_juizo.py
   behavior:
   - id: B-1
-    given: o arquivo da competência com UMA LINHA corrompida em um centavo
+    given: o arquivo da competência com UMA LINHA corrompida, e um caso que redistribui valores mantendo
+      soma e contagem
     when: o pipeline roda de ponta a ponta e o juízo compara contra a âncora
-    then: o veredito é recusado e o processo sai com código 1
+    then: os CINCO controles são comparados individualmente (count_linhas, sum_vl_liquido, min, max, linhas_invalidas)
+      e qualquer divergência recusa — soma e contagem iguais não bastam
   - id: B-2
     given: uma diferença sem classificação, e o mesmo dado agregado com meio-para-cima em vez de meio-para-par
     when: o veredito é calculado
@@ -52,8 +54,8 @@ tasks:
       basta, o juízo poderia re-arredondar e anular
   evals:
   - id: eval_1
-    description: Um centavo corrompido NA LINHA é recusado ponta a ponta
-    bash: pytest -q tests/test_juizo.py -k um_centavo_na_linha
+    description: Um centavo na linha recusa; extremos alterados com soma igual também
+    bash: pytest -q tests/test_juizo.py -k "um_centavo_na_linha or cinco_controles"
     verifies:
     - B-1
   - id: eval_2
@@ -82,7 +84,7 @@ tasks:
   - contracts
   rollback: Remover o juízo e seus testes.
   observability: vereditos por classificação
-source_seam_sha256: ed493cacf515e84d9c5c1000b9183342c87d634f45175695f03a712eff6fab87
+source_seam_sha256: 7497edefad15d1f887d61f88e5d814f802e93c1f5dc891320410a038cc10a7f1
 ---
 # O juiz recusa um centavo de divergência
 

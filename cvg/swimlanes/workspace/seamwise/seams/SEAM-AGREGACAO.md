@@ -18,9 +18,13 @@ independent_proof: Ponto flutuante em campo monetário é recusado na entrada, e
   re-arredondar e anular a diferença (objeção C5).
 decision_ids:
 - ADR-0001-HALF-EVEN
+- ADR-0004-ARREDONDA-NO-TOTAL
 rejected_alternatives:
 - alternative: Usar ponto flutuante e arredondar no final
   reason: 0.1 + 0.2 != 0.3 em binário; o centavo some sem nada acusar.
+- alternative: Arredondar cada campo na entrada
+  reason: Cada arredondamento é uma perda e elas somam — 2,345 + 2,345 dá 4,68 por campo contra 4,69 só
+    no total, ambos meio-para-par.
 swimlane:
   id: LANE-AGREGACAO
   name: Agregação lane
@@ -59,9 +63,12 @@ swimlane:
         when: o agregado é calculado
         then: a entrada é recusada com erro explícito
       - id: B-2
-        given: valores em empate exato de arredondamento
-        when: o total é calculado com meio-para-par
-        then: o resultado difere do calculado com meio-para-cima
+        given: valores em empate exato, um contexto decimal cujo default já é meio-para-par, e a alternativa
+          de arredondar por campo
+        when: o total é calculado
+        then: o modo é passado EXPLICITAMENTE — um teste que troca o default do contexto para meio-para-cima
+          falha se a implementação o herdar; e arredondar por campo produz total diferente (2,345+2,345
+          dá 4,68 por campo e 4,69 só no total), provando a granularidade do ADR 0004
       evals:
       - id: eval_1
         description: Float em campo monetário é recusado
@@ -69,8 +76,8 @@ swimlane:
         verifies:
         - B-1
       - id: eval_2
-        description: Meio-para-par difere de meio-para-cima
-        bash: pytest -q tests/test_agregacao.py -k half_even
+        description: Modo explícito (falha se herdar o contexto) e granularidade do total
+        bash: pytest -q tests/test_agregacao.py -k "modo_explicito or granularidade"
         verifies:
         - B-2
       - id: eval_3
@@ -109,6 +116,7 @@ Ponto flutuante em campo monetário é recusado na entrada, e o mesmo dado arred
 ## Rejected alternatives
 
 - **Usar ponto flutuante e arredondar no final** — 0.1 + 0.2 != 0.3 em binário; o centavo some sem nada acusar.
+- **Arredondar cada campo na entrada** — Cada arredondamento é uma perda e elas somam — 2,345 + 2,345 dá 4,68 por campo contra 4,69 só no total, ambos meio-para-par.
 
 This derived seam is ready only while its cited evidence, named owner, contract,
 and rejected alternatives remain intact.

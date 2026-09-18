@@ -10,7 +10,6 @@ evidence:
 responsibility: Gravar o veredito e os números de forma reconstruível.
 consumes:
 - veredito classificado
-- veredito NAO_MEDIDO
 produces:
 - pacote de evidência
 owner: evidencia
@@ -59,9 +58,10 @@ swimlane:
         when: o pacote é lido de volta
         then: o veredito é reconstruído sem reexecutar o pipeline
       - id: B-2
-        given: uma execução sem âncora
+        given: qualquer veredito terminal — ACEITO, ACEITO_SEM_ANCORA ou NAO_MEDIDO
         when: o pacote é gravado
-        then: o veredito registrado é ACEITO_SEM_ANCORA
+        then: o pacote existe e registra QUAL dos três foi, com os campos que existirem; NAO_MEDIDO grava
+          sem agregado e nunca aparece como ACEITO
       evals:
       - id: eval_1
         description: O pacote reconstrói o veredito

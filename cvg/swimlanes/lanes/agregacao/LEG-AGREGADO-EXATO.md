@@ -1,6 +1,6 @@
 > Projetado de `LEG-AGREGADO-EXATO.md` pelo Seamwise.
 > **Não edite aqui** — edite a recipe e rode `seamwise plan`.
-> origem sha256: `0bd350aecb23bb3dffc4c2c69bf59294ff134b74fed4f93160497397b30e939c`
+> origem sha256: `c1669110aea457fc396b00e28f0bcf7f1c1d38a15cc8397da888adee41bcaf89`
 
 ---
 
@@ -42,9 +42,12 @@ tasks:
     when: o agregado é calculado
     then: a entrada é recusada com erro explícito
   - id: B-2
-    given: valores em empate exato de arredondamento
-    when: o total é calculado com meio-para-par
-    then: o resultado difere do calculado com meio-para-cima
+    given: valores em empate exato, um contexto decimal cujo default já é meio-para-par, e a alternativa
+      de arredondar por campo
+    when: o total é calculado
+    then: o modo é passado EXPLICITAMENTE — um teste que troca o default do contexto para meio-para-cima
+      falha se a implementação o herdar; e arredondar por campo produz total diferente (2,345+2,345 dá
+      4,68 por campo e 4,69 só no total), provando a granularidade do ADR 0004
   evals:
   - id: eval_1
     description: Float em campo monetário é recusado
@@ -52,8 +55,8 @@ tasks:
     verifies:
     - B-1
   - id: eval_2
-    description: Meio-para-par difere de meio-para-cima
-    bash: pytest -q tests/test_agregacao.py -k half_even
+    description: Modo explícito (falha se herdar o contexto) e granularidade do total
+    bash: pytest -q tests/test_agregacao.py -k "modo_explicito or granularidade"
     verifies:
     - B-2
   - id: eval_3
@@ -76,7 +79,7 @@ tasks:
   - cvg/docs/adrs
   rollback: Remover o agregador e seus testes.
   observability: total agregado por competência
-source_seam_sha256: e1d2085c6a796c122dce56dcfc7500649e108918cbb871bf68ad8382978fe363
+source_seam_sha256: dfd5a4abbf50b33e7034e72de928ba28629e2871c75c3f77c65141ebf664214f
 ---
 # O agregado é exato e recusa float
 

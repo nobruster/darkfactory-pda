@@ -1,58 +1,58 @@
 schema_version: 1
 status: DELIVERY_PLAN=READY
-seam_map_sha256: dff683930761d62e4dfd2017c4e9d70761624e7e3c0c17da630bca72069e7501
+seam_map_sha256: 13f8b32bae341fbc1e44636125cc78043e0ab11d8364b5e8512a769a914d35c3
 swimlanes:
 - id: LANE-CONTRATO
   seam_id: SEAM-CONTRATO-ANCORA
   owner: contrato
   path: seamwise/swimlanes/LANE-CONTRATO.md
-  sha256: b376a44d9aa8ffb1fadb68499620ef968bd3155ffcdf612efd8d177f3eb18708
+  sha256: a68e6ecee8db3ffee4e218806b137bfceaf96e8098652dc30390cf8d7b2759c1
 - id: LANE-LEITURA
   seam_id: SEAM-LEITURA
   owner: leitura
   path: seamwise/swimlanes/LANE-LEITURA.md
-  sha256: fbf49b2626ffcdf34afb048b7dbb1f6571b467c4541c8f2eda0052b8131227d4
+  sha256: fc07ebeef4f4d43819bd58c7824ec0ec2a7b5fdce2cd1a3f1d52e36ecc0b3e63
 - id: LANE-AGREGACAO
   seam_id: SEAM-AGREGACAO
   owner: agregacao
   path: seamwise/swimlanes/LANE-AGREGACAO.md
-  sha256: 0aa0d00cde3a8c68629fb644817d984a7111897c461e8ef6eacf4adeb4007996
+  sha256: 22dd3349d37586b0dda78e9b6dd7cd856e31d14923a342c74812c5ff1ab84ee7
 - id: LANE-JUIZO
   seam_id: SEAM-JUIZO
   owner: juizo
   path: seamwise/swimlanes/LANE-JUIZO.md
-  sha256: 85237a34015bfe8ddcaebd7ab21a86993f774dfe48119c028508da365cd06ff8
+  sha256: 6d76b9f1171d2c75721d12cf1f3e5e3f34df4d6ac307bf07da4b84e0d015f2a7
 - id: LANE-EVIDENCIA
   seam_id: SEAM-EVIDENCIA
   owner: evidencia
   path: seamwise/swimlanes/LANE-EVIDENCIA.md
-  sha256: dee7291e70e2656b297cf648c2ff18da315f40b0d8147ed00d02b5058a4ddc8f
+  sha256: 14b7cdaca7c350f985ce19b9675af3d13a071365143a26ed26855383307e66d9
 legs:
 - id: LEG-CONTRATO-RECUSA-SEM-ANCORA
   seam_id: SEAM-CONTRATO-ANCORA
   swimlane_id: LANE-CONTRATO
   path: seamwise/legs/LEG-CONTRATO-RECUSA-SEM-ANCORA.md
-  sha256: 060ea64f257cc12265db0f5fbe36e02aa66b7c2e4ac94cba32d12506b9cf1a18
+  sha256: dbcfed62586decd33167241f078427f01ca352011195d63353e0f17d35b23701
 - id: LEG-LEITURA-NAO-ALTERA-FONTE
   seam_id: SEAM-LEITURA
   swimlane_id: LANE-LEITURA
   path: seamwise/legs/LEG-LEITURA-NAO-ALTERA-FONTE.md
-  sha256: 226e96854b0af182af3d92370150a8328b67440c471ba6e6083df82bc70345db
+  sha256: a9d7d2a732572cf8af9f90599173acb7c467ed5c0378dc23f6074862da6d17f8
 - id: LEG-AGREGADO-EXATO
   seam_id: SEAM-AGREGACAO
   swimlane_id: LANE-AGREGACAO
   path: seamwise/legs/LEG-AGREGADO-EXATO.md
-  sha256: 0bd350aecb23bb3dffc4c2c69bf59294ff134b74fed4f93160497397b30e939c
+  sha256: c1669110aea457fc396b00e28f0bcf7f1c1d38a15cc8397da888adee41bcaf89
 - id: LEG-JUIZO-ACUSA-CENTAVO
   seam_id: SEAM-JUIZO
   swimlane_id: LANE-JUIZO
   path: seamwise/legs/LEG-JUIZO-ACUSA-CENTAVO.md
-  sha256: 391f610ab2763b22c131de3eada8ded3d43b0aa6909e27d847b3180cd60ee902
+  sha256: d885c5f403cc2021f93777dac5f12948cac9b052db183421873fb6647ad11f8a
 - id: LEG-EVIDENCIA-RECONSTROI
   seam_id: SEAM-EVIDENCIA
   swimlane_id: LANE-EVIDENCIA
   path: seamwise/legs/LEG-EVIDENCIA-RECONSTROI.md
-  sha256: db14c76aa03e581be552dca946d45de3301aca15dd10db5aaac5b25c986bb185
+  sha256: 84ed8680bd18a367b21971d45245f54396c7b6130832bff8b59376abba08efb5
 steel_thread:
 - LEG-CONTRATO-RECUSA-SEM-ANCORA
 - LEG-LEITURA-NAO-ALTERA-FONTE
@@ -101,6 +101,49 @@ objections:
   owner: Bruno Nunes
   rationale: B-1 passou a corromper UMA LINHA do arquivo e rodar o pipeline ponta a ponta. O teste anterior
     passaria mesmo se a leitura descartasse a linha.
+- id: OBJ-C8
+  status: FIXED
+  summary: A execução sem âncora tinha dois vereditos incompatíveis — o contrato mandava NAO_MEDIDO, a
+    evidência esperava ACEITO_SEM_ANCORA.
+  owner: Bruno Nunes
+  rationale: A evidência passou a gravar QUALQUER veredito terminal dos três, registrando qual foi, com
+    os campos que existirem. NAO_MEDIDO grava sem agregado e nunca aparece como ACEITO.
+- id: OBJ-C9
+  status: FIXED
+  summary: O juízo não provava comparação dos cinco controles do ADR 0002 — redistribuir valores mantendo
+    soma e contagem alterava extremos sem recusa.
+  owner: Bruno Nunes
+  rationale: B-1 passou a exigir comparação individual dos cinco, com um caso que mantém soma e contagem
+    e ainda assim deve recusar.
+- id: OBJ-C10
+  status: FIXED
+  summary: O leitor consumia posições que o contrato não prometia fornecer; contagem certa e hash inalterado
+    não provam que a coluna certa foi lida.
+  owner: Bruno Nunes
+  rationale: O layout de leitura (posições, formato monetário, chave) virou parte do contrato, e sua ausência
+    resulta em NAO_MEDIDO. B-1 da leitura exige leitura posicional mesmo com cabeçalho repetido.
+- id: OBJ-C11
+  status: FIXED
+  summary: 'Ciclo de construção: a primeira folha precisava provar gravação de evidência, mas o gravador
+    é a última tarefa.'
+  owner: Bruno Nunes
+  rationale: 'Defeito introduzido pela correção de C2. Separadas as responsabilidades: o contrato RETORNA
+    o veredito como valor, sem gravar nem encerrar; quem persiste é a evidência. O eval de tempo da leitura
+    passou a medir só a leitura, não até o veredito.'
+- id: OBJ-C12
+  status: FIXED
+  summary: 'A granularidade do arredondamento não estava reconciliada: 2,345 + 2,345 dá 4,68 por campo
+    e 4,69 só no total, ambos HALF_EVEN.'
+  owner: Bruno Nunes
+  rationale: Registrado no ADR 0004 — arredonda uma vez, sobre o total final, e a mesma granularidade
+    vale para a medição da âncora. Contra-exemplo verificado; com três valores o desvio dobra.
+- id: OBJ-C13
+  status: FIXED
+  summary: Comparar meio-para-par com meio-para-cima não detectava herança do default — um contexto já
+    configurado passaria, violando R-3.
+  owner: Bruno Nunes
+  rationale: B-2 da agregação passou a exigir modo EXPLÍCITO, com um teste que troca o default do contexto
+    e falha se a implementação o herdar.
 - id: OBJ-C7
   status: FIXED
   summary: R-6 (10 minutos) não tinha prova nem responsável — tudo passaria com a competência levando
@@ -111,4 +154,4 @@ objections:
 contentions: []
 steel_thread_path: seamwise/steel-thread.md
 steel_thread_sha256: 7bf8287daa939642e1b5b039f612f99d98203a1280919ccd775a7928e2795420
-review_authority_sha256: aba862814aef8ff904e74587af5b77cb36718c6ab1c3507ed1cda29254eec4e7
+review_authority_sha256: ebe00cb16081654e9637175e1f9bc5971ab2904c3ae574a29c02ba902b96fc6a

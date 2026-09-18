@@ -56,9 +56,11 @@ swimlane:
       - tests/test_leitura.py
       behavior:
       - id: B-1
-        given: o arquivo de uma competência
+        given: o arquivo de uma competência e o layout declarado no contrato (posições, formato monetário,
+          chave do registro)
         when: a leitura termina
-        then: o sha256 do arquivo é idêntico ao de antes
+        then: o sha256 do arquivo é idêntico ao de antes, e cada campo lido vem da POSIÇÃO declarada —
+          cabeçalho repetido não decide nada
       - id: B-2
         given: o arquivo de 2026-03, com um registro malformado
         when: os registros são contados e a leitura termina
@@ -66,18 +68,18 @@ swimlane:
           — preservar no arquivo não basta se a informação some na interface
       evals:
       - id: eval_1
-        description: A fonte permanece byte-idêntica; o malformado não é corrigido
-        bash: pytest -q tests/test_leitura.py -k "sha256 or preserva_defeito"
+        description: Fonte byte-idêntica; leitura posicional com cabeçalho repetido
+        bash: pytest -q tests/test_leitura.py -k "sha256 or posicional"
         verifies:
         - B-1
       - id: eval_2
-        description: Contagem bate com a âncora e o defeito atravessa até o juízo
-        bash: pytest -q tests/test_leitura.py -k "contagem or defeito_atravessa"
+        description: Contagem bate com a âncora e o defeito sai com identidade
+        bash: pytest -q tests/test_leitura.py -k "contagem or defeito_identificado"
         verifies:
         - B-2
       - id: eval_3
-        description: R-6 — do início da leitura ao veredito em até 600 segundos
-        bash: pytest -q tests/test_leitura.py -k tempo_ate_veredito
+        description: R-6 — a leitura da competência completa em até 540 segundos
+        bash: pytest -q tests/test_leitura.py -k tempo_de_leitura
         verifies:
         - B-1
         - B-2

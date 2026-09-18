@@ -1,6 +1,6 @@
 > Projetado de `LEG-LEITURA-NAO-ALTERA-FONTE.md` pelo Seamwise.
 > **Não edite aqui** — edite a recipe e rode `seamwise plan`.
-> origem sha256: `226e96854b0af182af3d92370150a8328b67440c471ba6e6083df82bc70345db`
+> origem sha256: `a9d7d2a732572cf8af9f90599173acb7c467ed5c0378dc23f6074862da6d17f8`
 
 ---
 
@@ -40,9 +40,11 @@ tasks:
   - tests/test_leitura.py
   behavior:
   - id: B-1
-    given: o arquivo de uma competência
+    given: o arquivo de uma competência e o layout declarado no contrato (posições, formato monetário,
+      chave do registro)
     when: a leitura termina
-    then: o sha256 do arquivo é idêntico ao de antes
+    then: o sha256 do arquivo é idêntico ao de antes, e cada campo lido vem da POSIÇÃO declarada — cabeçalho
+      repetido não decide nada
   - id: B-2
     given: o arquivo de 2026-03, com um registro malformado
     when: os registros são contados e a leitura termina
@@ -50,18 +52,18 @@ tasks:
       preservar no arquivo não basta se a informação some na interface
   evals:
   - id: eval_1
-    description: A fonte permanece byte-idêntica; o malformado não é corrigido
-    bash: pytest -q tests/test_leitura.py -k "sha256 or preserva_defeito"
+    description: Fonte byte-idêntica; leitura posicional com cabeçalho repetido
+    bash: pytest -q tests/test_leitura.py -k "sha256 or posicional"
     verifies:
     - B-1
   - id: eval_2
-    description: Contagem bate com a âncora e o defeito atravessa até o juízo
-    bash: pytest -q tests/test_leitura.py -k "contagem or defeito_atravessa"
+    description: Contagem bate com a âncora e o defeito sai com identidade
+    bash: pytest -q tests/test_leitura.py -k "contagem or defeito_identificado"
     verifies:
     - B-2
   - id: eval_3
-    description: R-6 — do início da leitura ao veredito em até 600 segundos
-    bash: pytest -q tests/test_leitura.py -k tempo_ate_veredito
+    description: R-6 — a leitura da competência completa em até 540 segundos
+    bash: pytest -q tests/test_leitura.py -k tempo_de_leitura
     verifies:
     - B-1
     - B-2
@@ -81,7 +83,7 @@ tasks:
   observability: contagem de registros lidos por competência, defeitos observados por tipo, e segundos
     do início da leitura ao veredito (o limite de R-6, sem o qual tudo passa mesmo levando horas — objeção
     C7)
-source_seam_sha256: 35fc90700abd4f23b193f6c146579dc7d35c0a503edc77e5d7eac87040add772
+source_seam_sha256: ef9c8c7d1e884645427f53da7e3dc72fd2e56e8c15eee81cb9c218b6aabcebe0
 ---
 # A leitura não altera a fonte e conta o esperado
 

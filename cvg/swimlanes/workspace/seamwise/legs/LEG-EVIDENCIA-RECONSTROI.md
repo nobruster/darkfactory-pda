@@ -36,9 +36,10 @@ tasks:
     when: o pacote é lido de volta
     then: o veredito é reconstruído sem reexecutar o pipeline
   - id: B-2
-    given: uma execução sem âncora
+    given: qualquer veredito terminal — ACEITO, ACEITO_SEM_ANCORA ou NAO_MEDIDO
     when: o pacote é gravado
-    then: o veredito registrado é ACEITO_SEM_ANCORA
+    then: o pacote existe e registra QUAL dos três foi, com os campos que existirem; NAO_MEDIDO grava
+      sem agregado e nunca aparece como ACEITO
   evals:
   - id: eval_1
     description: O pacote reconstrói o veredito
@@ -70,7 +71,7 @@ tasks:
   - evidence
   rollback: Remover o gravador de evidência e seus testes.
   observability: pacotes gravados por competência
-source_seam_sha256: 36114cef37620e56132da3210491f8c52ea2ebe04c2261eb32e772767af45b8d
+source_seam_sha256: 279131ef092b8911d47caea44db659e6b36c26a8406ebb1e52a043eb52abcbfa
 ---
 # O pacote reconstrói o veredito sem reexecutar
 
