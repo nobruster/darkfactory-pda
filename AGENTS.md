@@ -5,6 +5,10 @@ Leia isto antes de alterar qualquer coisa neste repositório.
 Este arquivo vale para qualquer agente que opere aqui — Hermes, Claude Code,
 Codex, Cursor. O `CLAUDE.md` aponta para cá.
 
+> 📍 **Onde paramos:** Pass 4 fechado (`CHECK_CONSENSUS=OK`), próximo é o
+> Pass 5 · Tasking. Detalhes em **[Onde a descida está agora](#onde-a-descida-está-agora)**
+> e em [`cvg/ESTADO.md`](cvg/ESTADO.md).
+
 ---
 
 ## O que este repositório é
@@ -44,13 +48,45 @@ Registra o passe atual, o veredito de cada gate, e o que falta.
 ⚠️ **O `[+]` do conductor não é veredito.** `cvg next` confere que o arquivo
 existe; quem decide é o gate de cada passe. Ver `converge/README.md:166`.
 
-Para rodar qualquer passe — **de dentro do WSL**:
+### Como retomar
+
+**De dentro do WSL** — o motor é bash de Linux e precisa de `shellcheck`:
 
 ```bash
 export PATH="$HOME/.local/bin:$PATH"
 export CVG_TASKSPEC_BIN="$PWD/task-spec-3.8.1/bin/taskspec"
+converge/bin/cvg doctor host     # precisa dizer DOCTOR_HOST=OK
 converge/bin/cvg next --guided
 ```
+
+O ambiente já está montado nesta máquina. O que existe e por quê:
+
+| | Onde | Por quê |
+|---|---|---|
+| Node v22.11.0 + npm | `~/.local` | não há Node de Linux; instalado sem `sudo` |
+| `codex` (openai) | `~/.local/bin` | o adversário **cross-family** que o Pass 4 exige |
+| `claude` CLI | `~/.local/bin` | o segundo engine (o doctor exige ≥ 2) |
+| `OPENAI_API_KEY` | `~/.profile` | o `.bashrc` do Ubuntu sai na linha 8 quando não é interativo |
+| `~/.codex/auth.json` | — | gravado por `printenv OPENAI_API_KEY \| codex login --with-api-key` |
+
+⚠️ **Antes de despachar o adversário**, rode a ponte — senão ele ataca o
+vazio:
+
+```bash
+python3 fabrica/ponte/lanes_para_converge.py --check \
+  --de cvg/swimlanes/workspace/seamwise/swimlanes --para cvg/swimlanes/lanes
+```
+
+### Armadilhas que custaram tempo aqui
+
+| Sintoma | Causa |
+|---|---|
+| `map` falha mas `plan`/`compile` ficam verdes | usaram o mapa antigo — **verde pelo motivo errado** |
+| `seamwise` grava em `seamwise/` mesmo com `--workspace` | mover os artefatos de volta a cada ciclo; `git status seamwise/` tem de ficar vazio |
+| `capability_producer_ambiguous` | dois produtores do mesmo estado — só um pode produzir |
+| `write_surface_too_large` | `S` permite 2 caminhos, `M` permite 3 |
+| behavior/evals/anti_patterns | `minItems` **e** `maxItems` iguais: 2/3/3, exatos |
+| YAML: `ex.:` ou valor entre aspas | vira mapa ou string citada e o `map` falha |
 
 ---
 
