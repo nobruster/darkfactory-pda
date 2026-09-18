@@ -1,0 +1,196 @@
+{
+  "schema_version": "1.0",
+  "pass": "4-consensus",
+  "adversary": {
+    "engine_id": "codex",
+    "model": "codex",
+    "family": "openai",
+    "engine_version": "codex-cli 0.155.0",
+    "sandbox_mode": "read-only"
+  },
+  "author": {
+    "model": "claude",
+    "family": "anthropic"
+  },
+  "verdict": "REVISE",
+  "prompt_sha256": "b8d72dfb031c55adfbfe6a8adcb2aff395410fba2c50f994906e3507aafe8fd6",
+  "inputs": [
+    {
+      "path": "agregacao/LEG-AGREGADO-EXATO.md",
+      "sha256": "1b5e4683a35fa4f15c1b4ef185be923d8a1cc85578d895510ddd9698b382b422"
+    },
+    {
+      "path": "agregacao/_lane.md",
+      "sha256": "ff838b3fa3e7117792e25a65d859c2a94a7e872df597188bbff15e7340941c63"
+    },
+    {
+      "path": "contrato/LEG-CONTRATO-RECUSA-SEM-ANCORA.md",
+      "sha256": "2fc23dd7207cf028616f50bd4cdf2736c0d17d0040ee7c156fa5701427b3c2ff"
+    },
+    {
+      "path": "contrato/_lane.md",
+      "sha256": "011ed661753cb89262dbd7a4c93c9d0357512ec5b34bb7b655174f4ff3b4eb91"
+    },
+    {
+      "path": "evidencia/LEG-EVIDENCIA-RECONSTROI.md",
+      "sha256": "444f0e3380e59abd71fef942169c82bf2cd3f7b612ccefb7df9169f748d8fe97"
+    },
+    {
+      "path": "evidencia/_lane.md",
+      "sha256": "545a262805aebb8c4a0e8de0eb05a91d1d8466f507482be1ee8a649634db96d2"
+    },
+    {
+      "path": "juizo/LEG-JUIZO-ACUSA-CENTAVO.md",
+      "sha256": "3efe112d1b9396196399399337b6ceabb7ade5507a75248778032c04ae42f3e1"
+    },
+    {
+      "path": "juizo/_lane.md",
+      "sha256": "f88cdfe83ca7af6936ed337aca862ef8ff23529204aec8c85f5a9a8f282455e1"
+    },
+    {
+      "path": "leitura/LEG-LEITURA-NAO-ALTERA-FONTE.md",
+      "sha256": "0ebeecf4199df3c45a2149c1f587cd1a6b3efcb3fcaccba57cde8965a8713500"
+    },
+    {
+      "path": "leitura/_lane.md",
+      "sha256": "ed5362b787dc032c0e7fafd9a2ed7968951e130c4c92e32086eb3af01d049e72"
+    },
+    {
+      "path": "orquestracao/LEG-DESFECHO-SEMPRE-COM-PACOTE.md",
+      "sha256": "951075465f970aa01e6ffbef020275ee853c550aa32ec63fa8bf56950e4aab68"
+    },
+    {
+      "path": "orquestracao/_lane.md",
+      "sha256": "4c00d44496849c4372956d6f61f18a5022b0cc6ce36bca732491285196668d7f"
+    }
+  ],
+  "objections": [
+    {
+      "id": "C41",
+      "severity": "high",
+      "rank": 1,
+      "attack_class": "unverified-assumption",
+      "swimlane": "LANE-CONTRATO",
+      "leg": "LEG-CONTRATO-RECUSA-SEM-ANCORA",
+      "location": {
+        "plan_file": "cvg/swimlanes/lanes/contrato/LEG-CONTRATO-RECUSA-SEM-ANCORA.md",
+        "section": "tasks[T-20260917-contrato-ancora].behavior[B-1], evals[eval_3], creates_paths"
+      },
+      "title": "A execu\u00e7\u00e3o depende de um contrato e de uma fonte sem entrega identificada",
+      "body": "O carregador pressup\u00f5e contrato em disco com layout posicional, \u00e2ncora e proced\u00eancia, mas a tarefa entrega somente m\u00f3dulo e testes. N\u00e3o h\u00e1 contratos, fonte mensal ou layout nos caminhos contracts/ e _raw/ consultados neste workspace. O ADR 0002 aponta para artefatos de outro reposit\u00f3rio e pro\u00edbe tratar a c\u00f3pia do n\u00famero como prova suficiente. As tarefas de leitura e agrega\u00e7\u00e3o exigem reproduzir os 41.719.140 registros e a \u00e2ncora real, sem identificar como esses insumos estar\u00e3o dispon\u00edveis. No build, a prova de integra\u00e7\u00e3o pode ficar inexequ\u00edvel ou ser substitu\u00edda por uma fixture que apenas repete os n\u00fameros esperados. A disponibilidade desses insumos \u00e9 uma quest\u00e3o aberta de Pass 3, n\u00e3o autoriza\u00e7\u00e3o para gerar uma \u00e2ncora.",
+      "evidence": "B-1 exige 'layout de leitura (posi\u00e7\u00f5es, formato monet\u00e1rio, chave do registro)'; eval_3 exige 'A \u00e2ncora carregada bate com o contrato em disco'. A leitura exige o arquivo de 2026-03; a agrega\u00e7\u00e3o exige total_ancora.",
+      "cites": [
+        "cvg/docs/tech-spec/tech-spec-exemplo-fabrica.md \u00a7 Data named e R-1",
+        "cvg/docs/adrs/0002-the-first-anchor-is-competencia-2026-03-measured-at-source.md \u00a7 Evidence e Consequences",
+        "cvg/swimlanes/lanes/leitura/LEG-LEITURA-NAO-ALTERA-FONTE.md \u00a7 behavior B-1/B-2",
+        "cvg/swimlanes/lanes/agregacao/LEG-AGREGADO-EXATO.md \u00a7 eval_3"
+      ],
+      "proposal": null
+    },
+    {
+      "id": "C42",
+      "severity": "high",
+      "rank": 2,
+      "attack_class": "cross-lane-interface",
+      "swimlane": "LANE-EVIDENCIA",
+      "leg": "LEG-EVIDENCIA-RECONSTROI",
+      "location": {
+        "plan_file": "cvg/swimlanes/lanes/evidencia/LEG-EVIDENCIA-RECONSTROI.md",
+        "section": "done_condition; behavior B-1/B-2"
+      },
+      "title": "O pacote n\u00e3o promete os dados que explicam uma reprova\u00e7\u00e3o por tempo",
+      "body": "A orquestra\u00e7\u00e3o acrescenta uma decis\u00e3o bloqueante quando o total excede 600s. O contrato do pacote promete \u00e2ncora, agregado, classifica\u00e7\u00f5es, veredito e causa, mas n\u00e3o promete a dura\u00e7\u00e3o observada nem a regra temporal aplicada. Uma execu\u00e7\u00e3o de 650s pode ter os mesmos cinco controles e classifica\u00e7\u00f5es de uma execu\u00e7\u00e3o aceita de 550s. Com os campos exigidos, ler RECUSADO apenas repete a decis\u00e3o armazenada; n\u00e3o permite reconstruir por que ela ocorreu. Tamb\u00e9m n\u00e3o est\u00e1 definido qual veredito e causa representam esse caso sem diverg\u00eancia dos controles.",
+      "evidence": "Evid\u00eancia: 'O pacote cont\u00e9m veredito, \u00e2ncora, agregado e classifica\u00e7\u00f5es'. Orquestra\u00e7\u00e3o B-2: 'R-6 reprova acima de 600s no TOTAL'.",
+      "cites": [
+        "cvg/docs/tech-spec/tech-spec-exemplo-fabrica.md \u00a7 R-6 e R-7",
+        "cvg/docs/adrs/0005-no-anchor-runs-end-as-aceito-sem-ancora-with-nao-medido-as-the-internal-cause.md \u00a7 Consequences",
+        "cvg/swimlanes/lanes/orquestracao/LEG-DESFECHO-SEMPRE-COM-PACOTE.md \u00a7 behavior B-2"
+      ],
+      "proposal": null
+    },
+    {
+      "id": "C43",
+      "severity": "high",
+      "rank": 3,
+      "attack_class": "drift",
+      "swimlane": "LANE-JUIZO",
+      "leg": "LEG-JUIZO-ACUSA-CENTAVO",
+      "location": {
+        "plan_file": "cvg/swimlanes/lanes/juizo/LEG-JUIZO-ACUSA-CENTAVO.md",
+        "section": "done_condition; behavior B-2; evals eval_2/ eval_3"
+      },
+      "title": "Testar as seis classes n\u00e3o prova cobertura de todos os defeitos",
+      "body": "A done_condition promete bloquear diferen\u00e7a sem classifica\u00e7\u00e3o. Entretanto, os exemplos fornecem diferen\u00e7as j\u00e1 classificadas e os evals verificam a pol\u00edtica das seis classes e sua exclusividade. Nenhum cen\u00e1rio expl\u00edcito retira a classifica\u00e7\u00e3o de um defeito observado ou fornece duas classifica\u00e7\u00f5es para a mesma identidade. Um juiz que percorra apenas a lista de classifica\u00e7\u00f5es recebida pode ignorar um defeito omitido e passar nos cen\u00e1rios descritos. A exclusividade de uma enumera\u00e7\u00e3o n\u00e3o demonstra a correspond\u00eancia exata entre defeitos observados e decis\u00f5es de classifica\u00e7\u00e3o.",
+      "evidence": "B-2 come\u00e7a com 'uma diferen\u00e7a de cada uma das seis classifica\u00e7\u00f5es'; eval_3 diz 'As seis s\u00e3o exaustivas e exclusivas', enquanto a done_condition exige 'diferen\u00e7a sem classifica\u00e7\u00e3o bloqueia a publica\u00e7\u00e3o'.",
+      "cites": [
+        "cvg/docs/tech-spec/tech-spec-exemplo-fabrica.md \u00a7 R-2",
+        "AGENTS.md \u00a7 Regra 4",
+        "cvg/swimlanes/lanes/leitura/LEG-LEITURA-NAO-ALTERA-FONTE.md \u00a7 behavior B-2"
+      ],
+      "proposal": null
+    },
+    {
+      "id": "C44",
+      "severity": "medium",
+      "rank": 4,
+      "attack_class": "build-order",
+      "swimlane": "LANE-JUIZO",
+      "leg": "LEG-JUIZO-ACUSA-CENTAVO",
+      "location": {
+        "plan_file": "cvg/swimlanes/lanes/juizo/LEG-JUIZO-ACUSA-CENTAVO.md",
+        "section": "proof; behavior B-1; depends_on; eval_1"
+      },
+      "title": "A prova ponta a ponta antecede a tarefa que entrega o fluxo",
+      "body": "A tarefa do ju\u00edzo exige executar o pipeline ponta a ponta, mas depende somente da agrega\u00e7\u00e3o. O m\u00f3dulo que conduz a execu\u00e7\u00e3o ser\u00e1 entregue depois: orquestra\u00e7\u00e3o depende de evid\u00eancia, que depende do pr\u00f3prio ju\u00edzo. Se o teste usar o fluxo real planejado, depende de um artefato futuro; se montar um encadeamento pr\u00f3prio, pode passar sem testar o caminho que efetivamente decide publica\u00e7\u00e3o. N\u00e3o h\u00e1 ciclo formal no grafo declarado, mas existe uma depend\u00eancia de valida\u00e7\u00e3o n\u00e3o resolvida. A independ\u00eancia da prova desta folha permanece amb\u00edgua.",
+      "evidence": "Ju\u00edzo: 'o pipeline roda de ponta a ponta'; depends_on cont\u00e9m apenas T-20260917-agregacao-exata. Orquestra\u00e7\u00e3o: 'Dar dono ao fluxo', com depend\u00eancia de T-20260917-evidencia-packet.",
+      "cites": [
+        "cvg/docs/tech-spec/tech-spec-exemplo-fabrica.md \u00a7 R-5",
+        "cvg/swimlanes/lanes/evidencia/LEG-EVIDENCIA-RECONSTROI.md \u00a7 depends_on",
+        "cvg/swimlanes/lanes/orquestracao/LEG-DESFECHO-SEMPRE-COM-PACOTE.md \u00a7 goal, creates_paths e depends_on"
+      ],
+      "proposal": null
+    },
+    {
+      "id": "C45",
+      "severity": "medium",
+      "rank": 5,
+      "attack_class": "cross-lane-interface",
+      "swimlane": "LANE-AGREGACAO",
+      "leg": "LEG-AGREGADO-EXATO",
+      "location": {
+        "plan_file": "cvg/swimlanes/lanes/agregacao/LEG-AGREGADO-EXATO.md",
+        "section": "behavior B-1; eval_1"
+      },
+      "title": "O caminho de float recusado tamb\u00e9m exige devolver um agregado",
+      "body": "B-1 re\u00fane, para a mesma entrada float, recusa com erro expl\u00edcito e devolu\u00e7\u00e3o de agregado com cinco controles. N\u00e3o define se esse agregado \u00e9 parcial, se o erro \u00e9 um valor ou uma exce\u00e7\u00e3o, nem quais controles ainda existem ap\u00f3s a recusa. Uma implementa\u00e7\u00e3o que interrompa corretamente a agrega\u00e7\u00e3o viola a devolu\u00e7\u00e3o exigida; outra que devolva controles parciais pode permitir que consumidores os tratem como completos. A evid\u00eancia exige marcar campos n\u00e3o produzidos como ausentes, o que torna essa ambiguidade observ\u00e1vel entre as lanes.",
+      "evidence": "B-1: 'a entrada \u00e9 recusada com erro expl\u00edcito, e o agregado devolvido traz os CINCO controles nomeados'. Evid\u00eancia B-1: campos inexistentes s\u00e3o 'AUSENTES', nunca valores artificiais.",
+      "cites": [
+        "cvg/docs/tech-spec/tech-spec-exemplo-fabrica.md \u00a7 R-3",
+        "cvg/docs/adrs/0001-money-rounds-half-to-even-at-two-decimals.md \u00a7 Decision",
+        "cvg/swimlanes/lanes/evidencia/LEG-EVIDENCIA-RECONSTROI.md \u00a7 behavior B-1"
+      ],
+      "proposal": null
+    }
+  ],
+  "cross_lane_interfaces": [],
+  "fork": {
+    "choice": "B",
+    "reason": "Escolha preexistente reproduzida dos seis arquivos _lane.md; n\u00e3o decidida pelo advers\u00e1rio.",
+    "per_plan_declared": true
+  },
+  "open_questions": [
+    {
+      "q": "C41: quais artefatos autorizados fornecem o contrato, o layout e a fonte de 2026-03 para as provas reais neste workspace?",
+      "blocks_build": true
+    },
+    {
+      "q": "C42: qual veredito e causa representam controles corretos com dura\u00e7\u00e3o superior a 600s, e quais dados do pacote permitem reconstruir essa decis\u00e3o?",
+      "blocks_build": true
+    },
+    {
+      "q": "O schema exige FIX ou ACCEPT com assinatura humana j\u00e1 no log adversarial. Como representar obje\u00e7\u00f5es ainda abertas sem fabricar consentimento?",
+      "blocks_build": true
+    }
+  ],
+  "rounds_run": 1
+}
