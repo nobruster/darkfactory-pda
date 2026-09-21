@@ -25,12 +25,13 @@ security_class: (none)
 source_action_item: (none)
 tracker_ref: (none)
 execution_backend: any
-signed_off: false
-signed_off_by: (none)
-signed_off_at: (none)
+signed_off: true
+signed_off_by: nobru
+signed_off_at: 2026-09-21T17:56:55Z
 accepted: false
 accepted_by: (none)
 accepted_at: (none)
+signed_off_sig: hmac-sha256-v3:42572d07:415e6405220aa6c0739d4a45ea74729ca295f70b3ff8978ab6a3791f0d6c7652
 ---
 
 # Ler a competência sem alterar a fonte

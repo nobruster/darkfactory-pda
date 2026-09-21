@@ -25,12 +25,13 @@ security_class: (none)
 source_action_item: (none)
 tracker_ref: (none)
 execution_backend: any
-signed_off: false
-signed_off_by: (none)
-signed_off_at: (none)
+signed_off: true
+signed_off_by: nobru
+signed_off_at: 2026-09-21T17:56:52Z
 accepted: false
 accepted_by: (none)
 accepted_at: (none)
+signed_off_sig: hmac-sha256-v3:42572d07:91ce63a6386106f969ceb35394ffd7ef8a68a118e0ce395cb797c5aca552478f
 ---
 
 # Somar valores monetários com meio-para-par

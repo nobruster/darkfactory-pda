@@ -25,12 +25,13 @@ security_class: (none)
 source_action_item: (none)
 tracker_ref: (none)
 execution_backend: any
-signed_off: false
-signed_off_by: (none)
-signed_off_at: (none)
+signed_off: true
+signed_off_by: nobru
+signed_off_at: 2026-09-21T17:56:53Z
 accepted: false
 accepted_by: (none)
 accepted_at: (none)
+signed_off_sig: hmac-sha256-v3:42572d07:70da95e443dee3e2fa61e2c8a8b29b5ba4045b227a6bc921cf498083bbae0ee5
 ---
 
 # Gravar o pacote de evidência por execução

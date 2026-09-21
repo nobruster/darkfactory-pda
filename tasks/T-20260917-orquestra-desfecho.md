@@ -25,12 +25,13 @@ security_class: (none)
 source_action_item: (none)
 tracker_ref: (none)
 execution_backend: any
-signed_off: false
-signed_off_by: (none)
-signed_off_at: (none)
+signed_off: true
+signed_off_by: nobru
+signed_off_at: 2026-09-21T17:56:56Z
 accepted: false
 accepted_by: (none)
 accepted_at: (none)
+signed_off_sig: hmac-sha256-v3:42572d07:f2c4afe14ccfdee465b27aa14e16c2d314f420d1398f9065ef0ae44a475f5350
 ---
 
 # Decidir o desfecho e garantir o pacote em todo caminho

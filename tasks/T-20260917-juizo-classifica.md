@@ -25,12 +25,13 @@ security_class: (none)
 source_action_item: (none)
 tracker_ref: (none)
 execution_backend: any
-signed_off: false
-signed_off_by: (none)
-signed_off_at: (none)
+signed_off: true
+signed_off_by: nobru
+signed_off_at: 2026-09-21T17:56:54Z
 accepted: false
 accepted_by: (none)
 accepted_at: (none)
+signed_off_sig: hmac-sha256-v3:42572d07:67dc0c5655d8595510bc52e3f7a63c5304999d57eb12d6e6db1dd5dc30af0fa9
 ---
 
 # Comparar contra a âncora e classificar a diferença
