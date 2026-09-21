@@ -17,28 +17,48 @@ Atualizado em 17/09/2026.
 | 4 · Consensus | `cvg review --check` | 🟢 `CHECK_CONSENSUS=OK` — **GREEN** |
 | 5 · Tasking | `taskspec gate --stamp` | 🟢 `TIER=1` — HMAC v3 nas 6 folhas |
 | 7 · Bind | `cvg bind` | 🟢 `CHECK_RUNTIME_CONTRACT=PASS` nas 6 |
-| 8 · Loop | `cvg loop` | 🟢 `LOCAL_SETTLED` — 1 de 6 entregue |
+| 8 · Loop | `cvg loop` | 🟢 `LOCAL_SETTLED` — **6 de 6 entregues** |
 
-## A cadeia entregou código
+## A cadeia entregou a fábrica inteira
 
-A primeira tarefa do steel thread fechou o ciclo completo, do BRD ao
-commit aceito:
+As 6 tarefas do steel thread fecharam o ciclo, do BRD ao commit aceito.
+**58 testes passando**, conferidos branch a branch em worktree separado —
+não pelo relatório do loop.
 
-```
-VERDICT: ACCEPT — Tier 1 evidence bound to the authorized attempt
-ACCEPTED=1 · TASK_LOOP=LOCAL_SETTLED · iterations 1/5 · 276s
-```
+| Branch | Iter | Testes |
+|---|---|---|
+| `task/contrato-ancora` | 2 | 8 |
+| `task/leitura-competencia` | 1 | 6 |
+| `task/agregacao-exata` | 2 | 7 |
+| `task/juizo-classifica` | 1 | 14 |
+| `task/evidencia-packet` | 1 | 9 |
+| `task/orquestra-desfecho` | 1 | 14 |
 
-Na branch `task/contrato-ancora`, dois commits — `green eval` e
-`protected acceptance`:
+Cada uma com dois commits: `green eval` e `protected acceptance`.
 
-| Arquivo | Linhas |
+### As decisões do Pass 4 chegaram ao código
+
+O que o adversário cross-family apontou, seis passes antes, aparece na
+implementação:
+
+| Verificação | Resultado |
 |---|---|
-| `src/fabrica/contrato.py` | 109 |
-| `tests/test_contrato.py` | 103 |
-| `contracts/competencia.yaml` | 101 |
+| As 6 classificações no juízo | ✅ todas |
+| Precedência da C30 (controle recusa mesmo classificado) | 14 menções |
+| **Tolerância / epsilon** | **0 ocorrências** |
+| Os 4 vereditos do ADR 0005 (com `RECUSADO`) | ✅ |
+| `localcontext` + `prec` (ADR 0006) | 9 menções |
+| `quantize` **uma única vez** (ADR 0004) | ✅ |
 
-**8 testes passam** no código commitado, conferido num worktree separado.
+O `quantize` aparecendo uma vez só é o ADR 0004 no código: arredonda no
+total, não por campo. O `RECUSADO` **não existia** no plano original — nasceu
+da objeção C16.
+
+E a orquestração declara na própria docstring o que a C11 e a C17 exigiram:
+
+> *"nunca `sys.exit` dentro de uma etapa — a etapa sempre retorna ou levanta,
+> e é `orquestrar` quem decide o desfecho. E o relógio corre uma única vez,
+> do início da leitura ao veredito — nunca por etapa somada depois."*
 
 O roteamento de modelo decidiu com dado real: `--model sonnet --effort
 medium`, como o `cost-profile.py` previu para esforço M.
