@@ -260,3 +260,48 @@ Rodado nesta máquina, não presumido:
   o mesmo defeito do float, por outra porta
 - **O ciclo de consenso não converge sozinho.** 7 → 6 → 6 → 6 → 5 → 6. Fecha
   quando o dono decide, não quando o adversário desiste
+- O gate do Pass 5 **executa** os evals em vez de ler o spec, e distingue
+  *eval quebrado* de *eval que falha corretamente*: `0 pass / 4 fail; fails
+  are expected for unbuilt work`
+- O selo HMAC **acusa** edição pós-carimbo: alterando o spec, `DO NOT
+  DELEGATE — signed_off_sig HMAC mismatch`; restaurado, volta a `OK(Tier 1)`
+- A política de caminho do Pass 8 **recusou um eval verde** porque um
+  `.coverage` caiu fora do escopo autorizado — *"Do not open a PR. Do not
+  hack the eval."*
+
+## Publicado
+
+[github.com/nobruster/darkfactory-template](https://github.com/nobruster/darkfactory-template)
+— `main` em `0e129d4` e as 6 branches `task/*`, hash conferido um a um
+contra o remote.
+
+**Nada mesclado.** As branches ficam para revisão. Os PRs não foram abertos —
+o `gh` CLI não está instalado nesta máquina.
+
+## O que ainda não foi provado
+
+⚠️ **O código nunca rodou contra dado real.** A âncora de 2026-03 veio do
+`darkfactory-inss`, e `_raw/` está vazio. Os 58 testes provam a lógica dos
+seis módulos; **não provam que a fábrica confere uma competência**.
+
+O primeiro gate da própria doutrina continua de pé: sem fonte conectada e
+âncora medida aqui, o contrato desta fábrica seria `NAO_MEDIDO`.
+
+⚠️ **`external_writes: deny`** — foi o que manteve tudo em `LOCAL_SETTLED` em
+vez de `SETTLED`. Para publicar PRs pelo loop:
+`cvg loop --allow-external-writes`.
+
+## Para retomar
+
+1. Revisar as 6 branches e decidir os merges
+2. Conectar uma fonte real em `_raw/` (imutável, chmod 444 + sha256)
+3. Medir a âncora **dessa** fonte, por fora do pipeline — copiar número entre
+   projetos é herdar um fato sem a evidência que o sustenta
+4. Rodar o fluxo completo numa competência e conferir o veredito
+
+⚠️ **Antes de qualquer loop**, rode o pré-voo — ele existe porque três dos
+quatro bloqueios do Pass 8 foram ambientais:
+
+```bash
+python3 fabrica/ponte/checar_deps.py cvg/tasks/T-*.md
+```

@@ -5,9 +5,10 @@ Leia isto antes de alterar qualquer coisa neste repositório.
 Este arquivo vale para qualquer agente que opere aqui — Hermes, Claude Code,
 Codex, Cursor. O `CLAUDE.md` aponta para cá.
 
-> 📍 **Onde paramos:** Pass 4 fechado (`CHECK_CONSENSUS=OK`), próximo é o
-> Pass 5 · Tasking. Detalhes em **[Onde a descida está agora](#onde-a-descida-está-agora)**
-> e em [`cvg/ESTADO.md`](cvg/ESTADO.md).
+> 📍 **Onde paramos:** a descida **fechou** — Pass 0 a 8, com as 6 tarefas
+> entregues e publicadas. 58 testes passando nas branches `task/*`.
+> Detalhes em **[Onde a descida está agora](#onde-a-descida-está-agora)** e em
+> [`cvg/ESTADO.md`](cvg/ESTADO.md).
 
 ---
 
@@ -43,7 +44,17 @@ Registra o passe atual, o veredito de cada gate, e o que falta.
 | 2 · Structure | 🟢 `CHECK_ADR=OK` |
 | 3 · Decompose | 🟢 `TASK_GRAPH=READY` — 6 tarefas |
 | 4 · Consensus | 🟢 `CHECK_CONSENSUS=OK` — 36 objeções decididas |
-| 5 · Tasking | ⬜ próximo — 🛑 Barreira D (selo HMAC por folha) |
+| 5 · Tasking | 🟢 `TIER=1` — HMAC v3 nas 6 folhas |
+| 7 · Bind | 🟢 `CHECK_RUNTIME_CONTRACT=PASS` |
+| 8 · Loop | 🟢 `LOCAL_SETTLED` ×6 — **58 testes**, publicadas |
+
+**A cadeia completou.** As 6 branches `task/*` estão no GitHub, nada mesclado
+— ficam para revisão. Os PRs **não** foram abertos (`gh` não está instalado).
+
+⚠️ **O código nunca rodou contra dado real.** A âncora de 2026-03 veio de
+outro repositório e nenhuma fonte está conectada aqui. Os 58 testes provam a
+lógica, não a competência. Conectar `_raw/` e medir a própria âncora é o
+próximo passo de verdade.
 
 ⚠️ **O `[+]` do conductor não é veredito.** `cvg next` confere que o arquivo
 existe; quem decide é o gate de cada passe. Ver `converge/README.md:166`.
