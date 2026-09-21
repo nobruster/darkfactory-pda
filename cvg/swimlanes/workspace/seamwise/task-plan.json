@@ -1,0 +1,526 @@
+{
+  "api_version": "taskspec.dev/v1",
+  "approved": true,
+  "kind": "TaskPlan",
+  "metadata": {
+    "delivery_plan_review_sha256": "631fb1e7aa6efab12aace29ea1e5149f44aaeb7b796637e48581d3222ba61bcd",
+    "delivery_plan_sha256": "c92c118c377cfc8badd2e62285f5f1b90926e44d55f67c860915c60942953ca5",
+    "name": "DI-PDA-BENEFICIOS",
+    "producer": "seamwise",
+    "producer_version": "0.2.0",
+    "seamwise_plan_status": "DELIVERY_PLAN=READY",
+    "source": "seamwise/task-plan.json"
+  },
+  "units": [
+    {
+      "agent": "any",
+      "anti_patterns": [
+        "Do not herdar o arredondamento padrão da linguagem: defaults divergem e o erro fica estruturalmente verde; instead declarar precisão, granularidade e regra.",
+        "Do not agrupar por descricao_especie: quatro espécies virariam uma linha e o total bateria; instead agrupar pelo código da posição 12.",
+        "Do not arredondar a cada soma parcial: o erro de arredondamento acumula linha a linha; instead somar exato e arredondar uma vez no final."
+      ],
+      "behaviors": [
+        {
+          "given": "um valor de ponto flutuante em campo monetário",
+          "id": "B-1",
+          "then": "a entrada é recusada com erro explícito, e o agregado devolvido traz os cinco controles nomeados",
+          "when": "o agregado é calculado"
+        },
+        {
+          "given": "um contexto decimal de precisão baixa e valores em empate exato",
+          "id": "B-2",
+          "then": "precisão e modo são declarados, não herdados — a perda por precisão é acusada, e arredondar por campo produz total diferente de arredondar no total",
+          "when": "o total é calculado"
+        }
+      ],
+      "context": "Intent DI-PDA-BENEFICIOS; seam SEAM-AGREGACAO; swimlane LANE-AGREGACAO; capability leg LEG-AGREGADO-EXATO. Done condition: Float recusado na entrada; os cinco controles saem nomeados; agrupar por descrição diverge de agrupar por código.",
+      "creates_paths": [
+        "src/pda/agregacao.py",
+        "tests/test_agregacao.py"
+      ],
+      "depends_on": [
+        "T-20260921-leitura-posicional"
+      ],
+      "do_not_touch": [
+        "_raw",
+        "cvg/docs/adrs"
+      ],
+      "done_condition": "Float recusado na entrada; os cinco controles saem nomeados; agrupar por descrição diverge de agrupar por código.",
+      "effort": "M",
+      "evals": [
+        {
+          "command": "pytest -q tests/test_agregacao.py -k \"recusa_float or cinco_controles\"",
+          "description": "Float recusado; cinco controles nomeados no agregado",
+          "expected_duration_sec": 10,
+          "id": "eval_1",
+          "terminal": false,
+          "verifies": [
+            "B-1"
+          ]
+        },
+        {
+          "command": "pytest -q tests/test_agregacao.py -k \"precisao_declarada or granularidade\"",
+          "description": "Precisão e modo declarados; granularidade no total",
+          "expected_duration_sec": 10,
+          "id": "eval_2",
+          "terminal": false,
+          "verifies": [
+            "B-2"
+          ]
+        },
+        {
+          "command": "pytest -q tests/test_agregacao.py -k chave_e_codigo",
+          "description": "Agrupar por descrição diverge de agrupar por código",
+          "expected_duration_sec": 10,
+          "id": "eval_3",
+          "terminal": true,
+          "verifies": [
+            "B-1",
+            "B-2"
+          ]
+        }
+      ],
+      "execution_backend": "any",
+      "goal": "Tornar as três decisões de decimal explícitas e verificáveis.",
+      "id": "T-20260921-agregacao-exata",
+      "observability": "total agregado e espécies distintas",
+      "profile": "standard",
+      "required_tools": [
+        "git",
+        "bash",
+        "python3",
+        "pytest"
+      ],
+      "rollback": "Remover o agregador e seus testes.",
+      "source_note": "seamwise/legs/LEG-AGREGADO-EXATO.md#T-20260921-agregacao-exata",
+      "title": "Somar com precisão declarada e agrupar pelo código",
+      "touches_paths": [],
+      "why": "Tornar as três decisões de decimal explícitas e verificáveis."
+    },
+    {
+      "agent": "any",
+      "anti_patterns": [
+        "Do not gerar a âncora quando ela falta: um número que ninguém viu medir é um palpite; instead retornar NAO_MEDIDO.",
+        "Do not editar a âncora para um veredito passar: falsifica a verdade contra a qual tudo é medido; instead investigar; âncora revista exige nova aprovação.",
+        "Do not declarar colunas por nome no contrato: Espécie aparece duas vezes e o nome não decide qual; instead declarar o índice posicional."
+      ],
+      "behaviors": [
+        {
+          "given": "um contrato com os cinco controles nomeados, a procedência e o layout posicional",
+          "id": "B-1",
+          "then": "âncora, procedência e layout saem juntos; a mesma âncora sem aprovador ou sem data de medição resulta em NAO_MEDIDO",
+          "when": "o contrato é carregado"
+        },
+        {
+          "given": "uma competência sem âncora no contrato",
+          "id": "B-2",
+          "then": "retorna NAO_MEDIDO como valor, sem gravar nem encerrar o processo",
+          "when": "o contrato é carregado"
+        }
+      ],
+      "context": "Intent DI-PDA-BENEFICIOS; seam SEAM-CONTRATO; swimlane LANE-CONTRATO; capability leg LEG-CONTRATO-RECUSA-SEM-ANCORA. Done condition: Os cinco controles e o layout saem com procedência; sem âncora, ou sem aprovador, retorna NAO_MEDIDO como valor.",
+      "creates_paths": [
+        "src/pda/contrato.py",
+        "tests/test_contrato.py",
+        "contracts/competencia-202601.yaml"
+      ],
+      "depends_on": [],
+      "do_not_touch": [
+        "_raw",
+        "cvg/docs/adrs"
+      ],
+      "done_condition": "Os cinco controles e o layout saem com procedência; sem âncora, ou sem aprovador, retorna NAO_MEDIDO como valor.",
+      "effort": "M",
+      "evals": [
+        {
+          "command": "pytest -q tests/test_contrato.py -k \"ancorada or sem_procedencia\"",
+          "description": "Cinco controles com procedência; sem aprovador vira NAO_MEDIDO",
+          "expected_duration_sec": 10,
+          "id": "eval_1",
+          "terminal": false,
+          "verifies": [
+            "B-1"
+          ]
+        },
+        {
+          "command": "pytest -q tests/test_contrato.py -k nao_medido",
+          "description": "Sem âncora retorna NAO_MEDIDO sem escrever em disco",
+          "expected_duration_sec": 10,
+          "id": "eval_2",
+          "terminal": false,
+          "verifies": [
+            "B-2"
+          ]
+        },
+        {
+          "command": "pytest -q tests/test_contrato.py -k layout",
+          "description": "O layout declara as 14 posições, com Espécie em 12 e 13",
+          "expected_duration_sec": 10,
+          "id": "eval_3",
+          "terminal": true,
+          "verifies": [
+            "B-1",
+            "B-2"
+          ]
+        }
+      ],
+      "execution_backend": "any",
+      "goal": "Fazer a ausência de prova bloquear em vez de virar verde.",
+      "id": "T-20260921-contrato-ancora",
+      "observability": "competências ancoradas no contrato",
+      "profile": "standard",
+      "required_tools": [
+        "git",
+        "bash",
+        "python3",
+        "pytest"
+      ],
+      "rollback": "Remover o carregador de contrato e seus testes.",
+      "source_note": "seamwise/legs/LEG-CONTRATO-RECUSA-SEM-ANCORA.md#T-20260921-contrato-ancora",
+      "title": "Carregar contrato, âncora e layout posicional",
+      "touches_paths": [],
+      "why": "Fazer a ausência de prova bloquear em vez de virar verde."
+    },
+    {
+      "agent": "any",
+      "anti_patterns": [
+        "Do not gravar com mode overwrite: e o defeito do carregamento atual — destrói a prova; instead gravar um pacote por execução.",
+        "Do not editar um pacote antigo para corrigir o histórico: falsifica evidência; instead gravar evidência nova e manter a antiga.",
+        "Do not preencher campo ausente com zero: a reconstrução passa a mentir; instead marcar como ausente."
+      ],
+      "behaviors": [
+        {
+          "given": "uma execução com âncora, e outra que terminou antes da leitura",
+          "id": "B-1",
+          "then": "o veredito é reconstruído sem reexecutar, com duração e limite aplicados; campos não percorridos são marcados ausentes, nunca zerados",
+          "when": "o pacote é lido de volta"
+        },
+        {
+          "given": "duas execuções da mesma competência",
+          "id": "B-2",
+          "then": "as duas coexistem — a segunda não sobrescreve a primeira",
+          "when": "a segunda é gravada"
+        }
+      ],
+      "context": "Intent DI-PDA-BENEFICIOS; seam SEAM-EVIDENCIA; swimlane LANE-EVIDENCIA; capability leg LEG-EVIDENCIA-RECONSTROI. Done condition: O pacote traz veredito, causa, âncora, agregado, duração e classificações; duas execuções coexistem.",
+      "creates_paths": [
+        "src/pda/evidencia.py",
+        "tests/test_evidencia.py"
+      ],
+      "depends_on": [
+        "T-20260921-juizo-classifica"
+      ],
+      "do_not_touch": [
+        "_raw",
+        "evidence"
+      ],
+      "done_condition": "O pacote traz veredito, causa, âncora, agregado, duração e classificações; duas execuções coexistem.",
+      "effort": "S",
+      "evals": [
+        {
+          "command": "pytest -q tests/test_evidencia.py -k \"reconstroi or ausente\"",
+          "description": "O pacote reconstrói o veredito e marca ausências",
+          "expected_duration_sec": 10,
+          "id": "eval_1",
+          "terminal": false,
+          "verifies": [
+            "B-1"
+          ]
+        },
+        {
+          "command": "pytest -q tests/test_evidencia.py -k nao_sobrescreve",
+          "description": "Duas execuções coexistem, sem overwrite",
+          "expected_duration_sec": 10,
+          "id": "eval_2",
+          "terminal": false,
+          "verifies": [
+            "B-2"
+          ]
+        },
+        {
+          "command": "pytest -q tests/test_evidencia.py -k vereditos",
+          "description": "Os quatro vereditos terminais são distinguíveis",
+          "expected_duration_sec": 10,
+          "id": "eval_3",
+          "terminal": true,
+          "verifies": [
+            "B-1",
+            "B-2"
+          ]
+        }
+      ],
+      "execution_backend": "any",
+      "goal": "Tornar o veredito auditável sem reexecutar o pipeline.",
+      "id": "T-20260921-evidencia-packet",
+      "observability": "pacotes gravados por competência",
+      "profile": "standard",
+      "required_tools": [
+        "git",
+        "bash",
+        "python3",
+        "pytest"
+      ],
+      "rollback": "Remover o gravador de evidência e seus testes.",
+      "source_note": "seamwise/legs/LEG-EVIDENCIA-RECONSTROI.md#T-20260921-evidencia-packet",
+      "title": "Gravar o pacote por execução, sem sobrescrever",
+      "touches_paths": [],
+      "why": "Tornar o veredito auditável sem reexecutar o pipeline."
+    },
+    {
+      "agent": "any",
+      "anti_patterns": [
+        "Do not introduzir parâmetro de tolerância: um centavo inexplicado viraria um centavo aceito; instead classificar a diferença ou consertar o pipeline.",
+        "Do not editar a âncora para o veredito passar: falsifica a prova em vez de investigar; instead investigar; âncora revista exige nova aprovação.",
+        "Do not deixar a classificação autorizar publicação: CONFIRMED explica a diferença, não a aprova; instead divergência em controle recusa, classificada ou não."
+      ],
+      "behaviors": [
+        {
+          "given": "um agregado com uma linha a menos, e outro que redistribui valores mantendo soma e contagem",
+          "id": "B-1",
+          "then": "os cinco controles são comparados individualmente e qualquer divergência recusa — soma e contagem iguais não bastam",
+          "when": "o juízo compara contra a âncora"
+        },
+        {
+          "given": "uma diferença de cada uma das seis classificações, incluindo um controle divergente marcado CONFIRMED",
+          "id": "B-2",
+          "then": "divergência em qualquer controle RECUSA mesmo classificada; fora dos controles, MODERN_DEFECT, CONTRACT_AMBIGUITY e UNRESOLVED bloqueiam e as três CONFIRMED/APPROVED apenas registram",
+          "when": "o veredito é calculado"
+        }
+      ],
+      "context": "Intent DI-PDA-BENEFICIOS; seam SEAM-JUIZO; swimlane LANE-JUIZO; capability leg LEG-JUIZO-ACUSA. Done condition: Os cinco controles comparados individualmente; divergência recusa mesmo classificada; defeito sem classificação bloqueia.",
+      "creates_paths": [
+        "src/pda/juizo.py",
+        "tests/test_juizo.py"
+      ],
+      "depends_on": [
+        "T-20260921-agregacao-exata"
+      ],
+      "do_not_touch": [
+        "_raw",
+        "cvg/docs/adrs",
+        "contracts"
+      ],
+      "done_condition": "Os cinco controles comparados individualmente; divergência recusa mesmo classificada; defeito sem classificação bloqueia.",
+      "effort": "M",
+      "evals": [
+        {
+          "command": "pytest -q tests/test_juizo.py -k \"linha_a_menos or cinco_controles\"",
+          "description": "Linha a menos recusa; extremos alterados com soma igual também",
+          "expected_duration_sec": 10,
+          "id": "eval_1",
+          "terminal": false,
+          "verifies": [
+            "B-1"
+          ]
+        },
+        {
+          "command": "pytest -q tests/test_juizo.py -k precedencia",
+          "description": "Precedência — controle divergente recusa mesmo classificado",
+          "expected_duration_sec": 10,
+          "id": "eval_2",
+          "terminal": false,
+          "verifies": [
+            "B-2"
+          ]
+        },
+        {
+          "command": "pytest -q tests/test_juizo.py -k defeito_sem_classe",
+          "description": "Defeito observado sem classificação bloqueia",
+          "expected_duration_sec": 10,
+          "id": "eval_3",
+          "terminal": true,
+          "verifies": [
+            "B-1",
+            "B-2"
+          ]
+        }
+      ],
+      "execution_backend": "any",
+      "goal": "Fazer o juiz acusar, não apenas aprovar.",
+      "id": "T-20260921-juizo-classifica",
+      "observability": "vereditos por classificação",
+      "profile": "standard",
+      "required_tools": [
+        "git",
+        "bash",
+        "python3",
+        "pytest"
+      ],
+      "rollback": "Remover o juízo e seus testes.",
+      "source_note": "seamwise/legs/LEG-JUIZO-ACUSA.md#T-20260921-juizo-classifica",
+      "title": "Comparar os cinco controles e classificar a diferença",
+      "touches_paths": [],
+      "why": "Fazer o juiz acusar, não apenas aprovar."
+    },
+    {
+      "agent": "any",
+      "anti_patterns": [
+        "Do not escrever no arquivo de origem: destrói a prova de que a origem publicou aquilo; instead tratar _raw/ como somente leitura.",
+        "Do not ler colunas por nome de cabeçalho: Espécie repetida faz perder uma das duas em silêncio; instead ler por posição declarada no contrato.",
+        "Do not corrigir valor malformado durante a leitura: apaga o defeito antes da classificação; instead preservar e contar como linha inválida."
+      ],
+      "behaviors": [
+        {
+          "given": "um arquivo com Espécie repetida no cabeçalho e o layout declarado",
+          "id": "B-1",
+          "then": "o sha256 do arquivo é idêntico, e código e descrição vêm das posições 12 e 13 — não do nome",
+          "when": "a leitura termina"
+        },
+        {
+          "given": "um registro cujo campo monetário é ilegível",
+          "id": "B-2",
+          "then": "ele entra em linhas_invalidas, não entra na soma, e sai com identidade, valor original e posição",
+          "when": "os registros são contados"
+        }
+      ],
+      "context": "Intent DI-PDA-BENEFICIOS; seam SEAM-LEITURA; swimlane LANE-LEITURA; capability leg LEG-LEITURA-POSICIONAL. Done condition: sha256 idêntico antes e depois; código e descrição saem de posições distintas; registro ilegível entra em linhas_invalidas.",
+      "creates_paths": [
+        "src/pda/leitura.py",
+        "tests/test_leitura.py",
+        "tests/fixtures/competencia-min.csv"
+      ],
+      "depends_on": [
+        "T-20260921-contrato-ancora"
+      ],
+      "do_not_touch": [
+        "_raw"
+      ],
+      "done_condition": "sha256 idêntico antes e depois; código e descrição saem de posições distintas; registro ilegível entra em linhas_invalidas.",
+      "effort": "M",
+      "evals": [
+        {
+          "command": "pytest -q tests/test_leitura.py -k \"sha256 or posicional\"",
+          "description": "Fonte byte-idêntica e leitura posicional com cabeçalho repetido",
+          "expected_duration_sec": 10,
+          "id": "eval_1",
+          "terminal": false,
+          "verifies": [
+            "B-1"
+          ]
+        },
+        {
+          "command": "pytest -q tests/test_leitura.py -k invalida",
+          "description": "Registro ilegível vira linha inválida com identidade",
+          "expected_duration_sec": 10,
+          "id": "eval_2",
+          "terminal": false,
+          "verifies": [
+            "B-2"
+          ]
+        },
+        {
+          "command": "pytest -q tests/test_leitura.py -k duracao",
+          "description": "A leitura reporta sua duração para a orquestração medir o total",
+          "expected_duration_sec": 10,
+          "id": "eval_3",
+          "terminal": true,
+          "verifies": [
+            "B-1",
+            "B-2"
+          ]
+        }
+      ],
+      "execution_backend": "any",
+      "goal": "Extrair registros preservando os bytes e o defeito de origem.",
+      "id": "T-20260921-leitura-posicional",
+      "observability": "registros lidos e defeitos por tipo",
+      "profile": "standard",
+      "required_tools": [
+        "git",
+        "bash",
+        "python3",
+        "pytest"
+      ],
+      "rollback": "Remover o leitor e seus testes.",
+      "source_note": "seamwise/legs/LEG-LEITURA-POSICIONAL.md#T-20260921-leitura-posicional",
+      "title": "Ler a competência por posição, sem alterar a fonte",
+      "touches_paths": [],
+      "why": "Extrair registros preservando os bytes e o defeito de origem."
+    },
+    {
+      "agent": "any",
+      "anti_patterns": [
+        "Do not encerrar o processo dentro de uma etapa: o pacote prometido nunca é gravado; instead retornar o veredito e deixar a orquestração decidir.",
+        "Do not medir o tempo por etapa: etapa rápida com o resto lento passaria; instead medir do início da leitura ao veredito.",
+        "Do not tratar ACEITO_SEM_ANCORA como autorização: a palavra aceito nomeia o término, não a prova; instead só ACEITO autoriza, com os cinco controles conferidos."
+      ],
+      "behaviors": [
+        {
+          "given": "execução sem âncora, execução que bate, e o arquivo com uma linha removida",
+          "id": "B-1",
+          "then": "as três gravam pacote — ACEITO_SEM_ANCORA, ACEITO e RECUSADO — com códigos de saída distintos, e só ACEITO autoriza publicar",
+          "when": "a orquestração conduz o fluxo inteiro"
+        },
+        {
+          "given": "uma exceção real levantada dentro da leitura, e uma execução que estoura o limite de tempo",
+          "id": "B-2",
+          "then": "a exceção vira ERRO com pacote gravado, e o tempo é medido do início da leitura ao veredito, no total — nunca por etapa somada depois",
+          "when": "a orquestração conduz a execução"
+        }
+      ],
+      "context": "Intent DI-PDA-BENEFICIOS; seam SEAM-ORQUESTRACAO; swimlane LANE-ORQUESTRACAO; capability leg LEG-DESFECHO-COM-PACOTE. Done condition: Os quatro desfechos gravam pacote com código próprio; exceção real vira ERRO; o tempo total é medido contra R-9.",
+      "creates_paths": [
+        "src/pda/orquestracao.py",
+        "tests/test_orquestracao.py"
+      ],
+      "depends_on": [
+        "T-20260921-evidencia-packet"
+      ],
+      "do_not_touch": [
+        "_raw",
+        "cvg/docs/adrs"
+      ],
+      "done_condition": "Os quatro desfechos gravam pacote com código próprio; exceção real vira ERRO; o tempo total é medido contra R-9.",
+      "effort": "M",
+      "evals": [
+        {
+          "command": "pytest -q tests/test_orquestracao.py -k desfechos",
+          "description": "Os quatro desfechos gravam pacote com código próprio",
+          "expected_duration_sec": 10,
+          "id": "eval_1",
+          "terminal": false,
+          "verifies": [
+            "B-1"
+          ]
+        },
+        {
+          "command": "pytest -q tests/test_orquestracao.py -k \"excecao or tempo_total\"",
+          "description": "Exceção real vira ERRO; o tempo é medido no total",
+          "expected_duration_sec": 10,
+          "id": "eval_2",
+          "terminal": false,
+          "verifies": [
+            "B-2"
+          ]
+        },
+        {
+          "command": "pytest -q tests/test_orquestracao.py -k autoriza",
+          "description": "Só ACEITO autoriza publicar",
+          "expected_duration_sec": 10,
+          "id": "eval_3",
+          "terminal": true,
+          "verifies": [
+            "B-1",
+            "B-2"
+          ]
+        }
+      ],
+      "execution_backend": "any",
+      "goal": "Dar dono ao fluxo — sem ele a lacuna migra de etapa em etapa.",
+      "id": "T-20260921-orquestra-desfecho",
+      "observability": "desfechos por tipo e segundos até o veredito",
+      "profile": "standard",
+      "required_tools": [
+        "git",
+        "bash",
+        "python3",
+        "pytest"
+      ],
+      "rollback": "Remover a orquestração e seus testes.",
+      "source_note": "seamwise/legs/LEG-DESFECHO-COM-PACOTE.md#T-20260921-orquestra-desfecho",
+      "title": "Decidir o desfecho e garantir o pacote em todo caminho",
+      "touches_paths": [],
+      "why": "Dar dono ao fluxo — sem ele a lacuna migra de etapa em etapa."
+    }
+  ]
+}

@@ -1,0 +1,69 @@
+schema_version: 1
+status: SEAM_MAP=READY
+intent_id: DI-PDA-BENEFICIOS
+source_recipe:
+  name: pda-recipe.yaml
+  sha256: 24f3cb44ac86017b554fe66688bf49db6c4400c29d60c7b62ebacab64b3e8d3d
+intent_sha256: 01c40fa4e0b6ad03f2d908526c72f61772183c9e2435bafeddd295f092bf8566
+system_map_sha256: 8f242a241677dc979a3c046c97035c98b69a38c948802f03b13ac6df9a7de276
+evidence_sha256: 2f99c72ec331b73c69d5b61ea60268f45989f9cb56f51cbe9f33d3e9829b6bc3
+decisions:
+- id: ADR-0002-POSICIONAL
+  path: seamwise/decisions/ADR-0002-POSICIONAL.md
+  status: accepted
+  sha256: 9169d73fdb90b181ed951add20e93350e3bc1627e503dcca90cc04984527a88b
+- id: ADR-0003-HALF-EVEN
+  path: seamwise/decisions/ADR-0003-HALF-EVEN.md
+  status: accepted
+  sha256: b09504c6ee425d8beb540da2be7ac9b72031c58c8e80fa20dbe6ca56f7eb35b6
+- id: ADR-0004-CODIGO-E-CHAVE
+  path: seamwise/decisions/ADR-0004-CODIGO-E-CHAVE.md
+  status: accepted
+  sha256: 6b01f69703c83af46012050459ccf9431e0bc4795c8b87fea37262696cfeb1b3
+- id: ADR-0005-MOTORES-SEPARADOS
+  path: seamwise/decisions/ADR-0005-MOTORES-SEPARADOS.md
+  status: accepted
+  sha256: 20ba1994d209da7528fc813c908b87662a794b54e0a151e941555e5f1be26811
+seams:
+- id: SEAM-CONTRATO
+  path: seamwise/seams/SEAM-CONTRATO.md
+  owner: contrato
+  evidence:
+  - E-ANCORA-202601
+  swimlane_id: LANE-CONTRATO
+  sha256: a071b4826cff30a3b89ae5cc45059e195c6d544fac993d8e1ea55c3f00249f6d
+- id: SEAM-LEITURA
+  path: seamwise/seams/SEAM-LEITURA.md
+  owner: leitura
+  evidence:
+  - E-ESPECIE-TRUNCADA
+  swimlane_id: LANE-LEITURA
+  sha256: f3efa25aff9247edc9d003bd2dbc8313b25814c9178adb8fa2ae3ff32a8c566a
+- id: SEAM-AGREGACAO
+  path: seamwise/seams/SEAM-AGREGACAO.md
+  owner: agregacao
+  evidence:
+  - E-ANCORA-202601
+  swimlane_id: LANE-AGREGACAO
+  sha256: d41f37234f2d7dcaf6109914d7bf9cb28f882060fe10be0a5868bec97b96b597
+- id: SEAM-JUIZO
+  path: seamwise/seams/SEAM-JUIZO.md
+  owner: juizo
+  evidence:
+  - E-ANCORA-202601
+  swimlane_id: LANE-JUIZO
+  sha256: d5f23e5ceaf9aa76ca3570da30faf4706d2caada941b06016fd5126b874575f5
+- id: SEAM-EVIDENCIA
+  path: seamwise/seams/SEAM-EVIDENCIA.md
+  owner: evidencia
+  evidence:
+  - E-ANCORA-202601
+  swimlane_id: LANE-EVIDENCIA
+  sha256: 48a15b65b4f77d276fea2384cf73e52e654c58035edb9422ba3ada95f7c9b7f2
+- id: SEAM-ORQUESTRACAO
+  path: seamwise/seams/SEAM-ORQUESTRACAO.md
+  owner: orquestracao
+  evidence:
+  - E-ANCORA-202601
+  swimlane_id: LANE-ORQUESTRACAO
+  sha256: 6f0228fa48afe590208c2fd0d9eb4a441ea3f51b5b74600bca86d34119fed18a

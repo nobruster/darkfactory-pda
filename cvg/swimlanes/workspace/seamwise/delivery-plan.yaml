@@ -1,0 +1,77 @@
+schema_version: 1
+status: DELIVERY_PLAN=READY
+seam_map_sha256: 4ad7ebe0f407bd4892e819f5ea6d763a91ae1cf73cd49b30cf667085bab30329
+swimlanes:
+- id: LANE-CONTRATO
+  seam_id: SEAM-CONTRATO
+  owner: contrato
+  path: seamwise/swimlanes/LANE-CONTRATO.md
+  sha256: 539f843e5df08ddb389ef8eef206694e0588c459137155d2911c60e7c077df2b
+- id: LANE-LEITURA
+  seam_id: SEAM-LEITURA
+  owner: leitura
+  path: seamwise/swimlanes/LANE-LEITURA.md
+  sha256: f7ce040148f201e2d50cdf5ff77ea40563f62e5c64f1cfccf2ccaab5091e10fe
+- id: LANE-AGREGACAO
+  seam_id: SEAM-AGREGACAO
+  owner: agregacao
+  path: seamwise/swimlanes/LANE-AGREGACAO.md
+  sha256: e133ef4bf54c07cd887cf039f2ea4edab3efebe5ab8fe0636e341a005a7dd34b
+- id: LANE-JUIZO
+  seam_id: SEAM-JUIZO
+  owner: juizo
+  path: seamwise/swimlanes/LANE-JUIZO.md
+  sha256: b305d591290dc09ec7f634bd1c74e4f751f148a972067bbe6c3d3ce5ab51da3e
+- id: LANE-EVIDENCIA
+  seam_id: SEAM-EVIDENCIA
+  owner: evidencia
+  path: seamwise/swimlanes/LANE-EVIDENCIA.md
+  sha256: 3b5e3490ae9b2f8105b415cde67ded36723601a6f33636d3fb21214a4452d1cf
+- id: LANE-ORQUESTRACAO
+  seam_id: SEAM-ORQUESTRACAO
+  owner: orquestracao
+  path: seamwise/swimlanes/LANE-ORQUESTRACAO.md
+  sha256: 02322e9c5de0ac802c2efec5ef0f9ccccd9d8d27114447366bcc2c0178d7539f
+legs:
+- id: LEG-CONTRATO-RECUSA-SEM-ANCORA
+  seam_id: SEAM-CONTRATO
+  swimlane_id: LANE-CONTRATO
+  path: seamwise/legs/LEG-CONTRATO-RECUSA-SEM-ANCORA.md
+  sha256: 58ac97947592fe07d3761cfb348459e0d5e3c8d19044ed269372c914592efcbf
+- id: LEG-LEITURA-POSICIONAL
+  seam_id: SEAM-LEITURA
+  swimlane_id: LANE-LEITURA
+  path: seamwise/legs/LEG-LEITURA-POSICIONAL.md
+  sha256: 6ebb397912453a29466591a93da1fb174f953c6d139f333d9a4c64be0ee2f445
+- id: LEG-AGREGADO-EXATO
+  seam_id: SEAM-AGREGACAO
+  swimlane_id: LANE-AGREGACAO
+  path: seamwise/legs/LEG-AGREGADO-EXATO.md
+  sha256: 2a74c3986cd61f5a76984dce2a8f35e40aa12d446f425931766498e4ab07f070
+- id: LEG-JUIZO-ACUSA
+  seam_id: SEAM-JUIZO
+  swimlane_id: LANE-JUIZO
+  path: seamwise/legs/LEG-JUIZO-ACUSA.md
+  sha256: 8aad16000dd4613ae6c4b0f92f0bc4415384b23442cc4b261b5fcf3d62b1dda1
+- id: LEG-EVIDENCIA-RECONSTROI
+  seam_id: SEAM-EVIDENCIA
+  swimlane_id: LANE-EVIDENCIA
+  path: seamwise/legs/LEG-EVIDENCIA-RECONSTROI.md
+  sha256: 0bbb047280c519010914b7922816544ac4de97fab7b5532388f861a6ef6ef150
+- id: LEG-DESFECHO-COM-PACOTE
+  seam_id: SEAM-ORQUESTRACAO
+  swimlane_id: LANE-ORQUESTRACAO
+  path: seamwise/legs/LEG-DESFECHO-COM-PACOTE.md
+  sha256: 7c951b1e74a372f7b92778329063c97f662a4f918e4322087869f12c6de41e26
+steel_thread:
+- LEG-CONTRATO-RECUSA-SEM-ANCORA
+- LEG-LEITURA-POSICIONAL
+- LEG-AGREGADO-EXATO
+- LEG-JUIZO-ACUSA
+- LEG-EVIDENCIA-RECONSTROI
+- LEG-DESFECHO-COM-PACOTE
+objections: []
+contentions: []
+steel_thread_path: seamwise/steel-thread.md
+steel_thread_sha256: 0ddb385186ea5f34b848bfff7b3dd6bc45a7bf548717e460ded404631ac10538
+review_authority_sha256: 319c375fa9efa8c87bc9ee9ddff8709cea2aa4a661f4f7311752f77ddf0ee6da

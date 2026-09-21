@@ -1,0 +1,591 @@
+schema_version: 1
+intent:
+  id: DI-PDA-BENEFICIOS
+  title: Conferir uma competência do PDA contra âncora medida antes de publicar
+  summary: >-
+    Ler o CSV da competência por posição, agregar o valor líquido com
+    aritmética exata, comparar contra os cinco controles da âncora medida na
+    origem, classificar toda diferença e deixar um pacote de evidência —
+    recusando publicar quando não houver prova.
+  claim: proposed
+  source:
+    uri: cvg/docs/tech-spec/tech-spec-pda-beneficios.md
+    captured_at: "2026-09-21T00:00:00Z"
+    sha256: "94a7379f89cc795d8a355774626fc3984f116272b4184278ed9ab50750998573"
+  success:
+    - Sem âncora medida o veredito não autoriza publicar.
+    - Os cinco controles são comparados individualmente.
+    - Ponto flutuante em campo monetário é recusado na entrada.
+    - Uma linha removida ou um centavo alterado é recusado.
+    - Agrupar por descrição truncada é recusado.
+  out_of_scope:
+    - Corrigir defeitos da fonte — a fábrica classifica, nunca corrige.
+    - Substituir o carregamento atual, que segue rodando em paralelo.
+    - O ETL a jusante que consome o resultado.
+    - O carregamento ao lago em Spark e MinIO. Não é incógnita - o ADR 0005
+      decidiu que os motores são separados, e o juízo precisa existir antes
+      de haver o que julgar. Entra como plano próprio depois deste.
+system_map:
+  claim: proposed
+  components:
+    - Contrato e âncora
+    - Leitura posicional
+    - Agregação monetária
+    - Juízo do agregado
+    - Pacote de evidência
+    - Orquestração da execução
+  external_dependencies:
+    - Arquivo CSV da competência, imutável em _raw/
+    - Âncora medida na origem por fora do pipeline
+    - Spark e MinIO, a montar — o carregamento ao lago é escopo próprio
+  unknowns: []
+evidence:
+  - id: E-ANCORA-202601
+    claim: external
+    source:
+      uri: cvg/docs/adrs/0001-the-2026-01-anchor-is-41572553-rows-summing-78521752562-12.md
+      captured_at: "2026-09-21T00:00:00Z"
+      sha256: "0505a743963abfb09a257373a431c3878b25cf6c19d71467c722da9830779acd"
+    confidence: 1.0
+    summary: >-
+      Competência 2026-01 medida na origem em 64s — 41572553 linhas, soma
+      78521752562.12, validada contra o darkfactory-inss.
+  - id: E-ESPECIE-TRUNCADA
+    claim: external
+    source:
+      uri: cvg/docs/adrs/0004-column-13-is-a-truncated-description-not-a-second-code.md
+      captured_at: "2026-09-21T00:00:00Z"
+      sha256: "b43c67e62096483fbc967ef82f1a2270c6039929859435b8dad12167ffec6de3"
+    confidence: 1.0
+    summary: >-
+      51 códigos colapsam em 40 descrições truncadas em 20 caracteres;
+      'Pensão por Morte de' cobre os códigos 01, 03, 23 e 59.
+decisions:
+  - id: ADR-0002-POSICIONAL
+    status: accepted
+    owner: Bruno Nunes
+    rationale: >-
+      Espécie aparece duas vezes no cabeçalho; ler por nome perde uma das
+      duas em silêncio.
+  - id: ADR-0003-HALF-EVEN
+    status: accepted
+    owner: Bruno Nunes
+    rationale: >-
+      Precisão declarada, arredonda uma vez no total, meio-para-par — as três
+      em ordem de precedência.
+  - id: ADR-0004-CODIGO-E-CHAVE
+    status: accepted
+    owner: Bruno Nunes
+    rationale: >-
+      A chave é o código; agrupar por descrição somaria quatro espécies numa
+      linha com o total continuando a bater.
+  - id: ADR-0005-MOTORES-SEPARADOS
+    status: accepted
+    owner: Bruno Nunes
+    rationale: >-
+      Spark grava no lago, Python puro confere. Um juiz que usa o motor que
+      julga herda seus pontos cegos — se a leitura distribuída descartar uma
+      das duas colunas Espécie, os dois lados concordariam e nada acusaria.
+seams:
+  - id: SEAM-CONTRATO
+    name: Contrato e âncora
+    description: Separa a verdade declarada do código que a consome.
+    evidence: [E-ANCORA-202601]
+    responsibility: >-
+      Guardar a âncora medida e o layout posicional, e recusar construir sem
+      eles.
+    consumes: [âncora medida na origem]
+    produces: [contrato validado]
+    owner: contrato
+    independent_proof: >-
+      Competência sem âncora devolve NAO_MEDIDO como valor, antes de abrir o
+      arquivo.
+    decision_ids: [ADR-0002-POSICIONAL]
+    rejected_alternatives:
+      - alternative: Derivar a âncora do Parquet já publicado
+        reason: >-
+          Mede o que o pipeline produziu, não o que a fonte publicou; um
+          defeito comum às duas execuções ficaria invisível.
+    swimlane:
+      id: LANE-CONTRATO
+      name: Contrato lane
+      owner: contrato
+      legs:
+        - id: LEG-CONTRATO-RECUSA-SEM-ANCORA
+          observable_state: A fábrica recusa construir sem âncora medida
+          proof: >-
+            Competência sem âncora devolve NAO_MEDIDO; com âncora incompleta
+            (sem aprovador ou sem data) também.
+          requires: []
+          produces: [contrato validado]
+          tasks:
+            - id: T-20260921-contrato-ancora
+              title: Carregar contrato, âncora e layout posicional
+              goal: Fazer a ausência de prova bloquear em vez de virar verde.
+              done_condition: >-
+                Os cinco controles e o layout saem com procedência; sem
+                âncora, ou sem aprovador, retorna NAO_MEDIDO como valor.
+              effort: M
+              profile: standard
+              execution_backend: any
+              required_tools: [git, bash, python3, pytest]
+              depends_on: []
+              touches_paths: []
+              creates_paths:
+                - src/pda/contrato.py
+                - tests/test_contrato.py
+                - contracts/competencia-202601.yaml
+              behavior:
+                - id: B-1
+                  given: um contrato com os cinco controles nomeados, a procedência e o layout posicional
+                  when: o contrato é carregado
+                  then: âncora, procedência e layout saem juntos; a mesma âncora sem aprovador ou sem data de medição resulta em NAO_MEDIDO
+                - id: B-2
+                  given: uma competência sem âncora no contrato
+                  when: o contrato é carregado
+                  then: retorna NAO_MEDIDO como valor, sem gravar nem encerrar o processo
+              evals:
+                - id: eval_1
+                  description: Cinco controles com procedência; sem aprovador vira NAO_MEDIDO
+                  bash: pytest -q tests/test_contrato.py -k "ancorada or sem_procedencia"
+                  verifies: [B-1]
+                - id: eval_2
+                  description: Sem âncora retorna NAO_MEDIDO sem escrever em disco
+                  bash: pytest -q tests/test_contrato.py -k nao_medido
+                  verifies: [B-2]
+                - id: eval_3
+                  description: O layout declara as 14 posições, com Espécie em 12 e 13
+                  bash: pytest -q tests/test_contrato.py -k layout
+                  verifies: [B-1, B-2]
+              anti_patterns:
+                - action: gerar a âncora quando ela falta
+                  reason: um número que ninguém viu medir é um palpite
+                  instead: retornar NAO_MEDIDO
+                - action: editar a âncora para um veredito passar
+                  reason: falsifica a verdade contra a qual tudo é medido
+                  instead: investigar; âncora revista exige nova aprovação
+                - action: declarar colunas por nome no contrato
+                  reason: Espécie aparece duas vezes e o nome não decide qual
+                  instead: declarar o índice posicional
+              do_not_touch: [_raw, cvg/docs/adrs]
+              rollback: Remover o carregador de contrato e seus testes.
+              observability: competências ancoradas no contrato
+  - id: SEAM-LEITURA
+    name: Leitura posicional
+    description: Separa a extração dos bytes da interpretação monetária.
+    evidence: [E-ESPECIE-TRUNCADA]
+    responsibility: >-
+      Ler os registros por posição declarada, preservando os bytes originais.
+    consumes: [arquivo da competência, contrato validado]
+    produces: [registros lidos, defeitos observados]
+    owner: leitura
+    independent_proof: >-
+      O sha256 do arquivo é idêntico após a leitura, e cada campo vem da
+      posição declarada mesmo com cabeçalho repetido.
+    decision_ids: [ADR-0002-POSICIONAL]
+    rejected_alternatives:
+      - alternative: Ler por nome de cabeçalho, renomeando a duplicata
+        reason: >-
+          A renomeação é por ordem de aparição, não por significado; se a
+          fonte inverter as colunas, lê a errada sem acusar.
+    swimlane:
+      id: LANE-LEITURA
+      name: Leitura lane
+      owner: leitura
+      legs:
+        - id: LEG-LEITURA-POSICIONAL
+          observable_state: A leitura é posicional e não altera a fonte
+          proof: >-
+            sha256 inalterado; a coluna 12 traz código numérico e a 13
+            descrição de até 20 caracteres.
+          requires: [contrato validado]
+          produces: [registros lidos, defeitos observados]
+          tasks:
+            - id: T-20260921-leitura-posicional
+              title: Ler a competência por posição, sem alterar a fonte
+              goal: Extrair registros preservando os bytes e o defeito de origem.
+              done_condition: >-
+                sha256 idêntico antes e depois; código e descrição saem de
+                posições distintas; registro ilegível entra em
+                linhas_invalidas.
+              effort: M
+              profile: standard
+              execution_backend: any
+              required_tools: [git, bash, python3, pytest]
+              depends_on: [T-20260921-contrato-ancora]
+              touches_paths: []
+              creates_paths:
+                - src/pda/leitura.py
+                - tests/test_leitura.py
+                - tests/fixtures/competencia-min.csv
+              behavior:
+                - id: B-1
+                  given: um arquivo com Espécie repetida no cabeçalho e o layout declarado
+                  when: a leitura termina
+                  then: o sha256 do arquivo é idêntico, e código e descrição vêm das posições 12 e 13 — não do nome
+                - id: B-2
+                  given: um registro cujo campo monetário é ilegível
+                  when: os registros são contados
+                  then: ele entra em linhas_invalidas, não entra na soma, e sai com identidade, valor original e posição
+              evals:
+                - id: eval_1
+                  description: Fonte byte-idêntica e leitura posicional com cabeçalho repetido
+                  bash: pytest -q tests/test_leitura.py -k "sha256 or posicional"
+                  verifies: [B-1]
+                - id: eval_2
+                  description: Registro ilegível vira linha inválida com identidade
+                  bash: pytest -q tests/test_leitura.py -k invalida
+                  verifies: [B-2]
+                - id: eval_3
+                  description: A leitura reporta sua duração para a orquestração medir o total
+                  bash: pytest -q tests/test_leitura.py -k duracao
+                  verifies: [B-1, B-2]
+              anti_patterns:
+                - action: escrever no arquivo de origem
+                  reason: destrói a prova de que a origem publicou aquilo
+                  instead: tratar _raw/ como somente leitura
+                - action: ler colunas por nome de cabeçalho
+                  reason: Espécie repetida faz perder uma das duas em silêncio
+                  instead: ler por posição declarada no contrato
+                - action: corrigir valor malformado durante a leitura
+                  reason: apaga o defeito antes da classificação
+                  instead: preservar e contar como linha inválida
+              do_not_touch: [_raw]
+              rollback: Remover o leitor e seus testes.
+              observability: registros lidos e defeitos por tipo
+  - id: SEAM-AGREGACAO
+    name: Agregação monetária
+    description: Separa a soma exata da comparação contra a âncora.
+    evidence: [E-ANCORA-202601]
+    responsibility: >-
+      Somar o valor líquido com precisão declarada e agrupar pelo código.
+    consumes: [registros lidos]
+    produces: [agregado da competência]
+    owner: agregacao
+    independent_proof: >-
+      Float é recusado na entrada; agrupar por descrição produz contagem
+      diferente de agrupar por código.
+    decision_ids: [ADR-0003-HALF-EVEN, ADR-0004-CODIGO-E-CHAVE]
+    rejected_alternatives:
+      - alternative: Usar float e arredondar no final
+        reason: 0.1 + 0.2 != 0.3 em binário; o centavo some sem nada acusar.
+      - alternative: Agrupar por descricao_especie
+        reason: >-
+          51 códigos colapsam em 40 descrições; quatro espécies virariam uma
+          linha com o total continuando a bater.
+    swimlane:
+      id: LANE-AGREGACAO
+      name: Agregação lane
+      owner: agregacao
+      legs:
+        - id: LEG-AGREGADO-EXATO
+          observable_state: O agregado é exato e a chave é o código
+          proof: >-
+            Float recusado; precisão baixa acusa a perda; agrupar por
+            descrição diverge de agrupar por código.
+          requires: [registros lidos]
+          produces: [agregado da competência]
+          tasks:
+            - id: T-20260921-agregacao-exata
+              title: Somar com precisão declarada e agrupar pelo código
+              goal: Tornar as três decisões de decimal explícitas e verificáveis.
+              done_condition: >-
+                Float recusado na entrada; os cinco controles saem nomeados;
+                agrupar por descrição diverge de agrupar por código.
+              effort: M
+              profile: standard
+              execution_backend: any
+              required_tools: [git, bash, python3, pytest]
+              depends_on: [T-20260921-leitura-posicional]
+              touches_paths: []
+              creates_paths:
+                - src/pda/agregacao.py
+                - tests/test_agregacao.py
+              behavior:
+                - id: B-1
+                  given: um valor de ponto flutuante em campo monetário
+                  when: o agregado é calculado
+                  then: a entrada é recusada com erro explícito, e o agregado devolvido traz os cinco controles nomeados
+                - id: B-2
+                  given: um contexto decimal de precisão baixa e valores em empate exato
+                  when: o total é calculado
+                  then: precisão e modo são declarados, não herdados — a perda por precisão é acusada, e arredondar por campo produz total diferente de arredondar no total
+              evals:
+                - id: eval_1
+                  description: Float recusado; cinco controles nomeados no agregado
+                  bash: pytest -q tests/test_agregacao.py -k "recusa_float or cinco_controles"
+                  verifies: [B-1]
+                - id: eval_2
+                  description: Precisão e modo declarados; granularidade no total
+                  bash: pytest -q tests/test_agregacao.py -k "precisao_declarada or granularidade"
+                  verifies: [B-2]
+                - id: eval_3
+                  description: Agrupar por descrição diverge de agrupar por código
+                  bash: pytest -q tests/test_agregacao.py -k chave_e_codigo
+                  verifies: [B-1, B-2]
+              anti_patterns:
+                - action: herdar o arredondamento padrão da linguagem
+                  reason: defaults divergem e o erro fica estruturalmente verde
+                  instead: declarar precisão, granularidade e regra
+                - action: agrupar por descricao_especie
+                  reason: quatro espécies virariam uma linha e o total bateria
+                  instead: agrupar pelo código da posição 12
+                - action: arredondar a cada soma parcial
+                  reason: o erro de arredondamento acumula linha a linha
+                  instead: somar exato e arredondar uma vez no final
+              do_not_touch: [_raw, cvg/docs/adrs]
+              rollback: Remover o agregador e seus testes.
+              observability: total agregado e espécies distintas
+  - id: SEAM-JUIZO
+    name: Juízo do agregado
+    description: Separa a decisão de aceitar da produção do número.
+    evidence: [E-ANCORA-202601]
+    responsibility: >-
+      Comparar os cinco controles contra a âncora e classificar toda
+      diferença.
+    consumes: [agregado da competência, contrato validado, defeitos observados]
+    produces: [veredito classificado]
+    owner: juizo
+    independent_proof: >-
+      Uma linha removida do arquivo é recusada, e divergência em qualquer
+      controle recusa mesmo classificada.
+    decision_ids: [ADR-0003-HALF-EVEN]
+    rejected_alternatives:
+      - alternative: Aceitar diferença abaixo de um limite configurável
+        reason: >-
+          Tolerância configurável é como um centavo inexplicado vira um
+          centavo aceito.
+    swimlane:
+      id: LANE-JUIZO
+      name: Juízo lane
+      owner: juizo
+      legs:
+        - id: LEG-JUIZO-ACUSA
+          observable_state: O juiz recusa divergência em qualquer controle
+          proof: >-
+            Agregado com uma linha a menos é recusado; controle divergente
+            classificado como CONFIRMED também recusa.
+          requires: [agregado da competência, contrato validado, defeitos observados]
+          produces: [veredito classificado]
+          tasks:
+            - id: T-20260921-juizo-classifica
+              title: Comparar os cinco controles e classificar a diferença
+              goal: Fazer o juiz acusar, não apenas aprovar.
+              done_condition: >-
+                Os cinco controles comparados individualmente; divergência
+                recusa mesmo classificada; defeito sem classificação bloqueia.
+              effort: M
+              profile: standard
+              execution_backend: any
+              required_tools: [git, bash, python3, pytest]
+              depends_on: [T-20260921-agregacao-exata]
+              touches_paths: []
+              creates_paths:
+                - src/pda/juizo.py
+                - tests/test_juizo.py
+              behavior:
+                - id: B-1
+                  given: um agregado com uma linha a menos, e outro que redistribui valores mantendo soma e contagem
+                  when: o juízo compara contra a âncora
+                  then: os cinco controles são comparados individualmente e qualquer divergência recusa — soma e contagem iguais não bastam
+                - id: B-2
+                  given: uma diferença de cada uma das seis classificações, incluindo um controle divergente marcado CONFIRMED
+                  when: o veredito é calculado
+                  then: divergência em qualquer controle RECUSA mesmo classificada; fora dos controles, MODERN_DEFECT, CONTRACT_AMBIGUITY e UNRESOLVED bloqueiam e as três CONFIRMED/APPROVED apenas registram
+              evals:
+                - id: eval_1
+                  description: Linha a menos recusa; extremos alterados com soma igual também
+                  bash: pytest -q tests/test_juizo.py -k "linha_a_menos or cinco_controles"
+                  verifies: [B-1]
+                - id: eval_2
+                  description: Precedência — controle divergente recusa mesmo classificado
+                  bash: pytest -q tests/test_juizo.py -k precedencia
+                  verifies: [B-2]
+                - id: eval_3
+                  description: Defeito observado sem classificação bloqueia
+                  bash: pytest -q tests/test_juizo.py -k defeito_sem_classe
+                  verifies: [B-1, B-2]
+              anti_patterns:
+                - action: introduzir parâmetro de tolerância
+                  reason: um centavo inexplicado viraria um centavo aceito
+                  instead: classificar a diferença ou consertar o pipeline
+                - action: editar a âncora para o veredito passar
+                  reason: falsifica a prova em vez de investigar
+                  instead: investigar; âncora revista exige nova aprovação
+                - action: deixar a classificação autorizar publicação
+                  reason: CONFIRMED explica a diferença, não a aprova
+                  instead: divergência em controle recusa, classificada ou não
+              do_not_touch: [_raw, cvg/docs/adrs, contracts]
+              rollback: Remover o juízo e seus testes.
+              observability: vereditos por classificação
+  - id: SEAM-EVIDENCIA
+    name: Pacote de evidência
+    description: Separa o registro da prova da decisão que a produziu.
+    evidence: [E-ANCORA-202601]
+    responsibility: Gravar veredito, causa e números de forma reconstruível.
+    consumes: [veredito classificado]
+    produces: [pacote de evidência]
+    owner: evidencia
+    independent_proof: >-
+      O veredito é reconstruído do pacote sem reexecutar, e uma execução não
+      sobrescreve a anterior.
+    decision_ids: [ADR-0004-CODIGO-E-CHAVE]
+    rejected_alternatives:
+      - alternative: Gravar com overwrite, como o carregamento atual
+        reason: >-
+          Destrói a execução anterior; impossível responder depois o que foi
+          publicado ou comparar duas execuções.
+    swimlane:
+      id: LANE-EVIDENCIA
+      name: Evidência lane
+      owner: evidencia
+      legs:
+        - id: LEG-EVIDENCIA-RECONSTROI
+          observable_state: O pacote reconstrói o veredito sem reexecutar
+          proof: >-
+            Ler o pacote reproduz o veredito; gravar duas execuções preserva
+            as duas.
+          requires: [veredito classificado]
+          produces: [pacote de evidência]
+          tasks:
+            - id: T-20260921-evidencia-packet
+              title: Gravar o pacote por execução, sem sobrescrever
+              goal: Tornar o veredito auditável sem reexecutar o pipeline.
+              done_condition: >-
+                O pacote traz veredito, causa, âncora, agregado, duração e
+                classificações; duas execuções coexistem.
+              effort: S
+              profile: standard
+              execution_backend: any
+              required_tools: [git, bash, python3, pytest]
+              depends_on: [T-20260921-juizo-classifica]
+              touches_paths: []
+              creates_paths:
+                - src/pda/evidencia.py
+                - tests/test_evidencia.py
+              behavior:
+                - id: B-1
+                  given: uma execução com âncora, e outra que terminou antes da leitura
+                  when: o pacote é lido de volta
+                  then: o veredito é reconstruído sem reexecutar, com duração e limite aplicados; campos não percorridos são marcados ausentes, nunca zerados
+                - id: B-2
+                  given: duas execuções da mesma competência
+                  when: a segunda é gravada
+                  then: as duas coexistem — a segunda não sobrescreve a primeira
+              evals:
+                - id: eval_1
+                  description: O pacote reconstrói o veredito e marca ausências
+                  bash: pytest -q tests/test_evidencia.py -k "reconstroi or ausente"
+                  verifies: [B-1]
+                - id: eval_2
+                  description: Duas execuções coexistem, sem overwrite
+                  bash: pytest -q tests/test_evidencia.py -k nao_sobrescreve
+                  verifies: [B-2]
+                - id: eval_3
+                  description: Os quatro vereditos terminais são distinguíveis
+                  bash: pytest -q tests/test_evidencia.py -k vereditos
+                  verifies: [B-1, B-2]
+              anti_patterns:
+                - action: gravar com mode overwrite
+                  reason: e o defeito do carregamento atual — destrói a prova
+                  instead: gravar um pacote por execução
+                - action: editar um pacote antigo para corrigir o histórico
+                  reason: falsifica evidência
+                  instead: gravar evidência nova e manter a antiga
+                - action: preencher campo ausente com zero
+                  reason: a reconstrução passa a mentir
+                  instead: marcar como ausente
+              do_not_touch: [_raw, evidence]
+              rollback: Remover o gravador de evidência e seus testes.
+              observability: pacotes gravados por competência
+  - id: SEAM-ORQUESTRACAO
+    name: Orquestração da execução
+    description: Separa quem decide o desfecho de quem produz cada parte.
+    evidence: [E-ANCORA-202601]
+    responsibility: >-
+      Encadear as etapas, decidir o veredito terminal e o código de saída, e
+      garantir pacote em todo caminho.
+    consumes: [contrato validado, veredito classificado, pacote de evidência]
+    produces: [desfecho da execução]
+    owner: orquestracao
+    independent_proof: >-
+      Os quatro desfechos terminam com pacote e código distintos, e uma
+      exceção real vira ERRO com pacote.
+    decision_ids: [ADR-0003-HALF-EVEN]
+    rejected_alternatives:
+      - alternative: Deixar cada etapa encerrar o processo
+        reason: >-
+          O contrato sairia antes da leitura e o pacote prometido nunca seria
+          gravado; encerrar é decisão de fluxo, não de etapa.
+    swimlane:
+      id: LANE-ORQUESTRACAO
+      name: Orquestração lane
+      owner: orquestracao
+      legs:
+        - id: LEG-DESFECHO-COM-PACOTE
+          observable_state: Todo caminho termina com pacote e código de saída
+          proof: >-
+            Os quatro desfechos gravam pacote; uma exceção dentro da leitura
+            vira ERRO com pacote; o tempo é medido do início ao veredito.
+          requires: [contrato validado, veredito classificado, pacote de evidência]
+          produces: [desfecho da execução]
+          tasks:
+            - id: T-20260921-orquestra-desfecho
+              title: Decidir o desfecho e garantir o pacote em todo caminho
+              goal: Dar dono ao fluxo — sem ele a lacuna migra de etapa em etapa.
+              done_condition: >-
+                Os quatro desfechos gravam pacote com código próprio; exceção
+                real vira ERRO; o tempo total é medido contra R-9.
+              effort: M
+              profile: standard
+              execution_backend: any
+              required_tools: [git, bash, python3, pytest]
+              depends_on: [T-20260921-evidencia-packet]
+              touches_paths: []
+              creates_paths:
+                - src/pda/orquestracao.py
+                - tests/test_orquestracao.py
+              behavior:
+                - id: B-1
+                  given: execução sem âncora, execução que bate, e o arquivo com uma linha removida
+                  when: a orquestração conduz o fluxo inteiro
+                  then: as três gravam pacote — ACEITO_SEM_ANCORA, ACEITO e RECUSADO — com códigos de saída distintos, e só ACEITO autoriza publicar
+                - id: B-2
+                  given: uma exceção real levantada dentro da leitura, e uma execução que estoura o limite de tempo
+                  when: a orquestração conduz a execução
+                  then: a exceção vira ERRO com pacote gravado, e o tempo é medido do início da leitura ao veredito, no total — nunca por etapa somada depois
+              evals:
+                - id: eval_1
+                  description: Os quatro desfechos gravam pacote com código próprio
+                  bash: pytest -q tests/test_orquestracao.py -k desfechos
+                  verifies: [B-1]
+                - id: eval_2
+                  description: Exceção real vira ERRO; o tempo é medido no total
+                  bash: pytest -q tests/test_orquestracao.py -k "excecao or tempo_total"
+                  verifies: [B-2]
+                - id: eval_3
+                  description: Só ACEITO autoriza publicar
+                  bash: pytest -q tests/test_orquestracao.py -k autoriza
+                  verifies: [B-1, B-2]
+              anti_patterns:
+                - action: encerrar o processo dentro de uma etapa
+                  reason: o pacote prometido nunca é gravado
+                  instead: retornar o veredito e deixar a orquestração decidir
+                - action: medir o tempo por etapa
+                  reason: etapa rápida com o resto lento passaria
+                  instead: medir do início da leitura ao veredito
+                - action: tratar ACEITO_SEM_ANCORA como autorização
+                  reason: a palavra aceito nomeia o término, não a prova
+                  instead: só ACEITO autoriza, com os cinco controles conferidos
+              do_not_touch: [_raw, cvg/docs/adrs]
+              rollback: Remover a orquestração e seus testes.
+              observability: desfechos por tipo e segundos até o veredito
+steel_thread:
+  - LEG-CONTRATO-RECUSA-SEM-ANCORA
+  - LEG-LEITURA-POSICIONAL
+  - LEG-AGREGADO-EXATO
+  - LEG-JUIZO-ACUSA
+  - LEG-EVIDENCIA-RECONSTROI
+  - LEG-DESFECHO-COM-PACOTE
+objections: []
+contentions: []
