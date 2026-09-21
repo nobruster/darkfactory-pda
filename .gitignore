@@ -29,3 +29,8 @@ Thumbs.db
 # Editor
 .idea/
 *.swp
+
+# a fonte: bytes originais ficam no disco, nao no git
+_raw/*.csv
+_raw/*.ZIP
+_raw/*.zip
