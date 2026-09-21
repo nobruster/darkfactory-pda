@@ -15,9 +15,63 @@ Atualizado em 17/09/2026.
 | 2 · Structure | `cvg structure --final` | 🟢 `CHECK_ADR=OK` |
 | 3 · Decompose | `seamwise compile` | 🟢 `TASK_GRAPH=READY` — 6 tarefas |
 | 4 · Consensus | `cvg review --check` | 🟢 `CHECK_CONSENSUS=OK` — **GREEN** |
-| 5 · Tasking | `taskspec gate --stamp` | ⬜ |
-| 7 · Bind | `cvg bind` | ⬜ |
-| 8 · Loop | `cvg loop` | ⬜ |
+| 5 · Tasking | `taskspec gate --stamp` | 🟢 `TIER=1` — HMAC v3 nas 6 folhas |
+| 7 · Bind | `cvg bind` | 🟢 `CHECK_RUNTIME_CONTRACT=PASS` nas 6 |
+| 8 · Loop | `cvg loop` | 🟢 `LOCAL_SETTLED` — 1 de 6 entregue |
+
+## A cadeia entregou código
+
+A primeira tarefa do steel thread fechou o ciclo completo, do BRD ao
+commit aceito:
+
+```
+VERDICT: ACCEPT — Tier 1 evidence bound to the authorized attempt
+ACCEPTED=1 · TASK_LOOP=LOCAL_SETTLED · iterations 1/5 · 276s
+```
+
+Na branch `task/contrato-ancora`, dois commits — `green eval` e
+`protected acceptance`:
+
+| Arquivo | Linhas |
+|---|---|
+| `src/fabrica/contrato.py` | 109 |
+| `tests/test_contrato.py` | 103 |
+| `contracts/competencia.yaml` | 101 |
+
+**8 testes passam** no código commitado, conferido num worktree separado.
+
+O roteamento de modelo decidiu com dado real: `--model sonnet --effort
+medium`, como o `cost-profile.py` previu para esforço M.
+
+**A aceitação é independente** (Barreira E): quem faz não aceita. O registro
+tem `attempt_id`, digest e tier próprios, e só então o status vira
+`accepted`.
+
+⚠️ **`external_writes` está em `deny`** — por isso `LOCAL_SETTLED` e não
+`SETTLED`. O commit existe, o PR não. Para publicar:
+`cvg loop --allow-external-writes`.
+
+### 🔴 Achado: o doctor não cobre as dependências dos evals
+
+Três dos quatro bloqueios do Pass 8 foram **ambientais**, não de lógica:
+
+| Bloqueio | O que faltava |
+|---|---|
+| `pytest: command not found` | pytest no WSL |
+| `fatal: empty ident name` | `user.name`/`user.email` no git |
+| `ModuleNotFoundError: yaml` | PyYAML |
+
+O `cvg doctor host` verifica git, bash, python3, shellcheck e sha256 — mas
+**não confere o que os evals da tarefa importam**. A Task-Spec declara
+`required_tools: [git, bash, python3, pytest]` e ninguém valida isso antes
+de gastar tentativas de LLM.
+
+O agente chegou a gastar uma tentativa inteira tentando consertar código
+que estava certo — o erro era `ModuleNotFoundError`.
+
+⚠️ Também: worktrees de tentativas anteriores **prendem a branch `task/*`** e
+bloqueiam o settlement seguinte com *"already used by worktree"*. O loop não
+os limpa sozinho.
 
 Os vereditos acima vêm dos **gates**, não do `[+]` do conductor — o conductor
 só confere que o arquivo existe.
