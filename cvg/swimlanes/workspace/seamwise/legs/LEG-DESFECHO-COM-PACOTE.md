@@ -44,7 +44,9 @@ tasks:
     given: uma exceção real levantada dentro da leitura, e uma execução que estoura o limite de tempo
     when: a orquestração conduz a execução
     then: a exceção vira ERRO com pacote gravado, e o tempo é medido do início da leitura ao veredito,
-      no total — nunca por etapa somada depois
+      no total. Se o PRÓPRIO gravador falhar — permissão negada, disco cheio — o desfecho é ERRO com código
+      próprio e a falha vai para a saída de erro; nunca se devolve ACEITO sem pacote, porque autorização
+      sem evidência é o que esta fábrica existe para impedir
   evals:
   - id: eval_1
     description: Os quatro desfechos gravam pacote com código próprio
@@ -77,7 +79,7 @@ tasks:
   - cvg/docs/adrs
   rollback: Remover a orquestração e seus testes.
   observability: desfechos por tipo e segundos até o veredito
-source_seam_sha256: 6f0228fa48afe590208c2fd0d9eb4a441ea3f51b5b74600bca86d34119fed18a
+source_seam_sha256: 52da5c86fe059445eea2a21aad92340aa77f5ccc68d841d09e3070022c4e357b
 ---
 # Todo caminho termina com pacote e código de saída
 

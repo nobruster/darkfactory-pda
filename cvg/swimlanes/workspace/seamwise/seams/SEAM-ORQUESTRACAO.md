@@ -69,7 +69,9 @@ swimlane:
         given: uma exceção real levantada dentro da leitura, e uma execução que estoura o limite de tempo
         when: a orquestração conduz a execução
         then: a exceção vira ERRO com pacote gravado, e o tempo é medido do início da leitura ao veredito,
-          no total — nunca por etapa somada depois
+          no total. Se o PRÓPRIO gravador falhar — permissão negada, disco cheio — o desfecho é ERRO com
+          código próprio e a falha vai para a saída de erro; nunca se devolve ACEITO sem pacote, porque
+          autorização sem evidência é o que esta fábrica existe para impedir
       evals:
       - id: eval_1
         description: Os quatro desfechos gravam pacote com código próprio

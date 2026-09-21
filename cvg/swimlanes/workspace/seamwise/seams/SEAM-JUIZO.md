@@ -9,9 +9,8 @@ evidence:
 - E-ANCORA-202601
 responsibility: Comparar os cinco controles contra a âncora e classificar toda diferença.
 consumes:
-- agregado da competência
+- envelope do produtor
 - contrato validado
-- defeitos observados
 produces:
 - veredito classificado
 owner: juizo
@@ -32,9 +31,8 @@ swimlane:
     proof: Agregado com uma linha a menos é recusado; controle divergente classificado como CONFIRMED
       também recusa.
     requires:
-    - agregado da competência
+    - envelope do produtor
     - contrato validado
-    - defeitos observados
     produces:
     - veredito classificado
     tasks:
@@ -52,7 +50,7 @@ swimlane:
       - python3
       - pytest
       depends_on:
-      - T-20260921-agregacao-exata
+      - T-20260921-envelope-fronteira
       touches_paths: []
       creates_paths:
       - src/pda/juizo.py

@@ -220,21 +220,21 @@ seams:
                 - tests/fixtures/competencia-min.csv
               behavior:
                 - id: B-1
-                  given: um arquivo com Espécie repetida no cabeçalho e o layout declarado
-                  when: a leitura termina
-                  then: o sha256 do arquivo é idêntico, e código e descrição vêm das posições 12 e 13 — não do nome
+                  given: um arquivo com Espécie repetida e o layout declarado, e outro com duas colunas não monetárias trocadas de lugar
+                  when: a leitura começa
+                  then: no primeiro o sha256 fica idêntico e código e descrição vêm das posições 12 e 13; no segundo a leitura BLOQUEIA antes de ler qualquer registro — trocar colunas não monetárias preserva os cinco controles, então o juiz monetário não supriria este gate
                 - id: B-2
-                  given: um registro cujo campo monetário é ilegível
+                  given: um registro cujo campo monetário é ilegível, e outro cuja descrição tem exatamente 20 caracteres com dinheiro válido
                   when: os registros são contados
-                  then: ele entra em linhas_invalidas, não entra na soma, e sai com identidade, valor original e posição
+                  then: o primeiro entra em linhas_invalidas com identidade, valor original e posição; o segundo NÃO é inválido mas emite defeito de truncamento — o defeito do ADR 0004 tem de chegar ao juízo, não ficar só documentado
               evals:
                 - id: eval_1
-                  description: Fonte byte-idêntica e leitura posicional com cabeçalho repetido
-                  bash: pytest -q tests/test_leitura.py -k "sha256 or posicional"
+                  description: Leitura posicional; cabeçalho fora de ordem bloqueia antes de ler
+                  bash: pytest -q tests/test_leitura.py -k "sha256 or posicional or layout_incompativel"
                   verifies: [B-1]
                 - id: eval_2
-                  description: Registro ilegível vira linha inválida com identidade
-                  bash: pytest -q tests/test_leitura.py -k invalida
+                  description: Ilegível vira inválida; descrição truncada emite defeito
+                  bash: pytest -q tests/test_leitura.py -k "invalida or truncamento_emitido"
                   verifies: [B-2]
                 - id: eval_3
                   description: A leitura reporta sua duração para a orquestração medir o total
@@ -307,17 +307,17 @@ seams:
                   when: o agregado é calculado
                   then: a entrada é recusada com erro explícito, e o agregado devolvido traz os cinco controles nomeados
                 - id: B-2
-                  given: um contexto decimal de precisão baixa e valores em empate exato
+                  given: um contexto decimal de precisão baixa, valores em empate exato, e a alternativa meio-para-cima
                   when: o total é calculado
-                  then: precisão e modo são declarados, não herdados — a perda por precisão é acusada, e arredondar por campo produz total diferente de arredondar no total
+                  then: o resultado é o de HALF_EVEN a duas casas — comparado contra o valor que HALF_UP produziria, e RECUSANDO-o; declarar um modo não basta, o teste falha se a implementação usar meio-para-cima. A perda por precisão baixa também é acusada, e arredondar por campo difere de arredondar no total
               evals:
                 - id: eval_1
                   description: Float recusado; cinco controles nomeados no agregado
                   bash: pytest -q tests/test_agregacao.py -k "recusa_float or cinco_controles"
                   verifies: [B-1]
                 - id: eval_2
-                  description: Precisão e modo declarados; granularidade no total
-                  bash: pytest -q tests/test_agregacao.py -k "precisao_declarada or granularidade"
+                  description: HALF_EVEN recusa o valor que HALF_UP daria; precisão e granularidade
+                  bash: pytest -q tests/test_agregacao.py -k "recusa_half_up or precisao_declarada or granularidade"
                   verifies: [B-2]
                 - id: eval_3
                   description: Agrupar por descrição diverge de agrupar por código
@@ -343,7 +343,7 @@ seams:
     responsibility: >-
       Comparar os cinco controles contra a âncora e classificar toda
       diferença.
-    consumes: [agregado da competência, contrato validado, defeitos observados]
+    consumes: [envelope do produtor, contrato validado]
     produces: [veredito classificado]
     owner: juizo
     independent_proof: >-
@@ -365,7 +365,7 @@ seams:
           proof: >-
             Agregado com uma linha a menos é recusado; controle divergente
             classificado como CONFIRMED também recusa.
-          requires: [agregado da competência, contrato validado, defeitos observados]
+          requires: [envelope do produtor, contrato validado]
           produces: [veredito classificado]
           tasks:
             - id: T-20260921-juizo-classifica
@@ -378,7 +378,7 @@ seams:
               profile: standard
               execution_backend: any
               required_tools: [git, bash, python3, pytest]
-              depends_on: [T-20260921-agregacao-exata]
+              depends_on: [T-20260921-envelope-fronteira]
               touches_paths: []
               creates_paths:
                 - src/pda/juizo.py
@@ -553,7 +553,7 @@ seams:
                 - id: B-2
                   given: uma exceção real levantada dentro da leitura, e uma execução que estoura o limite de tempo
                   when: a orquestração conduz a execução
-                  then: a exceção vira ERRO com pacote gravado, e o tempo é medido do início da leitura ao veredito, no total — nunca por etapa somada depois
+                  then: a exceção vira ERRO com pacote gravado, e o tempo é medido do início da leitura ao veredito, no total. Se o PRÓPRIO gravador falhar — permissão negada, disco cheio — o desfecho é ERRO com código próprio e a falha vai para a saída de erro; nunca se devolve ACEITO sem pacote, porque autorização sem evidência é o que esta fábrica existe para impedir
               evals:
                 - id: eval_1
                   description: Os quatro desfechos gravam pacote com código próprio
@@ -580,12 +580,178 @@ seams:
               do_not_touch: [_raw, cvg/docs/adrs]
               rollback: Remover a orquestração e seus testes.
               observability: desfechos por tipo e segundos até o veredito
+  - id: SEAM-FRONTEIRA
+    name: Fronteira produtor-juiz
+    description: >-
+      Separa quem produz o agregado de quem o julga. O ADR 0005 decidiu que
+      são motores diferentes; esta costura escreve o contrato entre eles,
+      para que o produtor real implemente contra algo declarado em vez de
+      contra o que o juiz por acaso aceita.
+    evidence: [E-ANCORA-202601]
+    responsibility: >-
+      Declarar e validar o envelope que o produtor entrega ao juiz — os
+      cinco controles, a procedência do arquivo lido e os defeitos
+      observados.
+    consumes: [agregado da competência, defeitos observados]
+    produces: [envelope do produtor]
+    owner: fronteira
+    independent_proof: >-
+      Um envelope sem o sha256 do arquivo lido é recusado; um envelope cujo
+      sha256 difere do que o contrato ancorou é recusado; e linhas_invalidas
+      é conferido contra a contagem de defeitos, não aceito de graça.
+    decision_ids: [ADR-0005-MOTORES-SEPARADOS]
+    rejected_alternatives:
+      - alternative: Deixar o juiz ler o Parquet do lago diretamente
+        reason: >-
+          O juiz passaria a depender do formato e do motor que julga — se a
+          leitura distribuída perder uma coluna, os dois lados concordariam.
+      - alternative: Definir o envelope só quando o Spark existir
+        reason: >-
+          O produtor implementaria contra o que o juiz por acaso aceita, e a
+          fronteira nasceria implícita — que é como C1, C4 e C5 apareceram.
+    swimlane:
+      id: LANE-FRONTEIRA
+      name: Fronteira lane
+      owner: fronteira
+      legs:
+        - id: LEG-ENVELOPE-VINCULADO
+          observable_state: O envelope liga o agregado ao arquivo que o gerou
+          proof: >-
+            Envelope sem sha256 do arquivo é recusado; sha256 divergente do
+            ancorado é recusado; linhas_invalidas incoerente com os defeitos
+            observados é recusado.
+          requires: [agregado da competência, defeitos observados]
+          produces: [envelope do produtor]
+          tasks:
+            - id: T-20260921-envelope-fronteira
+              title: Declarar e validar o envelope entre produtor e juiz
+              goal: >-
+                Fazer a fronteira ser um contrato escrito, não o que o juiz
+                por acaso aceita.
+              done_condition: >-
+                O envelope declara os cinco controles, o sha256 do arquivo
+                lido e os defeitos; validação recusa sha256 ausente,
+                divergente, ou linhas_invalidas incoerente.
+              effort: M
+              profile: standard
+              execution_backend: any
+              required_tools: [git, bash, python3, pytest]
+              depends_on: [T-20260921-agregacao-exata]
+              touches_paths: []
+              creates_paths:
+                - src/pda/envelope.py
+                - tests/test_envelope.py
+                - contracts/envelope-produtor.schema.json
+              behavior:
+                - id: B-1
+                  given: um envelope sem o sha256 do arquivo lido, e outro cujo sha256 difere do que o contrato ancorou
+                  when: o envelope é validado
+                  then: ambos são recusados — a âncora vale para UM arquivo, e sem esse vínculo uma republicação com os mesmos cinco controles passaria despercebida
+                - id: B-2
+                  given: um envelope com linhas_invalidas menor que a contagem de defeitos observados, e outro produzido por um motor que não é o juiz
+                  when: o envelope é validado
+                  then: o primeiro é recusado por incoerência interna; o segundo é aceito sem que o juiz importe nada do motor produtor
+              evals:
+                - id: eval_1
+                  description: Sha256 ausente ou divergente do ancorado é recusado
+                  bash: pytest -q tests/test_envelope.py -k "sha_ausente or sha_divergente"
+                  verifies: [B-1]
+                - id: eval_2
+                  description: linhas_invalidas incoerente com os defeitos é recusado
+                  bash: pytest -q tests/test_envelope.py -k invalidas_coerentes
+                  verifies: [B-2]
+                - id: eval_3
+                  description: O schema aceita envelope de qualquer produtor, sem importar o motor
+                  bash: pytest -q tests/test_envelope.py -k produtor_agnostico
+                  verifies: [B-1, B-2]
+              anti_patterns:
+                - action: aceitar envelope sem o sha256 do arquivo lido
+                  reason: a âncora vale para um arquivo; sem o vínculo, outra publicação da mesma competência passaria
+                  instead: exigir o sha256 e compará-lo com o ancorado
+                - action: importar o motor produtor dentro do validador
+                  reason: o juiz voltaria a depender de quem ele julga
+                  instead: validar o envelope como dado, seja qual for a origem
+                - action: aceitar linhas_invalidas sem conferir contra os defeitos
+                  reason: um produtor que conte só as válidas devolveria zero e ninguém acusaria
+                  instead: exigir coerência entre o controle e os defeitos observados
+              do_not_touch: [_raw, cvg/docs/adrs]
+              rollback: Remover o validador de envelope e seus testes.
+              observability: envelopes recusados por motivo
 steel_thread:
   - LEG-CONTRATO-RECUSA-SEM-ANCORA
   - LEG-LEITURA-POSICIONAL
   - LEG-AGREGADO-EXATO
+  - LEG-ENVELOPE-VINCULADO
   - LEG-JUIZO-ACUSA
   - LEG-EVIDENCIA-RECONSTROI
   - LEG-DESFECHO-COM-PACOTE
-objections: []
+objections:
+  - id: OBJ-C1
+    status: FIXED
+    summary: >-
+      O fluxo dito inteiro não cobria a arquitetura do ADR 0005 — dava para
+      concluir a cadeia com módulos Python e fixtures, sem nunca conectar o
+      produtor que será julgado.
+    owner: Bruno Nunes
+    rationale: >-
+      Criada a sétima costura, SEAM-FRONTEIRA. Ela escreve o contrato entre
+      produtor e juiz agora, para que o Spark implemente contra algo
+      declarado em vez de contra o que o juiz por acaso aceita. A
+      independência do ADR 0005 deixa de ser só declaração.
+  - id: OBJ-C2
+    status: FIXED
+    summary: >-
+      Declarar um modo de arredondamento não demonstrava HALF_EVEN — uma
+      implementação com HALF_UP passaria nos testes descritos.
+    owner: Bruno Nunes
+    rationale: >-
+      B-2 da agregação passou a exigir o resultado de HALF_EVEN comparado
+      contra o que HALF_UP produziria, recusando-o.
+  - id: OBJ-C3
+    status: FIXED
+    summary: >-
+      Leitura posicional não provava rejeição de mudança de layout; trocar
+      duas colunas não monetárias preservaria os cinco controles.
+    owner: Bruno Nunes
+    rationale: >-
+      B-1 da leitura passou a exigir bloqueio ANTES de ler qualquer
+      registro quando o cabeçalho está fora da ordem declarada, como o ADR
+      0002 promete.
+  - id: OBJ-C4
+    status: FIXED
+    summary: >-
+      A procedência não vinculava a âncora ao arquivo efetivamente lido —
+      uma republicação com os mesmos controles passaria.
+    owner: Bruno Nunes
+    rationale: >-
+      O envelope da SEAM-FRONTEIRA carrega o sha256 do arquivo lido, e a
+      validação recusa sha256 ausente ou divergente do ancorado.
+  - id: OBJ-C5
+    status: FIXED
+    summary: >-
+      A interface não definia como linhas inválidas chegam aos cinco
+      controles; um produtor que contasse só as válidas devolveria zero.
+    owner: Bruno Nunes
+    rationale: >-
+      O envelope exige coerência entre linhas_invalidas e a contagem de
+      defeitos observados, e recusa envelope incoerente.
+  - id: OBJ-C6
+    status: FIXED
+    summary: >-
+      O truncamento do ADR 0004 podia nunca chegar à classificação —
+      dinheiro válido e descrições truncadas passariam com defeitos vazios.
+    owner: Bruno Nunes
+    rationale: >-
+      B-2 da leitura passou a exigir que descrição de exatamente 20
+      caracteres emita defeito de truncamento, mesmo sem ser linha inválida.
+  - id: OBJ-C7
+    status: FIXED
+    summary: >-
+      A promessa de pacote em todo caminho assumia que a própria gravação
+      não falha.
+    owner: Bruno Nunes
+    rationale: >-
+      B-2 da orquestração declara o desfecho quando o gravador falha: ERRO
+      com código próprio, nunca ACEITO sem pacote — autorização sem
+      evidência é o que a fábrica existe para impedir.
 contentions: []

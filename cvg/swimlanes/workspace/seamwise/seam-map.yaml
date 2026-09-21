@@ -3,9 +3,9 @@ status: SEAM_MAP=READY
 intent_id: DI-PDA-BENEFICIOS
 source_recipe:
   name: pda-recipe.yaml
-  sha256: 24f3cb44ac86017b554fe66688bf49db6c4400c29d60c7b62ebacab64b3e8d3d
+  sha256: 6f31d8154269f9a09b61f90244f7cdd82d0ece067638db9d60ce016dd8714ea2
 intent_sha256: 01c40fa4e0b6ad03f2d908526c72f61772183c9e2435bafeddd295f092bf8566
-system_map_sha256: 8f242a241677dc979a3c046c97035c98b69a38c948802f03b13ac6df9a7de276
+system_map_sha256: e46876a3a1011cde6e70d708e0891b7c329a60d33782b9865e74bc955f508b0d
 evidence_sha256: 2f99c72ec331b73c69d5b61ea60268f45989f9cb56f51cbe9f33d3e9829b6bc3
 decisions:
 - id: ADR-0002-POSICIONAL
@@ -38,21 +38,21 @@ seams:
   evidence:
   - E-ESPECIE-TRUNCADA
   swimlane_id: LANE-LEITURA
-  sha256: f3efa25aff9247edc9d003bd2dbc8313b25814c9178adb8fa2ae3ff32a8c566a
+  sha256: baf78fca28fa858f3b6207e736d54a07173bf7bd80788c26961e0a872db75e61
 - id: SEAM-AGREGACAO
   path: seamwise/seams/SEAM-AGREGACAO.md
   owner: agregacao
   evidence:
   - E-ANCORA-202601
   swimlane_id: LANE-AGREGACAO
-  sha256: d41f37234f2d7dcaf6109914d7bf9cb28f882060fe10be0a5868bec97b96b597
+  sha256: 8e8b93a424bfaf490b5ef6743ea200e48e4c7386076a3f2c7364f5f5f4083c5e
 - id: SEAM-JUIZO
   path: seamwise/seams/SEAM-JUIZO.md
   owner: juizo
   evidence:
   - E-ANCORA-202601
   swimlane_id: LANE-JUIZO
-  sha256: d5f23e5ceaf9aa76ca3570da30faf4706d2caada941b06016fd5126b874575f5
+  sha256: 34b0096968f0bf7b9b48e9e9f90bb76ccf82f7bcf6cf9477c6999292558627dc
 - id: SEAM-EVIDENCIA
   path: seamwise/seams/SEAM-EVIDENCIA.md
   owner: evidencia
@@ -66,4 +66,11 @@ seams:
   evidence:
   - E-ANCORA-202601
   swimlane_id: LANE-ORQUESTRACAO
-  sha256: 6f0228fa48afe590208c2fd0d9eb4a441ea3f51b5b74600bca86d34119fed18a
+  sha256: 52da5c86fe059445eea2a21aad92340aa77f5ccc68d841d09e3070022c4e357b
+- id: SEAM-FRONTEIRA
+  path: seamwise/seams/SEAM-FRONTEIRA.md
+  owner: fronteira
+  evidence:
+  - E-ANCORA-202601
+  swimlane_id: LANE-FRONTEIRA
+  sha256: b7bb7f4e989d287e5387f3a68d68a3cb58a6e3bfc93453c1de786650bbd0f094

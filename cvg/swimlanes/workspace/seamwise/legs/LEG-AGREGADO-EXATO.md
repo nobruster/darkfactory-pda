@@ -37,10 +37,11 @@ tasks:
     when: o agregado é calculado
     then: a entrada é recusada com erro explícito, e o agregado devolvido traz os cinco controles nomeados
   - id: B-2
-    given: um contexto decimal de precisão baixa e valores em empate exato
+    given: um contexto decimal de precisão baixa, valores em empate exato, e a alternativa meio-para-cima
     when: o total é calculado
-    then: precisão e modo são declarados, não herdados — a perda por precisão é acusada, e arredondar
-      por campo produz total diferente de arredondar no total
+    then: o resultado é o de HALF_EVEN a duas casas — comparado contra o valor que HALF_UP produziria,
+      e RECUSANDO-o; declarar um modo não basta, o teste falha se a implementação usar meio-para-cima.
+      A perda por precisão baixa também é acusada, e arredondar por campo difere de arredondar no total
   evals:
   - id: eval_1
     description: Float recusado; cinco controles nomeados no agregado
@@ -48,8 +49,8 @@ tasks:
     verifies:
     - B-1
   - id: eval_2
-    description: Precisão e modo declarados; granularidade no total
-    bash: pytest -q tests/test_agregacao.py -k "precisao_declarada or granularidade"
+    description: HALF_EVEN recusa o valor que HALF_UP daria; precisão e granularidade
+    bash: pytest -q tests/test_agregacao.py -k "recusa_half_up or precisao_declarada or granularidade"
     verifies:
     - B-2
   - id: eval_3
@@ -73,7 +74,7 @@ tasks:
   - cvg/docs/adrs
   rollback: Remover o agregador e seus testes.
   observability: total agregado e espécies distintas
-source_seam_sha256: d41f37234f2d7dcaf6109914d7bf9cb28f882060fe10be0a5868bec97b96b597
+source_seam_sha256: 8e8b93a424bfaf490b5ef6743ea200e48e4c7386076a3f2c7364f5f5f4083c5e
 ---
 # O agregado é exato e a chave é o código
 

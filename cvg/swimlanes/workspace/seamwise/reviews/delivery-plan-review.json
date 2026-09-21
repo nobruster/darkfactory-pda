@@ -1,10 +1,10 @@
 {
   "disposition": "accepted",
-  "draft_sha256": "d1e2b25f835fac3e4ac043ce518b42bbdd5cf53d4ce88b17b17c143711c1a30a",
+  "draft_sha256": "353174c529040574d1617104ce8988c551c0d6156558ebbfadfff13ec5f98916",
   "fixture": false,
-  "plan_sha256": "c92c118c377cfc8badd2e62285f5f1b90926e44d55f67c860915c60942953ca5",
-  "reason": "revisei que todos os passos aplicados estao corretos",
-  "reviewed_at": "2026-09-21T23:40:23.715193+00:00",
+  "plan_sha256": "9ab53354183261a6286a770d586ebc525f69a028b78a1cf0eb63ccc99115682a",
+  "reason": "7 objecoes do adversario corrigidas; setima costura liga produtor e juiz",
+  "reviewed_at": "2026-09-21T23:51:54.941867+00:00",
   "reviewer": "Bruno Nunes",
   "schema_version": 1
 }

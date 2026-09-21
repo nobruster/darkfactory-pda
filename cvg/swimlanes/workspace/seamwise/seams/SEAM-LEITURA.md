@@ -59,23 +59,28 @@ swimlane:
       - tests/fixtures/competencia-min.csv
       behavior:
       - id: B-1
-        given: um arquivo com Espécie repetida no cabeçalho e o layout declarado
-        when: a leitura termina
-        then: o sha256 do arquivo é idêntico, e código e descrição vêm das posições 12 e 13 — não do nome
+        given: um arquivo com Espécie repetida e o layout declarado, e outro com duas colunas não monetárias
+          trocadas de lugar
+        when: a leitura começa
+        then: no primeiro o sha256 fica idêntico e código e descrição vêm das posições 12 e 13; no segundo
+          a leitura BLOQUEIA antes de ler qualquer registro — trocar colunas não monetárias preserva os
+          cinco controles, então o juiz monetário não supriria este gate
       - id: B-2
-        given: um registro cujo campo monetário é ilegível
+        given: um registro cujo campo monetário é ilegível, e outro cuja descrição tem exatamente 20 caracteres
+          com dinheiro válido
         when: os registros são contados
-        then: ele entra em linhas_invalidas, não entra na soma, e sai com identidade, valor original e
-          posição
+        then: o primeiro entra em linhas_invalidas com identidade, valor original e posição; o segundo
+          NÃO é inválido mas emite defeito de truncamento — o defeito do ADR 0004 tem de chegar ao juízo,
+          não ficar só documentado
       evals:
       - id: eval_1
-        description: Fonte byte-idêntica e leitura posicional com cabeçalho repetido
-        bash: pytest -q tests/test_leitura.py -k "sha256 or posicional"
+        description: Leitura posicional; cabeçalho fora de ordem bloqueia antes de ler
+        bash: pytest -q tests/test_leitura.py -k "sha256 or posicional or layout_incompativel"
         verifies:
         - B-1
       - id: eval_2
-        description: Registro ilegível vira linha inválida com identidade
-        bash: pytest -q tests/test_leitura.py -k invalida
+        description: Ilegível vira inválida; descrição truncada emite defeito
+        bash: pytest -q tests/test_leitura.py -k "invalida or truncamento_emitido"
         verifies:
         - B-2
       - id: eval_3

@@ -3,8 +3,8 @@
   "approved": true,
   "kind": "TaskPlan",
   "metadata": {
-    "delivery_plan_review_sha256": "631fb1e7aa6efab12aace29ea1e5149f44aaeb7b796637e48581d3222ba61bcd",
-    "delivery_plan_sha256": "c92c118c377cfc8badd2e62285f5f1b90926e44d55f67c860915c60942953ca5",
+    "delivery_plan_review_sha256": "39dc9a512abfc06da02bfb89c975ead03fed32199c1f7e8cd5c3cf25e8a8af42",
+    "delivery_plan_sha256": "9ab53354183261a6286a770d586ebc525f69a028b78a1cf0eb63ccc99115682a",
     "name": "DI-PDA-BENEFICIOS",
     "producer": "seamwise",
     "producer_version": "0.2.0",
@@ -27,9 +27,9 @@
           "when": "o agregado é calculado"
         },
         {
-          "given": "um contexto decimal de precisão baixa e valores em empate exato",
+          "given": "um contexto decimal de precisão baixa, valores em empate exato, e a alternativa meio-para-cima",
           "id": "B-2",
-          "then": "precisão e modo são declarados, não herdados — a perda por precisão é acusada, e arredondar por campo produz total diferente de arredondar no total",
+          "then": "o resultado é o de HALF_EVEN a duas casas — comparado contra o valor que HALF_UP produziria, e RECUSANDO-o; declarar um modo não basta, o teste falha se a implementação usar meio-para-cima. A perda por precisão baixa também é acusada, e arredondar por campo difere de arredondar no total",
           "when": "o total é calculado"
         }
       ],
@@ -59,8 +59,8 @@
           ]
         },
         {
-          "command": "pytest -q tests/test_agregacao.py -k \"precisao_declarada or granularidade\"",
-          "description": "Precisão e modo declarados; granularidade no total",
+          "command": "pytest -q tests/test_agregacao.py -k \"recusa_half_up or precisao_declarada or granularidade\"",
+          "description": "HALF_EVEN recusa o valor que HALF_UP daria; precisão e granularidade",
           "expected_duration_sec": 10,
           "id": "eval_2",
           "terminal": false,
@@ -184,6 +184,92 @@
     {
       "agent": "any",
       "anti_patterns": [
+        "Do not aceitar envelope sem o sha256 do arquivo lido: a âncora vale para um arquivo; sem o vínculo, outra publicação da mesma competência passaria; instead exigir o sha256 e compará-lo com o ancorado.",
+        "Do not importar o motor produtor dentro do validador: o juiz voltaria a depender de quem ele julga; instead validar o envelope como dado, seja qual for a origem.",
+        "Do not aceitar linhas_invalidas sem conferir contra os defeitos: um produtor que conte só as válidas devolveria zero e ninguém acusaria; instead exigir coerência entre o controle e os defeitos observados."
+      ],
+      "behaviors": [
+        {
+          "given": "um envelope sem o sha256 do arquivo lido, e outro cujo sha256 difere do que o contrato ancorou",
+          "id": "B-1",
+          "then": "ambos são recusados — a âncora vale para UM arquivo, e sem esse vínculo uma republicação com os mesmos cinco controles passaria despercebida",
+          "when": "o envelope é validado"
+        },
+        {
+          "given": "um envelope com linhas_invalidas menor que a contagem de defeitos observados, e outro produzido por um motor que não é o juiz",
+          "id": "B-2",
+          "then": "o primeiro é recusado por incoerência interna; o segundo é aceito sem que o juiz importe nada do motor produtor",
+          "when": "o envelope é validado"
+        }
+      ],
+      "context": "Intent DI-PDA-BENEFICIOS; seam SEAM-FRONTEIRA; swimlane LANE-FRONTEIRA; capability leg LEG-ENVELOPE-VINCULADO. Done condition: O envelope declara os cinco controles, o sha256 do arquivo lido e os defeitos; validação recusa sha256 ausente, divergente, ou linhas_invalidas incoerente.",
+      "creates_paths": [
+        "src/pda/envelope.py",
+        "tests/test_envelope.py",
+        "contracts/envelope-produtor.schema.json"
+      ],
+      "depends_on": [
+        "T-20260921-agregacao-exata"
+      ],
+      "do_not_touch": [
+        "_raw",
+        "cvg/docs/adrs"
+      ],
+      "done_condition": "O envelope declara os cinco controles, o sha256 do arquivo lido e os defeitos; validação recusa sha256 ausente, divergente, ou linhas_invalidas incoerente.",
+      "effort": "M",
+      "evals": [
+        {
+          "command": "pytest -q tests/test_envelope.py -k \"sha_ausente or sha_divergente\"",
+          "description": "Sha256 ausente ou divergente do ancorado é recusado",
+          "expected_duration_sec": 10,
+          "id": "eval_1",
+          "terminal": false,
+          "verifies": [
+            "B-1"
+          ]
+        },
+        {
+          "command": "pytest -q tests/test_envelope.py -k invalidas_coerentes",
+          "description": "linhas_invalidas incoerente com os defeitos é recusado",
+          "expected_duration_sec": 10,
+          "id": "eval_2",
+          "terminal": false,
+          "verifies": [
+            "B-2"
+          ]
+        },
+        {
+          "command": "pytest -q tests/test_envelope.py -k produtor_agnostico",
+          "description": "O schema aceita envelope de qualquer produtor, sem importar o motor",
+          "expected_duration_sec": 10,
+          "id": "eval_3",
+          "terminal": true,
+          "verifies": [
+            "B-1",
+            "B-2"
+          ]
+        }
+      ],
+      "execution_backend": "any",
+      "goal": "Fazer a fronteira ser um contrato escrito, não o que o juiz por acaso aceita.",
+      "id": "T-20260921-envelope-fronteira",
+      "observability": "envelopes recusados por motivo",
+      "profile": "standard",
+      "required_tools": [
+        "git",
+        "bash",
+        "python3",
+        "pytest"
+      ],
+      "rollback": "Remover o validador de envelope e seus testes.",
+      "source_note": "seamwise/legs/LEG-ENVELOPE-VINCULADO.md#T-20260921-envelope-fronteira",
+      "title": "Declarar e validar o envelope entre produtor e juiz",
+      "touches_paths": [],
+      "why": "Fazer a fronteira ser um contrato escrito, não o que o juiz por acaso aceita."
+    },
+    {
+      "agent": "any",
+      "anti_patterns": [
         "Do not gravar com mode overwrite: e o defeito do carregamento atual — destrói a prova; instead gravar um pacote por execução.",
         "Do not editar um pacote antigo para corrigir o histórico: falsifica evidência; instead gravar evidência nova e manter a antiga.",
         "Do not preencher campo ausente com zero: a reconstrução passa a mentir; instead marcar como ausente."
@@ -293,7 +379,7 @@
         "tests/test_juizo.py"
       ],
       "depends_on": [
-        "T-20260921-agregacao-exata"
+        "T-20260921-envelope-fronteira"
       ],
       "do_not_touch": [
         "_raw",
@@ -361,15 +447,15 @@
       ],
       "behaviors": [
         {
-          "given": "um arquivo com Espécie repetida no cabeçalho e o layout declarado",
+          "given": "um arquivo com Espécie repetida e o layout declarado, e outro com duas colunas não monetárias trocadas de lugar",
           "id": "B-1",
-          "then": "o sha256 do arquivo é idêntico, e código e descrição vêm das posições 12 e 13 — não do nome",
-          "when": "a leitura termina"
+          "then": "no primeiro o sha256 fica idêntico e código e descrição vêm das posições 12 e 13; no segundo a leitura BLOQUEIA antes de ler qualquer registro — trocar colunas não monetárias preserva os cinco controles, então o juiz monetário não supriria este gate",
+          "when": "a leitura começa"
         },
         {
-          "given": "um registro cujo campo monetário é ilegível",
+          "given": "um registro cujo campo monetário é ilegível, e outro cuja descrição tem exatamente 20 caracteres com dinheiro válido",
           "id": "B-2",
-          "then": "ele entra em linhas_invalidas, não entra na soma, e sai com identidade, valor original e posição",
+          "then": "o primeiro entra em linhas_invalidas com identidade, valor original e posição; o segundo NÃO é inválido mas emite defeito de truncamento — o defeito do ADR 0004 tem de chegar ao juízo, não ficar só documentado",
           "when": "os registros são contados"
         }
       ],
@@ -389,8 +475,8 @@
       "effort": "M",
       "evals": [
         {
-          "command": "pytest -q tests/test_leitura.py -k \"sha256 or posicional\"",
-          "description": "Fonte byte-idêntica e leitura posicional com cabeçalho repetido",
+          "command": "pytest -q tests/test_leitura.py -k \"sha256 or posicional or layout_incompativel\"",
+          "description": "Leitura posicional; cabeçalho fora de ordem bloqueia antes de ler",
           "expected_duration_sec": 10,
           "id": "eval_1",
           "terminal": false,
@@ -399,8 +485,8 @@
           ]
         },
         {
-          "command": "pytest -q tests/test_leitura.py -k invalida",
-          "description": "Registro ilegível vira linha inválida com identidade",
+          "command": "pytest -q tests/test_leitura.py -k \"invalida or truncamento_emitido\"",
+          "description": "Ilegível vira inválida; descrição truncada emite defeito",
           "expected_duration_sec": 10,
           "id": "eval_2",
           "terminal": false,
@@ -454,7 +540,7 @@
         {
           "given": "uma exceção real levantada dentro da leitura, e uma execução que estoura o limite de tempo",
           "id": "B-2",
-          "then": "a exceção vira ERRO com pacote gravado, e o tempo é medido do início da leitura ao veredito, no total — nunca por etapa somada depois",
+          "then": "a exceção vira ERRO com pacote gravado, e o tempo é medido do início da leitura ao veredito, no total. Se o PRÓPRIO gravador falhar — permissão negada, disco cheio — o desfecho é ERRO com código próprio e a falha vai para a saída de erro; nunca se devolve ACEITO sem pacote, porque autorização sem evidência é o que esta fábrica existe para impedir",
           "when": "a orquestração conduz a execução"
         }
       ],
