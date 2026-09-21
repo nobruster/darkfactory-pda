@@ -70,6 +70,54 @@ Uma ponte que não acusasse a própria defasagem seria pior que nenhuma ponte.
 - **Isto não destrava o Pass 4.** Resolve o layout; o adversário cross-family
   (`DOCTOR=FAIL`) continua faltando.
 
+## `checar_deps.py`
+
+Confere as dependências dos evals **antes** de rodar o loop.
+
+```bash
+python3 fabrica/ponte/checar_deps.py cvg/tasks/T-*.md
+```
+
+Token final: `DEPS=OK | DEPS=MISSING | DEPS=ERROR`.
+
+### O problema que ela resolve
+
+O `cvg doctor host` verifica o que a **máquina** precisa — git, bash,
+python3, shellcheck, sha256. Não confere o que os **evals da tarefa**
+importam.
+
+Medido no Pass 8 desta fábrica: **três dos quatro bloqueios foram
+ambientais**, não de lógica.
+
+| Bloqueio | O que faltava |
+|---|---|
+| `pytest: command not found` | pytest |
+| `fatal: empty ident name` | identidade git |
+| `ModuleNotFoundError: yaml` | PyYAML |
+
+O custo não é o erro — é o que ele faz o loop fazer. **O agente gastou uma
+tentativa inteira de LLM consertando código que estava correto**, porque a
+mensagem que chegou até ele foi `ModuleNotFoundError`, não "falta uma
+dependência no ambiente".
+
+### O que confere
+
+1. `required_tools` do frontmatter — cada um no PATH
+2. Todo `import` dos testes que os evals invocam — importa de verdade
+3. Identidade git (`user.name`/`user.email`) — o settlement commita
+
+### Ele acusa — testado
+
+```
+FALTA ferramenta pytest                      DEPS=MISSING
+FALTA módulo modulo_que_nao_existe           DEPS=MISSING
+FALTA identidade git — falta user.name       DEPS=MISSING
+```
+
+⚠️ **Antes do trabalho existir, os testes não existem** — não há import a
+conferir, e a lista de `required_tools` é o que segura a verificação. O
+script diz isso em vez de fingir cobertura completa.
+
 ## Ao escrever outra ponte aqui
 
 1. **Meça a discordância** antes de escrever — qual componente procura o quê,
