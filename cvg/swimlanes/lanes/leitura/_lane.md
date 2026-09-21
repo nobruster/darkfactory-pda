@@ -2,7 +2,7 @@ FORK: B (task-driven) — rota única desde a v3.4 — o consenso sempre entrega
 
 > Projetado de `LANE-LEITURA.md` pelo Seamwise.
 > **Não edite aqui** — edite a recipe e rode `seamwise plan`.
-> origem sha256: `f7ce040148f201e2d50cdf5ff77ea40563f62e5c64f1cfccf2ccaab5091e10fe`
+> origem sha256: `65ab5605f13adab51f77b832eaec1cfe80f390de4eb14113c240cba062a54f3a`
 
 ---
 
@@ -14,7 +14,7 @@ id: LANE-LEITURA
 name: Leitura lane
 owner: leitura
 seam_id: SEAM-LEITURA
-source_seam_sha256: f3efa25aff9247edc9d003bd2dbc8313b25814c9178adb8fa2ae3ff32a8c566a
+source_seam_sha256: baf78fca28fa858f3b6207e736d54a07173bf7bd80788c26961e0a872db75e61
 legs:
 - LEG-LEITURA-POSICIONAL
 ---

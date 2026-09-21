@@ -1,6 +1,6 @@
 > Projetado de `LEG-LEITURA-POSICIONAL.md` pelo Seamwise.
 > **Não edite aqui** — edite a recipe e rode `seamwise plan`.
-> origem sha256: `6ebb397912453a29466591a93da1fb174f953c6d139f333d9a4c64be0ee2f445`
+> origem sha256: `09e218b811801bf57c3e6e9359bf4a5773f37f347c48b409390ea45c2095e0b4`
 
 ---
 
@@ -41,22 +41,28 @@ tasks:
   - tests/fixtures/competencia-min.csv
   behavior:
   - id: B-1
-    given: um arquivo com Espécie repetida no cabeçalho e o layout declarado
-    when: a leitura termina
-    then: o sha256 do arquivo é idêntico, e código e descrição vêm das posições 12 e 13 — não do nome
+    given: um arquivo com Espécie repetida e o layout declarado, e outro com duas colunas não monetárias
+      trocadas de lugar
+    when: a leitura começa
+    then: no primeiro o sha256 fica idêntico e código e descrição vêm das posições 12 e 13; no segundo
+      a leitura BLOQUEIA antes de ler qualquer registro — trocar colunas não monetárias preserva os cinco
+      controles, então o juiz monetário não supriria este gate
   - id: B-2
-    given: um registro cujo campo monetário é ilegível
+    given: um registro cujo campo monetário é ilegível, e outro cuja descrição tem exatamente 20 caracteres
+      com dinheiro válido
     when: os registros são contados
-    then: ele entra em linhas_invalidas, não entra na soma, e sai com identidade, valor original e posição
+    then: o primeiro entra em linhas_invalidas com identidade, valor original e posição; o segundo NÃO
+      é inválido mas emite defeito de truncamento — o defeito do ADR 0004 tem de chegar ao juízo, não
+      ficar só documentado
   evals:
   - id: eval_1
-    description: Fonte byte-idêntica e leitura posicional com cabeçalho repetido
-    bash: pytest -q tests/test_leitura.py -k "sha256 or posicional"
+    description: Leitura posicional; cabeçalho fora de ordem bloqueia antes de ler
+    bash: pytest -q tests/test_leitura.py -k "sha256 or posicional or layout_incompativel"
     verifies:
     - B-1
   - id: eval_2
-    description: Registro ilegível vira linha inválida com identidade
-    bash: pytest -q tests/test_leitura.py -k invalida
+    description: Ilegível vira inválida; descrição truncada emite defeito
+    bash: pytest -q tests/test_leitura.py -k "invalida or truncamento_emitido"
     verifies:
     - B-2
   - id: eval_3
@@ -79,7 +85,7 @@ tasks:
   - _raw
   rollback: Remover o leitor e seus testes.
   observability: registros lidos e defeitos por tipo
-source_seam_sha256: f3efa25aff9247edc9d003bd2dbc8313b25814c9178adb8fa2ae3ff32a8c566a
+source_seam_sha256: baf78fca28fa858f3b6207e736d54a07173bf7bd80788c26961e0a872db75e61
 ---
 # A leitura é posicional e não altera a fonte
 

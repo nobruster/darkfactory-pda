@@ -1,6 +1,6 @@
 > Projetado de `LEG-JUIZO-ACUSA.md` pelo Seamwise.
 > **Não edite aqui** — edite a recipe e rode `seamwise plan`.
-> origem sha256: `8aad16000dd4613ae6c4b0f92f0bc4415384b23442cc4b261b5fcf3d62b1dda1`
+> origem sha256: `722432f019464c94f280bb65d9705050119ceef9fda4b7c268a0eb8a55d291e7`
 
 ---
 
@@ -15,9 +15,8 @@ observable_state: O juiz recusa divergência em qualquer controle
 proof: Agregado com uma linha a menos é recusado; controle divergente classificado como CONFIRMED também
   recusa.
 requires:
-- agregado da competência
+- envelope do produtor
 - contrato validado
-- defeitos observados
 produces:
 - veredito classificado
 tasks:
@@ -35,7 +34,7 @@ tasks:
   - python3
   - pytest
   depends_on:
-  - T-20260921-agregacao-exata
+  - T-20260921-envelope-fronteira
   touches_paths: []
   creates_paths:
   - src/pda/juizo.py
@@ -85,7 +84,7 @@ tasks:
   - contracts
   rollback: Remover o juízo e seus testes.
   observability: vereditos por classificação
-source_seam_sha256: d5f23e5ceaf9aa76ca3570da30faf4706d2caada941b06016fd5126b874575f5
+source_seam_sha256: 34b0096968f0bf7b9b48e9e9f90bb76ccf82f7bcf6cf9477c6999292558627dc
 ---
 # O juiz recusa divergência em qualquer controle
 
