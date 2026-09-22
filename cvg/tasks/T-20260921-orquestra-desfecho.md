@@ -28,10 +28,14 @@ execution_backend: any
 signed_off: true
 signed_off_by: nobru
 signed_off_at: 2026-09-22T02:47:15Z
-accepted: false
-accepted_by: (none)
-accepted_at: (none)
+accepted: true
+accepted_by: converge-loop
+accepted_at: 2026-09-22T14:02:14Z
 signed_off_sig: hmac-sha256-v3:85d3c104:15c969ac5d8392c78c9be2c31ef5624cc63ce7fa9f634afe1e43ff8e944a9c09
+accepted_tier: 1
+accepted_attempt_id: d41c97fb-3f5b-427d-a603-cbcd5a59efbc
+accepted_authorization_ref: hmac-sha256-v3:85d3c104:15c969ac5d8392c78c9be2c31ef5624cc63ce7fa9f634afe1e43ff8e944a9c09
+acceptance_record_digest: sha256:6627bbab4ea42ce62937e0760488bb91144d7f8dbad254151049184502b1ce2f
 ---
 
 # Decidir o desfecho e garantir o pacote em todo caminho

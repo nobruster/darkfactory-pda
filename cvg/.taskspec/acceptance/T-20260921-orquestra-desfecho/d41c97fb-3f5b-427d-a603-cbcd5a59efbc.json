@@ -1,0 +1,40 @@
+{
+  "acceptance_tier": 1,
+  "accepted_at": "2026-09-22T14:02:14Z",
+  "accepted_by": "converge-loop",
+  "contract": "AcceptanceRecord/v1",
+  "gate_outcomes": {
+    "authorization": {
+      "code": "AUTHORIZATION_VALID",
+      "status": "pass"
+    },
+    "evaluation": {
+      "code": "EVAL_PASSED",
+      "status": "pass"
+    },
+    "evidence": {
+      "code": "EVIDENCE_SATISFIED",
+      "proof": [
+        "format v3 or earlier: v4 policy receipts are not required"
+      ],
+      "status": "pass"
+    },
+    "preflight": {
+      "code": "PREFLIGHT_PASSED",
+      "status": "pass",
+      "warnings": []
+    }
+  },
+  "outcome": {
+    "code": "ACCEPTED_TIER_1",
+    "status": "accepted"
+  },
+  "receipts": [],
+  "subject": {
+    "attempt_id": "d41c97fb-3f5b-427d-a603-cbcd5a59efbc",
+    "authorization_ref": "hmac-sha256-v3:85d3c104:15c969ac5d8392c78c9be2c31ef5624cc63ce7fa9f634afe1e43ff8e944a9c09",
+    "base_commit": "d1bfc485bb01000e9523657ca47fe256edde0791",
+    "task_id": "T-20260921-orquestra-desfecho",
+    "task_revision_digest": "sha256:20b650d850834abb60452aeabfa6acab94bda67f22cd389b0f330e32058892d1"
+  }
+}
