@@ -537,6 +537,51 @@ objections:
     com Bruno Nunes e registrado no ADR 0008, que SUPERSEDES o critério do 0004 — o defeito é IDENTIDADE
     COLAPSADA, a descrição cobrir mais de um código. Na competência inteira, 11 descrições cobrem 24 códigos.
     scripts/medir_layout.py e scripts/medir_colapso.py registram (LAYOUT=MEDIDO, COLAPSO=MEDIDO). CHECK_ADR=OK.
+- id: OBJ-R12-C1
+  status: FIXED
+  summary: A autorização não exigia vínculo com a competência SOLICITADA — os artefatos coerentes de outro
+    mês passariam por todos os controles.
+  owner: Bruno Nunes
+  rationale: Uma execução pedida para 2026-02 que recebesse contrato, arquivo e envelope de 2026-01 teria
+    hashes, totais e defeitos todos concordando entre si, e devolveria como resultado de 2026-02 o que
+    é de 2026-01. B-1 da orquestração passou a declarar a competência solicitada e a recusar divergência.
+- id: OBJ-R12-C2
+  status: FIXED
+  summary: Meu ADR 0007 derivava a precisão do TOTAL ancorado; um acumulador intermediário pode excedê-lo,
+    e aí 14 perde o centavo.
+  owner: Bruno Nunes
+  rationale: Contraexemplo executado e confirmado — com os valores 100000000000.005, -100000000000, 0.005
+    e 78521752562.12, prec=14 devolve .12 e prec=40 devolve .13. A fórmula tinha premissa tácita. MEDIDO
+    no arquivo inteiro — zero negativos em 41.572.553 valores, pico do acumulador igual ao total, ambos
+    com 11 dígitos inteiros; a premissa vale, mas por propriedade da FONTE, não da fórmula. Decidido com
+    Bruno Nunes e registrado no ADR 0009, que SUPERSEDES o 0007 e declara a não-negatividade como parte
+    do domínio, com valor negativo virando defeito classificado. scripts/medir_sinal.py registra (SINAL=MEDIDO).
+    A leitura rejeitada ficou gravada — elevar a precisão com folga trocaria premissa tácita por margem
+    arbitrária, mantendo o mesmo defeito.
+- id: OBJ-R12-C3
+  status: FIXED
+  summary: Colapso é propriedade do conjunto, mas um leitor incremental só o descobre no segundo código
+    e deixaria as ocorrências anteriores sem registro.
+  owner: Bruno Nunes
+  rationale: E a fronteira concordaria com a lista incompleta, por ter a própria leitura como referência.
+    B-2 da leitura passou a declarar que a unidade do defeito é a DESCRIÇÃO, não a ocorrência, e que ele
+    só é emitido ao fim da varredura.
+- id: OBJ-R12-C4
+  status: FIXED
+  summary: O contrato não carregava a contagem medida de colapsos que o ADR 0008 exige junto da cardinalidade.
+  owner: Bruno Nunes
+  rationale: Um carregador cumpriria todos os comportamentos descritos sem transportar a medição, perdendo
+    um dado vinculante de caracterização da competência. B-1 do contrato passou a carregá-la — 11 descrições
+    cobrindo 24 códigos.
+- id: OBJ-R12-C5
+  status: FIXED
+  summary: Achado por medição própria — conferi a afirmação sobre o índice 12 ter código de 2 dígitos
+    à direita, que sustenta o gate do ADR 0002.
+  owner: Bruno Nunes
+  rationale: Desta vez o número declarado ESTAVA CERTO, e vale registrar, porque nem toda afirmação minha
+    falhou. Medido nas 41.572.553 linhas — o índice 12 é sempre só dígitos, largura 2 após strip, alinhado
+    à direita, e o 13 é sempre textual, alinhado à esquerda; zero linhas em que o formato não distinga
+    os dois. O gate que protege o ADR 0002 funciona. scripts/medir_formato_especie.py registra (FORMATO=MEDIDO).
 contentions: []
 ---
 # System Map

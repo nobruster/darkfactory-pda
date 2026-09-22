@@ -1,6 +1,6 @@
 > Projetado de `LEG-CONTRATO-RECUSA-SEM-ANCORA.md` pelo Seamwise.
 > **Não edite aqui** — edite a recipe e rode `seamwise plan`.
-> origem sha256: `18d5125eb8aee1b87a594069cbd7072a4b4e07fe8e52a7142acc6b3b3de8ead7`
+> origem sha256: `730dae21c5782660a26e41959181a7d78873601cfcf021c6e24bb07fb2bd868a`
 
 ---
 
@@ -42,28 +42,31 @@ tasks:
       — o do ZIP publicado e o do CSV extraído sobre o qual a âncora foi medida
     when: o contrato é carregado
     then: âncora, procedência, layout, os dois hashes, a CARDINALIDADE de códigos medida na competência
-      inteira — 65 nesta, não os 51 amostrados pelo ADR 0004 — e a POLÍTICA DECIMAL saem juntos — precisão,
-      granularidade e modo de arredondamento são dados carregados do contrato, como o ADR 0003 exige,
-      não escolha privada de quem implementa. Contrato SEM política decimal é NAO_MEDIDO, senão o agregador
-      local fixa a sua, passa nos exemplos, e um produtor externo escolhe outra sem nada acusar. E contrato
-      COM política que contradiz o ADR — HALF_UP, ou granularidade por campo — é RECUSADO no carregamento,
-      não validado, porque um contrato contraditório deixaria o agregador entre obedecer ao contrato e
-      obedecer à decisão vinculante; a validação confere a política contra o ADR, e nunca o contrário.
-      A precisão é conferida por SUFICIÊNCIA e é DERIVADA, como manda o ADR 0007 — dígitos inteiros da
-      âncora mais a escala máxima declarada para os intermediários, 11 + 3 = 14 nesta competência, e o
-      contrato declara essa escala em vez de assumir um padrão. A escala declarada é verificada por QUEM
-      RECEBE O VALOR, não pelo carregador, que roda antes da leitura e não vê registro nenhum — a leitura
-      confere cada valor da fonte, e a fronteira confere cada monetário do envelope externo, ambos contra
-      a escala do contrato; um valor que a exceda é defeito classificado, nunca somado em silêncio. Escala
-      finita não é escala menor ou igual a 3, e sem essa verificação na etapa consumidora a precisão validada
-      perderia informação durante a soma e ainda devolveria o mesmo total global arredondado, com os mapas
-      por código errados. Precisão 6 com HALF_EVEN e arredondamento final satisfaz presença, modo e granularidade
-      e devolve 7.85218E+10 no lugar de 78.521.752.562,12; prec=13 representa o total e ainda assim perde
-      o centavo ao SOMAR 78521752562,12 + 0,005 + 0,005, porque a perda acontece durante a soma e não
-      na quantização. Contrato com precisão insuficiente é RECUSADO no carregamento, não descoberto durante
-      a agregação. Falta o hash do CSV e também é NAO_MEDIDO, porque hoje só o ZIP tem checksum e a âncora
-      foi medida no CSV — sem o par, trocar o CSV extraído não seria detectado; sem aprovador ou sem data,
-      idem
+      inteira — 65 nesta, não os 51 amostrados pelo ADR 0004 — a CONTAGEM MEDIDA DE COLAPSOS que o ADR
+      0008 exige junto dela, 11 descrições cobrindo 24 códigos, e a POLÍTICA DECIMAL com escala e não-negatividade
+      saem juntas — precisão, granularidade e modo de arredondamento são dados carregados do contrato,
+      como o ADR 0003 exige, não escolha privada de quem implementa. Contrato SEM política decimal é NAO_MEDIDO,
+      senão o agregador local fixa a sua, passa nos exemplos, e um produtor externo escolhe outra sem
+      nada acusar. E contrato COM política que contradiz o ADR — HALF_UP, ou granularidade por campo —
+      é RECUSADO no carregamento, não validado, porque um contrato contraditório deixaria o agregador
+      entre obedecer ao contrato e obedecer à decisão vinculante; a validação confere a política contra
+      o ADR, e nunca o contrário. A precisão é conferida por SUFICIÊNCIA e é DERIVADA, como manda o ADR
+      0009 — dígitos inteiros da âncora mais a escala máxima declarada para os intermediários, 11 + 3
+      = 14 nesta competência, sob a premissa DECLARADA de soma monotônica; o contrato declara a escala
+      e a NÃO-NEGATIVIDADE do domínio, medidas na fonte, em vez de assumir um padrão, porque um acumulador
+      que exceda o total quebraria a fórmula e 14 perderia o centavo. A escala declarada é verificada
+      por QUEM RECEBE O VALOR, não pelo carregador, que roda antes da leitura e não vê registro nenhum
+      — a leitura confere cada valor da fonte, e a fronteira confere cada monetário do envelope externo,
+      ambos contra a escala do contrato; um valor que a exceda é defeito classificado, nunca somado em
+      silêncio. Escala finita não é escala menor ou igual a 3, e sem essa verificação na etapa consumidora
+      a precisão validada perderia informação durante a soma e ainda devolveria o mesmo total global arredondado,
+      com os mapas por código errados. Precisão 6 com HALF_EVEN e arredondamento final satisfaz presença,
+      modo e granularidade e devolve 7.85218E+10 no lugar de 78.521.752.562,12; prec=13 representa o total
+      e ainda assim perde o centavo ao SOMAR 78521752562,12 + 0,005 + 0,005, porque a perda acontece durante
+      a soma e não na quantização. Contrato com precisão insuficiente é RECUSADO no carregamento, não
+      descoberto durante a agregação. Falta o hash do CSV e também é NAO_MEDIDO, porque hoje só o ZIP
+      tem checksum e a âncora foi medida no CSV — sem o par, trocar o CSV extraído não seria detectado;
+      sem aprovador ou sem data, idem
   - id: B-2
     given: uma competência sem âncora no contrato
     when: o contrato é carregado
@@ -100,7 +103,7 @@ tasks:
   - cvg/docs/adrs
   rollback: Remover o carregador de contrato e seus testes.
   observability: competências ancoradas no contrato
-source_seam_sha256: 86bf44fc7b7f3cfdc2acf9c127c66ee1befb3239b1f541694738b771e13d3ce2
+source_seam_sha256: 06125a48c798c59bec368f46135a3cd4a7356f4f70a73cfc79640e33972ffb08
 ---
 # A fábrica recusa construir sem âncora medida
 

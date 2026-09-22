@@ -1,6 +1,6 @@
 {
   "contract": "SeamwiseTaskPlanLineage/v1",
-  "delivery_plan_sha256": "841cd7501c7b63a8994d5fbdb1f1d63b5a7535c03345b0797239b20e4296c52d",
+  "delivery_plan_sha256": "a6bf98cd585788ceb8407449d22c01336aff4e9119d20056ca0339e58905a0b6",
   "engine_version": "0.2.0",
   "intent": {
     "id": "DI-PDA-BENEFICIOS",
@@ -8,14 +8,14 @@
   },
   "review": {
     "fixture": false,
-    "plan_sha256": "841cd7501c7b63a8994d5fbdb1f1d63b5a7535c03345b0797239b20e4296c52d",
-    "reviewed_at": "2026-09-22T01:51:28.280701+00:00",
+    "plan_sha256": "a6bf98cd585788ceb8407449d22c01336aff4e9119d20056ca0339e58905a0b6",
+    "reviewed_at": "2026-09-22T02:00:32.652587+00:00",
     "reviewer": "Bruno Nunes",
-    "sha256": "b95a579513667c470f094a5aabadfc724ed4264243c6cd0897850bfe35a6774d"
+    "sha256": "7dbdacec6e21d5f7b7164abd9642269978f641264b3084e2706888be10634623"
   },
   "task_plan": {
     "contract": "TaskPlan/v1",
-    "digest": "27008474a7c9b48dc776ebef6018dcd83b1e60fea3f5718dcb3985c142f77890",
+    "digest": "41a734b5b471e8f1c3eb74957dd94f3976755fe67304b0fe91fdf01b04869dfc",
     "path": "seamwise/task-plan.json"
   },
   "units": {
@@ -31,7 +31,7 @@
       "intent": "DI-PDA-BENEFICIOS",
       "leg": "LEG-CONTRATO-RECUSA-SEM-ANCORA",
       "seam": "SEAM-CONTRATO",
-      "source_sha256": "18d5125eb8aee1b87a594069cbd7072a4b4e07fe8e52a7142acc6b3b3de8ead7",
+      "source_sha256": "730dae21c5782660a26e41959181a7d78873601cfcf021c6e24bb07fb2bd868a",
       "swimlane": "LANE-CONTRATO",
       "unit_id": "T-20260921-contrato-ancora"
     },
@@ -63,7 +63,7 @@
       "intent": "DI-PDA-BENEFICIOS",
       "leg": "LEG-LEITURA-POSICIONAL",
       "seam": "SEAM-LEITURA",
-      "source_sha256": "77b9685a3496c012f0fd9f3843d06fd9a5fced0ebd1c3a068c4c3610410af71a",
+      "source_sha256": "5d6a2171d363c0af91c24a0920750f29c0aa780d1b35768d0a5aef00af2bafe5",
       "swimlane": "LANE-LEITURA",
       "unit_id": "T-20260921-leitura-posicional"
     },
@@ -71,7 +71,7 @@
       "intent": "DI-PDA-BENEFICIOS",
       "leg": "LEG-DESFECHO-COM-PACOTE",
       "seam": "SEAM-ORQUESTRACAO",
-      "source_sha256": "ef94a338230e4c8ae2880216cb2f2b8b4a8f12e376ad0f070a9aa3ac6e2d2f4e",
+      "source_sha256": "43c6a4c7a2547fd6e3c93689278af6ddda6aa89ee884e6336a1d8b4ab058b33f",
       "swimlane": "LANE-ORQUESTRACAO",
       "unit_id": "T-20260921-orquestra-desfecho"
     }

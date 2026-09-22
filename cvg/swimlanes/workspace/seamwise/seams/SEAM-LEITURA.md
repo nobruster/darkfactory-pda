@@ -73,9 +73,11 @@ swimlane:
           escrita para a agregação não alcança a leitura, e uma referência corrompida faria a fronteira
           recusar um produtor correto com os testes da leitura verdes. No segundo a leitura BLOQUEIA,
           e o gate NÃO pode ser conferência de cabeçalho — cabeçalho idêntico não distingue as duas —
-          e sim o formato de cada posição, o índice 12 com código de 2 dígitos à direita e o 13 com descrição
-          textual; o teste falha se for satisfeito trocando colunas de nomes diferentes, porque é esta
-          troca, de nomes iguais, que motivou o ADR 0002 e que os cinco controles preservam
+          e sim o formato de cada posição, MEDIDO nas 41.572.553 linhas — o índice 12 é sempre só dígitos,
+          largura 2 após strip, alinhado à direita, e o 13 é sempre textual, alinhado à esquerda, sem
+          uma única linha em que os dois sejam indistinguíveis; o teste falha se for satisfeito trocando
+          colunas de nomes diferentes, porque é esta troca, de nomes iguais, que motivou o ADR 0002 e
+          que os cinco controles preservam
       - id: B-2
         given: um registro cujo campo monetário é ilegível, os valores 'NaN', 'Infinity', '1_000' e '1e3',
           e os quatro exemplos do ADR 0004 — entre eles 'Pensão por Morte de ' com 20 caracteres brutos
@@ -92,9 +94,13 @@ swimlane:
           e transformaria defeito de UMA linha em ERRO da execução inteira. E a descrição emite defeito
           de IDENTIDADE COLAPSADA, sem tornar a linha inválida, quando cobre mais de um código — critério
           do ADR 0008, medido na competência inteira — 11 descrições cobrem 24 códigos, entre elas 'Pensão
-          por Morte de ' fundindo 01, 03, 23 e 59. Largura NÃO é critério — as 41.572.553 descrições têm
-          20 caracteres brutos, então bruto==20 acusaria toda linha, e strip==20 deixaria de fora justamente
-          esse colapso de quatro códigos, cujo strip é 19
+          por Morte de ' fundindo 01, 03, 23 e 59. A unidade do defeito é a DESCRIÇÃO, não a ocorrência,
+          e ele só é emitido ao fim da varredura, porque colapso é propriedade do conjunto — um leitor
+          incremental que emitisse a partir do segundo código deixaria sem registro todas as ocorrências
+          anteriores, e a fronteira concordaria com a lista incompleta por ter a própria leitura como
+          referência. Largura NÃO é critério — as 41.572.553 descrições têm 20 caracteres brutos, então
+          bruto==20 acusaria toda linha, e strip==20 deixaria de fora justamente esse colapso de quatro
+          códigos, cujo strip é 19
       evals:
       - id: eval_1
         description: Leitura posicional; Espécie 12 e 13 trocadas entre si bloqueiam

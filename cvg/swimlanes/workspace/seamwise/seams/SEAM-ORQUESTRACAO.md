@@ -68,11 +68,14 @@ swimlane:
           passe e o juízo seja quem decide
         when: a orquestração conduz o fluxo inteiro
         then: as três gravam pacote, com ACEITO_SEM_ANCORA, ACEITO e RECUSADO de códigos de saída distintos,
-          e só ACEITO autoriza publicar. O caso de R-7 é UMA prova conjunta, não duas separadas — a alteração
-          é real nos bytes, a recusa vem do JUÍZO comparando contra a âncora monetária original, e o teste
-          FALHA se um juízo permissivo for injetado. Sem reancorar, a fronteira recusaria pelo sha256
-          antes do juízo comparar, e o teste ficaria verde com juízo permissivo — provando metade do que
-          R-7 escreveu
+          e só ACEITO autoriza publicar — e a autorização declara a competência SOLICITADA, recusando
+          quando contrato, arquivo ou envelope trazem outra — uma execução pedida para 2026-02 que receba
+          por engano os artefatos coerentes de 2026-01 passaria por hashes, totais e defeitos, todos concordando
+          entre si, e devolveria como resultado de 2026-02 o que é de 2026-01. O caso de R-7 é UMA prova
+          conjunta, não duas separadas — a alteração é real nos bytes, a recusa vem do JUÍZO comparando
+          contra a âncora monetária original, e o teste FALHA se um juízo permissivo for injetado. Sem
+          reancorar, a fronteira recusaria pelo sha256 antes do juízo comparar, e o teste ficaria verde
+          com juízo permissivo — provando metade do que R-7 escreveu
       - id: B-2
         given: uma exceção real levantada dentro da leitura, uma execução com contrato de política HALF_UP,
           e uma execução cujo tempo total é medido
@@ -86,8 +89,8 @@ swimlane:
           ACEITO sem pacote, porque autorização sem evidência é o que esta fábrica existe para impedir
       evals:
       - id: eval_1
-        description: R-7 numa prova só — centavo alterado, hash reancorado, juízo permissivo falha
-        bash: pytest -q tests/test_orquestracao.py -k "desfechos or r7_centavo_reancorado"
+        description: R-7 numa prova só; competência solicitada diverge da entregue recusa
+        bash: pytest -q tests/test_orquestracao.py -k "desfechos or r7_centavo_reancorado or competencia_divergente"
         verifies:
         - B-1
       - id: eval_2
