@@ -1,6 +1,6 @@
 > Projetado de `LEG-GOLD-RECONCILIA.md` pelo Seamwise.
 > **Não edite aqui** — edite a recipe e rode `seamwise plan`.
-> origem sha256: `ea69a57699266d37fba23ac687e29fc3e9cca9e3a717843e733b188ed9c4cf10`
+> origem sha256: `8ee02449fc2944f238489cfd012456604094af3a7acaf0e24e6399b708d0189d`
 
 ---
 
@@ -15,6 +15,7 @@ observable_state: Gold só publica quando reconcilia com a âncora
 proof: A soma das linhas agregadas reproduz a âncora ao centavo; um centavo de diferença devolve DIVERGE.
 requires:
 - silver classificado
+- totais por código de Silver
 produces:
 - gold reconciliado
 tasks:
@@ -72,9 +73,12 @@ tasks:
     then: devolve DIVERGE quando o total não bate e NAO_MEDIDO quando não há âncora, dois estados distintos
       que nunca colapsam num só — sem âncora não é divergência, é ausência de referencial, e tratá-los
       igual faria a fábrica parecer que mediu quando não tinha contra o que medir. Nenhum dos dois publica,
-      e o motivo sai nomeado; a contagem de códigos de Gold é conferida contra os 65 do contrato, porque
-      um agregado com menos códigos que a fonte pode somar o mesmo total e ainda assim ter perdido uma
-      categoria inteira
+      o motivo sai nomeado, e cada diferença recebe EXATAMENTE UMA das seis classificações da R-6 — inclusive
+      a introduzida DEPOIS de Bronze, que é justamente a que nenhuma camada anterior viu. Devolver só
+      estado e motivo cumpriria este plano e violaria a especificação; diferença que Gold não saiba classificar
+      recebe UNRESOLVED, que bloqueia; a contagem de códigos de Gold é conferida contra os 65 do contrato,
+      porque um agregado com menos códigos que a fonte pode somar o mesmo total e ainda assim ter perdido
+      uma categoria inteira
   evals:
   - id: eval_1
     description: Arredondamento único no total, HALF_EVEN lido do contrato
@@ -92,7 +96,7 @@ tasks:
   - id: eval_3
     description: DIVERGE e NAO_MEDIDO são estados distintos e nenhum publica
     bash: pytest -q tests/test_gold.py -k "diverge_nao_publica or sem_ancora_nao_medido or destino_inalterado_durante
-      or recusa_sob_procedencia_nao_vinculada"
+      or classifica_diferenca_das_seis"
     verifies:
     - B-2
   anti_patterns:
@@ -113,7 +117,7 @@ tasks:
   - contracts
   rollback: Remover a camada Gold e seus testes.
   observability: agregados recusados por não reconciliar
-source_seam_sha256: dc55e8557363f96f6468af70fe3d0f532b939bc5fe6a85a350d815fe58cc36a5
+source_seam_sha256: 56f5b5d73e56505702ed149f8c10bb5d7331afdd572954aa00d0811ef4b751c5
 ---
 # Gold só publica quando reconcilia com a âncora
 

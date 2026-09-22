@@ -1,6 +1,6 @@
 > Projetado de `LEG-BRONZE-REPRODUZ-ANCORA.md` pelo Seamwise.
 > **Não edite aqui** — edite a recipe e rode `seamwise plan`.
-> origem sha256: `abf1b58b67d77dbf70ce4978f0f3acc95abf0b6d7d27ce94bc36c1dcc4771636`
+> origem sha256: `0d172dbb87ac35967acb59947d718b59238b0925edcb08a66787c820d11a734a`
 
 ---
 
@@ -26,9 +26,11 @@ tasks:
     estados distintos e nenhum escreve camada, porque confundir ausência de medição com reprovação torna
     instável a interface que Silver consome. Os evals rodam num ambiente que tem AO MESMO TEMPO pytest
     e um leitor de Parquet — medido, hoje nenhum tem: o host não tem pyspark, pyarrow, pandas, duckdb
-    nem java, e o contêiner pda-spark não tem pytest. Montar esse ambiente é parte desta tarefa, não pressuposto
-    dela.'
-  effort: S
+    nem java, e o contêiner pda-spark não tem pytest. Montar esse ambiente é parte desta tarefa e tem
+    caminho declarado — infra/medalhao-evals.sh, que roda os evals num checkout limpo sem instalação manual.
+    Sem ele a obrigação existiria sem forma reproduzível de cumpri-la, e um agente que criasse o arquivo
+    mesmo assim receberia path_policy: fail.'
+  effort: M
   profile: standard
   execution_backend: any
   required_tools:
@@ -43,6 +45,7 @@ tasks:
   creates_paths:
   - src/medalhao/bronze.py
   - tests/test_bronze.py
+  - infra/medalhao-evals.sh
   behavior:
   - id: B-1
     given: uma partição do lago e o contrato da competência, com a âncora de linhas e de soma medidas
@@ -139,7 +142,7 @@ tasks:
   - contracts
   rollback: Remover o leitor Bronze e seus testes.
   observability: partições recusadas por controle divergente
-source_seam_sha256: 78aec3d009737d756e45b016015e0b526348cd1b620026a1db6da42eb23de060
+source_seam_sha256: 71d193f3bf9826f9d6382a9b73beef697747dc37755bea5bf6ded1c44f09fe63
 ---
 # Bronze só existe quando reproduz a âncora do contrato
 
@@ -149,7 +152,7 @@ A partição lida reproduz os cinco controles ancorados; ausente ou vazia devolv
 
 ## Runnable leaves
 
-- `T-20260922-bronze-confere-ancora` — Ler a partição do lago e conferi-la contra a âncora: Os cinco controles da partição real batem com o contrato. Partição AUSENTE ou VAZIA devolve NAO_MEDIDO; partição MEDIDA que diverge em qualquer controle devolve DIVERGE — os dois são estados distintos e nenhum escreve camada, porque confundir ausência de medição com reprovação torna instável a interface que Silver consome. Os evals rodam num ambiente que tem AO MESMO TEMPO pytest e um leitor de Parquet — medido, hoje nenhum tem: o host não tem pyspark, pyarrow, pandas, duckdb nem java, e o contêiner pda-spark não tem pytest. Montar esse ambiente é parte desta tarefa, não pressuposto dela.
+- `T-20260922-bronze-confere-ancora` — Ler a partição do lago e conferi-la contra a âncora: Os cinco controles da partição real batem com o contrato. Partição AUSENTE ou VAZIA devolve NAO_MEDIDO; partição MEDIDA que diverge em qualquer controle devolve DIVERGE — os dois são estados distintos e nenhum escreve camada, porque confundir ausência de medição com reprovação torna instável a interface que Silver consome. Os evals rodam num ambiente que tem AO MESMO TEMPO pytest e um leitor de Parquet — medido, hoje nenhum tem: o host não tem pyspark, pyarrow, pandas, duckdb nem java, e o contêiner pda-spark não tem pytest. Montar esse ambiente é parte desta tarefa e tem caminho declarado — infra/medalhao-evals.sh, que roda os evals num checkout limpo sem instalação manual. Sem ele a obrigação existiria sem forma reproduzível de cumpri-la, e um agente que criasse o arquivo mesmo assim receberia path_policy: fail.
 
 The leg names a capability state, not an activity. Each leaf owns one coherent,
 independently provable done-condition.

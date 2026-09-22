@@ -1,6 +1,6 @@
 > Projetado de `LEG-SILVER-PRESERVA-DEFEITO.md` pelo Seamwise.
 > **Não edite aqui** — edite a recipe e rode `seamwise plan`.
-> origem sha256: `d34fa9a8233891687a5dbb27a14a4dfc721986410f472058540eb38173b5a2a4`
+> origem sha256: `abc80dc7f21b4146e52612eec76b4b14c301e6284a1603d3b16fff176537eba5`
 
 ---
 
@@ -17,6 +17,7 @@ requires:
 - bronze conferido
 produces:
 - silver classificado
+- totais por código de Silver
 tasks:
 - id: T-20260922-silver-classifica-colapso
   title: Normalizar a forma e classificar a identidade colapsada
@@ -54,31 +55,41 @@ tasks:
       diferirem, a diferença é da normalização e sai nomeada, não somada aos 11 do contrato, que atravessa
       como Decimal com a precisão declarada. A marca PROCEDENCIA_NAO_VINCULADA, quando Bronze a emite,
       atravessa Silver SEM ser removida e segue em ''silver classificado'' — remover uma marca de limitação
-      é apagar prova, não normalizar. A soma de Silver é comparada com a de Bronze e precisa ser IDÊNTICA
-      — um pipeline que altera o total ao normalizar texto tem um defeito, não uma melhoria. Cada colapso
-      recebe EXATAMENTE UMA das seis classificações e a contagem medida é conferida contra a do contrato
-      — encontrar número diferente de 11 é DIVERGE, porque o contrato mediu na competência inteira e a
-      divergência significa fonte diferente da ancorada, não permissão para ajustar o número'
+      é apagar prova, não normalizar. Silver PRODUZ o mapa total_por_codigo, em soma EXATA não quantizada,
+      e ele é parte declarada de ''silver classificado'' — Gold o consome, e sem essa declaração Gold
+      recalcularia os dois lados com a mesma transformação, perdendo a independência que o próprio plano
+      dele exige. A conservação provada NÃO é só a soma global: o mapa de Silver é comparado com o de
+      Bronze CÓDIGO A CÓDIGO, porque trocar os valores de dois códigos preserva soma, chaves, cardinalidades
+      e grupos — {''01'': 10.00, ''03'': 20.00} virando {''01'': 20.00, ''03'': 10.00} passa em toda prova
+      global e altera o resultado por espécie. A soma de Silver também é comparada com a de Bronze e precisa
+      ser IDÊNTICA — um pipeline que altera o total ao normalizar texto tem um defeito, não uma melhoria.
+      Cada colapso recebe EXATAMENTE UMA das seis classificações e a contagem medida é conferida contra
+      a do contrato — encontrar número diferente de 11 é DIVERGE, porque o contrato mediu na competência
+      inteira e a divergência significa fonte diferente da ancorada, não permissão para ajustar o número'
   - id: B-2
     given: um código cuja descrição diverge do contrato, ou um colapso não declarado
     when: Silver normaliza
     then: 'a linha atravessa com o VALOR intacto e o defeito registrado, nunca descartada nem corrigida
       — descartar mudaria o total e corrigir destruiria a prova. Defeito não classificado BLOQUEIA a camada,
-      porque a classificação é o que transforma um erro da origem em cobrança rastreável; e nenhuma classificação
-      é inferida em silêncio, já que atribuir CONFIRMED_SOURCE_DEFECT sem aprovador transformaria juízo
-      em default. MEDIDO no contrato: existem as cardinalidades 65/52/11/24 e a classificação global,
-      mas NÃO existe mapa código→descrição nem a lista dos 11 grupos aprovados — e sem esse referencial
-      ''descrição que diverge do contrato'' não é verificável, porque trocar a descrição de um código
-      mantém todas as quatro cardinalidades. Silver então NÃO INVENTA referencial e NÃO aceita o grupo
-      novo por default: sem o mapa declarado no contrato, a comparação por identidade devolve NAO_MEDIDO,
-      distinto de bloquear por defeito — e esse NAO_MEDIDO IMPEDE produzir ''silver classificado'', porque
-      uma capacidade chamada ''classificado'' que sai com a identidade não medida mente no próprio nome.
-      A cadeia para aqui com o motivo nomeado, em vez de seguir e publicar com a identidade em aberto.
-      Declarar esse mapa é trabalho do contrato, com aprovador e data, não desta camada.'
+      e UNRESOLVED — que é uma das seis — BLOQUEIA igualmente: classificação preenchida não é defeito
+      resolvido, e uma descrição divergente que recebesse UNRESOLVED conservaria o valor e satisfaria
+      literalmente a condição de conclusão enquanto a diferença segue sem dono, porque a classificação
+      é o que transforma um erro da origem em cobrança rastreável; e nenhuma classificação é inferida
+      em silêncio, já que atribuir CONFIRMED_SOURCE_DEFECT sem aprovador transformaria juízo em default.
+      MEDIDO no contrato: existem as cardinalidades 65/52/11/24 e a classificação global, mas NÃO existe
+      mapa código→descrição nem a lista dos 11 grupos aprovados — e sem esse referencial ''descrição que
+      diverge do contrato'' não é verificável, porque trocar a descrição de um código mantém todas as
+      quatro cardinalidades. Silver então NÃO INVENTA referencial e NÃO aceita o grupo novo por default:
+      sem o mapa declarado no contrato, a comparação por identidade devolve NAO_MEDIDO, distinto de bloquear
+      por defeito — e esse NAO_MEDIDO IMPEDE produzir ''silver classificado'', porque uma capacidade chamada
+      ''classificado'' que sai com a identidade não medida mente no próprio nome. A cadeia para aqui com
+      o motivo nomeado, em vez de seguir e publicar com a identidade em aberto. Declarar esse mapa é trabalho
+      do contrato, com aprovador e data, não desta camada.'
   evals:
   - id: eval_1
-    description: A chave é o código e a soma não muda entre camadas
-    bash: pytest -q tests/test_silver.py -k "chave_e_codigo or soma_identica or nao_agrupa_por_descricao"
+    description: A chave é o código, o mapa por código é preservado e a soma não muda
+    bash: pytest -q tests/test_silver.py -k "chave_e_codigo or soma_identica or nao_agrupa_por_descricao
+      or mapa_por_codigo_preservado or valores_trocados_entre_codigos"
     verifies:
     - B-1
   - id: eval_2
@@ -90,13 +101,14 @@ tasks:
   - id: eval_3
     description: Defeito não classificado bloqueia em vez de passar
     bash: pytest -q tests/test_silver.py -k "nao_classificado_bloqueia or valor_intacto or atravessa_sem_descartar
-      or sem_mapa_nao_produz_capacidade or marca_atravessa"
+      or unresolved_bloqueia or sem_mapa_nao_produz_capacidade"
     verifies:
     - B-2
   anti_patterns:
-  - action: deduplicar as descrições colapsadas
-    reason: destrói a prova de que a origem publica 24 códigos sob 11 descrições
-    instead: classificar como CONFIRMED_SOURCE_DEFECT e preservar as linhas
+  - action: provar a conservação só com a soma global entre Bronze e Silver
+    reason: 'trocar os valores de dois códigos preserva soma, chaves e cardinalidades — {''01'': 10.00,
+      ''03'': 20.00} virando {''01'': 20.00, ''03'': 10.00} passa em toda prova global'
+    instead: comparar o mapa total_por_codigo código a código contra o de Bronze, em soma exata não quantizada
   - action: agrupar por descrição em vez de código
     reason: funde os 24 colapsados; o total continua batendo e os mapas por código saem errados
     instead: usar o código como chave, sempre
@@ -109,7 +121,7 @@ tasks:
   - contracts
   rollback: Remover a camada Silver e seus testes.
   observability: colapsos classificados por competência
-source_seam_sha256: 97fccd19f40133f97f0ef421d33ad21746f9005268f95eec00d3e51daceb0797
+source_seam_sha256: 1a1d1259bccd1acd5772754a8dadd8c515dbb33ed51f48e0448086a32d0e28a2
 ---
 # Silver classifica o defeito e conserva o total
 

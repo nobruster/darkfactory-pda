@@ -2,7 +2,7 @@ FORK: B (task-driven) — rota única desde a v3.4 — o consenso sempre entrega
 
 > Projetado de `LANE-SILVER.md` pelo Seamwise.
 > **Não edite aqui** — edite a recipe e rode `seamwise plan`.
-> origem sha256: `7bd62e212dd7efb1fd1a0b4fe6a5e16e51e5d6d2aef5f8b5999977ec0d984ce4`
+> origem sha256: `a23307f86f7f6676b53e8eba2f4d47d6dffea889d86ca6b12eed5d762b7f0fb4`
 
 ---
 
@@ -14,7 +14,7 @@ id: LANE-SILVER
 name: Silver lane
 owner: medalhao
 seam_id: SEAM-SILVER
-source_seam_sha256: 97fccd19f40133f97f0ef421d33ad21746f9005268f95eec00d3e51daceb0797
+source_seam_sha256: 1a1d1259bccd1acd5772754a8dadd8c515dbb33ed51f48e0448086a32d0e28a2
 legs:
 - LEG-SILVER-PRESERVA-DEFEITO
 ---

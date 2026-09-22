@@ -179,12 +179,67 @@ visto.
 *"dava para concluir a cadeia sem nunca conectar o produtor que será
 julgado"*. Precisa ser medido antes de decidir como ligar.
 
+## O adversário cross-family — o que os agentes não alcançaram
+
+| Rodada | Objeções | O que trouxe |
+|---|---|---|
+| 1 | 5 (4 high, 1 medium) | nenhuma repetia achado de agente |
+| 2 | 6 (1 critical, 4 high, 1 medium) | **contraexemplo executado** |
+| 3 | em curso | contra o texto já corrigido duas vezes |
+
+### Os dois contraexemplos que derrubaram o que eu achava rigoroso
+
+**Redistribuição compensada** — Gold citava `total_por_codigo` zero vezes:
+
+```
+{'01': 10.00, '03': 20.00}   soma 30.00
+{'01': 11.00, '03': 19.00}   soma 30.00
+```
+
+Soma igual, chaves iguais, **mapas diferentes**. Um valor no código errado
+passava por soma e cardinalidade. A `SEAM-FRONTEIRA` já sabia disso — *"com um
+mapa só, deslocar valores entre códigos seria aprovado por comparação consigo
+mesmo"* — e o medalhão tinha perdido a lição.
+
+**Float convertido** — eu escrevi *"comparação entre Decimal e Decimal"*
+achando que bastava:
+
+```
+Decimal(str(1.25)) = 1.25   finito, não negativo, escala 2
+```
+
+Passa em **todas** as verificações de domínio que escrevi, e a entrada era
+`DOUBLE`. A R-4 manda **recusar** float, não convertê-lo: converter apaga a
+evidência da entrada proibida. A recusa tem de ser do **tipo do esquema**,
+antes de ler valor algum.
+
+### E os cinco controles, não dois
+
+A tech-spec diz `R-5 (must)`: os **cinco** comparados individualmente. Eu
+escrevi *"os DOIS controles precisam bater"* — dois é mais que um, mas é menos
+que cinco. `min_vl_liquido`, `max_vl_liquido` e `linhas_invalidas` não eram
+olhados por ninguém, e uma alteração compensada entre duas linhas empurra o
+máximo acima de 183.725,76 sem mexer em contagem nem soma.
+
+### ⚠️ O padrão das rodadas: corrijo uma coisa e crio a seguinte
+
+A marca `PROCEDENCIA_NAO_VINCULADA` que criei na rodada 1 virou o **C1
+critical** da rodada 2 — porque eu mandei propagá-la sem declarar quem a
+consome. Cada camada cumpriria o próprio eval e a marca se perderia na
+transformação.
+
+É por isso que o Pass 4 **não fecha por zerar objeções**. Fecha por decisão, e
+cada rodada é uma chance de ver o que a anterior não via.
+
 ## O que falta
 
+- [ ] Fechar o Pass 4 — decidir **sem editar** (editar move os hashes)
 - [ ] **Ligar Gold ao juízo** — ou registrar por que são ramos separados
-- [ ] Adversário cross-family (o `task-plan.json` precisa ser regenerado antes)
-- [ ] Registrar as 19 objeções no bloco `objections:` da receita
 - [ ] Pass 5 — selar as três folhas
 - [ ] Pass 7, Pass 8
+- [ ] Declarar no contrato o mapa código→descrição dos 11 colapsos aprovados —
+      hoje ele tem as cardinalidades e **não** o referencial, e sem ele Silver
+      devolve `NAO_MEDIDO`. `scripts/medir_colapso.py` já sabe medi-lo; falta
+      alguém aprovar com data.
 - [ ] Tarefa própria para o lago carregar a procedência (toca `gravar_lago.py`,
       que está sem Task-Spec — Regra 11)
