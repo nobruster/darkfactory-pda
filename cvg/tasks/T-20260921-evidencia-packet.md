@@ -28,10 +28,14 @@ execution_backend: any
 signed_off: true
 signed_off_by: nobru
 signed_off_at: 2026-09-22T02:47:13Z
-accepted: false
-accepted_by: (none)
-accepted_at: (none)
+accepted: true
+accepted_by: converge-loop
+accepted_at: 2026-09-22T13:52:08Z
 signed_off_sig: hmac-sha256-v3:85d3c104:66b47ddad5da94db645025826c136d8902de3f431d1384576e7ed731eea9cb2e
+accepted_tier: 1
+accepted_attempt_id: dd72c14b-8bd0-410f-9d6e-4b7a50a10409
+accepted_authorization_ref: hmac-sha256-v3:85d3c104:66b47ddad5da94db645025826c136d8902de3f431d1384576e7ed731eea9cb2e
+acceptance_record_digest: sha256:4c3238ebad448a3ebcf9be3c2c20fb9f70e18bae8a28a0cdd94b5c1656871ba1
 ---
 
 # Gravar o pacote por execução, sem sobrescrever
