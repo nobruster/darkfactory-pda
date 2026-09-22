@@ -1,6 +1,6 @@
 > Projetado de `LEG-EVIDENCIA-RECONSTROI.md` pelo Seamwise.
 > **Não edite aqui** — edite a recipe e rode `seamwise plan`.
-> origem sha256: `350845dcf275f3a5c9d5f6575625a5c9ade5efc26867034b684acba615f10ace`
+> origem sha256: `149997d2323b65fc3f97eb114e6584b6f5008667635ba8ddd908a599094411a4`
 
 ---
 
@@ -43,8 +43,11 @@ tasks:
       o rótulo do veredito foi trocado
     when: o pacote é lido de volta
     then: o veredito é REDERIVADO dos cinco controles, da âncora, das classificações de cada diferença,
-      dos hashes e dos PARES de origens distintas que motivaram cada comparação — as duas listas de defeitos,
-      a observada na leitura e a declarada no envelope, e os dois mapas de totais por código, o da leitura
+      dos hashes, da COMPETÊNCIA SOLICITADA gravada ao lado das recebidas do contrato e do envelope —
+      sem ela a execução de 2026-02 recusada por trazer artefatos coerentes de 2026-01 é indistinguível
+      de uma execução legítima de janeiro, e rederivaria ACEITO, rejeitando o pacote legítimo de RECUSADO
+      — e dos PARES de origens distintas que motivaram cada comparação — as duas listas de defeitos, a
+      observada na leitura e a declarada no envelope, e os dois mapas de totais por código, o da leitura
       e o do envelope, todos gravados separadamente; sem eles, um RECUSADO legítimo rederivaria ACEITO,
       seja por omissão de defeito, seja por um envelope que transfere 1,00 do código A para o B mantendo
       chaves, controles globais, hashes e defeitos idênticos — casos em que só a divergência entre os
@@ -112,7 +115,7 @@ tasks:
   - evidence
   rollback: Remover o gravador de evidência e seus testes.
   observability: pacotes gravados por competência
-source_seam_sha256: af9b55a61fe92faceea980b8ced4466ffb99d9347a966a5640835c8b0ab371f7
+source_seam_sha256: a88a974899f2d0e18cbf6d98a3717bb0444ee37446ce332d2ef37ce29aa76f9b
 ---
 # O pacote reconstrói o veredito sem reexecutar
 

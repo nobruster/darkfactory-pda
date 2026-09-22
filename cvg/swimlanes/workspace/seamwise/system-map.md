@@ -582,6 +582,58 @@ objections:
     falhou. Medido nas 41.572.553 linhas — o índice 12 é sempre só dígitos, largura 2 após strip, alinhado
     à direita, e o 13 é sempre textual, alinhado à esquerda; zero linhas em que o formato não distinga
     os dois. O gate que protege o ADR 0002 funciona. scripts/medir_formato_especie.py registra (FORMATO=MEDIDO).
+- id: OBJ-R13-C1
+  status: FIXED
+  summary: Minha correção de R12-C1 criou a recusa por competência divergente, e a evidência não recebia
+    a competência solicitada para rederivá-la.
+  owner: Bruno Nunes
+  rationale: Mesmo padrão pela quarta vez — garantia nova cria estado novo cuja consequência eu não declaro.
+    Sem a solicitação original gravada, a execução de 2026-02 recusada por trazer artefatos de 2026-01
+    é indistinguível de uma execução legítima de janeiro. B-1 da evidência passou a gravar a solicitada
+    ao lado das recebidas.
+- id: OBJ-R13-C2
+  status: FIXED
+  summary: O domínio do envelope aceitava '-0.01' — a não-negatividade do ADR 0009 não alcançava o produtor
+    externo.
+  owner: Bruno Nunes
+  rationale: Carregar a propriedade no contrato não demonstra que a fronteira a aplica, e recusar alguns
+    negativos por divergência numérica depois não cobre a classificação do domínio. B-2 da fronteira passou
+    a contratar TODO monetário como finito, NÃO NEGATIVO e dentro da escala.
+- id: OBJ-R13-C3
+  status: FIXED
+  summary: A leitura não assumia a verificação de escala que o carregador lhe delegou na rodada anterior.
+  owner: Bruno Nunes
+  rationale: Um contrato de escala 1 com um CSV trazendo '1,23' expõe a lacuna — o valor passa pela gramática
+    enquanto a precisão foi validada para outro domínio. E fixar duas casas como regra permanente recusaria
+    uma fonte futura com escala maior legitimamente declarada. B-2 da leitura passou a conferir cada valor
+    contra a escala CARREGADA, não contra duas casas fixas.
+- id: OBJ-R13-C4
+  status: FIXED
+  summary: A contagem medida de colapsos era carregada e não participava de nenhuma conferência.
+  owner: Bruno Nunes
+  rationale: A leitura podia omitir um colapso, o envelope local reproduzir a mesma lista, e a comparação
+    por identidade concordar com cardinalidade, mapas e controles corretos. B-2 da leitura passou a conferir
+    a contagem observada contra a medida que o contrato carrega.
+- id: OBJ-R13-C5
+  status: FIXED
+  summary: Hash antes/depois não prova W-1 — e o CSV estava em 0644, não 444.
+  owner: Bruno Nunes
+  rationale: 'CONFERIDO NO SISTEMA DE ARQUIVOS e o adversário estava certo: o ZIP estava r--r--r--, mas
+    o CSV que a fábrica lê estava rw-r--r--. W-1 exige chmod 444, e um arquivo em 0666 passa no teste
+    de hashes antes/depois quando ninguém escreve durante ele. Aplicado chmod 444 nos três arquivos, com
+    sha256 conferido antes e depois para provar que só o modo mudou. B-1 da leitura passou a exigir a
+    conferência de proteção antes de ler, e scripts/checar_w1.py confere modo E checksum (W1=OK; testado
+    contra defeito injetado, devolve W1=VIOLADO).'
+- id: OBJ-R13-C6
+  status: FIXED
+  summary: Achado por leitura do darkfactory-inss — o plano não declarava que nenhum gate compara competências
+    vizinhas.
+  owner: Bruno Nunes
+  rationale: O ADR 0001 nomeia a lacuna e o plano a omitia, o que é a mesma classe de defeito de declarar
+    cobertura de R-9 que o teste não entrega. O darkfactory-inss mediu seis competências e achou dois
+    fenômenos reais na média, além de um máximo de 2026-01 três vezes maior que o de fevereiro e março.
+    Entrou em out_of_scope como limite conhecido. E a validação cruzada do ADR 0001 foi conferida contra
+    contracts/layout.yaml do outro repositório — contagem, total e zip_sha256 batem nos três (XVAL=OK).
 contentions: []
 ---
 # System Map

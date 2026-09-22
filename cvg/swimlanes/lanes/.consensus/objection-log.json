@@ -13,7 +13,7 @@
     "family": "anthropic"
   },
   "verdict": "REVISE",
-  "prompt_sha256": "3d446157835a31b00402c77a9723560fb56872ea6f629c98cdcacff3d7c9ba67",
+  "prompt_sha256": "c3fe2c72d92247d2127bf7e0c3a8bb2b5d7981c73a3b6d8073d6233a2115b26c",
   "inputs": [
     {
       "path": "agregacao/LEG-AGREGADO-EXATO.md",
@@ -25,11 +25,11 @@
     },
     {
       "path": "contrato/LEG-CONTRATO-RECUSA-SEM-ANCORA.md",
-      "sha256": "6412ebda6bbb41a91e7ab4df9dd8fbc3793225fc435b5f48672f977d7fbe1bc4"
+      "sha256": "8800307086500abb323b7b74000ad92456b2431636db03a3a5a9c63b0c384f57"
     },
     {
       "path": "contrato/_lane.md",
-      "sha256": "55bc615989b7e348a7faf504f48da563c4a50baf55e8329d4de5ed453313ee7c"
+      "sha256": "e91ccea46616d26f220868c7f365fcca3b17d9c2e76f3dfd6220ad4935a20bf0"
     },
     {
       "path": "evidencia/LEG-EVIDENCIA-RECONSTROI.md",
@@ -57,19 +57,19 @@
     },
     {
       "path": "leitura/LEG-LEITURA-POSICIONAL.md",
-      "sha256": "ffd881c1426a48d5c4bd9f0e10fc25bc50c2d3db5e50e5b209d320e60fd63d23"
+      "sha256": "15a8c7b072116453fa234481b0be99e93f2b7495370323a60150d98ae9a01db3"
     },
     {
       "path": "leitura/_lane.md",
-      "sha256": "81b9e22ef612e120c6623a1549b6cdaff050d468a385f18ab23f3ac3bca72bb1"
+      "sha256": "48ddb44a00e9e4f3514488153b8711287ae1fcbd0c37fca4c5b1ba493d825d8e"
     },
     {
       "path": "orquestracao/LEG-DESFECHO-COM-PACOTE.md",
-      "sha256": "105b88a48cfe318894a425b5403137f7979ef12c853c22924888b2db22bc1b6d"
+      "sha256": "4d792dc4b9d538a6830e402345041d84b842a37a43922d8ec85eb3ab4766b54d"
     },
     {
       "path": "orquestracao/_lane.md",
-      "sha256": "927574c5a60a8488cfc973ae00c7fa34959a5261e198923da734997ccd039a1d"
+      "sha256": "04eeeaa5c597264e58f5678cbb8b0b6c5648cd66432d7ebc7dea8790eb89175c"
     }
   ],
   "objections": [
@@ -78,119 +78,113 @@
       "severity": "high",
       "rank": 1,
       "attack_class": "cross-lane-interface",
-      "swimlane": "orquestracao",
-      "leg": "LEG-DESFECHO-COM-PACOTE",
+      "swimlane": "evidencia",
+      "leg": "LEG-EVIDENCIA-RECONSTROI",
       "location": {
-        "plan_file": "cvg/swimlanes/lanes/orquestracao/LEG-DESFECHO-COM-PACOTE.md",
+        "plan_file": "cvg/swimlanes/lanes/evidencia/LEG-EVIDENCIA-RECONSTROI.md",
         "section": "tasks[0].behavior[B-1]"
       },
-      "title": "A autoriza\u00e7\u00e3o n\u00e3o exige v\u00ednculo expl\u00edcito com a compet\u00eancia solicitada",
-      "body": "Os caminhos testam aus\u00eancia de \u00e2ncora, igualdade e diverg\u00eancia monet\u00e1ria, mas n\u00e3o a discord\u00e2ncia entre compet\u00eancia solicitada e compet\u00eancia do contrato/envelope. Uma execu\u00e7\u00e3o solicitada para 2026-02 que receba por engano contrato, arquivo e envelope coerentes de 2026-01 pode passar por todos os controles descritos: os tr\u00eas hashes, os totais e os defeitos concordam. Falta uma obriga\u00e7\u00e3o verific\u00e1vel que impe\u00e7a devolver essa autoriza\u00e7\u00e3o como resultado de 2026-02. Trata-se de uma lacuna de contrato, n\u00e3o de defeito demonstrado em implementa\u00e7\u00e3o.",
-      "evidence": "B-1: 's\u00f3 ACEITO autoriza publicar'. Nenhum dos casos de B-1/B-2 exercita compet\u00eancia solicitada divergente da compet\u00eancia ancorada.",
+      "title": "A rederiva\u00e7\u00e3o n\u00e3o recebe a compet\u00eancia solicitada que pode determinar RECUSADO",
+      "body": "A orquestra\u00e7\u00e3o exige recusar uma solicita\u00e7\u00e3o de 2026-02 atendida por artefatos coerentes de 2026-01. A evid\u00eancia enumera controles, contrato, hashes, defeitos e mapas, mas n\u00e3o exige preservar a compet\u00eancia solicitada e as compet\u00eancias recebidas separadamente. No contraexemplo j\u00e1 previsto pela orquestra\u00e7\u00e3o, todos os insumos enumerados pela evid\u00eancia passam. Sem a solicita\u00e7\u00e3o original, o leitor n\u00e3o distingue uma execu\u00e7\u00e3o leg\u00edtima de janeiro da execu\u00e7\u00e3o recusada de fevereiro: pode rederivar ACEITO e rejeitar um pacote leg\u00edtimo de RECUSADO.",
+      "evidence": "Evid\u00eancia B-1: 'S\u00f3 \u00e9 recusado o pacote cujo r\u00f3tulo n\u00e3o bate com o que os insumos rederivam'. Orquestra\u00e7\u00e3o B-1: 'a autoriza\u00e7\u00e3o declara a compet\u00eancia SOLICITADA, recusando quando contrato, arquivo ou envelope trazem outra'.",
       "cites": [
-        "cvg/docs/tech-spec/tech-spec-pda-beneficios.md \u00a7 Requirements, R-1: \u00e2ncora para aquela compet\u00eancia",
-        "cvg/docs/adrs/0001-the-2026-01-anchor-is-41572553-rows-summing-78521752562-12.md \u00a7 Consequences: este n\u00famero n\u00e3o serve para 2026-02",
-        "cvg/swimlanes/lanes/fronteira/LEG-ENVELOPE-VINCULADO.md \u00a7 behavior B-1/B-2"
-      ],
-      "proposal": null
+        "cvg/swimlanes/lanes/orquestracao/LEG-DESFECHO-COM-PACOTE.md \u2014 B-1",
+        "cvg/docs/tech-spec/tech-spec-pda-beneficios.md \u2014 R-1; Problem restated"
+      ]
     },
     {
       "id": "C2",
       "severity": "high",
       "rank": 2,
-      "attack_class": "unverified-assumption",
-      "swimlane": "contrato",
-      "leg": "LEG-CONTRATO-RECUSA-SEM-ANCORA",
+      "attack_class": "drift",
+      "swimlane": "fronteira",
+      "leg": "LEG-ENVELOPE-VINCULADO",
       "location": {
-        "plan_file": "cvg/swimlanes/lanes/contrato/LEG-CONTRATO-RECUSA-SEM-ANCORA.md",
-        "section": "tasks[0].behavior[B-1], sufici\u00eancia da precis\u00e3o"
+        "plan_file": "cvg/swimlanes/lanes/fronteira/LEG-ENVELOPE-VINCULADO.md",
+        "section": "tasks[0].behavior[B-2]"
       },
-      "title": "A escala n\u00e3o prova que o total ancorado limita os acumuladores intermedi\u00e1rios",
-      "body": "O c\u00e1lculo 11+3 pressup\u00f5e que nenhum acumulador precise de mais d\u00edgitos inteiros que a \u00e2ncora. O plano verifica escala, mas n\u00e3o estabelece limites de magnitude ou de sinal que provem essa hip\u00f3tese. Contraexemplo executado com valores de escala m\u00e1xima 3: [100000000000.005, -100000000000, 0.005, 78521752562.12]. Com precis\u00e3o 14, o resultado final HALF_EVEN \u00e9 78521752562.12; com precis\u00e3o 40, \u00e9 78521752562.13. Isso n\u00e3o demonstra falha na compet\u00eancia real de 2026-01; demonstra que a sufici\u00eancia declarada n\u00e3o cobre todo o dom\u00ednio que o plano deixa aberto. Como a f\u00f3rmula vem do ADR 0007, a quest\u00e3o deve voltar ao Pass 2, sem altera\u00e7\u00e3o unilateral pelo advers\u00e1rio.",
-      "evidence": "Execu\u00e7\u00e3o Python Decimal: prec=14 \u2192 soma 78521752562.125 \u2192 78521752562.12; prec=40 \u2192 soma 78521752562.130 \u2192 78521752562.13.",
+      "title": "O dom\u00ednio do envelope omite a n\u00e3o-negatividade exigida pelo ADR 0009",
+      "body": "O dom\u00ednio explicitado aceita string ou Decimal finito dentro da escala. '-0.01' satisfaz essas condi\u00e7\u00f5es. O ADR 0009 exige aplicar a n\u00e3o-negatividade tamb\u00e9m ao produtor externo; carregar essa propriedade no contrato n\u00e3o demonstra que a fronteira a aplica. As compara\u00e7\u00f5es posteriores podem recusar alguns negativos por diverg\u00eancia num\u00e9rica, mas isso n\u00e3o cobre a classifica\u00e7\u00e3o do dom\u00ednio nem prova sua aplica\u00e7\u00e3o a todo monet\u00e1rio. Um implementador pode cumprir B-2 e seus casos de teste sem implementar esta consequ\u00eancia vinculante do ADR.",
+      "evidence": "B-2: 'TODO campo monet\u00e1rio do envelope \u00e9 contratado como string ou Decimal FINITO e dentro da escala do contrato'. N\u00e3o h\u00e1 caso negativo nos comportamentos ou evals da fronteira.",
       "cites": [
-        "cvg/docs/tech-spec/tech-spec-pda-beneficios.md \u00a7 Requirements, R-4",
-        "cvg/docs/adrs/0007-decimal-precision-is-derived-from-integer-digits-plus-intermediate-scale.md \u00a7 Decision",
-        "cvg/swimlanes/lanes/agregacao/LEG-AGREGADO-EXATO.md \u00a7 behavior B-2"
-      ],
-      "proposal": null
+        "cvg/docs/adrs/0009-the-derived-precision-assumes-a-monotonic-sum-with-no-negative-values.md \u2014 Decision; Consequences",
+        "cvg/swimlanes/lanes/contrato/LEG-CONTRATO-RECUSA-SEM-ANCORA.md \u2014 B-1",
+        "cvg/docs/tech-spec/tech-spec-pda-beneficios.md \u2014 R-4; R-6"
+      ]
     },
     {
       "id": "C3",
-      "severity": "medium",
+      "severity": "high",
       "rank": 3,
       "attack_class": "cross-lane-interface",
       "swimlane": "leitura",
       "leg": "LEG-LEITURA-POSICIONAL",
       "location": {
         "plan_file": "cvg/swimlanes/lanes/leitura/LEG-LEITURA-POSICIONAL.md",
-        "section": "tasks[0].behavior[B-2], identidade colapsada"
+        "section": "tasks[0].behavior[B-1,B-2]"
       },
-      "title": "A descoberta tardia de colapso n\u00e3o tem cobertura definida",
-      "body": "O colapso \u00e9 uma propriedade do conjunto da compet\u00eancia, mas os defeitos chegam \u00e0 fronteira com identidade e posi\u00e7\u00e3o. Considere v\u00e1rias ocorr\u00eancias da descri\u00e7\u00e3o D com c\u00f3digo 01, seguidas apenas no fim por D com c\u00f3digo 03. Um leitor incremental pode emitir defeitos somente a partir do segundo c\u00f3digo e deixar as ocorr\u00eancias anteriores sem registro. A fronteira pode concordar com essa lista incompleta porque a pr\u00f3pria leitura \u00e9 sua refer\u00eancia. O plano n\u00e3o determina se a unidade do defeito \u00e9 a descri\u00e7\u00e3o ou cada ocorr\u00eancia, nem exige que a detec\u00e7\u00e3o tardia preserve a cobertura correspondente. Assim, a igualdade entre listas ainda n\u00e3o prova que toda diferen\u00e7a observ\u00e1vel foi classificada.",
-      "evidence": "B-2 exige defeito 'quando cobre mais de um c\u00f3digo'; a fronteira exige confer\u00eancia por identidade, com valor original e posi\u00e7\u00e3o, mas n\u00e3o h\u00e1 cen\u00e1rio de segundo c\u00f3digo descoberto ao final.",
+      "title": "A leitura n\u00e3o assume a verifica\u00e7\u00e3o da escala que o carregador lhe delega",
+      "body": "O contrato atribui expressamente \u00e0 leitura a confer\u00eancia de cada valor contra a escala declarada. A leitura exige gram\u00e1tica brasileira e relata escala 2 da amostra, mas n\u00e3o exige a compara\u00e7\u00e3o com a escala carregada antes de somar os mapas de refer\u00eancia. Um contrato declarando escala 1 e um CSV contendo '1,23' exp\u00f5em a lacuna: o valor pode passar pela gram\u00e1tica enquanto a precis\u00e3o foi validada para outro dom\u00ednio. Inversamente, fixar duas casas como regra permanente recusaria uma futura fonte com escala maior legitimamente declarada, hip\u00f3tese explicitamente prevista pelo ADR 0007. A liga\u00e7\u00e3o entre gram\u00e1tica, escala contratada e classifica\u00e7\u00e3o fica sem prova no plano executor.",
+      "evidence": "Contrato B-1: 'a leitura confere cada valor da fonte [...] contra a escala do contrato'. Leitura B-2: 'escala exatamente 2 em 2 milh\u00f5es de linhas conferidas'. Os evals da leitura n\u00e3o explicitam o desacordo entre escala recebida e declarada.",
       "cites": [
-        "cvg/docs/adrs/0008-the-description-defect-is-collapsed-identity-not-field-width.md \u00a7 Decision e Consequences",
-        "cvg/docs/tech-spec/tech-spec-pda-beneficios.md \u00a7 Requirements, R-6",
-        "cvg/swimlanes/lanes/fronteira/LEG-ENVELOPE-VINCULADO.md \u00a7 behavior B-2"
-      ],
-      "proposal": null
+        "cvg/swimlanes/lanes/contrato/LEG-CONTRATO-RECUSA-SEM-ANCORA.md \u2014 B-1",
+        "cvg/docs/adrs/0007-decimal-precision-is-derived-from-integer-digits-plus-intermediate-scale.md \u2014 Consequences, escala declarada",
+        "cvg/docs/adrs/0009-the-derived-precision-assumes-a-monotonic-sum-with-no-negative-values.md \u2014 Consequences",
+        "cvg/docs/tech-spec/tech-spec-pda-beneficios.md \u2014 R-4"
+      ]
     },
     {
       "id": "C4",
       "severity": "medium",
       "rank": 4,
-      "attack_class": "drift",
-      "swimlane": "contrato",
-      "leg": "LEG-CONTRATO-RECUSA-SEM-ANCORA",
+      "attack_class": "unverified-assumption",
+      "swimlane": "fronteira",
+      "leg": "LEG-ENVELOPE-VINCULADO",
       "location": {
-        "plan_file": "cvg/swimlanes/lanes/contrato/LEG-CONTRATO-RECUSA-SEM-ANCORA.md",
-        "section": "tasks[0].behavior[B-1] e evals"
+        "plan_file": "cvg/swimlanes/lanes/fronteira/LEG-ENVELOPE-VINCULADO.md",
+        "section": "tasks[0].behavior[B-2]"
       },
-      "title": "O contrato omite a contagem medida de colapsos exigida pelo ADR 0008",
-      "body": "O plano enumera cardinalidade de c\u00f3digos, controles, hashes, layout e pol\u00edtica decimal, mas n\u00e3o contrata a contagem medida de colapsos. O ADR 0008 exige explicitamente que esse valor entre no contrato junto da cardinalidade. Um carregador pode cumprir todos os comportamentos e avalia\u00e7\u00f5es descritos sem transportar essa medi\u00e7\u00e3o. A implementa\u00e7\u00e3o perderia um dado vinculante de caracteriza\u00e7\u00e3o da compet\u00eancia, mesmo estando verde nos testes planejados. Esta obje\u00e7\u00e3o n\u00e3o presume uma nova regra de recusa por diverg\u00eancia desse n\u00famero.",
-      "evidence": "B-1 inclui 'a CARDINALIDADE de c\u00f3digos medida na compet\u00eancia inteira'; o ADR 0008 acrescenta: 'A contagem de colapsos entra no contrato como valor medido, junto da cardinalidade de c\u00f3digos'.",
+      "title": "A contagem medida de colapsos \u00e9 carregada, mas n\u00e3o participa de nenhuma confer\u00eancia declarada",
+      "body": "O contrato carrega a contagem independente de colapsos. A fronteira confere a lista declarada contra a lista da leitura, mas nenhum comportamento exige conferir o resultado observado contra aquela medi\u00e7\u00e3o. Se a leitura omitir um colapso e o envelope local reproduzir a mesma lista, a compara\u00e7\u00e3o por identidade concorda; cardinalidade de c\u00f3digos, mapas monet\u00e1rios e cinco controles permanecem corretos. A medi\u00e7\u00e3o independente carregada n\u00e3o acusa o defeito compartilhado. Fica aberta a interpreta\u00e7\u00e3o operacional da contagem exigida pelo ADR 0008.",
+      "evidence": "Contrato B-1 carrega 'a CONTAGEM MEDIDA DE COLAPSOS'. Fronteira B-2 exige confer\u00eancia 'POR IDENTIDADE de cada defeito, a que a leitura produz', mas s\u00f3 cita cardinalidade ancorada para os c\u00f3digos.",
       "cites": [
-        "cvg/docs/adrs/0008-the-description-defect-is-collapsed-identity-not-field-width.md \u00a7 Consequences",
-        "cvg/swimlanes/lanes/contrato/LEG-CONTRATO-RECUSA-SEM-ANCORA.md \u00a7 behavior B-1 e evals"
-      ],
-      "proposal": null
+        "cvg/docs/adrs/0008-the-description-defect-is-collapsed-identity-not-field-width.md \u2014 Consequences",
+        "cvg/swimlanes/lanes/contrato/LEG-CONTRATO-RECUSA-SEM-ANCORA.md \u2014 B-1",
+        "cvg/docs/tech-spec/tech-spec-pda-beneficios.md \u2014 R-6"
+      ]
     },
     {
       "id": "C5",
       "severity": "medium",
       "rank": 5,
-      "attack_class": "cross-lane-interface",
+      "attack_class": "drift",
       "swimlane": "leitura",
       "leg": "LEG-LEITURA-POSICIONAL",
       "location": {
         "plan_file": "cvg/swimlanes/lanes/leitura/LEG-LEITURA-POSICIONAL.md",
-        "section": "tasks[0].behavior[B-2], gram\u00e1tica monet\u00e1ria"
+        "section": "done_condition; behavior[B-1]; anti_patterns"
       },
-      "title": "A gram\u00e1tica medida e a escala declarada permitem implementa\u00e7\u00f5es incompat\u00edveis",
-      "body": "O contrato atribui \u00e0 leitura a verifica\u00e7\u00e3o de cada valor contra a escala declarada. A leitura, por sua vez, exige o padr\u00e3o observado com exatamente duas casas, sem explicitar como esse padr\u00e3o depende do contrato. Para uma compet\u00eancia futura ancorada com escala 4, '0,0005' pode ser preservado por uma implementa\u00e7\u00e3o e classificado como ileg\u00edvel por outra, ambas alegando seguir o plano. O ADR 0007 prev\u00ea expressamente a fonte publicar quatro casas sem exigir novo ADR. A ambiguidade pode alterar linhas_invalidas, extremos e totais por c\u00f3digo; a medi\u00e7\u00e3o de duas casas em 2026-01 n\u00e3o resolve o comportamento para outro contrato.",
-      "evidence": "Leitura B-2: 'escala exatamente 2 em 2 milh\u00f5es de linhas conferidas' e 'exige o padr\u00e3o'. Contrato B-1: 'a leitura confere cada valor da fonte ... contra a escala do contrato'.",
+      "title": "Hash inalterado n\u00e3o demonstra a prote\u00e7\u00e3o de escrita exigida por W-1",
+      "body": "O plano prova que aquela leitura n\u00e3o mudou o arquivo e instrui tratar _raw como somente leitura. W-1 exige tamb\u00e9m que os bytes permane\u00e7am protegidos com chmod 444. Um arquivo em modo 0666 passa no teste de hashes antes/depois quando ningu\u00e9m escreve durante o teste. Nenhuma tarefa declara verificar a prote\u00e7\u00e3o ou estabelece quem entrega esse pr\u00e9-requisito. Assim, a prova prevista cobre aus\u00eancia de altera\u00e7\u00e3o na execu\u00e7\u00e3o observada, mas deixa sem cobertura uma condi\u00e7\u00e3o expl\u00edcita da especifica\u00e7\u00e3o.",
+      "evidence": "done_condition: 'sha256 id\u00eantico antes e depois'. Anti-pattern: 'tratar _raw/ como somente leitura'. W-1: 'permanecem imut\u00e1veis (chmod 444) e verific\u00e1veis por sha256'.",
       "cites": [
-        "cvg/docs/adrs/0007-decimal-precision-is-derived-from-integer-digits-plus-intermediate-scale.md \u00a7 Consequences: fonte futura com quatro casas",
-        "cvg/docs/adrs/0001-the-2026-01-anchor-is-41572553-rows-summing-78521752562-12.md \u00a7 Consequences: faixa medida numa compet\u00eancia n\u00e3o vira regra para outra",
-        "cvg/swimlanes/lanes/contrato/LEG-CONTRATO-RECUSA-SEM-ANCORA.md \u00a7 behavior B-1"
-      ],
-      "proposal": null
+        "cvg/docs/tech-spec/tech-spec-pda-beneficios.md \u2014 W-1"
+      ]
     }
   ],
   "cross_lane_interfaces": [],
   "fork": {
     "choice": "B",
-    "reason": "Transcri\u00e7\u00e3o do FORK j\u00e1 declarado nos sete arquivos _lane.md; nenhuma escolha feita pelo advers\u00e1rio.",
+    "reason": "Transcrito dos sete _lane.md fornecidos; n\u00e3o constitui escolha do advers\u00e1rio.",
     "per_plan_declared": true
   },
   "open_questions": [
     {
-      "q": "Pass 2: qual restri\u00e7\u00e3o vinculante de sinal e magnitude garante que os acumuladores intermedi\u00e1rios cabem nos d\u00edgitos inteiros derivados da \u00e2ncora, conforme pressup\u00f5e o ADR 0007?",
+      "q": "Qual etapa confere os colapsos observados contra a contagem medida carregada do contrato?",
       "blocks_build": true
     },
     {
-      "q": "Qual representa\u00e7\u00e3o oficial de obje\u00e7\u00f5es ainda n\u00e3o decididas deve ser usada, dado que o schema local exige decis\u00f5es humanas e n\u00e3o admite resolution null?",
+      "q": "Quem entrega e verifica a prote\u00e7\u00e3o chmod 444 exigida por W-1, considerando que as tarefas n\u00e3o podem alterar _raw?",
       "blocks_build": true
     }
   ],

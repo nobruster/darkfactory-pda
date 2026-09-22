@@ -3,9 +3,9 @@ status: SEAM_MAP=READY
 intent_id: DI-PDA-BENEFICIOS
 source_recipe:
   name: pda-recipe.yaml
-  sha256: 15c98e36ea5b1c9e0a1dfb861df8995c3aac2b41990e903a1d4606d1f11abcae
-intent_sha256: 7e97b240616bd07633d782d99a1b165ec4bd7527e0eeb9e6d2f088f7b0717fff
-system_map_sha256: 26058e808d92e0d85a1b0f2bbfe37e458b66f9ad0429a9c03818104aa6124ea2
+  sha256: 846ec5acf512c02b831b9a6d1624b429e7782a5e8db5910e6a84b9367ce07d2f
+intent_sha256: 34922ec3593d648dafe84601e6110d8a45683dbe98c4286dae5008da0ffd9e90
+system_map_sha256: 13185b13f7aa2ba83267fddb77b2ce4ad5fefd0597a46b378b2d1066700dcd35
 evidence_sha256: f601d0840184c26f965db2920850c41b94472dd57c4647ccd73dff8b40a9ca3c
 decisions:
 - id: ADR-0002-POSICIONAL
@@ -38,7 +38,7 @@ seams:
   evidence:
   - E-ESPECIE-TRUNCADA
   swimlane_id: LANE-LEITURA
-  sha256: 592bb673ef0c6ea002ce83ba66405e9fbacb5bda3e8f28c626a1deb70fd1481a
+  sha256: 57e04003c08d9f6b9c217c68ace450a810363ddd0f79bb786c593aafc55e998c
 - id: SEAM-AGREGACAO
   path: seamwise/seams/SEAM-AGREGACAO.md
   owner: agregacao
@@ -59,7 +59,7 @@ seams:
   evidence:
   - E-ANCORA-202601
   swimlane_id: LANE-EVIDENCIA
-  sha256: af9b55a61fe92faceea980b8ced4466ffb99d9347a966a5640835c8b0ab371f7
+  sha256: a88a974899f2d0e18cbf6d98a3717bb0444ee37446ce332d2ef37ce29aa76f9b
 - id: SEAM-ORQUESTRACAO
   path: seamwise/seams/SEAM-ORQUESTRACAO.md
   owner: orquestracao
@@ -73,4 +73,4 @@ seams:
   evidence:
   - E-ANCORA-202601
   swimlane_id: LANE-FRONTEIRA
-  sha256: f1af5c2b485f8224a71049db3bb3fdc99b4e255ab59ab855c116aa8977a2d3e1
+  sha256: 24eb5014203d47fb08c14913bcd1955bc041b49dea1d9d02ae2615f9c7ac4ac4

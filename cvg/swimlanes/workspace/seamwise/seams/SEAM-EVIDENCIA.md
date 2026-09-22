@@ -59,9 +59,12 @@ swimlane:
           só o rótulo do veredito foi trocado
         when: o pacote é lido de volta
         then: o veredito é REDERIVADO dos cinco controles, da âncora, das classificações de cada diferença,
-          dos hashes e dos PARES de origens distintas que motivaram cada comparação — as duas listas de
-          defeitos, a observada na leitura e a declarada no envelope, e os dois mapas de totais por código,
-          o da leitura e o do envelope, todos gravados separadamente; sem eles, um RECUSADO legítimo rederivaria
+          dos hashes, da COMPETÊNCIA SOLICITADA gravada ao lado das recebidas do contrato e do envelope
+          — sem ela a execução de 2026-02 recusada por trazer artefatos coerentes de 2026-01 é indistinguível
+          de uma execução legítima de janeiro, e rederivaria ACEITO, rejeitando o pacote legítimo de RECUSADO
+          — e dos PARES de origens distintas que motivaram cada comparação — as duas listas de defeitos,
+          a observada na leitura e a declarada no envelope, e os dois mapas de totais por código, o da
+          leitura e o do envelope, todos gravados separadamente; sem eles, um RECUSADO legítimo rederivaria
           ACEITO, seja por omissão de defeito, seja por um envelope que transfere 1,00 do código A para
           o B mantendo chaves, controles globais, hashes e defeitos idênticos — casos em que só a divergência
           entre os dois lados explica a recusa. E o pacote preserva o TIPO original de cada campo monetário

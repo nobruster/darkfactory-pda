@@ -1,6 +1,6 @@
 > Projetado de `LEG-ENVELOPE-VINCULADO.md` pelo Seamwise.
 > **Não edite aqui** — edite a recipe e rode `seamwise plan`.
-> origem sha256: `535e68e2eb52cd58afa1ad4c31c717786e9d3781277337c0957354d9316bb36f`
+> origem sha256: `187058ab15c90f015093e157d5a506fa218b7db079a16723a4057ebc8168409f`
 
 ---
 
@@ -62,36 +62,39 @@ tasks:
     then: o primeiro é recusado; o segundo é ACEITO — truncamento é defeito numa linha válida, e a competência
       2026-01 tem linhas_invalidas=0 com milhões de truncamentos; o terceiro é aceito sem que o juiz importe
       nada do motor produtor. O quarto é RECUSADO na fronteira, antes de qualquer conversão — TODO campo
-      monetário do envelope é contratado como string ou Decimal FINITO e dentro da escala do contrato
-      — 'NaN', 'sNaN', 'Infinity' e Decimal não finito satisfazem o tipo e são RECUSADOS pelo domínio,
-      com o valor original preservado na evidência, porque a gramática brasileira roda sobre o CSV e não
-      alcança produtor externo; a recusa é do envelope, nunca uma InvalidOperation levantada ao comparar.
-      Há UMA representação de ausência declarada no schema, o literal JSON null, para o caso em que nenhum
-      registro é legível e min e max não têm valor; campo omitido ou marcador textual é recusado, senão
-      o caso que a agregação prevê morreria na validação antes de o juízo comparar, os três controles
-      globais e também cada total por código, porque R-4 e o ADR 0003 valem para todo dinheiro e não só
-      para os três; um envelope com controles em string e totais por espécie como número JSON satisfaria
-      uma recusa escrita só para os três. Converter com Decimal(str(v)) apagaria a prova de que veio float,
-      então a recusa do agregador local não cobre produtor externo. O quinto é RECUSADO por omissão —
-      e a conferência é POR IDENTIDADE de cada defeito, a que a leitura produz com valor original e posição,
-      não por contagem e tipo — dois defeitos A e B do mesmo tipo, com A duplicado e B omitido, preservam
-      contagem e tipo, cada entrada declarada recebe sua classificação única, e B nunca é classificado,
-      violando R-6 com juízo e rederivação concordando entre si. Conferir por contagem deixaria a substituição
-      passar, e só a omissão seria vista. E o envelope declara o agregado POR CÓDIGO de espécie, com as
-      chaves conferidas contra a cardinalidade ANCORADA no contrato — medida na competência inteira, nunca
-      os 51 do ADR 0004, que saíram de ~3 milhões de linhas; exigir 51 recusaria esta competência, que
-      tem 65 códigos, entre eles o '60' com 1.395 ocorrências em 41,5 milhões. E cada total por código
-      do envelope é CONFERIDO contra os totais por código DA LEITURA, capacidade própria que a leitura
-      produz e a fronteira exige — dois valores de origens distintas, o declarado pelo produtor e o de
-      referência; com um mapa só, deslocar valores entre códigos seria aprovado por comparação consigo
-      mesmo. Os dois mapas trafegam como soma EXATA, não quantizada, e a comparação é exata — um código
-      cuja soma é 2,345 chega 2,345 dos dois lados, e quantizar um só faria a fronteira recusar dois lados
-      corretos. A soma global vem dos valores originais, NUNCA dos totais por código já arredondados,
-      porque arredondar uma vez no total é camada do ADR 0007 herdada do 0003 — dois códigos de 2,345
-      dão 4,69 no total e 4,68 somando grupos arredondados. Um produtor que agrupasse por descrição e
-      atribuísse o total ao primeiro código, zerando os demais, manteria todas as chaves, os cinco controles,
-      hashes e defeitos idênticos, e só a comparação por valor o pega; R-3 prova-se por valor, não por
-      forma, e a referência não vem do agregador julgado, pelo mesmo motivo do ADR 0005
+      monetário do envelope é contratado como string ou Decimal FINITO, NÃO NEGATIVO e dentro da escala
+      do contrato — 'NaN', 'sNaN', 'Infinity' e Decimal não finito satisfazem o tipo e são RECUSADOS pelo
+      domínio, e '-0.01' também, porque a não-negatividade do ADR 0009 vale para o produtor externo e
+      carregá-la no contrato não demonstra que a fronteira a aplica; recusar alguns negativos por divergência
+      numérica depois não cobre a classificação do domínio. O valor original fica preservado na evidência,
+      porque a gramática brasileira roda sobre o CSV e não alcança produtor externo; a recusa é do envelope,
+      nunca uma InvalidOperation levantada ao comparar. Há UMA representação de ausência declarada no
+      schema, o literal JSON null, para o caso em que nenhum registro é legível e min e max não têm valor;
+      campo omitido ou marcador textual é recusado, senão o caso que a agregação prevê morreria na validação
+      antes de o juízo comparar, os três controles globais e também cada total por código, porque R-4
+      e o ADR 0003 valem para todo dinheiro e não só para os três; um envelope com controles em string
+      e totais por espécie como número JSON satisfaria uma recusa escrita só para os três. Converter com
+      Decimal(str(v)) apagaria a prova de que veio float, então a recusa do agregador local não cobre
+      produtor externo. O quinto é RECUSADO por omissão — e a conferência é POR IDENTIDADE de cada defeito,
+      a que a leitura produz com valor original e posição, não por contagem e tipo — dois defeitos A e
+      B do mesmo tipo, com A duplicado e B omitido, preservam contagem e tipo, cada entrada declarada
+      recebe sua classificação única, e B nunca é classificado, violando R-6 com juízo e rederivação concordando
+      entre si. Conferir por contagem deixaria a substituição passar, e só a omissão seria vista. E o
+      envelope declara o agregado POR CÓDIGO de espécie, com as chaves conferidas contra a cardinalidade
+      ANCORADA no contrato — medida na competência inteira, nunca os 51 do ADR 0004, que saíram de ~3
+      milhões de linhas; exigir 51 recusaria esta competência, que tem 65 códigos, entre eles o '60' com
+      1.395 ocorrências em 41,5 milhões. E cada total por código do envelope é CONFERIDO contra os totais
+      por código DA LEITURA, capacidade própria que a leitura produz e a fronteira exige — dois valores
+      de origens distintas, o declarado pelo produtor e o de referência; com um mapa só, deslocar valores
+      entre códigos seria aprovado por comparação consigo mesmo. Os dois mapas trafegam como soma EXATA,
+      não quantizada, e a comparação é exata — um código cuja soma é 2,345 chega 2,345 dos dois lados,
+      e quantizar um só faria a fronteira recusar dois lados corretos. A soma global vem dos valores originais,
+      NUNCA dos totais por código já arredondados, porque arredondar uma vez no total é camada do ADR
+      0007 herdada do 0003 — dois códigos de 2,345 dão 4,69 no total e 4,68 somando grupos arredondados.
+      Um produtor que agrupasse por descrição e atribuísse o total ao primeiro código, zerando os demais,
+      manteria todas as chaves, os cinco controles, hashes e defeitos idênticos, e só a comparação por
+      valor o pega; R-3 prova-se por valor, não por forma, e a referência não vem do agregador julgado,
+      pelo mesmo motivo do ADR 0005
   evals:
   - id: eval_1
     description: Sha ausente, divergente, ou copiado de outro arquivo lido é recusado
@@ -126,7 +129,7 @@ tasks:
   - cvg/docs/adrs
   rollback: Remover o validador de envelope e seus testes.
   observability: envelopes recusados por motivo
-source_seam_sha256: f1af5c2b485f8224a71049db3bb3fdc99b4e255ab59ab855c116aa8977a2d3e1
+source_seam_sha256: 24eb5014203d47fb08c14913bcd1955bc041b49dea1d9d02ae2615f9c7ac4ac4
 ---
 # O envelope liga o agregado ao arquivo que o gerou
 

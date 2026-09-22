@@ -22,6 +22,11 @@ out_of_scope:
   são entregáveis separáveis, e que a infra ausente não impede construir nem provar o juízo. Entra como
   plano próprio, contra o envelope que a SEAM-FRONTEIRA já contrata. O ADR 0006 supersedes a linha de
   escopo do 0005, que prendia a infra a este mesmo plano.
+- Comparar competências VIZINHAS. O ADR 0001 nomeia a lacuna — nenhum gate aqui vê um salto na média entre
+  meses, e a fábrica acusa um centavo errado DENTRO de uma competência sem enxergar isso. O darkfactory-inss
+  mediu seis competências e achou dois fenômenos reais na média, além de um máximo de 2026-01 três vezes
+  maior que o de fevereiro e março. Fica declarado como limite conhecido, não resolvido em silêncio —
+  e faixa medida numa competência não vira regra para outra.
 ---
 # Conferir uma competência do PDA contra âncora medida antes de publicar
 
