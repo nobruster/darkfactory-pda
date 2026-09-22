@@ -1,17 +1,17 @@
 schema_version: 1
 status: DELIVERY_PLAN=READY
-seam_map_sha256: b65119a49b81d723b6b294026cbebf7e5a7cdcefae09b1ac54788fa1ca9df54c
+seam_map_sha256: d9938900eccdf8b3e0cedae724d5803b76c248dfb3525941188f4a3aa065927e
 swimlanes:
 - id: LANE-CONTRATO
   seam_id: SEAM-CONTRATO
   owner: contrato
   path: seamwise/swimlanes/LANE-CONTRATO.md
-  sha256: 3818e40d2c567a7ccddbc24008eadc7f1cde51557eb656e2a312d2a1f8277c9a
+  sha256: cceba0d6c2ee9f6b5de68f28e71bc98a2e17541ec21e840d9c62791ac05e5b62
 - id: LANE-LEITURA
   seam_id: SEAM-LEITURA
   owner: leitura
   path: seamwise/swimlanes/LANE-LEITURA.md
-  sha256: d356a4fd2a739fac3b1771e44b67a1a2efc88d656b4a4463df8d4b9f50532626
+  sha256: 9c13400bb5e2eaafcf0e99417363be6808182bce60e301f7c910759ac98a2e4b
 - id: LANE-AGREGACAO
   seam_id: SEAM-AGREGACAO
   owner: agregacao
@@ -26,7 +26,7 @@ swimlanes:
   seam_id: SEAM-EVIDENCIA
   owner: evidencia
   path: seamwise/swimlanes/LANE-EVIDENCIA.md
-  sha256: b38067b0ecd001d54bb990f7fd922bc3e0c1ab31bd73370d5f25451581b251e7
+  sha256: dae7c34187e5077702dafedee14fd96b8ee53af9b90986cf71988e15a884f9f8
 - id: LANE-ORQUESTRACAO
   seam_id: SEAM-ORQUESTRACAO
   owner: orquestracao
@@ -36,18 +36,18 @@ swimlanes:
   seam_id: SEAM-FRONTEIRA
   owner: fronteira
   path: seamwise/swimlanes/LANE-FRONTEIRA.md
-  sha256: 8b554e14663a1396d93e5864fa9b1455fcf94de3b0a15e4cd9317cd37d0c9268
+  sha256: c4d5399dbbca732d31c71666a93dc9abb57cafed200aa8aac72660b4582a4bf7
 legs:
 - id: LEG-CONTRATO-RECUSA-SEM-ANCORA
   seam_id: SEAM-CONTRATO
   swimlane_id: LANE-CONTRATO
   path: seamwise/legs/LEG-CONTRATO-RECUSA-SEM-ANCORA.md
-  sha256: 78a79e5892021e881d851bcf2ae30710fdafafee585e0d4498102838205e1f9f
+  sha256: 4881b72619c8a1ec577e0711cd58d230e221e29ee84f89199a6c992e52d60c29
 - id: LEG-LEITURA-POSICIONAL
   seam_id: SEAM-LEITURA
   swimlane_id: LANE-LEITURA
   path: seamwise/legs/LEG-LEITURA-POSICIONAL.md
-  sha256: 75a9b35a62275972cdb9997d420364c1826c5d785a751c6f98c6dc9816743307
+  sha256: 8723b1a90f1ce9558b505035796f3da93d426f30bed39cad79c02de98e797a96
 - id: LEG-AGREGADO-EXATO
   seam_id: SEAM-AGREGACAO
   swimlane_id: LANE-AGREGACAO
@@ -62,7 +62,7 @@ legs:
   seam_id: SEAM-EVIDENCIA
   swimlane_id: LANE-EVIDENCIA
   path: seamwise/legs/LEG-EVIDENCIA-RECONSTROI.md
-  sha256: 201c52815432f6bdf1c8cf26a20b32872c02ef89c211dbaf846fb093f566ceda
+  sha256: 7bf57b47ec76d45edb0c3acb3cdd909f2093ff759338ca95ecbf945d22b53e1e
 - id: LEG-DESFECHO-COM-PACOTE
   seam_id: SEAM-ORQUESTRACAO
   swimlane_id: LANE-ORQUESTRACAO
@@ -72,7 +72,7 @@ legs:
   seam_id: SEAM-FRONTEIRA
   swimlane_id: LANE-FRONTEIRA
   path: seamwise/legs/LEG-ENVELOPE-VINCULADO.md
-  sha256: ce89245c47a2d92060c0dc4827a025dcb3a5070a16e2f4e6cf66b6323747cf29
+  sha256: 0db74c07e5b7fb4139595366b9107968295165db0b889fa38d2fcbb4a671231b
 steel_thread:
 - LEG-CONTRATO-RECUSA-SEM-ANCORA
 - LEG-LEITURA-POSICIONAL
@@ -465,7 +465,51 @@ objections:
     fonte interrompe o processamento, o que nem a tech-spec nem o juízo pediram. B-1 da agregação passou
     a marcar os extremos AUSENTES, com sum=0.00, reusando a representação de ausência que fronteira e
     evidência já tratam.
+- id: OBJ-R9-C1
+  status: FIXED
+  summary: Minha correção de R8-C9 usou a precisão do TOTAL como prova de suficiência; a perda depende
+    da escala dos intermediários.
+  owner: Bruno Nunes
+  rationale: Contraexemplo executado e confirmado — somar 78521752562,12 + 0,005 + 0,005 em prec=13 devolve
+    78521752562,12; em prec=14, 78521752562,13. O centavo some ANTES da quantização, que é a falha da
+    primeira camada do ADR 0003 atingindo a precisão que eu julgava suficiente. Suficiência para representar
+    não é suficiência para somar.
+- id: OBJ-R9-C2
+  status: FIXED
+  summary: Os dois mapas por código não tinham escala de comparação definida, nem estava dito de onde
+    vem a soma global.
+  owner: Bruno Nunes
+  rationale: Um código de soma exata 2,345 podia chegar 2,345 de um lado e 2,34 do outro, com os dois
+    planos cumpridos e a fronteira recusando. B-2 da fronteira passou a exigir soma EXATA nos dois mapas
+    e comparação exata, e a soma global vem dos valores originais, nunca dos grupos arredondados — dois
+    códigos de 2,345 dão 4,69 no total e 4,68 por grupo.
+- id: OBJ-R9-C3
+  status: FIXED
+  summary: Conversibilidade para Decimal não define dinheiro legível — NaN, Infinity, 1_000 e 1e3 passam
+    pelo construtor.
+  owner: Bruno Nunes
+  rationale: Verificado — os quatro são aceitos por Decimal(), e um NaN chegaria vivo aos extremos, onde
+    min levanta InvalidOperation e transformaria defeito de UMA linha em ERRO da execução inteira. B-2
+    da leitura passou a definir legível pela gramática monetária declarada, não pelo que o parser aceita.
+- id: OBJ-R9-C4
+  status: FIXED
+  summary: A fronteira pode recusar só por tipo, e o pacote não preservava o tipo original dos campos
+    monetários.
+  owner: Bruno Nunes
+  rationale: Serializar tudo como string faria 0.0 e '0.00' virarem insumos numericamente iguais, e a
+    recusa legítima por número JSON deixaria de ser rederivável com controles e hashes coincidindo. B-1
+    da evidência passou a preservar o tipo recebido, sem normalizar.
+- id: OBJ-R9-C5
+  status: FIXED
+  summary: Meu plano corrigia em SILÊNCIO um número do ADR 0003 — declarei 13 dígitos onde o ADR diz 14,
+    e o mesmo plano manda validar contra o ADR.
+  owner: Bruno Nunes
+  rationale: 'Violação de cerca que eu cometi, e a objeção estava certa em duas camadas. O ADR 0003 errou
+    a conta — leu 7,9×10¹⁰ como 12 dígitos inteiros, são 11 — mas acertou o número, porque somar exige
+    14 e não 13. Minha "correção" teria quebrado o que estava certo. Resolvido com o ADR 0007, que SUPERSEDES
+    o 0003 e registra a precisão como valor DERIVADO: dígitos inteiros da âncora mais a escala dos intermediários,
+    11 + 3 = 14. As três camadas do 0003 permanecem. CHECK_ADR=OK.'
 contentions: []
 steel_thread_path: seamwise/steel-thread.md
 steel_thread_sha256: ffb28ecb19188999bee9ce19aa55f8f43a0d1e1bd3e01017d7f9ad3a6d47fb7b
-review_authority_sha256: 12864915abeed2752db1836e4265e3e954b071cd9b126698fc9d074bc6c90c84
+review_authority_sha256: 8246c86860e4a8278fad2a5699964d4c942100f5446d07a7259a775e68268220

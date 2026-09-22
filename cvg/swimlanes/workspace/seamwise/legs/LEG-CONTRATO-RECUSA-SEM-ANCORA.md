@@ -43,13 +43,15 @@ tasks:
       COM política que contradiz o ADR — HALF_UP, ou granularidade por campo — é RECUSADO no carregamento,
       não validado, porque um contrato contraditório deixaria o agregador entre obedecer ao contrato e
       obedecer à decisão vinculante; a validação confere a política contra o ADR, e nunca o contrário.
-      A precisão é conferida por SUFICIÊNCIA contra a âncora, não por estar declarada — precisão 6 com
-      HALF_EVEN e arredondamento final satisfaz presença, modo e granularidade e ainda assim devolve 7.85218E+10
-      no lugar de 78.521.752.562,12; o mínimo medido para esta âncora é 13 dígitos significativos, e prec=12
-      já perde o último centavo. Contrato com precisão insuficiente é RECUSADO no carregamento, não descoberto
-      durante a agregação. Falta o hash do CSV e também é NAO_MEDIDO, porque hoje só o ZIP tem checksum
-      e a âncora foi medida no CSV — sem o par, trocar o CSV extraído não seria detectado; sem aprovador
-      ou sem data, idem
+      A precisão é conferida por SUFICIÊNCIA e é DERIVADA, como manda o ADR 0007 — dígitos inteiros da
+      âncora mais a escala máxima declarada para os intermediários, 11 + 3 = 14 nesta competência, e o
+      contrato declara essa escala em vez de assumir um padrão. Precisão 6 com HALF_EVEN e arredondamento
+      final satisfaz presença, modo e granularidade e devolve 7.85218E+10 no lugar de 78.521.752.562,12;
+      prec=13 representa o total e ainda assim perde o centavo ao SOMAR 78521752562,12 + 0,005 + 0,005,
+      porque a perda acontece durante a soma e não na quantização. Contrato com precisão insuficiente
+      é RECUSADO no carregamento, não descoberto durante a agregação. Falta o hash do CSV e também é NAO_MEDIDO,
+      porque hoje só o ZIP tem checksum e a âncora foi medida no CSV — sem o par, trocar o CSV extraído
+      não seria detectado; sem aprovador ou sem data, idem
   - id: B-2
     given: uma competência sem âncora no contrato
     when: o contrato é carregado
@@ -86,7 +88,7 @@ tasks:
   - cvg/docs/adrs
   rollback: Remover o carregador de contrato e seus testes.
   observability: competências ancoradas no contrato
-source_seam_sha256: e2f34551adc32d36da3040152f5e2b1108007349b50c4fa3f51120ce57e67d9c
+source_seam_sha256: 25c8d00b2845f9d1878acb3ad76c6b1b6179f36f9b7f6cba5e5ee101cdb7a3c1
 ---
 # A fábrica recusa construir sem âncora medida
 

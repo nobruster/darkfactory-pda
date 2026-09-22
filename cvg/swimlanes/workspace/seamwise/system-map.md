@@ -406,6 +406,50 @@ objections:
     fonte interrompe o processamento, o que nem a tech-spec nem o juízo pediram. B-1 da agregação passou
     a marcar os extremos AUSENTES, com sum=0.00, reusando a representação de ausência que fronteira e
     evidência já tratam.
+- id: OBJ-R9-C1
+  status: FIXED
+  summary: Minha correção de R8-C9 usou a precisão do TOTAL como prova de suficiência; a perda depende
+    da escala dos intermediários.
+  owner: Bruno Nunes
+  rationale: Contraexemplo executado e confirmado — somar 78521752562,12 + 0,005 + 0,005 em prec=13 devolve
+    78521752562,12; em prec=14, 78521752562,13. O centavo some ANTES da quantização, que é a falha da
+    primeira camada do ADR 0003 atingindo a precisão que eu julgava suficiente. Suficiência para representar
+    não é suficiência para somar.
+- id: OBJ-R9-C2
+  status: FIXED
+  summary: Os dois mapas por código não tinham escala de comparação definida, nem estava dito de onde
+    vem a soma global.
+  owner: Bruno Nunes
+  rationale: Um código de soma exata 2,345 podia chegar 2,345 de um lado e 2,34 do outro, com os dois
+    planos cumpridos e a fronteira recusando. B-2 da fronteira passou a exigir soma EXATA nos dois mapas
+    e comparação exata, e a soma global vem dos valores originais, nunca dos grupos arredondados — dois
+    códigos de 2,345 dão 4,69 no total e 4,68 por grupo.
+- id: OBJ-R9-C3
+  status: FIXED
+  summary: Conversibilidade para Decimal não define dinheiro legível — NaN, Infinity, 1_000 e 1e3 passam
+    pelo construtor.
+  owner: Bruno Nunes
+  rationale: Verificado — os quatro são aceitos por Decimal(), e um NaN chegaria vivo aos extremos, onde
+    min levanta InvalidOperation e transformaria defeito de UMA linha em ERRO da execução inteira. B-2
+    da leitura passou a definir legível pela gramática monetária declarada, não pelo que o parser aceita.
+- id: OBJ-R9-C4
+  status: FIXED
+  summary: A fronteira pode recusar só por tipo, e o pacote não preservava o tipo original dos campos
+    monetários.
+  owner: Bruno Nunes
+  rationale: Serializar tudo como string faria 0.0 e '0.00' virarem insumos numericamente iguais, e a
+    recusa legítima por número JSON deixaria de ser rederivável com controles e hashes coincidindo. B-1
+    da evidência passou a preservar o tipo recebido, sem normalizar.
+- id: OBJ-R9-C5
+  status: FIXED
+  summary: Meu plano corrigia em SILÊNCIO um número do ADR 0003 — declarei 13 dígitos onde o ADR diz 14,
+    e o mesmo plano manda validar contra o ADR.
+  owner: Bruno Nunes
+  rationale: 'Violação de cerca que eu cometi, e a objeção estava certa em duas camadas. O ADR 0003 errou
+    a conta — leu 7,9×10¹⁰ como 12 dígitos inteiros, são 11 — mas acertou o número, porque somar exige
+    14 e não 13. Minha "correção" teria quebrado o que estava certo. Resolvido com o ADR 0007, que SUPERSEDES
+    o 0003 e registra a precisão como valor DERIVADO: dígitos inteiros da âncora mais a escala dos intermediários,
+    11 + 3 = 14. As três camadas do 0003 permanecem. CHECK_ADR=OK.'
 contentions: []
 ---
 # System Map

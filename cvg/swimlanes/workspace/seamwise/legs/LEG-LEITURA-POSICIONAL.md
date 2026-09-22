@@ -47,12 +47,17 @@ tasks:
       com descrição textual; o teste falha se for satisfeito trocando colunas de nomes diferentes, porque
       é esta troca, de nomes iguais, que motivou o ADR 0002 e que os cinco controles preservam
   - id: B-2
-    given: um registro cujo campo monetário é ilegível, e os quatro exemplos do ADR 0004 — entre eles
-      'Pensão por Morte de ' com 20 caracteres brutos e 19 após strip
+    given: um registro cujo campo monetário é ilegível, os valores 'NaN', 'Infinity', '1_000' e '1e3',
+      e os quatro exemplos do ADR 0004 — entre eles 'Pensão por Morte de ' com 20 caracteres brutos e
+      19 após strip
     when: os registros são contados
-    then: o primeiro entra em linhas_invalidas com identidade, valor original e posição; os quatro emitem
-      defeito de truncamento sem serem inválidos, porque o critério é o campo BRUTO ocupar os 20 caracteres
-      do layout — medir após strip deixaria o exemplo principal do ADR de fora
+    then: o primeiro entra em linhas_invalidas com identidade, valor original e posição. Os quatro valores
+      especiais TAMBÉM entram como inválidos, porque legível é o que casa a gramática monetária declarada
+      — dígitos com ponto decimal e escala finita — e não o que Decimal() aceita — os quatro passam pelo
+      construtor, e um NaN chegaria vivo aos extremos, onde min levanta InvalidOperation e transformaria
+      defeito de UMA linha em ERRO da execução inteira. Os quatro exemplos do ADR emitem defeito de truncamento
+      sem serem inválidos, porque o critério é o campo BRUTO ocupar os 20 caracteres do layout — medir
+      após strip deixaria o exemplo principal do ADR de fora
   evals:
   - id: eval_1
     description: Leitura posicional; Espécie 12 e 13 trocadas entre si bloqueiam
@@ -60,8 +65,8 @@ tasks:
     verifies:
     - B-1
   - id: eval_2
-    description: Ilegível vira inválida; descrição truncada emite defeito
-    bash: pytest -q tests/test_leitura.py -k "invalida or truncamento_emitido"
+    description: Ilegível vira inválida; NaN e Infinity também; truncada emite defeito
+    bash: pytest -q tests/test_leitura.py -k "invalida or gramatica_monetaria or truncamento_emitido"
     verifies:
     - B-2
   - id: eval_3
@@ -84,7 +89,7 @@ tasks:
   - _raw
   rollback: Remover o leitor e seus testes.
   observability: registros lidos e defeitos por tipo
-source_seam_sha256: 8bddbdbb4a706ca85794bbea3c15a1db8f22ac63f990008089329ebb718111d4
+source_seam_sha256: ea9ab158fa80ce513f5a8125f23721b99b95cc0d164e18c8b15e86d50e49861b
 ---
 # A leitura é posicional e não altera a fonte
 

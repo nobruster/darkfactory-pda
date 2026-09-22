@@ -73,10 +73,15 @@ swimlane:
           e o 13 com descrição textual; o teste falha se for satisfeito trocando colunas de nomes diferentes,
           porque é esta troca, de nomes iguais, que motivou o ADR 0002 e que os cinco controles preservam
       - id: B-2
-        given: um registro cujo campo monetário é ilegível, e os quatro exemplos do ADR 0004 — entre eles
-          'Pensão por Morte de ' com 20 caracteres brutos e 19 após strip
+        given: um registro cujo campo monetário é ilegível, os valores 'NaN', 'Infinity', '1_000' e '1e3',
+          e os quatro exemplos do ADR 0004 — entre eles 'Pensão por Morte de ' com 20 caracteres brutos
+          e 19 após strip
         when: os registros são contados
-        then: o primeiro entra em linhas_invalidas com identidade, valor original e posição; os quatro
+        then: o primeiro entra em linhas_invalidas com identidade, valor original e posição. Os quatro
+          valores especiais TAMBÉM entram como inválidos, porque legível é o que casa a gramática monetária
+          declarada — dígitos com ponto decimal e escala finita — e não o que Decimal() aceita — os quatro
+          passam pelo construtor, e um NaN chegaria vivo aos extremos, onde min levanta InvalidOperation
+          e transformaria defeito de UMA linha em ERRO da execução inteira. Os quatro exemplos do ADR
           emitem defeito de truncamento sem serem inválidos, porque o critério é o campo BRUTO ocupar
           os 20 caracteres do layout — medir após strip deixaria o exemplo principal do ADR de fora
       evals:
@@ -86,8 +91,8 @@ swimlane:
         verifies:
         - B-1
       - id: eval_2
-        description: Ilegível vira inválida; descrição truncada emite defeito
-        bash: pytest -q tests/test_leitura.py -k "invalida or truncamento_emitido"
+        description: Ilegível vira inválida; NaN e Infinity também; truncada emite defeito
+        bash: pytest -q tests/test_leitura.py -k "invalida or gramatica_monetaria or truncamento_emitido"
         verifies:
         - B-2
       - id: eval_3

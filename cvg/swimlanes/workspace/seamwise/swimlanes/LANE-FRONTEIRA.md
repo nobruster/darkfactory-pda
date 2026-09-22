@@ -6,7 +6,7 @@ id: LANE-FRONTEIRA
 name: Fronteira lane
 owner: fronteira
 seam_id: SEAM-FRONTEIRA
-source_seam_sha256: 3e5055d63b92c4b561312e0bf66ef9b50c01319e383563470d27d76282516a64
+source_seam_sha256: 0cb9a9e46bceba4307873baa70adbb7087edf75d771f3c274d73c2ebd5ffabbf
 legs:
 - LEG-ENVELOPE-VINCULADO
 ---

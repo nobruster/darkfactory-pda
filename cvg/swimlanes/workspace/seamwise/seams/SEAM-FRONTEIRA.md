@@ -105,11 +105,15 @@ swimlane:
           ocorrências em 41,5 milhões. E cada total por código do envelope é CONFERIDO contra os totais
           por código DA LEITURA, capacidade própria que a leitura produz e a fronteira exige — dois valores
           de origens distintas, o declarado pelo produtor e o de referência; com um mapa só, deslocar
-          valores entre códigos seria aprovado por comparação consigo mesmo. Um produtor que agrupasse
-          por descrição e atribuísse o total ao primeiro código, zerando os demais, manteria todas as
-          chaves, os cinco controles, hashes e defeitos idênticos, e só a comparação por valor o pega;
-          R-3 prova-se por valor, não por forma, e a referência não vem do agregador julgado, pelo mesmo
-          motivo do ADR 0005
+          valores entre códigos seria aprovado por comparação consigo mesmo. Os dois mapas trafegam como
+          soma EXATA, não quantizada, e a comparação é exata — um código cuja soma é 2,345 chega 2,345
+          dos dois lados, e quantizar um só faria a fronteira recusar dois lados corretos. A soma global
+          vem dos valores originais, NUNCA dos totais por código já arredondados, porque arredondar uma
+          vez no total é camada do ADR 0007 herdada do 0003 — dois códigos de 2,345 dão 4,69 no total
+          e 4,68 somando grupos arredondados. Um produtor que agrupasse por descrição e atribuísse o total
+          ao primeiro código, zerando os demais, manteria todas as chaves, os cinco controles, hashes
+          e defeitos idênticos, e só a comparação por valor o pega; R-3 prova-se por valor, não por forma,
+          e a referência não vem do agregador julgado, pelo mesmo motivo do ADR 0005
       evals:
       - id: eval_1
         description: Sha ausente, divergente, ou copiado de outro arquivo lido é recusado

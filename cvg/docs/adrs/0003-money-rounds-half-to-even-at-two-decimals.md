@@ -1,12 +1,12 @@
 ---
 adr: "0003"
-status: accepted
+status: superseded
 date: 2026-09-21
 ground: brownfield
 converge_pass: 2
 spec_ref: "R-3"
 supersedes: ""
-superseded_by: ""
+superseded_by: "0007"
 deciders: "Bruno Nunes"
 ---
 
