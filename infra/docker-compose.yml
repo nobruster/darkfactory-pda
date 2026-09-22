@@ -65,11 +65,11 @@ services:
     # precisa dele. Instalar por fora daria um contêiner que funciona nesta
     # máquina e falha na próxima — o mesmo tipo de armadilha ambiental que
     # reprovou o selo do Pass 5 três vezes.
+    # O script de preparo fica num ARQUIVO, não inline: o Compose interpreta
+    # $VAR como variável dele e substitui por vazio antes do shell ver. A
+    # versão inline virou `curl -o "" ""` e baixou nada, com S3A_JARS=0.
     user: root
-    command:
-      - /bin/sh
-      - -c
-      - "pip install --quiet --no-cache-dir pyyaml==6.0.2 && sleep infinity"
+    command: ["/bin/sh", "/app/infra/preparar-spark.sh"]
     environment:
       # A imagem oficial traz pyspark.zip em /opt/spark/python/lib mas deixa
       # SPARK_HOME e PYTHONPATH vazios — sem isto, `import pyspark` falha
@@ -89,6 +89,7 @@ services:
       - ../src:/app/src:ro
       - ../contracts:/app/contracts:ro
       - ../scripts:/app/scripts:ro
+      - ./preparar-spark.sh:/app/infra/preparar-spark.sh:ro
       - spark-trabalho:/app/trabalho
     working_dir: /app
     networks: [pda]
