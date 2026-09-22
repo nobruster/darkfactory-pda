@@ -1,17 +1,17 @@
 schema_version: 1
 status: DELIVERY_PLAN=READY
-seam_map_sha256: d9938900eccdf8b3e0cedae724d5803b76c248dfb3525941188f4a3aa065927e
+seam_map_sha256: 4d9ba42641d523b56f06bfd990b3f17884202126ba22d6e367d8431d42fab277
 swimlanes:
 - id: LANE-CONTRATO
   seam_id: SEAM-CONTRATO
   owner: contrato
   path: seamwise/swimlanes/LANE-CONTRATO.md
-  sha256: cceba0d6c2ee9f6b5de68f28e71bc98a2e17541ec21e840d9c62791ac05e5b62
+  sha256: 3346827d99d9f6456d030afd4e70dde3ff94e510535f665f100f9ca2b1a14ae0
 - id: LANE-LEITURA
   seam_id: SEAM-LEITURA
   owner: leitura
   path: seamwise/swimlanes/LANE-LEITURA.md
-  sha256: 9c13400bb5e2eaafcf0e99417363be6808182bce60e301f7c910759ac98a2e4b
+  sha256: 23bdf85ce2d78cd8a90466df5f055ff515f04654fd730b3621aef45b609bfac5
 - id: LANE-AGREGACAO
   seam_id: SEAM-AGREGACAO
   owner: agregacao
@@ -26,7 +26,7 @@ swimlanes:
   seam_id: SEAM-EVIDENCIA
   owner: evidencia
   path: seamwise/swimlanes/LANE-EVIDENCIA.md
-  sha256: dae7c34187e5077702dafedee14fd96b8ee53af9b90986cf71988e15a884f9f8
+  sha256: e10eaa5d6e3fb48f708c96142f939c8051864b506a99be61484410b3d3ede386
 - id: LANE-ORQUESTRACAO
   seam_id: SEAM-ORQUESTRACAO
   owner: orquestracao
@@ -36,18 +36,18 @@ swimlanes:
   seam_id: SEAM-FRONTEIRA
   owner: fronteira
   path: seamwise/swimlanes/LANE-FRONTEIRA.md
-  sha256: c4d5399dbbca732d31c71666a93dc9abb57cafed200aa8aac72660b4582a4bf7
+  sha256: c501168c43bee831f13da69456662b9b8f223fee8a5d4d6a0d1accb8e1a58070
 legs:
 - id: LEG-CONTRATO-RECUSA-SEM-ANCORA
   seam_id: SEAM-CONTRATO
   swimlane_id: LANE-CONTRATO
   path: seamwise/legs/LEG-CONTRATO-RECUSA-SEM-ANCORA.md
-  sha256: 4881b72619c8a1ec577e0711cd58d230e221e29ee84f89199a6c992e52d60c29
+  sha256: 15b640c5e43c58fb7f202c0f2b2de04338fff49a7752fec59e1c0317e14017b8
 - id: LEG-LEITURA-POSICIONAL
   seam_id: SEAM-LEITURA
   swimlane_id: LANE-LEITURA
   path: seamwise/legs/LEG-LEITURA-POSICIONAL.md
-  sha256: 8723b1a90f1ce9558b505035796f3da93d426f30bed39cad79c02de98e797a96
+  sha256: 3fbd4c94fc5d6ea61c9736f340f52e3f23e61d5cca462d0d9b1c63efa9a1896c
 - id: LEG-AGREGADO-EXATO
   seam_id: SEAM-AGREGACAO
   swimlane_id: LANE-AGREGACAO
@@ -62,7 +62,7 @@ legs:
   seam_id: SEAM-EVIDENCIA
   swimlane_id: LANE-EVIDENCIA
   path: seamwise/legs/LEG-EVIDENCIA-RECONSTROI.md
-  sha256: 7bf57b47ec76d45edb0c3acb3cdd909f2093ff759338ca95ecbf945d22b53e1e
+  sha256: b522ff9e1a66f36031d2dcc7ce66ef87f9dd55d661e26d7ad3c647923530d2a9
 - id: LEG-DESFECHO-COM-PACOTE
   seam_id: SEAM-ORQUESTRACAO
   swimlane_id: LANE-ORQUESTRACAO
@@ -72,7 +72,7 @@ legs:
   seam_id: SEAM-FRONTEIRA
   swimlane_id: LANE-FRONTEIRA
   path: seamwise/legs/LEG-ENVELOPE-VINCULADO.md
-  sha256: 0db74c07e5b7fb4139595366b9107968295165db0b889fa38d2fcbb4a671231b
+  sha256: a2e5f27dfc278ce000a1660a7336a715c6e3464d0ecbd0bb963726183f24e777
 steel_thread:
 - LEG-CONTRATO-RECUSA-SEM-ANCORA
 - LEG-LEITURA-POSICIONAL
@@ -509,7 +509,50 @@ objections:
     14 e não 13. Minha "correção" teria quebrado o que estava certo. Resolvido com o ADR 0007, que SUPERSEDES
     o 0003 e registra a precisão como valor DERIVADO: dígitos inteiros da âncora mais a escala dos intermediários,
     11 + 3 = 14. As três camadas do 0003 permanecem. CHECK_ADR=OK.'
+- id: OBJ-R10-C1
+  status: FIXED
+  summary: Minha correção de R9-C3 declarou gramática de ponto decimal; a fonte publica em formato brasileiro,
+    e a regra recusaria a competência inteira.
+  owner: Bruno Nunes
+  rationale: MEDIDO NO ARQUIVO INTEIRO, e o adversário estava certo — a fonte publica '        1.621,00',
+    com preenchimento à esquerda, ponto de milhar e vírgula decimal, de modo que Decimal(bruto) RECUSA
+    toda linha legítima. Terceira vez que um gate meu recusaria o arquivo correto, depois dos 51 códigos
+    e de prec=13. A gramática passou a ser a medida na fonte, com a normalização declarada como parte
+    dela; scripts/medir_gramatica.py registra 41.572.553 aceitos e 0 recusados (GRAMATICA=MEDIDA).
+- id: OBJ-R10-C2
+  status: FIXED
+  summary: A referência por código que a leitura produz não tinha garantia de precisão própria; a proteção
+    escrita para a agregação não a alcança.
+  owner: Bruno Nunes
+  rationale: O contexto decimal é global e mutável — se a leitura o herdar, a fronteira recusaria um produtor
+    correto por divergir de uma referência corrompida, com os testes da leitura verdes. B-1 da leitura
+    passou a exigir contexto próprio com a precisão derivada, e teste sob contexto global adverso.
+- id: OBJ-R10-C3
+  status: FIXED
+  summary: A escala dos intermediários era declarada e nunca verificada — escala finita não é escala menor
+    ou igual a 3.
+  owner: Bruno Nunes
+  rationale: Sem verificação, a precisão validada perderia informação durante a soma e ainda devolveria
+    o mesmo total global arredondado, com os mapas por código errados. B-1 do contrato passou a exigir
+    verificação valor a valor, e valor fora da escala contratada é defeito classificado, nunca somado
+    em silêncio. A fonte mede escala exatamente 2 nas 41.572.553 linhas.
+- id: OBJ-R10-C4
+  status: FIXED
+  summary: NAO_MEDIDO era reproduzido pela causa declarada, sem os insumos que distinguem os motivos.
+  owner: Bruno Nunes
+  rationale: Dois contratos em estados de aprovação diferentes produziriam os mesmos dados auditáveis,
+    e o leitor só confiaria no rótulo da causa — trocar a confiança no rótulo do veredito por outro rótulo
+    não é rederivar. B-1 da evidência passou a gravar os campos de aprovação como foram lidos, presentes
+    ou ausentes.
+- id: OBJ-R10-C5
+  status: FIXED
+  summary: Minha correção de R8-C10 mandava transportar extremos ausentes sem contratar a representação
+    entre as lanes.
+  owner: Bruno Nunes
+  rationale: Produtor e consumidor podiam escolher null, campo omitido ou marcador textual, e o caso que
+    a agregação prevê morreria na validação antes de o juízo comparar. B-2 da fronteira passou a declarar
+    UMA representação no schema, o literal JSON null, recusando as outras.
 contentions: []
 steel_thread_path: seamwise/steel-thread.md
 steel_thread_sha256: ffb28ecb19188999bee9ce19aa55f8f43a0d1e1bd3e01017d7f9ad3a6d47fb7b
-review_authority_sha256: 8246c86860e4a8278fad2a5699964d4c942100f5446d07a7259a775e68268220
+review_authority_sha256: 1580ddda09483b2668e31c1d2c2fbccb3d79123b4c138bc7e4f80dde1b0ac045

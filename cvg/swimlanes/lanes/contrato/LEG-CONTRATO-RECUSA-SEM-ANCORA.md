@@ -1,6 +1,6 @@
 > Projetado de `LEG-CONTRATO-RECUSA-SEM-ANCORA.md` pelo Seamwise.
 > **Não edite aqui** — edite a recipe e rode `seamwise plan`.
-> origem sha256: `4881b72619c8a1ec577e0711cd58d230e221e29ee84f89199a6c992e52d60c29`
+> origem sha256: `15b640c5e43c58fb7f202c0f2b2de04338fff49a7752fec59e1c0317e14017b8`
 
 ---
 
@@ -51,13 +51,17 @@ tasks:
       obedecer à decisão vinculante; a validação confere a política contra o ADR, e nunca o contrário.
       A precisão é conferida por SUFICIÊNCIA e é DERIVADA, como manda o ADR 0007 — dígitos inteiros da
       âncora mais a escala máxima declarada para os intermediários, 11 + 3 = 14 nesta competência, e o
-      contrato declara essa escala em vez de assumir um padrão. Precisão 6 com HALF_EVEN e arredondamento
-      final satisfaz presença, modo e granularidade e devolve 7.85218E+10 no lugar de 78.521.752.562,12;
-      prec=13 representa o total e ainda assim perde o centavo ao SOMAR 78521752562,12 + 0,005 + 0,005,
-      porque a perda acontece durante a soma e não na quantização. Contrato com precisão insuficiente
-      é RECUSADO no carregamento, não descoberto durante a agregação. Falta o hash do CSV e também é NAO_MEDIDO,
-      porque hoje só o ZIP tem checksum e a âncora foi medida no CSV — sem o par, trocar o CSV extraído
-      não seria detectado; sem aprovador ou sem data, idem
+      contrato declara essa escala em vez de assumir um padrão. A escala declarada é VERIFICADA valor
+      a valor, não só declarada — a fonte publica escala exatamente 2, medida em 2 milhões de linhas,
+      e um valor que exceda a escala contratada é defeito classificado, nunca somado em silêncio; escala
+      finita não é escala menor ou igual a 3, e sem essa verificação a precisão validada perderia informação
+      durante a soma e ainda devolveria o mesmo total global arredondado, com os mapas por código errados.
+      Precisão 6 com HALF_EVEN e arredondamento final satisfaz presença, modo e granularidade e devolve
+      7.85218E+10 no lugar de 78.521.752.562,12; prec=13 representa o total e ainda assim perde o centavo
+      ao SOMAR 78521752562,12 + 0,005 + 0,005, porque a perda acontece durante a soma e não na quantização.
+      Contrato com precisão insuficiente é RECUSADO no carregamento, não descoberto durante a agregação.
+      Falta o hash do CSV e também é NAO_MEDIDO, porque hoje só o ZIP tem checksum e a âncora foi medida
+      no CSV — sem o par, trocar o CSV extraído não seria detectado; sem aprovador ou sem data, idem
   - id: B-2
     given: uma competência sem âncora no contrato
     when: o contrato é carregado
@@ -94,7 +98,7 @@ tasks:
   - cvg/docs/adrs
   rollback: Remover o carregador de contrato e seus testes.
   observability: competências ancoradas no contrato
-source_seam_sha256: 25c8d00b2845f9d1878acb3ad76c6b1b6179f36f9b7f6cba5e5ee101cdb7a3c1
+source_seam_sha256: 2d07f5f877c81182984f73b110b245aec772ddfd643a13315abdbb14cfbb1db0
 ---
 # A fábrica recusa construir sem âncora medida
 

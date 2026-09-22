@@ -74,9 +74,13 @@ swimlane:
           não é recusa incondicional, ela decide o veredito — e quem decide é a CAUSA registrada, não
           a falta de um hash. Contrato que devolveu NAO_MEDIDO por qualquer motivo — sem âncora, sem aprovador,
           sem data ou sem política decimal — dá ACEITO_SEM_ANCORA, mesmo que o hash ancorado exista e
-          nenhum observado tenha sido produzido; ler a falta do hash como se fosse a causa recusaria justamente
-          o pacote que a orquestração deve gravar. Falta o observado COM evento de falha registrado e
-          é execução interrompida, desfecho ERRO. Contrato RECUSADO no carregamento, por política que
+          nenhum observado tenha sido produzido; e o pacote grava os CAMPOS DE APROVAÇÃO do contrato como
+          foram lidos, presentes ou ausentes, não só a causa, porque dois contratos em estados de aprovação
+          diferentes produziriam os mesmos dados auditáveis e o leitor apenas confiaria no rótulo da causa
+          — trocar a confiança no rótulo do veredito pela confiança noutro rótulo não é rederivar, e uma
+          causa incorreta passaria sem ninguém ver; ler a falta do hash como se fosse a causa recusaria
+          justamente o pacote que a orquestração deve gravar. Falta o observado COM evento de falha registrado
+          e é execução interrompida, desfecho ERRO. Contrato RECUSADO no carregamento, por política que
           contradiz o ADR, é um terceiro caminho antecipado — termina sem hash observado, sem agregado
           e sem envelope, não é NAO_MEDIDO nem exceção, e o pacote grava a política recusada e a cláusula
           do ADR violada, que é o que a rederivação precisa para reconstruir esse RECUSADO sem depender

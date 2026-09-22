@@ -450,6 +450,49 @@ objections:
     14 e não 13. Minha "correção" teria quebrado o que estava certo. Resolvido com o ADR 0007, que SUPERSEDES
     o 0003 e registra a precisão como valor DERIVADO: dígitos inteiros da âncora mais a escala dos intermediários,
     11 + 3 = 14. As três camadas do 0003 permanecem. CHECK_ADR=OK.'
+- id: OBJ-R10-C1
+  status: FIXED
+  summary: Minha correção de R9-C3 declarou gramática de ponto decimal; a fonte publica em formato brasileiro,
+    e a regra recusaria a competência inteira.
+  owner: Bruno Nunes
+  rationale: MEDIDO NO ARQUIVO INTEIRO, e o adversário estava certo — a fonte publica '        1.621,00',
+    com preenchimento à esquerda, ponto de milhar e vírgula decimal, de modo que Decimal(bruto) RECUSA
+    toda linha legítima. Terceira vez que um gate meu recusaria o arquivo correto, depois dos 51 códigos
+    e de prec=13. A gramática passou a ser a medida na fonte, com a normalização declarada como parte
+    dela; scripts/medir_gramatica.py registra 41.572.553 aceitos e 0 recusados (GRAMATICA=MEDIDA).
+- id: OBJ-R10-C2
+  status: FIXED
+  summary: A referência por código que a leitura produz não tinha garantia de precisão própria; a proteção
+    escrita para a agregação não a alcança.
+  owner: Bruno Nunes
+  rationale: O contexto decimal é global e mutável — se a leitura o herdar, a fronteira recusaria um produtor
+    correto por divergir de uma referência corrompida, com os testes da leitura verdes. B-1 da leitura
+    passou a exigir contexto próprio com a precisão derivada, e teste sob contexto global adverso.
+- id: OBJ-R10-C3
+  status: FIXED
+  summary: A escala dos intermediários era declarada e nunca verificada — escala finita não é escala menor
+    ou igual a 3.
+  owner: Bruno Nunes
+  rationale: Sem verificação, a precisão validada perderia informação durante a soma e ainda devolveria
+    o mesmo total global arredondado, com os mapas por código errados. B-1 do contrato passou a exigir
+    verificação valor a valor, e valor fora da escala contratada é defeito classificado, nunca somado
+    em silêncio. A fonte mede escala exatamente 2 nas 41.572.553 linhas.
+- id: OBJ-R10-C4
+  status: FIXED
+  summary: NAO_MEDIDO era reproduzido pela causa declarada, sem os insumos que distinguem os motivos.
+  owner: Bruno Nunes
+  rationale: Dois contratos em estados de aprovação diferentes produziriam os mesmos dados auditáveis,
+    e o leitor só confiaria no rótulo da causa — trocar a confiança no rótulo do veredito por outro rótulo
+    não é rederivar. B-1 da evidência passou a gravar os campos de aprovação como foram lidos, presentes
+    ou ausentes.
+- id: OBJ-R10-C5
+  status: FIXED
+  summary: Minha correção de R8-C10 mandava transportar extremos ausentes sem contratar a representação
+    entre as lanes.
+  owner: Bruno Nunes
+  rationale: Produtor e consumidor podiam escolher null, campo omitido ou marcador textual, e o caso que
+    a agregação prevê morreria na validação antes de o juízo comparar. B-2 da fronteira passou a declarar
+    UMA representação no schema, o literal JSON null, recusando as outras.
 contentions: []
 ---
 # System Map

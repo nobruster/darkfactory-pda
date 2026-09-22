@@ -13,7 +13,7 @@
     "family": "anthropic"
   },
   "verdict": "REVISE",
-  "prompt_sha256": "b6a45783b52f86c881b4c1232cf63ebe8710a98f36eb961f74c2e19479123e3c",
+  "prompt_sha256": "7a9857cbffdab1c2e6e0db880cec14d1d0f682576033a51b3225af655b003719",
   "inputs": [
     {
       "path": "agregacao/LEG-AGREGADO-EXATO.md",
@@ -25,27 +25,27 @@
     },
     {
       "path": "contrato/LEG-CONTRATO-RECUSA-SEM-ANCORA.md",
-      "sha256": "3921123f44a3f3ea93edaa5710396180d0ab8de4af4e9c1662a89a4e9b5f65b3"
+      "sha256": "17f399c5bcae30a450dddcd3e390d39db872f91e89346460ba67e8279b7d379c"
     },
     {
       "path": "contrato/_lane.md",
-      "sha256": "acd5603247eb3411ef29282911bc1e04e6461642fee7bf5a3631698b674568cb"
+      "sha256": "76de23098b120d21fbd983914f87ab323e83e422d7ec3faf73aad476c17f8cc8"
     },
     {
       "path": "evidencia/LEG-EVIDENCIA-RECONSTROI.md",
-      "sha256": "488f39f6a36557e07e8a2a16aff574aa5eb941a37d07d83df0bbed3fd74562c6"
+      "sha256": "596ee98689f4135963aa5e04705c654527ad25cc13d913c012704f146a0c2753"
     },
     {
       "path": "evidencia/_lane.md",
-      "sha256": "a0f425eff02ca7cd03f10de81a6d8a27f6a50a36ed6ce2dbcf1ad0bd4d4a5d7f"
+      "sha256": "ee036eb791d28b84586ca248d11c8942ea116bee53ae7b2e056184807cd729ee"
     },
     {
       "path": "fronteira/LEG-ENVELOPE-VINCULADO.md",
-      "sha256": "06a74180e007475f1c566bb1b43db3a1f8b8ce960fb7a8b8bee3efbf791f8334"
+      "sha256": "f76a7641a9795d379da575f4e71c716c15d45323de59a1fc4640f139510997ed"
     },
     {
       "path": "fronteira/_lane.md",
-      "sha256": "994661519cd1811fe60e24f859489104fa7b36b1acb5a10f74b76cfcbb318e14"
+      "sha256": "031e295f480b73e1471706e2db32d79028e6ac8a7051366ee26349fe2f4e8be2"
     },
     {
       "path": "juizo/LEG-JUIZO-ACUSA.md",
@@ -57,11 +57,11 @@
     },
     {
       "path": "leitura/LEG-LEITURA-POSICIONAL.md",
-      "sha256": "49c0c2a9e07c78b23e8196e800293844741963045556399013fd69a02ab20516"
+      "sha256": "75b442d1ddac59bb9362939462fc60142d864edbc8d8c84bfffe7b3b7cee438d"
     },
     {
       "path": "leitura/_lane.md",
-      "sha256": "056bf8119f45b738d2e39ca40e090d6bdb458b79224299891d27c9545b854790"
+      "sha256": "646477fbe30c6b05f6d610fdad55e8c856502a276a66022b5be68c322303a017"
     },
     {
       "path": "orquestracao/LEG-DESFECHO-COM-PACOTE.md",
@@ -77,20 +77,19 @@
       "id": "C1",
       "severity": "high",
       "rank": 1,
-      "attack_class": "unverified-assumption",
-      "swimlane": "contrato",
-      "leg": "LEG-CONTRATO-RECUSA-SEM-ANCORA",
+      "attack_class": "drift",
+      "swimlane": "leitura",
+      "leg": "LEG-LEITURA-POSICIONAL",
+      "title": "A gram\u00e1tica monet\u00e1ria declarada n\u00e3o reconhece o formato da fonte",
       "location": {
-        "plan_file": "cvg/swimlanes/lanes/contrato/LEG-CONTRATO-RECUSA-SEM-ANCORA.md",
-        "section": "tasks[0].behavior[B-1] \u2014 sufici\u00eancia da precis\u00e3o"
+        "plan_file": "cvg/swimlanes/lanes/leitura/LEG-LEITURA-POSICIONAL.md",
+        "section": "tasks[0].behavior B-2"
       },
-      "title": "Representar a \u00e2ncora n\u00e3o prova precis\u00e3o suficiente para somar",
-      "body": "O plano usa a precis\u00e3o necess\u00e1ria ao total ancorado como prova de sufici\u00eancia, mas n\u00e3o delimita escala e magnitude dos valores intermedi\u00e1rios. Os pr\u00f3prios planos exercitam entradas com mais de duas casas. Contraexemplo executado: somar sequencialmente 78521752562.12, 0.005 e 0.005 em prec=13 produz 78521752562.12; em prec=40, com quantiza\u00e7\u00e3o final, produz 78521752562.13. Isso n\u00e3o refuta 13 d\u00edgitos para a compet\u00eancia atual com valores n\u00e3o negativos de duas casas; refuta sua sufici\u00eancia sem essas precondi\u00e7\u00f5es. Uma implementa\u00e7\u00e3o pode passar na valida\u00e7\u00e3o descrita e perder centavos antes do arredondamento.",
-      "evidence": "B-1: 'A precis\u00e3o \u00e9 conferida por SUFICI\u00caNCIA contra a \u00e2ncora'; 'o m\u00ednimo medido para esta \u00e2ncora \u00e9 13 d\u00edgitos significativos'. Experimento Decimal local: prec=13 \u2192 78521752562.12; prec=40 \u2192 78521752562.13.",
+      "evidence": "O plano define legibilidade como 'd\u00edgitos com ponto decimal e escala finita'. A tech-spec documenta '1.621,00'; o ADR 0002 registra espa\u00e7os \u00e0 esquerda, ponto de milhar e v\u00edrgula decimal.",
+      "body": "Aplicada ao campo bruto, a gram\u00e1tica do plano classifica valores leg\u00edtimos como VALOR_ILEGIVEL. Aplicada depois de uma normaliza\u00e7\u00e3o n\u00e3o especificada, deixa indefinido quais textos originais s\u00e3o v\u00e1lidos e quais malforma\u00e7\u00f5es ser\u00e3o apagadas. Os testes enumerados exercitam valores especiais, mas n\u00e3o exigem aceitar o exemplo monet\u00e1rio real. Uma implementa\u00e7\u00e3o pode passar esses testes e recusar a compet\u00eancia correta.",
       "cites": [
-        "cvg/docs/tech-spec/tech-spec-pda-beneficios.md \u00a7 Requirements, R-4",
-        "cvg/docs/adrs/0003-money-rounds-half-to-even-at-two-decimals.md \u00a7 Decision, itens 1\u20132",
-        "cvg/swimlanes/lanes/agregacao/LEG-AGREGADO-EXATO.md \u00a7 behavior B-2"
+        "cvg/docs/tech-spec/tech-spec-pda-beneficios.md \u00a7 Data named",
+        "cvg/docs/adrs/0002-especie-appears-twice-so-columns-are-read-by-position.md \u00a7 Evidence e Consequences"
       ]
     },
     {
@@ -98,101 +97,97 @@
       "severity": "high",
       "rank": 2,
       "attack_class": "cross-lane-interface",
-      "swimlane": "fronteira",
-      "leg": "LEG-ENVELOPE-VINCULADO",
+      "swimlane": "leitura",
+      "leg": "LEG-LEITURA-POSICIONAL",
+      "title": "A refer\u00eancia por c\u00f3digo ganhou uma soma sem obriga\u00e7\u00e3o decimal verific\u00e1vel",
       "location": {
-        "plan_file": "cvg/swimlanes/lanes/fronteira/LEG-ENVELOPE-VINCULADO.md",
-        "section": "tasks[0].behavior[B-2] \u2014 compara\u00e7\u00e3o dos totais por c\u00f3digo"
+        "plan_file": "cvg/swimlanes/lanes/leitura/LEG-LEITURA-POSICIONAL.md",
+        "section": "produces; tasks[0].behavior e evals"
       },
-      "title": "Os dois mapas monet\u00e1rios n\u00e3o t\u00eam escala de compara\u00e7\u00e3o definida",
-      "body": "A fronteira exige igualdade entre totais por c\u00f3digo da leitura e do produtor, mas n\u00e3o define se cada mapa cont\u00e9m somas exatas ou valores quantizados. A leitura promete totais sem especificar esse ponto; a agrega\u00e7\u00e3o promete arredondamento final. Para um c\u00f3digo com soma exata 2.345, um lado pode entregar 2.345 e o outro 2.34. Ambos podem interpretar seu plano como cumprido, mas a fronteira recusa. Tamb\u00e9m fica indefinido se a soma global vem dos valores originais ou dos totais por c\u00f3digo j\u00e1 arredondados: dois c\u00f3digos com 2.345 d\u00e3o 4.69 globalmente e 4.68 ap\u00f3s arredondamento por grupo.",
-      "evidence": "B-2 exige que 'cada total por c\u00f3digo do envelope' seja conferido contra 'os totais por c\u00f3digo DA LEITURA', sem declarar a granularidade dessa igualdade.",
+      "evidence": "A leitura produz 'totais por c\u00f3digo da leitura', mas seus comportamentos e avalia\u00e7\u00f5es n\u00e3o especificam contexto decimal para essa soma. A fronteira B-2 exige que os dois mapas sejam exatos. Contraexemplo executado: com prec=6, 10000.00 + 0.01 resulta em 10000.0; com prec=40, em 10000.01.",
+      "body": "A prote\u00e7\u00e3o de precis\u00e3o especificada para agregacao.py n\u00e3o protege automaticamente leitura.py, que calcula uma refer\u00eancia independente. Se a leitura herdar o contexto global, a fronteira recusar\u00e1 um produtor correto por diverg\u00eancia contra uma refer\u00eancia corrompida. Os testes da leitura podem permanecer verdes, pois nenhum exige exatid\u00e3o desse produto sob contexto ambiente adverso.",
       "cites": [
-        "cvg/docs/tech-spec/tech-spec-pda-beneficios.md \u00a7 Requirements, R-4",
-        "cvg/docs/adrs/0003-money-rounds-half-to-even-at-two-decimals.md \u00a7 Decision, item 2",
-        "cvg/swimlanes/lanes/leitura/LEG-LEITURA-POSICIONAL.md \u00a7 produces",
-        "cvg/swimlanes/lanes/agregacao/LEG-AGREGADO-EXATO.md \u00a7 behavior B-2"
+        "cvg/docs/tech-spec/tech-spec-pda-beneficios.md \u00a7 Requirements R-4",
+        "cvg/docs/adrs/0007-decimal-precision-is-derived-from-integer-digits-plus-intermediate-scale.md \u00a7 Decision",
+        "cvg/swimlanes/lanes/fronteira/LEG-ENVELOPE-VINCULADO.md \u00a7 behavior B-2"
       ]
     },
     {
       "id": "C3",
-      "severity": "medium",
+      "severity": "high",
       "rank": 3,
       "attack_class": "unverified-assumption",
-      "swimlane": "leitura",
-      "leg": "LEG-LEITURA-POSICIONAL",
+      "swimlane": "agregacao",
+      "leg": "LEG-AGREGADO-EXATO",
+      "title": "A sufici\u00eancia da precis\u00e3o depende de uma escala que o fluxo n\u00e3o verifica",
       "location": {
-        "plan_file": "cvg/swimlanes/lanes/leitura/LEG-LEITURA-POSICIONAL.md",
-        "section": "tasks[0].behavior[B-2] \u2014 valor monet\u00e1rio ileg\u00edvel"
+        "plan_file": "cvg/swimlanes/lanes/agregacao/LEG-AGREGADO-EXATO.md",
+        "section": "tasks[0].behavior B-2"
       },
-      "title": "Conversibilidade para Decimal n\u00e3o define um valor monet\u00e1rio leg\u00edvel",
-      "body": "O plano exige contar e preservar campos ileg\u00edveis, mas n\u00e3o define o dom\u00ednio lexical e a finitude que distinguem dinheiro v\u00e1lido de uma string aceita pelo parser. Decimal aceita 'NaN', 'Infinity', '1_000' e '1e3', confirmado localmente. Uma implementa\u00e7\u00e3o baseada apenas em capturar erro de convers\u00e3o pode aceitar esses valores; NaN pode provocar InvalidOperation ao calcular extremos, encerrando em ERRO uma execu\u00e7\u00e3o que deveria registrar o defeito da linha. A gram\u00e1tica monet\u00e1ria publicada e os valores especiais precisam ter interpreta\u00e7\u00e3o contratual; n\u00e3o h\u00e1 evid\u00eancia de que esses casos ocorram na compet\u00eancia atual.",
-      "evidence": "B-2: 'um registro cujo campo monet\u00e1rio \u00e9 ileg\u00edvel' entra em linhas_invalidas. Experimento local: Decimal('NaN') e Decimal('Infinity') n\u00e3o levantam erro na constru\u00e7\u00e3o.",
+      "evidence": "O contrato deriva prec=14 de 11 d\u00edgitos inteiros e escala m\u00e1xima 3. A leitura aceita 'escala finita', sem vincul\u00e1-la ao m\u00e1ximo contratado. Contraexemplo executado: em prec=14, 78521752562.12 + 0.0005 + 0.0005 resulta em 78521752562.120; a soma exata \u00e9 78521752562.1210.",
+      "body": "O carregador valida uma declara\u00e7\u00e3o, mas nenhuma obriga\u00e7\u00e3o do plano verifica que os valores usados na soma respeitam essa declara\u00e7\u00e3o. Escala finita n\u00e3o significa escala menor ou igual a 3. Assim, a precis\u00e3o validada pode perder informa\u00e7\u00e3o durante a soma e ainda produzir o mesmo total global arredondado. Isso viola a exatid\u00e3o prometida para os mapas por c\u00f3digo. Permanece aberta a decis\u00e3o de tratamento de uma entrada fora da escala contratada; n\u00e3o cabe ao advers\u00e1rio inventar esse desfecho.",
       "cites": [
-        "cvg/docs/tech-spec/tech-spec-pda-beneficios.md \u00a7 Data named",
-        "cvg/docs/tech-spec/tech-spec-pda-beneficios.md \u00a7 Scope \u2014 classifica\u00e7\u00e3o obrigat\u00f3ria",
-        "cvg/docs/adrs/0002-especie-appears-twice-so-columns-are-read-by-position.md \u00a7 Consequences"
+        "cvg/docs/tech-spec/tech-spec-pda-beneficios.md \u00a7 Requirements R-4",
+        "cvg/docs/adrs/0007-decimal-precision-is-derived-from-integer-digits-plus-intermediate-scale.md \u00a7 Decision e Consequences",
+        "cvg/swimlanes/lanes/contrato/LEG-CONTRATO-RECUSA-SEM-ANCORA.md \u00a7 behavior B-1",
+        "cvg/swimlanes/lanes/leitura/LEG-LEITURA-POSICIONAL.md \u00a7 behavior B-2"
       ]
     },
     {
       "id": "C4",
-      "severity": "medium",
+      "severity": "high",
       "rank": 4,
-      "attack_class": "cross-lane-interface",
+      "attack_class": "observability",
       "swimlane": "evidencia",
       "leg": "LEG-EVIDENCIA-RECONSTROI",
+      "title": "NAO_MEDIDO \u00e9 reproduzido pela causa declarada, sem prova das condi\u00e7\u00f5es do contrato",
       "location": {
         "plan_file": "cvg/swimlanes/lanes/evidencia/LEG-EVIDENCIA-RECONSTROI.md",
-        "section": "tasks[0].behavior[B-1] \u2014 insumos da rederiva\u00e7\u00e3o"
+        "section": "tasks[0].behavior B-1"
       },
-      "title": "A rederiva\u00e7\u00e3o n\u00e3o contrata a preserva\u00e7\u00e3o dos tipos recusados na fronteira",
-      "body": "A fronteira pode recusar um envelope exclusivamente porque um campo monet\u00e1rio veio como n\u00famero JSON. O pacote enumera n\u00fameros, hashes, mapas e defeitos, mas n\u00e3o exige preservar o tipo original desses campos ou o envelope recebido sem normaliza\u00e7\u00e3o. Se a grava\u00e7\u00e3o serializar todos os valores monet\u00e1rios como strings, envelope com 0.0 e envelope com '0.00' podem produzir insumos numericamente iguais no pacote. A recusa leg\u00edtima por tipo deixa de ser rederiv\u00e1vel, apesar de controles e hashes coincidirem. \u00c9 uma lacuna no contrato de preserva\u00e7\u00e3o da prova, n\u00e3o uma afirma\u00e7\u00e3o sobre c\u00f3digo j\u00e1 implementado.",
-      "evidence": "Evid\u00eancia B-1 enumera os insumos de rederiva\u00e7\u00e3o; fronteira B-2 exige recusa 'antes de qualquer convers\u00e3o' porque converter apagaria a prova de que veio float.",
+      "evidence": "O plano diz que 'quem decide \u00e9 a CAUSA registrada' e que 'NAO_MEDIDO decide antes'. Exige preservar pol\u00edtica e cl\u00e1usula violada para contrato RECUSADO, mas n\u00e3o exige preservar aprovador, data e estado da pol\u00edtica nos caminhos NAO_MEDIDO.",
+      "body": "Para uma \u00e2ncora existente que n\u00e3o foi validada por falta de aprovador, data ou pol\u00edtica, o pacote prometido n\u00e3o necessariamente cont\u00e9m os insumos que distinguem esses motivos. Dois contratos com estados de aprova\u00e7\u00e3o diferentes podem gerar os mesmos dados audit\u00e1veis, acrescidos apenas da causa declarada. O leitor consegue reproduzir a decis\u00e3o confiando nessa causa, mas n\u00e3o rederiv\u00e1-la nem detectar uma causa incorreta. A prova anunciada desloca a confian\u00e7a do r\u00f3tulo do veredito para outro r\u00f3tulo.",
       "cites": [
-        "cvg/swimlanes/lanes/fronteira/LEG-ENVELOPE-VINCULADO.md \u00a7 behavior B-2",
-        "cvg/docs/tech-spec/tech-spec-pda-beneficios.md \u00a7 Problem restated",
-        "cvg/docs/tech-spec/tech-spec-pda-beneficios.md \u00a7 Requirements, R-4"
+        "cvg/docs/tech-spec/tech-spec-pda-beneficios.md \u00a7 Scope e Data named",
+        "cvg/swimlanes/lanes/contrato/LEG-CONTRATO-RECUSA-SEM-ANCORA.md \u00a7 behavior B-1 e B-2",
+        "cvg/swimlanes/lanes/evidencia/LEG-EVIDENCIA-RECONSTROI.md \u00a7 Observable proof"
       ]
     },
     {
       "id": "C5",
       "severity": "medium",
       "rank": 5,
-      "attack_class": "drift",
-      "swimlane": "contrato",
-      "leg": "LEG-CONTRATO-RECUSA-SEM-ANCORA",
+      "attack_class": "cross-lane-interface",
+      "swimlane": "fronteira",
+      "leg": "LEG-ENVELOPE-VINCULADO",
+      "title": "Extremos ausentes n\u00e3o t\u00eam representa\u00e7\u00e3o contratada na fronteira",
       "location": {
-        "plan_file": "cvg/swimlanes/lanes/contrato/LEG-CONTRATO-RECUSA-SEM-ANCORA.md",
-        "section": "tasks[0].behavior[B-1] \u2014 m\u00ednimo de precis\u00e3o e confer\u00eancia contra ADR"
+        "plan_file": "cvg/swimlanes/lanes/fronteira/LEG-ENVELOPE-VINCULADO.md",
+        "section": "tasks[0].behavior B-2; creates_paths"
       },
-      "title": "O plano corrige implicitamente um n\u00famero do ADR vinculante",
-      "body": "Plano B-1 \u2194 ADR 0003 Decision item 1: o plano declara m\u00ednimo de 13 d\u00edgitos significativos para esta \u00e2ncora; o ADR declara necessidade de 12 d\u00edgitos inteiros mais 2 decimais, totalizando 14. A \u00e2ncora tem efetivamente 11 d\u00edgitos inteiros, portanto a justificativa num\u00e9rica do ADR parece equivocada. Isso n\u00e3o autoriza o plano a decidir silenciosamente qual cl\u00e1usula deixa de valer, especialmente quando o mesmo B-1 manda validar o contrato contra o ADR. Dois implementadores podem aceitar e recusar prec=13, respectivamente, alegando conformidade. A diverg\u00eancia precisa voltar \u00e0 decis\u00e3o vinculante.",
-      "evidence": "Plano: 'o m\u00ednimo medido para esta \u00e2ncora \u00e9 13 d\u00edgitos significativos'. ADR 0003: 'precisam de 12 d\u00edgitos inteiros mais 2 decimais'.",
+      "evidence": "A agrega\u00e7\u00e3o B-1 determina min/max AUSENTES quando nenhum registro \u00e9 leg\u00edvel e exige que a aus\u00eancia atravesse a fronteira. A fronteira exige string ou Decimal para TODO campo monet\u00e1rio, incluindo os tr\u00eas controles globais, sem definir uma variante de aus\u00eancia.",
+      "body": "O produtor pode emitir null, omitir o campo ou emitir um marcador textual, enquanto o schema e o consumidor escolhem representa\u00e7\u00f5es incompat\u00edveis. O caso explicitamente previsto pela agrega\u00e7\u00e3o ent\u00e3o falha na valida\u00e7\u00e3o ou na convers\u00e3o, antes de o ju\u00edzo comparar os controles. Os testes enumerados da fronteira n\u00e3o exercitam esse caminho. A obriga\u00e7\u00e3o de transportar aus\u00eancia existe, mas sua representa\u00e7\u00e3o e interpreta\u00e7\u00e3o ainda n\u00e3o constituem um contrato entre as lanes.",
       "cites": [
-        "cvg/docs/adrs/0003-money-rounds-half-to-even-at-two-decimals.md \u00a7 Decision, item 1",
-        "cvg/docs/adrs/0001-the-2026-01-anchor-is-41572553-rows-summing-78521752562-12.md \u00a7 Decision",
-        "AGENTS.md \u00a7 O que est\u00e1 cercado \u2014 revis\u00e3o de ADR por ADR novo"
+        "cvg/docs/tech-spec/tech-spec-pda-beneficios.md \u00a7 Requirements R-5",
+        "cvg/swimlanes/lanes/agregacao/LEG-AGREGADO-EXATO.md \u00a7 behavior B-1",
+        "cvg/swimlanes/lanes/evidencia/LEG-EVIDENCIA-RECONSTROI.md \u00a7 behavior B-1"
       ]
     }
   ],
   "cross_lane_interfaces": [],
   "fork": {
     "choice": "B",
-    "reason": "Declara\u00e7\u00e3o j\u00e1 existente nos arquivos _lane.md; apenas transcrita, n\u00e3o escolhida pelo advers\u00e1rio.",
+    "reason": "Escolha j\u00e1 declarada nos planos; n\u00e3o decidida pelo advers\u00e1rio.",
     "per_plan_declared": true
   },
   "open_questions": [
     {
-      "q": "Qual decis\u00e3o vinculante resolve a diverg\u00eancia entre 13 d\u00edgitos no plano e 14 na justificativa do ADR 0003?",
+      "q": "Qual desfecho contratual se aplica quando a escala monet\u00e1ria observada excede a escala m\u00e1xima usada para derivar a precis\u00e3o? A decis\u00e3o precisa voltar ao contrato, sem ser inventada na implementa\u00e7\u00e3o.",
       "blocks_build": true
     },
     {
-      "q": "Qual representa\u00e7\u00e3o monet\u00e1ria atravessa os mapas por c\u00f3digo: soma exata ou total quantizado, e qual \u00e9 sua rela\u00e7\u00e3o com o total global?",
+      "q": "Como registrar formalmente obje\u00e7\u00f5es abertas se o schema exige resolu\u00e7\u00e3o humana em todas elas? Este ataque n\u00e3o cont\u00e9m decis\u00f5es FIX ou ACCEPT.",
       "blocks_build": true
-    },
-    {
-      "q": "Como o despacho representa obje\u00e7\u00f5es ainda abertas, se o schema exige decis\u00f5es humanas que o advers\u00e1rio n\u00e3o pode emitir?",
-      "blocks_build": false
     }
   ],
   "rounds_run": 1

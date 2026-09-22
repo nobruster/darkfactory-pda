@@ -52,11 +52,15 @@ tasks:
       ela decide o veredito — e quem decide é a CAUSA registrada, não a falta de um hash. Contrato que
       devolveu NAO_MEDIDO por qualquer motivo — sem âncora, sem aprovador, sem data ou sem política decimal
       — dá ACEITO_SEM_ANCORA, mesmo que o hash ancorado exista e nenhum observado tenha sido produzido;
-      ler a falta do hash como se fosse a causa recusaria justamente o pacote que a orquestração deve
-      gravar. Falta o observado COM evento de falha registrado e é execução interrompida, desfecho ERRO.
-      Contrato RECUSADO no carregamento, por política que contradiz o ADR, é um terceiro caminho antecipado
-      — termina sem hash observado, sem agregado e sem envelope, não é NAO_MEDIDO nem exceção, e o pacote
-      grava a política recusada e a cláusula do ADR violada, que é o que a rederivação precisa para reconstruir
+      e o pacote grava os CAMPOS DE APROVAÇÃO do contrato como foram lidos, presentes ou ausentes, não
+      só a causa, porque dois contratos em estados de aprovação diferentes produziriam os mesmos dados
+      auditáveis e o leitor apenas confiaria no rótulo da causa — trocar a confiança no rótulo do veredito
+      pela confiança noutro rótulo não é rederivar, e uma causa incorreta passaria sem ninguém ver; ler
+      a falta do hash como se fosse a causa recusaria justamente o pacote que a orquestração deve gravar.
+      Falta o observado COM evento de falha registrado e é execução interrompida, desfecho ERRO. Contrato
+      RECUSADO no carregamento, por política que contradiz o ADR, é um terceiro caminho antecipado — termina
+      sem hash observado, sem agregado e sem envelope, não é NAO_MEDIDO nem exceção, e o pacote grava
+      a política recusada e a cláusula do ADR violada, que é o que a rederivação precisa para reconstruir
       esse RECUSADO sem depender do rótulo. A precedência é declarada, não deduzida — NAO_MEDIDO decide
       antes, RECUSADO por contrato exige a política gravada, e ERRO exige o evento. Os três casos gravam
       pacote válido; recusar qualquer um impediria de gravar justamente a execução que precisa de registro.
@@ -98,7 +102,7 @@ tasks:
   - evidence
   rollback: Remover o gravador de evidência e seus testes.
   observability: pacotes gravados por competência
-source_seam_sha256: ee6aa0d8af8683f7a880e4d0b21883d385ff367b83e0c32249e72ba00c0e47b0
+source_seam_sha256: 3976ca5bfeee6c425fc18401d3c329bd099e2ff7c1aecc3020f4692aa79780b7
 ---
 # O pacote reconstrói o veredito sem reexecutar
 

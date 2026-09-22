@@ -1,6 +1,6 @@
 {
   "contract": "SeamwiseTaskPlanLineage/v1",
-  "delivery_plan_sha256": "1d595151ebd567e4078bf2fb0aef7c0784ae90d4ba0d9bb13aa2fe233793c34c",
+  "delivery_plan_sha256": "570332c4626dd026ce515c74737d68ae89f847e92dc2d978eb36d9efe0bedd1f",
   "engine_version": "0.2.0",
   "intent": {
     "id": "DI-PDA-BENEFICIOS",
@@ -8,14 +8,14 @@
   },
   "review": {
     "fixture": false,
-    "plan_sha256": "1d595151ebd567e4078bf2fb0aef7c0784ae90d4ba0d9bb13aa2fe233793c34c",
-    "reviewed_at": "2026-09-22T01:32:42.548470+00:00",
+    "plan_sha256": "570332c4626dd026ce515c74737d68ae89f847e92dc2d978eb36d9efe0bedd1f",
+    "reviewed_at": "2026-09-22T01:38:48.217714+00:00",
     "reviewer": "Bruno Nunes",
-    "sha256": "d3f26325f81a792f12af046cc55f3150a1f92a17ffa695896ca02dec53a706d0"
+    "sha256": "30c4a4f44b101f7f5cf5c9002c46ecf311bcdaa3d8c3bfa874d9d8438e3b03a2"
   },
   "task_plan": {
     "contract": "TaskPlan/v1",
-    "digest": "b25f14f4486639a3516498cc10b96d69d0a6167e5c54cb7f76870a0961c43054",
+    "digest": "f667da43a9760c999258682f756f024b10af49fe2b2fcd4a1a5f6ac5865f0d96",
     "path": "seamwise/task-plan.json"
   },
   "units": {
@@ -31,7 +31,7 @@
       "intent": "DI-PDA-BENEFICIOS",
       "leg": "LEG-CONTRATO-RECUSA-SEM-ANCORA",
       "seam": "SEAM-CONTRATO",
-      "source_sha256": "4881b72619c8a1ec577e0711cd58d230e221e29ee84f89199a6c992e52d60c29",
+      "source_sha256": "15b640c5e43c58fb7f202c0f2b2de04338fff49a7752fec59e1c0317e14017b8",
       "swimlane": "LANE-CONTRATO",
       "unit_id": "T-20260921-contrato-ancora"
     },
@@ -39,7 +39,7 @@
       "intent": "DI-PDA-BENEFICIOS",
       "leg": "LEG-ENVELOPE-VINCULADO",
       "seam": "SEAM-FRONTEIRA",
-      "source_sha256": "0db74c07e5b7fb4139595366b9107968295165db0b889fa38d2fcbb4a671231b",
+      "source_sha256": "a2e5f27dfc278ce000a1660a7336a715c6e3464d0ecbd0bb963726183f24e777",
       "swimlane": "LANE-FRONTEIRA",
       "unit_id": "T-20260921-envelope-fronteira"
     },
@@ -47,7 +47,7 @@
       "intent": "DI-PDA-BENEFICIOS",
       "leg": "LEG-EVIDENCIA-RECONSTROI",
       "seam": "SEAM-EVIDENCIA",
-      "source_sha256": "7bf57b47ec76d45edb0c3acb3cdd909f2093ff759338ca95ecbf945d22b53e1e",
+      "source_sha256": "b522ff9e1a66f36031d2dcc7ce66ef87f9dd55d661e26d7ad3c647923530d2a9",
       "swimlane": "LANE-EVIDENCIA",
       "unit_id": "T-20260921-evidencia-packet"
     },
@@ -63,7 +63,7 @@
       "intent": "DI-PDA-BENEFICIOS",
       "leg": "LEG-LEITURA-POSICIONAL",
       "seam": "SEAM-LEITURA",
-      "source_sha256": "8723b1a90f1ce9558b505035796f3da93d426f30bed39cad79c02de98e797a96",
+      "source_sha256": "3fbd4c94fc5d6ea61c9736f340f52e3f23e61d5cca462d0d9b1c63efa9a1896c",
       "swimlane": "LANE-LEITURA",
       "unit_id": "T-20260921-leitura-posicional"
     },

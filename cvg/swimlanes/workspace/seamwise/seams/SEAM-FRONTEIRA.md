@@ -89,9 +89,12 @@ swimlane:
         then: o primeiro é recusado; o segundo é ACEITO — truncamento é defeito numa linha válida, e a
           competência 2026-01 tem linhas_invalidas=0 com milhões de truncamentos; o terceiro é aceito
           sem que o juiz importe nada do motor produtor. O quarto é RECUSADO na fronteira, antes de qualquer
-          conversão — TODO campo monetário do envelope é contratado como string ou Decimal, os três controles
-          globais e também cada total por código, porque R-4 e o ADR 0003 valem para todo dinheiro e não
-          só para os três; um envelope com controles em string e totais por espécie como número JSON satisfaria
+          conversão — TODO campo monetário do envelope é contratado como string ou Decimal, com UMA representação
+          de ausência declarada no schema, o literal JSON null, para o caso em que nenhum registro é legível
+          e min e max não têm valor; campo omitido ou marcador textual é recusado, senão o caso que a
+          agregação prevê morreria na validação antes de o juízo comparar, os três controles globais e
+          também cada total por código, porque R-4 e o ADR 0003 valem para todo dinheiro e não só para
+          os três; um envelope com controles em string e totais por espécie como número JSON satisfaria
           uma recusa escrita só para os três. Converter com Decimal(str(v)) apagaria a prova de que veio
           float, então a recusa do agregador local não cobre produtor externo. O quinto é RECUSADO por
           omissão — e a conferência é POR IDENTIDADE de cada defeito, a que a leitura produz com valor
