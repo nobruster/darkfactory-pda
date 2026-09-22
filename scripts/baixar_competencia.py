@@ -33,7 +33,13 @@ import time
 import zipfile
 from pathlib import Path
 
-BASE = "https://armazenamento-dadosabertos.s3.sa-east-1.amazonaws.com/"
+# O caminho completo, como o script legado o construiu. Pegar só o host
+# devolve HTTP 403 — os arquivos vivem sob o grupo de dados, e o "í" de
+# "Benefícios" vem percent-encoded.
+BASE = (
+    "https://armazenamento-dadosabertos.s3.sa-east-1.amazonaws.com/"
+    "PDA_2025_2027/Grupos_de_dados/Benef%C3%ADcios+emitidos/"
+)
 RAW = Path("_raw")
 EVIDENCIA = Path("evidence")
 
