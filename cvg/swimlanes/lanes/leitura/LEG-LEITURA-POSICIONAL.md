@@ -1,6 +1,6 @@
 > Projetado de `LEG-LEITURA-POSICIONAL.md` pelo Seamwise.
 > **Não edite aqui** — edite a recipe e rode `seamwise plan`.
-> origem sha256: `82ba5d141794667004687ac92a84815cdae0dae208b66617cea955934ccde3a3`
+> origem sha256: `75a9b35a62275972cdb9997d420364c1826c5d785a751c6f98c6dc9816743307`
 
 ---
 
@@ -19,6 +19,7 @@ produces:
 - registros lidos
 - defeitos observados
 - sha256 computado na leitura
+- totais por código da leitura
 tasks:
 - id: T-20260921-leitura-posicional
   title: Ler a competência por posição, sem alterar a fonte
@@ -89,7 +90,7 @@ tasks:
   - _raw
   rollback: Remover o leitor e seus testes.
   observability: registros lidos e defeitos por tipo
-source_seam_sha256: e604fba7563151f72505f8c8b6bea7a42de72e66bc0dd6bcd18f7b985735ff2d
+source_seam_sha256: 8bddbdbb4a706ca85794bbea3c15a1db8f22ac63f990008089329ebb718111d4
 ---
 # A leitura é posicional e não altera a fonte
 

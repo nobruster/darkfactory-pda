@@ -1,6 +1,6 @@
 > Projetado de `LEG-ENVELOPE-VINCULADO.md` pelo Seamwise.
 > **Não edite aqui** — edite a recipe e rode `seamwise plan`.
-> origem sha256: `556d23ff48446ea16d8da220fd741cd1c17bac8493e1d96c4ba5931a64a7e098`
+> origem sha256: `ce89245c47a2d92060c0dc4827a025dcb3a5070a16e2f4e6cf66b6323747cf29`
 
 ---
 
@@ -18,6 +18,7 @@ requires:
 - agregado da competência
 - defeitos observados
 - sha256 computado na leitura
+- totais por código da leitura
 produces:
 - envelope do produtor
 tasks:
@@ -73,10 +74,14 @@ tasks:
       omissão seria vista. E o envelope declara o agregado POR CÓDIGO de espécie, com as chaves conferidas
       contra a cardinalidade ANCORADA no contrato — medida na competência inteira, nunca os 51 do ADR
       0004, que saíram de ~3 milhões de linhas; exigir 51 recusaria esta competência, que tem 65 códigos,
-      entre eles o '60' com 1.395 ocorrências em 41,5 milhões. E cada total por código é CONFERIDO contra
-      a leitura, não só a presença da chave — um produtor que agrupasse por descrição e atribuísse o total
-      ao primeiro código, zerando os demais, manteria todas as chaves, os cinco controles, hashes e defeitos
-      idênticos; R-3 vale para o produtor externo, e prova-se por valor, não por forma
+      entre eles o '60' com 1.395 ocorrências em 41,5 milhões. E cada total por código do envelope é CONFERIDO
+      contra os totais por código DA LEITURA, capacidade própria que a leitura produz e a fronteira exige
+      — dois valores de origens distintas, o declarado pelo produtor e o de referência; com um mapa só,
+      deslocar valores entre códigos seria aprovado por comparação consigo mesmo. Um produtor que agrupasse
+      por descrição e atribuísse o total ao primeiro código, zerando os demais, manteria todas as chaves,
+      os cinco controles, hashes e defeitos idênticos, e só a comparação por valor o pega; R-3 prova-se
+      por valor, não por forma, e a referência não vem do agregador julgado, pelo mesmo motivo do ADR
+      0005
   evals:
   - id: eval_1
     description: Sha ausente, divergente, ou copiado de outro arquivo lido é recusado
@@ -111,7 +116,7 @@ tasks:
   - cvg/docs/adrs
   rollback: Remover o validador de envelope e seus testes.
   observability: envelopes recusados por motivo
-source_seam_sha256: dcc5e436c0f1bc485dea6ac890700cc9e3805addc700942b8375c629373e22f5
+source_seam_sha256: 3e5055d63b92c4b561312e0bf66ef9b50c01319e383563470d27d76282516a64
 ---
 # O envelope liga o agregado ao arquivo que o gerou
 

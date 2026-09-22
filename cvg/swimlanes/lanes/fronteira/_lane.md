@@ -2,7 +2,7 @@ FORK: B (task-driven) — rota única desde a v3.4 — o consenso sempre entrega
 
 > Projetado de `LANE-FRONTEIRA.md` pelo Seamwise.
 > **Não edite aqui** — edite a recipe e rode `seamwise plan`.
-> origem sha256: `a5c8f24de04b81ef79c8077d9da8e697cb443539a758ccabb1ea05799b1038c8`
+> origem sha256: `8b554e14663a1396d93e5864fa9b1455fcf94de3b0a15e4cd9317cd37d0c9268`
 
 ---
 
@@ -14,7 +14,7 @@ id: LANE-FRONTEIRA
 name: Fronteira lane
 owner: fronteira
 seam_id: SEAM-FRONTEIRA
-source_seam_sha256: dcc5e436c0f1bc485dea6ac890700cc9e3805addc700942b8375c629373e22f5
+source_seam_sha256: 3e5055d63b92c4b561312e0bf66ef9b50c01319e383563470d27d76282516a64
 legs:
 - LEG-ENVELOPE-VINCULADO
 ---

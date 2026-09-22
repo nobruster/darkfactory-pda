@@ -1,6 +1,6 @@
 > Projetado de `LEG-EVIDENCIA-RECONSTROI.md` pelo Seamwise.
 > **Não edite aqui** — edite a recipe e rode `seamwise plan`.
-> origem sha256: `99daf12fc49c25d9a349154161c4ddd60eba2795333e0b2534d53dbe9405433f`
+> origem sha256: `201c52815432f6bdf1c8cf26a20b32872c02ef89c211dbaf846fb093f566ceda`
 
 ---
 
@@ -43,26 +43,28 @@ tasks:
       o rótulo do veredito foi trocado
     when: o pacote é lido de volta
     then: o veredito é REDERIVADO dos cinco controles, da âncora, das classificações de cada diferença,
-      dos hashes e das DUAS listas de defeitos — a observada na leitura e a declarada no envelope, gravadas
-      separadamente, senão um RECUSADO legítimo por omissão rederivaria ACEITO, já que controles e hashes
-      coincidem e só a divergência entre as listas explica a recusa; o pacote adulterado é recusado porque
-      o rótulo discorda do que esses insumos produzem. São TRÊS os hashes gravados, os mesmos que a fronteira
-      compara — o ANCORADO do contrato, o OBSERVADO computado na leitura e o DECLARADO no envelope; com
-      dois só, um pacote legítimo de RECUSADO por ancorado=observado e declarado divergente rederivaria
-      ACEITO e seria rejeitado. A ausência não é recusa incondicional, ela decide o veredito — e quem
-      decide é a CAUSA registrada, não a falta de um hash. Contrato que devolveu NAO_MEDIDO por qualquer
-      motivo — sem âncora, sem aprovador, sem data ou sem política decimal — dá ACEITO_SEM_ANCORA, mesmo
-      que o hash ancorado exista e nenhum observado tenha sido produzido; ler a falta do hash como se
-      fosse a causa recusaria justamente o pacote que a orquestração deve gravar. Falta o observado COM
-      evento de falha registrado e é execução interrompida, desfecho ERRO. Contrato RECUSADO no carregamento,
-      por política que contradiz o ADR, é um terceiro caminho antecipado — termina sem hash observado,
-      sem agregado e sem envelope, não é NAO_MEDIDO nem exceção, e o pacote grava a política recusada
-      e a cláusula do ADR violada, que é o que a rederivação precisa para reconstruir esse RECUSADO sem
-      depender do rótulo. A precedência é declarada, não deduzida — NAO_MEDIDO decide antes, RECUSADO
-      por contrato exige a política gravada, e ERRO exige o evento. Os três casos gravam pacote válido;
-      recusar qualquer um impediria de gravar justamente a execução que precisa de registro. Só é recusado
-      o pacote cujo rótulo não bate com o que os insumos rederivam; campos não percorridos são marcados
-      ausentes, nunca zerados
+      dos hashes e dos PARES de origens distintas que motivaram cada comparação — as duas listas de defeitos,
+      a observada na leitura e a declarada no envelope, e os dois mapas de totais por código, o da leitura
+      e o do envelope, todos gravados separadamente; sem eles, um RECUSADO legítimo rederivaria ACEITO,
+      seja por omissão de defeito, seja por um envelope que transfere 1,00 do código A para o B mantendo
+      chaves, controles globais, hashes e defeitos idênticos — casos em que só a divergência entre os
+      dois lados explica a recusa; o pacote adulterado é recusado porque o rótulo discorda do que esses
+      insumos produzem. São TRÊS os hashes gravados, os mesmos que a fronteira compara — o ANCORADO do
+      contrato, o OBSERVADO computado na leitura e o DECLARADO no envelope; com dois só, um pacote legítimo
+      de RECUSADO por ancorado=observado e declarado divergente rederivaria ACEITO e seria rejeitado.
+      A ausência não é recusa incondicional, ela decide o veredito — e quem decide é a CAUSA registrada,
+      não a falta de um hash. Contrato que devolveu NAO_MEDIDO por qualquer motivo — sem âncora, sem aprovador,
+      sem data ou sem política decimal — dá ACEITO_SEM_ANCORA, mesmo que o hash ancorado exista e nenhum
+      observado tenha sido produzido; ler a falta do hash como se fosse a causa recusaria justamente o
+      pacote que a orquestração deve gravar. Falta o observado COM evento de falha registrado e é execução
+      interrompida, desfecho ERRO. Contrato RECUSADO no carregamento, por política que contradiz o ADR,
+      é um terceiro caminho antecipado — termina sem hash observado, sem agregado e sem envelope, não
+      é NAO_MEDIDO nem exceção, e o pacote grava a política recusada e a cláusula do ADR violada, que
+      é o que a rederivação precisa para reconstruir esse RECUSADO sem depender do rótulo. A precedência
+      é declarada, não deduzida — NAO_MEDIDO decide antes, RECUSADO por contrato exige a política gravada,
+      e ERRO exige o evento. Os três casos gravam pacote válido; recusar qualquer um impediria de gravar
+      justamente a execução que precisa de registro. Só é recusado o pacote cujo rótulo não bate com o
+      que os insumos rederivam; campos não percorridos são marcados ausentes, nunca zerados
   - id: B-2
     given: duas execuções da mesma competência
     when: a segunda é gravada
@@ -99,7 +101,7 @@ tasks:
   - evidence
   rollback: Remover o gravador de evidência e seus testes.
   observability: pacotes gravados por competência
-source_seam_sha256: 8e43a4963b9c98454e75f8bab3c849165068a71303027946a8d00e0ae0b87994
+source_seam_sha256: 2f483732919731855c1341326a51f1303d929631ad839f1728813541a07d51ba
 ---
 # O pacote reconstrói o veredito sem reexecutar
 

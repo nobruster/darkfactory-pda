@@ -13,39 +13,39 @@
     "family": "anthropic"
   },
   "verdict": "REVISE",
-  "prompt_sha256": "9a2dbfe734219e8bdfbf2451f322a8162483f5fa139819ffb00a0571c35e3d43",
+  "prompt_sha256": "cd1e0764d5aacdae62dd51194056e53cb1757f2be17d4de06aa60055213b8437",
   "inputs": [
     {
       "path": "agregacao/LEG-AGREGADO-EXATO.md",
-      "sha256": "fe44bb3fb768983d5b87384744d05349e34fd447d624761a8ddba94e7c8cd02e"
+      "sha256": "2ef7ddec1f2352d0fb109407b1a2ad1dc0ebba4f43543663b7a030363758ad41"
     },
     {
       "path": "agregacao/_lane.md",
-      "sha256": "907c8651d82c8518919a5adb903ff0ebe79b0f21b5e46b868d52a92170c77973"
+      "sha256": "82fc5cbaa35476e0d1b005a4bc81c19c023595b1c9929f808a6cf732757f491b"
     },
     {
       "path": "contrato/LEG-CONTRATO-RECUSA-SEM-ANCORA.md",
-      "sha256": "344874a9b6c7519d9f3d1b9231c328aa6e895465f4df6bdc9325e005753e5706"
+      "sha256": "2cbab8422c012624d3da512881dcef89e0c1aa85cf509b2db0222f2f2756dde8"
     },
     {
       "path": "contrato/_lane.md",
-      "sha256": "0dad03afca75b32aa1129e8c5fbf37ab8aca4ee89c1beb77af6ea0f4859dbc71"
+      "sha256": "2e3d62f8a3fad7561b56a3d41c048e2e06df0922b0883eba5331c77d8bcab742"
     },
     {
       "path": "evidencia/LEG-EVIDENCIA-RECONSTROI.md",
-      "sha256": "750a34c751b4f4b98cd252d026626f7adc8bbd7a153445463e4eebf3b1cb0763"
+      "sha256": "e246153bf97b8a39c6d5ae8436e02510db426342c3f927600a53dc0fcba2e4f3"
     },
     {
       "path": "evidencia/_lane.md",
-      "sha256": "f7efe3b688ab1f266e84aedfe47bedf0948dd5370fc0d3d5e64fb07c5ab7c089"
+      "sha256": "b8a72188614dc090fceaf598e25fb064cc4a2d4889e7a56a8c256435892a82f1"
     },
     {
       "path": "fronteira/LEG-ENVELOPE-VINCULADO.md",
-      "sha256": "f4240789d1496669112524c78e1274a8da0250c7b1ec2d9a03d4cd0d433f2f85"
+      "sha256": "599a23e2950ab98b0b9143e5981195ff9e4f0303c6299ea62bc923a2900e7a29"
     },
     {
       "path": "fronteira/_lane.md",
-      "sha256": "77b459467e3362be5e7b9d7188642a26515310e5b4ca78d032baa7977f60a1bc"
+      "sha256": "5c3ee4f8fb087cc3a87f25df7ded767bde55ac84ea296e15f4c233b1fce00be2"
     },
     {
       "path": "juizo/LEG-JUIZO-ACUSA.md",
@@ -65,122 +65,113 @@
     },
     {
       "path": "orquestracao/LEG-DESFECHO-COM-PACOTE.md",
-      "sha256": "6b3fac55a40fc32d7407989a3de4a37824f26213a6c8c5118d528f4b44a77b49"
+      "sha256": "105b88a48cfe318894a425b5403137f7979ef12c853c22924888b2db22bc1b6d"
     },
     {
       "path": "orquestracao/_lane.md",
-      "sha256": "cd2ce915b435250a0f21462c920ebd25bf3037c5e5699430843fc4bb69c775ef"
+      "sha256": "927574c5a60a8488cfc973ae00c7fa34959a5261e198923da734997ccd039a1d"
     }
   ],
   "objections": [
     {
-      "id": "C1",
+      "id": "C6",
       "severity": "high",
       "rank": 1,
-      "attack_class": "drift",
+      "attack_class": "cross-lane-interface",
       "swimlane": "fronteira",
       "leg": "LEG-ENVELOPE-VINCULADO",
+      "title": "A compara\u00e7\u00e3o por c\u00f3digo n\u00e3o tem refer\u00eancia independente declarada na interface",
       "location": {
         "plan_file": "cvg/swimlanes/lanes/fronteira/LEG-ENVELOPE-VINCULADO.md",
-        "section": "tasks[0].behavior[B-2]"
+        "section": "requires; tasks[0].behavior B-2"
       },
-      "title": "Amostra de 51 c\u00f3digos virou contrato da compet\u00eancia inteira",
-      "body": "O ADR 0004 mede 51 c\u00f3digos apenas nos primeiros aproximadamente tr\u00eas milh\u00f5es de registros. O ADR 0005 registra 56 em dez milh\u00f5es; sua substitui\u00e7\u00e3o pelo ADR 0006 altera o escopo da infraestrutura, n\u00e3o transforma essa medi\u00e7\u00e3o em 51. Exigir os 51 c\u00f3digos como conjunto completo pode recusar uma compet\u00eancia correta ou estimular o descarte dos c\u00f3digos adicionais. A agrega\u00e7\u00e3o repete a cardinalidade em B-2 e eval_3. O conflito demonstrado \u00e9 entre amostra e universo; n\u00e3o afirmo que 56 seja a cardinalidade final.",
-      "evidence": "B-2 exige agregado 'com os 51 c\u00f3digos do ADR 0004 como chaves'. ADR 0004/Evidence limita a varredura a aproximadamente tr\u00eas milh\u00f5es; ADR 0005/Evidence registra 'esp\u00e9cies distintas: 56'.",
+      "evidence": "B-2 exige que cada total por c\u00f3digo seja 'CONFERIDO contra a leitura'. Entretanto, requires recebe apenas agregado da compet\u00eancia, defeitos observados e sha256 computado na leitura. A leitura produz registros, defeitos e hash; n\u00e3o produz totais por c\u00f3digo.",
+      "body": "Para julgar um envelope externo, a fronteira precisa distinguir os valores declarados pelo produtor dos valores calculados sobre a leitura de refer\u00eancia. O \u00fanico agregado contratado n\u00e3o identifica esses dois pap\u00e9is, e os registros lidos n\u00e3o aparecem entre os requisitos da fronteira. Se o mesmo mapa alimentar os dois lados, deslocar valores entre c\u00f3digos preservando os controles globais ser\u00e1 aprovado por compara\u00e7\u00e3o consigo pr\u00f3prio. A corre\u00e7\u00e3o textual exige uma compara\u00e7\u00e3o cujo fornecimento ainda n\u00e3o est\u00e1 contratado.",
       "cites": [
-        "cvg/docs/tech-spec/tech-spec-pda-beneficios.md \u00a7 Requirements/R-3",
-        "cvg/docs/adrs/0004-column-13-is-a-truncated-description-not-a-second-code.md \u00a7 Evidence",
-        "cvg/docs/adrs/0005-the-judge-uses-a-different-engine-from-the-pipeline-it-judges.md \u00a7 Evidence",
-        "cvg/docs/adrs/0006-the-judge-ships-before-the-spark-producer-that-it-will-judge.md \u00a7 Decision",
-        "cvg/swimlanes/lanes/agregacao/LEG-AGREGADO-EXATO.md \u00a7 behavior/B-2"
-      ],
-      "proposal": null
+        "cvg/swimlanes/lanes/leitura/LEG-LEITURA-POSICIONAL.md: produces",
+        "cvg/swimlanes/lanes/agregacao/LEG-AGREGADO-EXATO.md: produces",
+        "cvg/docs/tech-spec/tech-spec-pda-beneficios.md: R-3",
+        "cvg/docs/adrs/0006-the-judge-ships-before-the-spark-producer-that-it-will-judge.md: Decision; Consequences"
+      ]
     },
     {
-      "id": "C2",
+      "id": "C7",
       "severity": "high",
       "rank": 2,
       "attack_class": "cross-lane-interface",
       "swimlane": "evidencia",
       "leg": "LEG-EVIDENCIA-RECONSTROI",
+      "title": "A rederiva\u00e7\u00e3o n\u00e3o contempla a recusa por total divergente de uma esp\u00e9cie",
       "location": {
         "plan_file": "cvg/swimlanes/lanes/evidencia/LEG-EVIDENCIA-RECONSTROI.md",
-        "section": "tasks[0].behavior[B-1]"
+        "section": "tasks[0].done_condition; behavior B-1"
       },
-      "title": "RECUSADO no carregamento do contrato n\u00e3o tem caminho de rederiva\u00e7\u00e3o",
-      "body": "Contrato/B-1 determina RECUSADO para pol\u00edtica HALF_UP ou granularidade por campo. Essa execu\u00e7\u00e3o termina antes de produzir hash observado, agregado ou envelope, sem ser NAO_MEDIDO e sem exce\u00e7\u00e3o de leitura. Evid\u00eancia/B-1 especifica os caminhos antecipados NAO_MEDIDO e ERRO, mas n\u00e3o a rejei\u00e7\u00e3o de pol\u00edtica nem os dados necess\u00e1rios para rederiv\u00e1-la. Um pacote desse RECUSADO pode ser rejeitado como incompleto ou depender apenas da causa declarada, contrariando a promessa de reconstru\u00e7\u00e3o. A orquestra\u00e7\u00e3o tamb\u00e9m n\u00e3o exercita esse caminho.",
-      "evidence": "Contrato/B-1: pol\u00edtica contradit\u00f3ria \u00e9 'RECUSADO no carregamento'. Evid\u00eancia/B-1: 'NAO_MEDIDO decide antes, e ERRO exige o evento'.",
+      "evidence": "A rederiva\u00e7\u00e3o enumera cinco controles, \u00e2ncora, classifica\u00e7\u00f5es, tr\u00eas hashes e duas listas de defeitos. O pacote promete 'agregado', no singular, sem declarar os mapas observado e declarado de totais por c\u00f3digo.",
+      "body": "Considere um envelope que transfere 1,00 do c\u00f3digo A para B, mantendo chaves, cinco controles globais, hashes e defeitos. A fronteira agora deve recus\u00e1-lo. Sem os dois mapas que motivaram essa compara\u00e7\u00e3o, os insumos explicitamente contratados para rederiva\u00e7\u00e3o tamb\u00e9m descrevem uma execu\u00e7\u00e3o aceita. O leitor do pacote poder\u00e1 rejeitar um RECUSADO leg\u00edtimo ou depender do r\u00f3tulo para confirm\u00e1-lo, contrariando a capacidade prometida.",
       "cites": [
-        "cvg/swimlanes/lanes/contrato/LEG-CONTRATO-RECUSA-SEM-ANCORA.md \u00a7 behavior/B-1",
-        "cvg/swimlanes/lanes/orquestracao/LEG-DESFECHO-COM-PACOTE.md \u00a7 behavior/B-1 e B-2",
-        "cvg/docs/tech-spec/tech-spec-pda-beneficios.md \u00a7 Scope",
-        "cvg/docs/adrs/0003-money-rounds-half-to-even-at-two-decimals.md \u00a7 Decision"
-      ],
-      "proposal": null
+        "cvg/swimlanes/lanes/fronteira/LEG-ENVELOPE-VINCULADO.md: behavior B-2",
+        "cvg/docs/tech-spec/tech-spec-pda-beneficios.md: Problem restated; Scope",
+        "cvg/docs/adrs/0004-column-13-is-a-truncated-description-not-a-second-code.md: Decision"
+      ]
     },
     {
-      "id": "C3",
+      "id": "C8",
       "severity": "high",
       "rank": 3,
       "attack_class": "unverified-assumption",
-      "swimlane": "fronteira",
-      "leg": "LEG-ENVELOPE-VINCULADO",
+      "swimlane": "agregacao",
+      "leg": "LEG-AGREGADO-EXATO",
+      "title": "A prova do agregador local ainda pode passar com valores agrupados por descri\u00e7\u00e3o",
       "location": {
-        "plan_file": "cvg/swimlanes/lanes/fronteira/LEG-ENVELOPE-VINCULADO.md",
-        "section": "tasks[0].behavior[B-2]; evals[eval_3]"
+        "plan_file": "cvg/swimlanes/lanes/agregacao/LEG-AGREGADO-EXATO.md",
+        "section": "tasks[0].behavior B-2; eval_3"
       },
-      "title": "Chaves por c\u00f3digo n\u00e3o demonstram agrupamento correto do produtor externo",
-      "body": "O plano afirma cobrir R-3 para produtor externo exigindo c\u00f3digos como chaves. Um produtor pode primeiro agrupar por descri\u00e7\u00e3o, atribuir o total ao primeiro c\u00f3digo e manter os demais c\u00f3digos com zero. Todas as chaves continuam presentes; os cinco controles globais, hashes e defeitos permanecem iguais. Nenhum comportamento declarado compara os valores por c\u00f3digo com a leitura. Assim, a forma do envelope pode passar enquanto esp\u00e9cies continuam fundidas. Permanece aberta a pergunta de qual prova sustenta a cobertura de R-3 nessa fronteira.",
-      "evidence": "B-2 acrescenta chaves por c\u00f3digo para distinguir o produtor que agrupou por descri\u00e7\u00e3o; eval_3 verifica apenas produtor_agnostico. Ju\u00edzo/B-1 compara os cinco controles globais.",
+      "evidence": "B-2 exige que a sa\u00edda preserve os c\u00f3digos distintos e confira a cardinalidade ancorada. eval_3 descreve 'A sa\u00edda preserva a cardinalidade ancorada; chave por descri\u00e7\u00e3o faz falhar'.",
+      "body": "Um agregador pode somar por descri\u00e7\u00e3o, atribuir o total ao primeiro c\u00f3digo e emitir zero para os outros c\u00f3digos encontrados. Sua sa\u00edda conserva todas as chaves e todos os controles globais; a demonstra\u00e7\u00e3o de que descri\u00e7\u00e3o e c\u00f3digo t\u00eam cardinalidades diferentes tamb\u00e9m continua verdadeira. A fronteira reconhece expressamente esse contraexemplo para produtores externos, mas a prova declarada do agregador local n\u00e3o exige conferir os valores entregues por c\u00f3digo. Se esse agregador fornecer a refer\u00eancia da fronteira, o defeito tamb\u00e9m contamina a confer\u00eancia.",
       "cites": [
-        "cvg/docs/tech-spec/tech-spec-pda-beneficios.md \u00a7 Requirements/R-3",
-        "cvg/docs/adrs/0004-column-13-is-a-truncated-description-not-a-second-code.md \u00a7 Decision",
-        "cvg/swimlanes/lanes/juizo/LEG-JUIZO-ACUSA.md \u00a7 behavior/B-1"
-      ],
-      "proposal": null
+        "cvg/docs/tech-spec/tech-spec-pda-beneficios.md: R-3",
+        "cvg/docs/adrs/0004-column-13-is-a-truncated-description-not-a-second-code.md: Consequences",
+        "cvg/swimlanes/lanes/fronteira/LEG-ENVELOPE-VINCULADO.md: behavior B-2"
+      ]
     },
     {
-      "id": "C4",
-      "severity": "high",
+      "id": "C9",
+      "severity": "medium",
       "rank": 4,
-      "attack_class": "cross-lane-interface",
-      "swimlane": "fronteira",
-      "leg": "LEG-ENVELOPE-VINCULADO",
+      "attack_class": "unverified-assumption",
+      "swimlane": "contrato",
+      "leg": "LEG-CONTRATO-RECUSA-SEM-ANCORA",
+      "title": "A pol\u00edtica decimal pode estar presente e ainda ser insuficiente",
       "location": {
-        "plan_file": "cvg/swimlanes/lanes/fronteira/LEG-ENVELOPE-VINCULADO.md",
-        "section": "tasks[0].behavior[B-2]"
+        "plan_file": "cvg/swimlanes/lanes/contrato/LEG-CONTRATO-RECUSA-SEM-ANCORA.md",
+        "section": "tasks[0].behavior B-1; eval_1"
       },
-      "title": "Recusa de float cobre controles globais, mas deixa dinheiro por esp\u00e9cie sem contrato",
-      "body": "B-2 exige string ou Decimal para os tr\u00eas controles monet\u00e1rios e acrescenta um agregado por c\u00f3digo sem definir os tipos dos valores monet\u00e1rios desse agregado. Um envelope pode trazer controles globais como strings e totais por esp\u00e9cie como n\u00fameros JSON, satisfazendo a recusa descrita. O produtor externo introduz float em campo monet\u00e1rio sem passar pelo agregador local. A restri\u00e7\u00e3o de R-4 e do ADR 0003 vale para todo dinheiro, n\u00e3o apenas para os tr\u00eas controles.",
-      "evidence": "B-2 restringe explicitamente 'os tr\u00eas monet\u00e1rios' e, no mesmo comportamento, passa a exigir 'o agregado POR C\u00d3DIGO de esp\u00e9cie'.",
+      "evidence": "A recusa de pol\u00edtica contradit\u00f3ria \u00e9 exemplificada por HALF_UP e granularidade por campo. N\u00e3o h\u00e1 crit\u00e9rio verific\u00e1vel nem exemplo de recusa para precis\u00e3o declarada insuficiente.",
+      "body": "Um contrato com precis\u00e3o 6, HALF_EVEN e arredondamento final satisfaz os exemplos expl\u00edcitos de presen\u00e7a, modo e granularidade, mas n\u00e3o permite somar exatamente a compet\u00eancia ancorada. O ADR exige precis\u00e3o suficiente, n\u00e3o apenas um n\u00famero declarado. A reda\u00e7\u00e3o gen\u00e9rica 'confere a pol\u00edtica contra o ADR' n\u00e3o determina como essa sufici\u00eancia \u00e9 estabelecida. A integra\u00e7\u00e3o pode receber 'contrato validado' e s\u00f3 descobrir a contradi\u00e7\u00e3o durante a agrega\u00e7\u00e3o.",
       "cites": [
-        "cvg/docs/tech-spec/tech-spec-pda-beneficios.md \u00a7 Requirements/R-4",
-        "cvg/docs/adrs/0003-money-rounds-half-to-even-at-two-decimals.md \u00a7 Decision",
-        "cvg/swimlanes/lanes/agregacao/LEG-AGREGADO-EXATO.md \u00a7 behavior/B-1"
-      ],
-      "proposal": null
+        "cvg/docs/adrs/0003-money-rounds-half-to-even-at-two-decimals.md: Decision, item 1",
+        "cvg/docs/tech-spec/tech-spec-pda-beneficios.md: R-4",
+        "cvg/swimlanes/lanes/agregacao/LEG-AGREGADO-EXATO.md: behavior B-2"
+      ]
     },
     {
-      "id": "C5",
-      "severity": "high",
+      "id": "C10",
+      "severity": "medium",
       "rank": 5,
       "attack_class": "cross-lane-interface",
-      "swimlane": "fronteira",
-      "leg": "LEG-ENVELOPE-VINCULADO",
+      "swimlane": "agregacao",
+      "leg": "LEG-AGREGADO-EXATO",
+      "title": "N\u00e3o h\u00e1 representa\u00e7\u00e3o contratada para extremos quando nenhum valor \u00e9 leg\u00edvel",
       "location": {
-        "plan_file": "cvg/swimlanes/lanes/fronteira/LEG-ENVELOPE-VINCULADO.md",
-        "section": "tasks[0].behavior[B-2]"
+        "plan_file": "cvg/swimlanes/lanes/agregacao/LEG-AGREGADO-EXATO.md",
+        "section": "tasks[0].behavior B-1"
       },
-      "title": "Contagem por tipo n\u00e3o prova que cada defeito observado chegou ao juiz",
-      "body": "Leitura produz defeitos com identidade, valor original e posi\u00e7\u00e3o, mas a fronteira exige correspond\u00eancia por contagem e tipo. Considere dois defeitos distintos A e B do mesmo tipo: um envelope com A duplicado e B omitido preserva ambas as contagens. Cada entrada declarada pode receber exatamente uma classifica\u00e7\u00e3o, enquanto B nunca \u00e9 classificado. O ju\u00edzo e a rederiva\u00e7\u00e3o podem concordar sem cumprir R-6. O caso descrito como omiss\u00e3o n\u00e3o exige detectar substitui\u00e7\u00e3o que conserva as contagens.",
-      "evidence": "Fronteira/B-2: defeitos chegam 'por contagem e por tipo'. Leitura/B-2 preserva 'identidade, valor original e posi\u00e7\u00e3o'. Ju\u00edzo/B-2 exige uma classifica\u00e7\u00e3o por diferen\u00e7a.",
+      "evidence": "B-1 cobre ileg\u00edveis misturados aos v\u00e1lidos e determina que sum, min e max ignorem ileg\u00edveis. A fronteira exige os tr\u00eas controles monet\u00e1rios como string ou Decimal.",
+      "body": "Se todos os registros forem ileg\u00edveis, a exclus\u00e3o obrigat\u00f3ria deixa min e max sem valor. Zero inventa extremos; null n\u00e3o satisfaz o tipo monet\u00e1rio declarado; lan\u00e7ar exce\u00e7\u00e3o conduz a ERRO sem que o plano tenha decidido que esse defeito de fonte interrompe o processamento. O comportamento para esse limite da entrada aceita permanece uma pergunta de contrato entre agrega\u00e7\u00e3o, fronteira e evid\u00eancia, n\u00e3o uma escolha privada de implementa\u00e7\u00e3o.",
       "cites": [
-        "cvg/docs/tech-spec/tech-spec-pda-beneficios.md \u00a7 Requirements/R-6",
-        "cvg/swimlanes/lanes/leitura/LEG-LEITURA-POSICIONAL.md \u00a7 behavior/B-2",
-        "cvg/swimlanes/lanes/juizo/LEG-JUIZO-ACUSA.md \u00a7 behavior/B-2",
-        "cvg/swimlanes/lanes/evidencia/LEG-EVIDENCIA-RECONSTROI.md \u00a7 behavior/B-1"
-      ],
-      "proposal": null
+        "cvg/swimlanes/lanes/fronteira/LEG-ENVELOPE-VINCULADO.md: behavior B-2",
+        "cvg/docs/tech-spec/tech-spec-pda-beneficios.md: R-5; R-6; Scope"
+      ]
     }
   ],
   "cross_lane_interfaces": [],
@@ -191,11 +182,15 @@
   },
   "open_questions": [
     {
-      "q": "Qual evid\u00eancia sustenta a cobertura de R-3 para o conte\u00fado do agregado externo, al\u00e9m do formato das chaves? C3 permanece aberta; eventual amplia\u00e7\u00e3o de requisito deve voltar aos Passes 1\u20133.",
+      "q": "Qual insumo fornece \u00e0 fronteira os totais por c\u00f3digo calculados independentemente do envelope externo?",
       "blocks_build": true
     },
     {
-      "q": "Como representar obje\u00e7\u00f5es ainda n\u00e3o decididas no schema 1.1, que exige resolution com decis\u00e3o humana? Este registro mant\u00e9m resolution=null e n\u00e3o deve passar o gate de consenso.",
+      "q": "Qual \u00e9 o crit\u00e9rio contratual de sufici\u00eancia da precis\u00e3o decimal?",
+      "blocks_build": true
+    },
+    {
+      "q": "Qual representa\u00e7\u00e3o e desfecho valem quando a leitura n\u00e3o encontra nenhum valor monet\u00e1rio leg\u00edvel?",
       "blocks_build": true
     }
   ],

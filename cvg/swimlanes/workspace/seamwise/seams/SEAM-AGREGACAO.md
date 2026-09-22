@@ -68,7 +68,12 @@ swimlane:
           e só sum_vl_liquido é soma — count_linhas conta todo registro lido, linhas_invalidas conta só
           os ilegíveis, e sum, min e max ignoram o ilegível em vez de tratá-lo como 0.00; o teste prova
           que o ilegível foi EXCLUÍDO, nunca comparando totais, porque preencher com 0.00 não muda a soma,
-          não muda max e não muda min — min já é 0.00 na fonte — e passaria despercebido pelos três
+          não muda max e não muda min — min já é 0.00 na fonte — e passaria despercebido pelos três. No
+          limite em que NENHUM registro é legível, min e max não têm valor e o agregado os marca AUSENTES,
+          com sum=0.00 e a contagem de inválidos igual à de lidos — zero inventaria extremos que não existem,
+          e levantar exceção decidiria por conta própria que defeito de fonte interrompe o processamento,
+          coisa que nem a tech-spec nem o juízo pediram; a ausência é representada e atravessa a fronteira
+          e a evidência, que já marcam campo não percorrido como ausente
       - id: B-2
         given: um contexto decimal de precisão baixa, valores em empate exato, e a alternativa meio-para-cima
         when: o total é calculado
@@ -78,13 +83,15 @@ swimlane:
           total. E a SAÍDA do agregador preserva os códigos distintos — tantos quantos a competência tiver,
           conferidos contra a cardinalidade ancorada no contrato e NÃO contra os 51 do ADR 0004, que foram
           medidos em ~3 milhões de linhas; na competência inteira são 65, e fixar 51 recusaria o arquivo
-          correto. O teste falha se a chave do agregador entregue for a descrição, porque demonstrar dentro
-          do teste que os dois agrupamentos diferem continuaria verdadeiro com um agregador que usa a
-          descrição
+          correto. Cada VALOR por código é conferido contra os totais por código da leitura, não só a
+          chave presente — um agregador que somasse por descrição, atribuísse o total ao primeiro código
+          e emitisse zero nos demais conservaria todas as chaves e todos os controles globais, e a demonstração
+          de que descrição e código têm cardinalidades diferentes continuaria verdadeira; se esse agregador
+          fornecesse a referência da fronteira, o defeito contaminaria a conferência também
       evals:
       - id: eval_1
-        description: Float recusado; dois de contagem e três monetários; ilegível excluído, não zerado
-        bash: pytest -q tests/test_agregacao.py -k "recusa_float or cinco_controles or ilegivel_excluido_nao_zerado"
+        description: Float recusado; ilegível excluído e não zerado; nenhum legível marca extremos ausentes
+        bash: pytest -q tests/test_agregacao.py -k "recusa_float or ilegivel_excluido_nao_zerado or nenhum_legivel_extremos_ausentes"
         verifies:
         - B-1
       - id: eval_2

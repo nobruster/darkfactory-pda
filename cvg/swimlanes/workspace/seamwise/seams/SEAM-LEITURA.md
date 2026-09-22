@@ -15,6 +15,7 @@ produces:
 - registros lidos
 - defeitos observados
 - sha256 computado na leitura
+- totais por código da leitura
 owner: leitura
 independent_proof: O sha256 do arquivo é idêntico após a leitura, e cada campo vem da posição declarada
   mesmo com cabeçalho repetido.
@@ -38,6 +39,7 @@ swimlane:
     - registros lidos
     - defeitos observados
     - sha256 computado na leitura
+    - totais por código da leitura
     tasks:
     - id: T-20260921-leitura-posicional
       title: Ler a competência por posição, sem alterar a fonte

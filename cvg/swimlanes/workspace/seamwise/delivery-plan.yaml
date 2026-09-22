@@ -1,22 +1,22 @@
 schema_version: 1
 status: DELIVERY_PLAN=READY
-seam_map_sha256: 91c557f852dede06d501c6733254915f956dc8c1d0262e14003e645f71834527
+seam_map_sha256: b65119a49b81d723b6b294026cbebf7e5a7cdcefae09b1ac54788fa1ca9df54c
 swimlanes:
 - id: LANE-CONTRATO
   seam_id: SEAM-CONTRATO
   owner: contrato
   path: seamwise/swimlanes/LANE-CONTRATO.md
-  sha256: 0a8e1a67eaa20b2329c8644a888b8c73cca6c6babb323c2638c3c33a2f8b28b0
+  sha256: 3818e40d2c567a7ccddbc24008eadc7f1cde51557eb656e2a312d2a1f8277c9a
 - id: LANE-LEITURA
   seam_id: SEAM-LEITURA
   owner: leitura
   path: seamwise/swimlanes/LANE-LEITURA.md
-  sha256: 8fc0051589c0d00751b2d1f7f11b72ff9a96e1033136448dca3d031c29641bc7
+  sha256: d356a4fd2a739fac3b1771e44b67a1a2efc88d656b4a4463df8d4b9f50532626
 - id: LANE-AGREGACAO
   seam_id: SEAM-AGREGACAO
   owner: agregacao
   path: seamwise/swimlanes/LANE-AGREGACAO.md
-  sha256: d0765dc0b720256de35687ed9f6aa4d76ef81df0885e8f3db3ed4305f9acd85b
+  sha256: 78911e119e2915cc81938f7790e985f3171cd05b7836e18c301dc46d4aaf4be7
 - id: LANE-JUIZO
   seam_id: SEAM-JUIZO
   owner: juizo
@@ -26,7 +26,7 @@ swimlanes:
   seam_id: SEAM-EVIDENCIA
   owner: evidencia
   path: seamwise/swimlanes/LANE-EVIDENCIA.md
-  sha256: ffd587b518e281e485623b08c6c27dc2c19385dab0633cb8f63f7121e1690c7e
+  sha256: b38067b0ecd001d54bb990f7fd922bc3e0c1ab31bd73370d5f25451581b251e7
 - id: LANE-ORQUESTRACAO
   seam_id: SEAM-ORQUESTRACAO
   owner: orquestracao
@@ -36,23 +36,23 @@ swimlanes:
   seam_id: SEAM-FRONTEIRA
   owner: fronteira
   path: seamwise/swimlanes/LANE-FRONTEIRA.md
-  sha256: a5c8f24de04b81ef79c8077d9da8e697cb443539a758ccabb1ea05799b1038c8
+  sha256: 8b554e14663a1396d93e5864fa9b1455fcf94de3b0a15e4cd9317cd37d0c9268
 legs:
 - id: LEG-CONTRATO-RECUSA-SEM-ANCORA
   seam_id: SEAM-CONTRATO
   swimlane_id: LANE-CONTRATO
   path: seamwise/legs/LEG-CONTRATO-RECUSA-SEM-ANCORA.md
-  sha256: c3ae9d6ee20d9281b72cae8e864801871f1a9429d6b9739721312da73a7fc85a
+  sha256: 78a79e5892021e881d851bcf2ae30710fdafafee585e0d4498102838205e1f9f
 - id: LEG-LEITURA-POSICIONAL
   seam_id: SEAM-LEITURA
   swimlane_id: LANE-LEITURA
   path: seamwise/legs/LEG-LEITURA-POSICIONAL.md
-  sha256: 82ba5d141794667004687ac92a84815cdae0dae208b66617cea955934ccde3a3
+  sha256: 75a9b35a62275972cdb9997d420364c1826c5d785a751c6f98c6dc9816743307
 - id: LEG-AGREGADO-EXATO
   seam_id: SEAM-AGREGACAO
   swimlane_id: LANE-AGREGACAO
   path: seamwise/legs/LEG-AGREGADO-EXATO.md
-  sha256: 0f82e61d42b134cf8bb4fea9eef8d1c3c7debe88b481ab70183ca322c7fd5824
+  sha256: d97e2b146417ef4bf276d1ee39cbb80052d039a1666146804f72fd406834068e
 - id: LEG-JUIZO-ACUSA
   seam_id: SEAM-JUIZO
   swimlane_id: LANE-JUIZO
@@ -62,7 +62,7 @@ legs:
   seam_id: SEAM-EVIDENCIA
   swimlane_id: LANE-EVIDENCIA
   path: seamwise/legs/LEG-EVIDENCIA-RECONSTROI.md
-  sha256: 99daf12fc49c25d9a349154161c4ddd60eba2795333e0b2534d53dbe9405433f
+  sha256: 201c52815432f6bdf1c8cf26a20b32872c02ef89c211dbaf846fb093f566ceda
 - id: LEG-DESFECHO-COM-PACOTE
   seam_id: SEAM-ORQUESTRACAO
   swimlane_id: LANE-ORQUESTRACAO
@@ -72,7 +72,7 @@ legs:
   seam_id: SEAM-FRONTEIRA
   swimlane_id: LANE-FRONTEIRA
   path: seamwise/legs/LEG-ENVELOPE-VINCULADO.md
-  sha256: 556d23ff48446ea16d8da220fd741cd1c17bac8493e1d96c4ba5931a64a7e098
+  sha256: ce89245c47a2d92060c0dc4827a025dcb3a5070a16e2f4e6cf66b6323747cf29
 steel_thread:
 - LEG-CONTRATO-RECUSA-SEM-ANCORA
 - LEG-LEITURA-POSICIONAL
@@ -423,7 +423,49 @@ objections:
     recebe classificação única, B nunca é classificado, e juízo e rederivação concordam violando R-6.
     B-2 da fronteira passou a conferir POR IDENTIDADE, com valor original e posição, que é o que a leitura
     já produz.'
+- id: OBJ-R8-C6
+  status: FIXED
+  summary: Minha correção de R7-C3 mandava conferir o total por código contra a leitura, mas a fronteira
+    consumia um agregado só.
+  owner: Bruno Nunes
+  rationale: Mesmo erro da R4-C1, terceira vez — regra que compara um valor que ninguém se compromete
+    a entregar. Com um mapa só, deslocar valores entre códigos seria aprovado por comparação consigo mesmo.
+    Criada a capacidade "totais por código da leitura", produzida pela LEITURA e exigida pela fronteira;
+    a referência não vem do agregador julgado, pelo mesmo motivo do ADR 0005.
+- id: OBJ-R8-C7
+  status: FIXED
+  summary: A rederivação não contemplava a recusa por total divergente de uma espécie — transferir 1,00
+    de A para B preserva tudo o mais.
+  owner: Bruno Nunes
+  rationale: 'B-1 da evidência passou a gravar os PARES de origens distintas que motivaram cada comparação:
+    as duas listas de defeitos e os dois mapas de totais por código. Sem eles o pacote descreveria uma
+    execução aceita, e o leitor dependeria do rótulo.'
+- id: OBJ-R8-C8
+  status: FIXED
+  summary: A prova do agregador local exigia as chaves, não os valores — somar por descrição e zerar os
+    demais códigos passaria.
+  owner: Bruno Nunes
+  rationale: E se esse agregador fornecesse a referência da fronteira, o defeito contaminaria a conferência
+    também. B-2 da agregação passou a exigir cada VALOR por código conferido contra os totais da leitura.
+- id: OBJ-R8-C9
+  status: FIXED
+  summary: Minha correção de R6-C4 conferia a política contra o ADR sem dizer como a SUFICIÊNCIA da precisão
+    se estabelece.
+  owner: Bruno Nunes
+  rationale: MEDIDO — precisão 6 com HALF_EVEN e arredondamento final satisfaz presença, modo e granularidade,
+    e devolve 7.85218E+10 no lugar de 78.521.752.562,12; prec=12 já perde o último centavo. O mínimo para
+    esta âncora é 13 dígitos significativos. B-1 do contrato passou a RECUSAR precisão insuficiente no
+    carregamento, em vez de deixá-la aparecer durante a agregação.
+- id: OBJ-R8-C10
+  status: FIXED
+  summary: Minha correção de R3-C4 excluía o ilegível sem dizer o que são min e max quando NENHUM registro
+    é legível.
+  owner: Bruno Nunes
+  rationale: Zero inventaria extremos inexistentes; exceção decidiria por conta própria que defeito de
+    fonte interrompe o processamento, o que nem a tech-spec nem o juízo pediram. B-1 da agregação passou
+    a marcar os extremos AUSENTES, com sum=0.00, reusando a representação de ausência que fronteira e
+    evidência já tratam.
 contentions: []
 steel_thread_path: seamwise/steel-thread.md
 steel_thread_sha256: ffb28ecb19188999bee9ce19aa55f8f43a0d1e1bd3e01017d7f9ad3a6d47fb7b
-review_authority_sha256: 23b6f5817255701c5ae979a470f2e3fd31e884539b909a8af8c5bddb1cc50d28
+review_authority_sha256: 12864915abeed2752db1836e4265e3e954b071cd9b126698fc9d074bc6c90c84

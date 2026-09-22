@@ -1,10 +1,10 @@
 {
   "disposition": "accepted",
-  "draft_sha256": "759f1b072ecc931b1a5ece8b1ae9536c975aa98f6e643f4e8339406598fd3e89",
+  "draft_sha256": "d2822f3155e960cf78ae13b1cb796a3edd48d113fc26935ab3fd6a9118175432",
   "fixture": false,
-  "plan_sha256": "db37f284d91eff717f7d45249d4823defc4a38d80dfa3e929f8f812045b716ab",
+  "plan_sha256": "22e7bc39eebe2ad47052b4b2761bcf225172f8dbb5af5417d388952c76874134",
   "reason": "2a rodada: 6 objecoes corrigidas com contraexemplo verificado contra a fonte; C1 refutada, o produtor Spark esta em out_of_scope por decisao do ADR 0005",
-  "reviewed_at": "2026-09-22T01:14:24.145174+00:00",
+  "reviewed_at": "2026-09-22T01:24:52.970065+00:00",
   "reviewer": "Bruno Nunes",
   "schema_version": 1
 }

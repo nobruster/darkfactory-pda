@@ -15,6 +15,7 @@ consumes:
 - agregado da competência
 - defeitos observados
 - sha256 computado na leitura
+- totais por código da leitura
 produces:
 - envelope do produtor
 owner: fronteira
@@ -43,6 +44,7 @@ swimlane:
     - agregado da competência
     - defeitos observados
     - sha256 computado na leitura
+    - totais por código da leitura
     produces:
     - envelope do produtor
     tasks:
@@ -100,10 +102,14 @@ swimlane:
           o agregado POR CÓDIGO de espécie, com as chaves conferidas contra a cardinalidade ANCORADA no
           contrato — medida na competência inteira, nunca os 51 do ADR 0004, que saíram de ~3 milhões
           de linhas; exigir 51 recusaria esta competência, que tem 65 códigos, entre eles o '60' com 1.395
-          ocorrências em 41,5 milhões. E cada total por código é CONFERIDO contra a leitura, não só a
-          presença da chave — um produtor que agrupasse por descrição e atribuísse o total ao primeiro
-          código, zerando os demais, manteria todas as chaves, os cinco controles, hashes e defeitos idênticos;
-          R-3 vale para o produtor externo, e prova-se por valor, não por forma
+          ocorrências em 41,5 milhões. E cada total por código do envelope é CONFERIDO contra os totais
+          por código DA LEITURA, capacidade própria que a leitura produz e a fronteira exige — dois valores
+          de origens distintas, o declarado pelo produtor e o de referência; com um mapa só, deslocar
+          valores entre códigos seria aprovado por comparação consigo mesmo. Um produtor que agrupasse
+          por descrição e atribuísse o total ao primeiro código, zerando os demais, manteria todas as
+          chaves, os cinco controles, hashes e defeitos idênticos, e só a comparação por valor o pega;
+          R-3 prova-se por valor, não por forma, e a referência não vem do agregador julgado, pelo mesmo
+          motivo do ADR 0005
       evals:
       - id: eval_1
         description: Sha ausente, divergente, ou copiado de outro arquivo lido é recusado

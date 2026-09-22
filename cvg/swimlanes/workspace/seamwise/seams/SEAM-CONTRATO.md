@@ -65,9 +65,14 @@ swimlane:
           sem nada acusar. E contrato COM política que contradiz o ADR — HALF_UP, ou granularidade por
           campo — é RECUSADO no carregamento, não validado, porque um contrato contraditório deixaria
           o agregador entre obedecer ao contrato e obedecer à decisão vinculante; a validação confere
-          a política contra o ADR, e nunca o contrário. Falta o hash do CSV e também é NAO_MEDIDO, porque
-          hoje só o ZIP tem checksum e a âncora foi medida no CSV — sem o par, trocar o CSV extraído não
-          seria detectado; sem aprovador ou sem data, idem
+          a política contra o ADR, e nunca o contrário. A precisão é conferida por SUFICIÊNCIA contra
+          a âncora, não por estar declarada — precisão 6 com HALF_EVEN e arredondamento final satisfaz
+          presença, modo e granularidade e ainda assim devolve 7.85218E+10 no lugar de 78.521.752.562,12;
+          o mínimo medido para esta âncora é 13 dígitos significativos, e prec=12 já perde o último centavo.
+          Contrato com precisão insuficiente é RECUSADO no carregamento, não descoberto durante a agregação.
+          Falta o hash do CSV e também é NAO_MEDIDO, porque hoje só o ZIP tem checksum e a âncora foi
+          medida no CSV — sem o par, trocar o CSV extraído não seria detectado; sem aprovador ou sem data,
+          idem
       - id: B-2
         given: uma competência sem âncora no contrato
         when: o contrato é carregado

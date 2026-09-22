@@ -364,6 +364,48 @@ objections:
     recebe classificação única, B nunca é classificado, e juízo e rederivação concordam violando R-6.
     B-2 da fronteira passou a conferir POR IDENTIDADE, com valor original e posição, que é o que a leitura
     já produz.'
+- id: OBJ-R8-C6
+  status: FIXED
+  summary: Minha correção de R7-C3 mandava conferir o total por código contra a leitura, mas a fronteira
+    consumia um agregado só.
+  owner: Bruno Nunes
+  rationale: Mesmo erro da R4-C1, terceira vez — regra que compara um valor que ninguém se compromete
+    a entregar. Com um mapa só, deslocar valores entre códigos seria aprovado por comparação consigo mesmo.
+    Criada a capacidade "totais por código da leitura", produzida pela LEITURA e exigida pela fronteira;
+    a referência não vem do agregador julgado, pelo mesmo motivo do ADR 0005.
+- id: OBJ-R8-C7
+  status: FIXED
+  summary: A rederivação não contemplava a recusa por total divergente de uma espécie — transferir 1,00
+    de A para B preserva tudo o mais.
+  owner: Bruno Nunes
+  rationale: 'B-1 da evidência passou a gravar os PARES de origens distintas que motivaram cada comparação:
+    as duas listas de defeitos e os dois mapas de totais por código. Sem eles o pacote descreveria uma
+    execução aceita, e o leitor dependeria do rótulo.'
+- id: OBJ-R8-C8
+  status: FIXED
+  summary: A prova do agregador local exigia as chaves, não os valores — somar por descrição e zerar os
+    demais códigos passaria.
+  owner: Bruno Nunes
+  rationale: E se esse agregador fornecesse a referência da fronteira, o defeito contaminaria a conferência
+    também. B-2 da agregação passou a exigir cada VALOR por código conferido contra os totais da leitura.
+- id: OBJ-R8-C9
+  status: FIXED
+  summary: Minha correção de R6-C4 conferia a política contra o ADR sem dizer como a SUFICIÊNCIA da precisão
+    se estabelece.
+  owner: Bruno Nunes
+  rationale: MEDIDO — precisão 6 com HALF_EVEN e arredondamento final satisfaz presença, modo e granularidade,
+    e devolve 7.85218E+10 no lugar de 78.521.752.562,12; prec=12 já perde o último centavo. O mínimo para
+    esta âncora é 13 dígitos significativos. B-1 do contrato passou a RECUSAR precisão insuficiente no
+    carregamento, em vez de deixá-la aparecer durante a agregação.
+- id: OBJ-R8-C10
+  status: FIXED
+  summary: Minha correção de R3-C4 excluía o ilegível sem dizer o que são min e max quando NENHUM registro
+    é legível.
+  owner: Bruno Nunes
+  rationale: Zero inventaria extremos inexistentes; exceção decidiria por conta própria que defeito de
+    fonte interrompe o processamento, o que nem a tech-spec nem o juízo pediram. B-1 da agregação passou
+    a marcar os extremos AUSENTES, com sum=0.00, reusando a representação de ausência que fronteira e
+    evidência já tratam.
 contentions: []
 ---
 # System Map
