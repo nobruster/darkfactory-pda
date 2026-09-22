@@ -1,6 +1,6 @@
 > Projetado de `LEG-ENVELOPE-VINCULADO.md` pelo Seamwise.
 > **Não edite aqui** — edite a recipe e rode `seamwise plan`.
-> origem sha256: `d55efa3d605af0e8e37a4a4db93119f5941d017e6e2d0d3f17316d0f378fd4d7`
+> origem sha256: `4b865b22c065523b916db65c3001d2f22598c6c146adb9e845734299b21bcab7`
 
 ---
 
@@ -91,13 +91,17 @@ tasks:
       — dois valores de origens distintas, o declarado pelo produtor e o de referência; com um mapa só,
       deslocar valores entre códigos seria aprovado por comparação consigo mesmo. Os dois mapas trafegam
       como soma EXATA, não quantizada, e a comparação é exata — um código cuja soma é 2,345 chega 2,345
-      dos dois lados, e quantizar um só faria a fronteira recusar dois lados corretos. A soma global vem
-      dos valores originais, NUNCA dos totais por código já arredondados, porque arredondar uma vez no
-      total é camada do ADR 0007 herdada do 0003 — dois códigos de 2,345 dão 4,69 no total e 4,68 somando
-      grupos arredondados. Um produtor que agrupasse por descrição e atribuísse o total ao primeiro código,
-      zerando os demais, manteria todas as chaves, os cinco controles, hashes e defeitos idênticos, e
-      só a comparação por valor o pega; R-3 prova-se por valor, não por forma, e a referência não vem
-      do agregador julgado, pelo mesmo motivo do ADR 0005
+      dos dois lados, e quantizar um só faria a fronteira recusar dois lados corretos. Um código que existe
+      na fonte com TODOS os valores inválidos aparece nos dois mapas com a chave PRESENTE e soma ausente,
+      nunca com chave omitida nem com zero — zero inventaria dinheiro que ninguém recebeu, e omitir faria
+      leitura e produtor emitirem mapas diferentes cumprindo cada um o seu texto, recusando uma competência
+      legitimamente ancorada antes de o juízo comparar os cinco controles. A soma global vem dos valores
+      originais, NUNCA dos totais por código já arredondados, porque arredondar uma vez no total é camada
+      do ADR 0007 herdada do 0003 — dois códigos de 2,345 dão 4,69 no total e 4,68 somando grupos arredondados.
+      Um produtor que agrupasse por descrição e atribuísse o total ao primeiro código, zerando os demais,
+      manteria todas as chaves, os cinco controles, hashes e defeitos idênticos, e só a comparação por
+      valor o pega; R-3 prova-se por valor, não por forma, e a referência não vem do agregador julgado,
+      pelo mesmo motivo do ADR 0005
   evals:
   - id: eval_1
     description: Sha ausente, divergente, ou copiado de outro arquivo lido é recusado
@@ -132,7 +136,7 @@ tasks:
   - cvg/docs/adrs
   rollback: Remover o validador de envelope e seus testes.
   observability: envelopes recusados por motivo
-source_seam_sha256: 895f2994f6f10b3578de160f08b43bfbbb8cb0523c95ced8c7ef6e4dc5c1b5ce
+source_seam_sha256: 38892c04dd2c02af31e68cd3c517aba746423e051bbfabe55402fb2f0788693a
 ---
 # O envelope liga o agregado ao arquivo que o gerou
 

@@ -1,6 +1,6 @@
 > Projetado de `LEG-AGREGADO-EXATO.md` pelo Seamwise.
 > **Não edite aqui** — edite a recipe e rode `seamwise plan`.
-> origem sha256: `d97e2b146417ef4bf276d1ee39cbb80052d039a1666146804f72fd406834068e`
+> origem sha256: `ff8a7077f121e3f8c6d7474ecd5b1a29b61223d485227d26872025f70e4b63ca`
 
 ---
 
@@ -58,15 +58,19 @@ tasks:
     when: o total é calculado
     then: o resultado é o de HALF_EVEN a duas casas — comparado contra o valor que HALF_UP produziria,
       e RECUSANDO-o; declarar um modo não basta, o teste falha se a implementação usar meio-para-cima.
-      A perda por precisão baixa também é acusada, e arredondar por campo difere de arredondar no total.
-      E a SAÍDA do agregador preserva os códigos distintos — tantos quantos a competência tiver, conferidos
-      contra a cardinalidade ancorada no contrato e NÃO contra os 51 do ADR 0004, que foram medidos em
-      ~3 milhões de linhas; na competência inteira são 65, e fixar 51 recusaria o arquivo correto. Cada
-      VALOR por código é conferido contra os totais por código da leitura, não só a chave presente — um
-      agregador que somasse por descrição, atribuísse o total ao primeiro código e emitisse zero nos demais
-      conservaria todas as chaves e todos os controles globais, e a demonstração de que descrição e código
-      têm cardinalidades diferentes continuaria verdadeira; se esse agregador fornecesse a referência
-      da fronteira, o defeito contaminaria a conferência também
+      O contexto do agregador é PRÓPRIO e COMPLETO como o da leitura — precisão, arredondamento, Emax,
+      Emin e traps declarados, com teste sob global adverso nos três eixos; declarar só precisão e modo
+      deixaria uma biblioteca externa transformar execução válida em ERRO, e a exigência de contexto completo
+      escrita só na leitura protege o mapa de referência, não quem soma. A perda por precisão baixa também
+      é acusada, e arredondar por campo difere de arredondar no total. E a SAÍDA do agregador preserva
+      os códigos distintos — tantos quantos a competência tiver, conferidos contra a cardinalidade ancorada
+      no contrato e NÃO contra os 51 do ADR 0004, que foram medidos em ~3 milhões de linhas; na competência
+      inteira são 65, e fixar 51 recusaria o arquivo correto. Cada VALOR por código é conferido contra
+      os totais por código da leitura, não só a chave presente — um agregador que somasse por descrição,
+      atribuísse o total ao primeiro código e emitisse zero nos demais conservaria todas as chaves e todos
+      os controles globais, e a demonstração de que descrição e código têm cardinalidades diferentes continuaria
+      verdadeira; se esse agregador fornecesse a referência da fronteira, o defeito contaminaria a conferência
+      também
   evals:
   - id: eval_1
     description: Float recusado; ilegível excluído e não zerado; nenhum legível marca extremos ausentes
@@ -99,7 +103,7 @@ tasks:
   - cvg/docs/adrs
   rollback: Remover o agregador e seus testes.
   observability: total agregado e espécies distintas
-source_seam_sha256: 10719306d8d230846f4cf68c7ff16431151b0640809319a6f463fe4c2f75946c
+source_seam_sha256: 48bc5d548e4104c8c4eb395e93d8a683fb16b11f3de9f3388024836d09e6c05a
 ---
 # O agregado é exato e a chave é o código
 

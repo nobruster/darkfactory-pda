@@ -727,6 +727,46 @@ objections:
     _raw, e o sha256 do CSV conferido antes e depois. E acrescentado o hash do CSV ao CHECKSUMS.txt —
     até aqui só o ZIP tinha, e era o CSV onde a âncora foi medida. As duas metades da promessa de W-1
     agora existem.
+- id: OBJ-R15-C1
+  status: FIXED
+  summary: Fechei o buraco do contexto decimal na LEITURA e deixei a AGREGAÇÃO aberta — quem soma era
+    justamente quem ficou exposto.
+  owner: Bruno Nunes
+  rationale: A exigência de contexto completo protegia o mapa de referência e não o agregador. B-2 da
+    agregação passou a exigir contexto próprio e completo, com teste sob global adverso nos três eixos.
+- id: OBJ-R15-C2
+  status: FIXED
+  summary: O carregador recusava float, mas não âncora monetária não finita nem contagem booleana ou fracionária.
+  owner: Bruno Nunes
+  rationale: '''Infinity'' no total alcançaria a derivação de precisão, e False em linhas_invalidas passaria
+    por igualdade contra um inteiro legítimo. A fronteira protege o envelope, não o referencial. B-1 do
+    contrato passou a exigir monetário finito e contagens inteiras não negativas.'
+- id: OBJ-R15-C3
+  status: FIXED
+  summary: Código presente só em registros inválidos não tinha representação acordada entre leitura e
+    produtor.
+  owner: Bruno Nunes
+  rationale: Chave omitida, soma zero e ausência eram todas defensáveis, e os dois lados podiam cumprir
+    seus textos emitindo mapas diferentes — recusando uma competência legitimamente ancorada antes de
+    o juízo comparar. B-2 da fronteira passou a exigir chave PRESENTE com soma ausente; zero inventaria
+    dinheiro que ninguém recebeu.
+- id: OBJ-R15-C4
+  status: FIXED
+  summary: Preservar o tipo monetário não definia como persistir Decimal, que JSON não tem.
+  owner: Bruno Nunes
+  rationale: Converter para string violaria a própria preservação exigida, e o gravador podia falhar justamente
+    ao registrar uma recusa legítima de sNaN. B-1 da evidência passou a gravar um par declarado — tipo
+    recebido e texto exato dos bytes — que distingue Decimal('0.00'), a string '0.00' e o número 0.0.
+- id: OBJ-R15-C5
+  status: FIXED
+  summary: Nada declarava QUEM classifica os defeitos — e a competência tem 11 colapsos reais que a Regra
+    4 manda bloquear sem classificação.
+  owner: Bruno Nunes
+  rationale: 'A objeção que impedia a fábrica de rodar. Sem a entrada, a execução trava com os cinco controles
+    corretos; se o juízo inventasse a classificação, teria tomado decisão de negócio sem autoridade. Decidido
+    com Bruno Nunes — a classificação vem do CONTRATO: os defeitos conhecidos da fonte entram pré-classificados
+    e aprovados junto da âncora, com os 11 colapsos como CONFIRMED_SOURCE_DEFECT, e defeito FORA dessa
+    lista continua bloqueando, que é o comportamento que a Regra 4 exige.'
 contentions: []
 ---
 # System Map

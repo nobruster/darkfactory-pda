@@ -62,13 +62,17 @@ swimlane:
         then: os cinco controles são comparados individualmente e qualquer divergência recusa — soma e
           contagem iguais não bastam
       - id: B-2
-        given: uma diferença de cada uma das seis classificações, uma sem classificação nenhuma, e uma
-          marcada com DUAS ao mesmo tempo
+        given: uma diferença de cada uma das seis classificações, uma sem classificação nenhuma, uma marcada
+          com DUAS ao mesmo tempo, e os 11 colapsos que a competência realmente tem
         when: o veredito é calculado
-        then: cada diferença carrega exatamente uma classificação — zero bloqueia e duas também, porque
-          duas permitem escolher a mais branda na hora de ler; divergência em qualquer controle RECUSA
-          mesmo classificada; fora dos controles, MODERN_DEFECT, CONTRACT_AMBIGUITY e UNRESOLVED bloqueiam
-          e as três CONFIRMED/APPROVED apenas registram
+        then: a classificação vem do CONTRATO, não do juízo — os defeitos conhecidos da fonte entram pré-classificados
+          e aprovados junto da âncora, com os 11 colapsos como CONFIRMED_SOURCE_DEFECT, e defeito FORA
+          dessa lista bloqueia em vez de o juízo inventar uma; inventar seria tomar decisão de negócio
+          sem autoridade, e bloquear com os cinco controles corretos seria travar a fábrica no dado certo.
+          Cada diferença carrega exatamente uma classificação — zero bloqueia e duas também, porque duas
+          permitem escolher a mais branda na hora de ler; divergência em qualquer controle RECUSA mesmo
+          classificada; fora dos controles, MODERN_DEFECT, CONTRACT_AMBIGUITY e UNRESOLVED bloqueiam e
+          as três CONFIRMED/APPROVED apenas registram
       evals:
       - id: eval_1
         description: Linha a menos recusa; extremos alterados com soma igual também

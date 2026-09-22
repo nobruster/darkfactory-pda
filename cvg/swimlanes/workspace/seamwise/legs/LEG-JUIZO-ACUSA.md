@@ -40,12 +40,16 @@ tasks:
     then: os cinco controles são comparados individualmente e qualquer divergência recusa — soma e contagem
       iguais não bastam
   - id: B-2
-    given: uma diferença de cada uma das seis classificações, uma sem classificação nenhuma, e uma marcada
-      com DUAS ao mesmo tempo
+    given: uma diferença de cada uma das seis classificações, uma sem classificação nenhuma, uma marcada
+      com DUAS ao mesmo tempo, e os 11 colapsos que a competência realmente tem
     when: o veredito é calculado
-    then: cada diferença carrega exatamente uma classificação — zero bloqueia e duas também, porque duas
-      permitem escolher a mais branda na hora de ler; divergência em qualquer controle RECUSA mesmo classificada;
-      fora dos controles, MODERN_DEFECT, CONTRACT_AMBIGUITY e UNRESOLVED bloqueiam e as três CONFIRMED/APPROVED
+    then: a classificação vem do CONTRATO, não do juízo — os defeitos conhecidos da fonte entram pré-classificados
+      e aprovados junto da âncora, com os 11 colapsos como CONFIRMED_SOURCE_DEFECT, e defeito FORA dessa
+      lista bloqueia em vez de o juízo inventar uma; inventar seria tomar decisão de negócio sem autoridade,
+      e bloquear com os cinco controles corretos seria travar a fábrica no dado certo. Cada diferença
+      carrega exatamente uma classificação — zero bloqueia e duas também, porque duas permitem escolher
+      a mais branda na hora de ler; divergência em qualquer controle RECUSA mesmo classificada; fora dos
+      controles, MODERN_DEFECT, CONTRACT_AMBIGUITY e UNRESOLVED bloqueiam e as três CONFIRMED/APPROVED
       apenas registram
   evals:
   - id: eval_1
@@ -80,7 +84,7 @@ tasks:
   - contracts
   rollback: Remover o juízo e seus testes.
   observability: vereditos por classificação
-source_seam_sha256: ece9904fa201a63366f43e9607dfdd0b8202b6d2389657c116ca6cb0067f9074
+source_seam_sha256: e0624b2781e42364994756c81c3dbab8c8e071cb9f06779a94c911fbe98da102
 ---
 # O juiz recusa divergência em qualquer controle
 

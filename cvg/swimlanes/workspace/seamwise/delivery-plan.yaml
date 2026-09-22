@@ -1,12 +1,12 @@
 schema_version: 1
 status: DELIVERY_PLAN=READY
-seam_map_sha256: 360cbdc712dd5e09d1c8b08628dbf4759cbd15dce347c85dcb2cc2f1c94f60c0
+seam_map_sha256: 4cc74e791709487ae59f0f36b8ec26d908a19b1b8d0d8f029df72974c5bf42a1
 swimlanes:
 - id: LANE-CONTRATO
   seam_id: SEAM-CONTRATO
   owner: contrato
   path: seamwise/swimlanes/LANE-CONTRATO.md
-  sha256: 1a94a5e83e6daadd4181676246e1e11f68b826cbcfbdb1e006a71aabc9f5b5d3
+  sha256: 6d78ac87848c3332d80c745dc966c56d317dcc3e27af6f7320c30c40878809d3
 - id: LANE-LEITURA
   seam_id: SEAM-LEITURA
   owner: leitura
@@ -16,17 +16,17 @@ swimlanes:
   seam_id: SEAM-AGREGACAO
   owner: agregacao
   path: seamwise/swimlanes/LANE-AGREGACAO.md
-  sha256: 78911e119e2915cc81938f7790e985f3171cd05b7836e18c301dc46d4aaf4be7
+  sha256: 718f1609c66fb8ed94aae7ba5fdadee9e4b5004d562a799a2f925f6a215c8308
 - id: LANE-JUIZO
   seam_id: SEAM-JUIZO
   owner: juizo
   path: seamwise/swimlanes/LANE-JUIZO.md
-  sha256: 241b859186827caf40267f497cf1904b629b18a8b734fc9277f2a9fc2c3165b8
+  sha256: 636bc9ec518a4288e5df60983cce7b66f95317f6c0bd4b2128ade693ba5060f7
 - id: LANE-EVIDENCIA
   seam_id: SEAM-EVIDENCIA
   owner: evidencia
   path: seamwise/swimlanes/LANE-EVIDENCIA.md
-  sha256: e361dbb26f14287bc9b7bd0e873f574fbfa8f73afce08b32cf32c90c4190b78d
+  sha256: ef962411713e2aa1216bf1110806265634efb9bebc13f89cc45541ca0007cea6
 - id: LANE-ORQUESTRACAO
   seam_id: SEAM-ORQUESTRACAO
   owner: orquestracao
@@ -36,13 +36,13 @@ swimlanes:
   seam_id: SEAM-FRONTEIRA
   owner: fronteira
   path: seamwise/swimlanes/LANE-FRONTEIRA.md
-  sha256: 9bef716992672e8f54dceea77b98cf9ff3c3f9cc3136a6d80f0f369a3b8abdf2
+  sha256: a0448b270ca03ebf1b21fc5c87ed11fa892223cde0753fcf73fea1afc11c0365
 legs:
 - id: LEG-CONTRATO-RECUSA-SEM-ANCORA
   seam_id: SEAM-CONTRATO
   swimlane_id: LANE-CONTRATO
   path: seamwise/legs/LEG-CONTRATO-RECUSA-SEM-ANCORA.md
-  sha256: 8f54b97a11c8e27985bf35d03a303d5f6cf27dd5659b3bfab4cf763996aa08a1
+  sha256: de5cf2c0834888f7b1420c2b9283c77d04139100daddcea08d6d41f9f1a4e38e
 - id: LEG-LEITURA-POSICIONAL
   seam_id: SEAM-LEITURA
   swimlane_id: LANE-LEITURA
@@ -52,17 +52,17 @@ legs:
   seam_id: SEAM-AGREGACAO
   swimlane_id: LANE-AGREGACAO
   path: seamwise/legs/LEG-AGREGADO-EXATO.md
-  sha256: d97e2b146417ef4bf276d1ee39cbb80052d039a1666146804f72fd406834068e
+  sha256: ff8a7077f121e3f8c6d7474ecd5b1a29b61223d485227d26872025f70e4b63ca
 - id: LEG-JUIZO-ACUSA
   seam_id: SEAM-JUIZO
   swimlane_id: LANE-JUIZO
   path: seamwise/legs/LEG-JUIZO-ACUSA.md
-  sha256: 6ad6014a4f1fbcad0195bb21ba12f43662d1456cceb3c6712e373c3caf6c251f
+  sha256: 19f785cec9929408ec5b3698add06ab73eaa1f37539a02e07fc0db31e3c84eab
 - id: LEG-EVIDENCIA-RECONSTROI
   seam_id: SEAM-EVIDENCIA
   swimlane_id: LANE-EVIDENCIA
   path: seamwise/legs/LEG-EVIDENCIA-RECONSTROI.md
-  sha256: 149997d2323b65fc3f97eb114e6584b6f5008667635ba8ddd908a599094411a4
+  sha256: 433d4defc26947f10ce56f15eaa24e600ee17da629bbf28e78f714674ee4ec0b
 - id: LEG-DESFECHO-COM-PACOTE
   seam_id: SEAM-ORQUESTRACAO
   swimlane_id: LANE-ORQUESTRACAO
@@ -72,7 +72,7 @@ legs:
   seam_id: SEAM-FRONTEIRA
   swimlane_id: LANE-FRONTEIRA
   path: seamwise/legs/LEG-ENVELOPE-VINCULADO.md
-  sha256: d55efa3d605af0e8e37a4a4db93119f5941d017e6e2d0d3f17316d0f378fd4d7
+  sha256: 4b865b22c065523b916db65c3001d2f22598c6c146adb9e845734299b21bcab7
 steel_thread:
 - LEG-CONTRATO-RECUSA-SEM-ANCORA
 - LEG-LEITURA-POSICIONAL
@@ -786,7 +786,47 @@ objections:
     _raw, e o sha256 do CSV conferido antes e depois. E acrescentado o hash do CSV ao CHECKSUMS.txt —
     até aqui só o ZIP tinha, e era o CSV onde a âncora foi medida. As duas metades da promessa de W-1
     agora existem.
+- id: OBJ-R15-C1
+  status: FIXED
+  summary: Fechei o buraco do contexto decimal na LEITURA e deixei a AGREGAÇÃO aberta — quem soma era
+    justamente quem ficou exposto.
+  owner: Bruno Nunes
+  rationale: A exigência de contexto completo protegia o mapa de referência e não o agregador. B-2 da
+    agregação passou a exigir contexto próprio e completo, com teste sob global adverso nos três eixos.
+- id: OBJ-R15-C2
+  status: FIXED
+  summary: O carregador recusava float, mas não âncora monetária não finita nem contagem booleana ou fracionária.
+  owner: Bruno Nunes
+  rationale: '''Infinity'' no total alcançaria a derivação de precisão, e False em linhas_invalidas passaria
+    por igualdade contra um inteiro legítimo. A fronteira protege o envelope, não o referencial. B-1 do
+    contrato passou a exigir monetário finito e contagens inteiras não negativas.'
+- id: OBJ-R15-C3
+  status: FIXED
+  summary: Código presente só em registros inválidos não tinha representação acordada entre leitura e
+    produtor.
+  owner: Bruno Nunes
+  rationale: Chave omitida, soma zero e ausência eram todas defensáveis, e os dois lados podiam cumprir
+    seus textos emitindo mapas diferentes — recusando uma competência legitimamente ancorada antes de
+    o juízo comparar. B-2 da fronteira passou a exigir chave PRESENTE com soma ausente; zero inventaria
+    dinheiro que ninguém recebeu.
+- id: OBJ-R15-C4
+  status: FIXED
+  summary: Preservar o tipo monetário não definia como persistir Decimal, que JSON não tem.
+  owner: Bruno Nunes
+  rationale: Converter para string violaria a própria preservação exigida, e o gravador podia falhar justamente
+    ao registrar uma recusa legítima de sNaN. B-1 da evidência passou a gravar um par declarado — tipo
+    recebido e texto exato dos bytes — que distingue Decimal('0.00'), a string '0.00' e o número 0.0.
+- id: OBJ-R15-C5
+  status: FIXED
+  summary: Nada declarava QUEM classifica os defeitos — e a competência tem 11 colapsos reais que a Regra
+    4 manda bloquear sem classificação.
+  owner: Bruno Nunes
+  rationale: 'A objeção que impedia a fábrica de rodar. Sem a entrada, a execução trava com os cinco controles
+    corretos; se o juízo inventasse a classificação, teria tomado decisão de negócio sem autoridade. Decidido
+    com Bruno Nunes — a classificação vem do CONTRATO: os defeitos conhecidos da fonte entram pré-classificados
+    e aprovados junto da âncora, com os 11 colapsos como CONFIRMED_SOURCE_DEFECT, e defeito FORA dessa
+    lista continua bloqueando, que é o comportamento que a Regra 4 exige.'
 contentions: []
 steel_thread_path: seamwise/steel-thread.md
 steel_thread_sha256: ffb28ecb19188999bee9ce19aa55f8f43a0d1e1bd3e01017d7f9ad3a6d47fb7b
-review_authority_sha256: 129fdbb3c9675e0927ce46fea82215d37413151f77cec1fb73707f9fef170e8a
+review_authority_sha256: bf75df3b63b8de910b437109de26a8b043f237036e91d02b87b1bcacdaff490e

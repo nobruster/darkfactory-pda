@@ -13,7 +13,7 @@
     "family": "anthropic"
   },
   "verdict": "REVISE",
-  "prompt_sha256": "fa89a4eb11fcaa3bc4243756847eab18b9aa2b57b040668d1482b32bfc5383db",
+  "prompt_sha256": "315a39dc74ac0a1f22e4b05e180bad1328ceab4d8140d4f79646a7379f2eeada",
   "inputs": [
     {
       "path": "agregacao/LEG-AGREGADO-EXATO.md",
@@ -25,11 +25,11 @@
     },
     {
       "path": "contrato/LEG-CONTRATO-RECUSA-SEM-ANCORA.md",
-      "sha256": "8800307086500abb323b7b74000ad92456b2431636db03a3a5a9c63b0c384f57"
+      "sha256": "4126593bc0d3a6e854cf52606e186b6579acc034cbdc2e4883982af4da676272"
     },
     {
       "path": "contrato/_lane.md",
-      "sha256": "e91ccea46616d26f220868c7f365fcca3b17d9c2e76f3dfd6220ad4935a20bf0"
+      "sha256": "f177e3774a8d38ecd08e2afff850a3731bf30a6195f735ed09618f299b56a33c"
     },
     {
       "path": "evidencia/LEG-EVIDENCIA-RECONSTROI.md",
@@ -41,11 +41,11 @@
     },
     {
       "path": "fronteira/LEG-ENVELOPE-VINCULADO.md",
-      "sha256": "e01633436ae67f25ab88eb0aa5fea0bfbf6b683af8ecf80fcea02fab048f8886"
+      "sha256": "1fdeb44020defe7dea81abf2a5cb8fe20c83ca60169cd9f54fe81a9f7f93c122"
     },
     {
       "path": "fronteira/_lane.md",
-      "sha256": "e5aef2618d69694860a7de40e8cd5e43645891bda7a266ff0225b2372f404adb"
+      "sha256": "63998f8d148d6782f2fef75f21d21b340172983afec6de56d6942389bc2597b7"
     },
     {
       "path": "juizo/LEG-JUIZO-ACUSA.md",
@@ -57,11 +57,11 @@
     },
     {
       "path": "leitura/LEG-LEITURA-POSICIONAL.md",
-      "sha256": "8082ce9813a4fd2918a098cded6c36b2bd690111494200373b7ec7bb4e787a2e"
+      "sha256": "3cd87ce9c2975ef2e7d2a61f3bb4a1ad0538e1f6fd0953497b2ecd8899e35587"
     },
     {
       "path": "leitura/_lane.md",
-      "sha256": "a46ee0b7f5d86f3f4f4289ec5c43f558e9959689d5290ee769c6936da458cc18"
+      "sha256": "49c534dd3b7406e6f2f08cf508a97c42e3048ce4ffe5a0bdcd292b0030f26440"
     },
     {
       "path": "orquestracao/LEG-DESFECHO-COM-PACOTE.md",
@@ -77,127 +77,124 @@
       "id": "C1",
       "severity": "high",
       "rank": 1,
-      "confidence": 0.94,
-      "attack_class": "unverified-assumption",
-      "swimlane": "contrato",
-      "leg": "LEG-CONTRATO-RECUSA-SEM-ANCORA",
+      "attack_class": "drift",
+      "swimlane": "agregacao",
+      "leg": "LEG-AGREGADO-EXATO",
+      "title": "O agregador continua vulner\u00e1vel ao contexto decimal global",
       "location": {
-        "plan_file": "cvg/swimlanes/lanes/contrato/LEG-CONTRATO-RECUSA-SEM-ANCORA.md",
-        "section": "tasks[0].behavior[B-1]; eval_1"
+        "plan_file": "cvg/swimlanes/lanes/agregacao/LEG-AGREGADO-EXATO.md",
+        "section": "tasks[0].behavior B-2; eval_2"
       },
-      "title": "A entrada monet\u00e1ria pelo pr\u00f3prio contrato n\u00e3o tem recusa de float especificada",
-      "body": "O carregador valida pol\u00edtica, precis\u00e3o, hashes e aprova\u00e7\u00e3o, mas n\u00e3o declara a valida\u00e7\u00e3o dos tipos originais dos controles monet\u00e1rios da \u00e2ncora. Um YAML com sum_vl_liquido: 78521752562.12 pode ser carregado como float. Converter esse valor com Decimal(str(v)) apaga sua origem e pode produzir um contrato aparentemente v\u00e1lido; usar Decimal(v) introduz a aproxima\u00e7\u00e3o bin\u00e1ria. As recusas no agregador e no envelope n\u00e3o protegem esta entrada anterior. O plano permite que o pr\u00f3prio referencial viole a proibi\u00e7\u00e3o de float sem que os exemplos de carregamento detectem isso.",
-      "evidence": "B-1 exige que os controles saiam carregados e detalha a recusa de pol\u00edtica contradit\u00f3ria e precis\u00e3o insuficiente; n\u00e3o cont\u00e9m caso de \u00e2ncora monet\u00e1ria recebida como float. A recusa de float est\u00e1 explicitada em outras lanes.",
+      "body": "B-2 exercita precis\u00e3o baixa, modo e granularidade, mas n\u00e3o exige independ\u00eancia de Emax, Emin e traps. A exig\u00eancia de contexto COMPLETO aparece apenas na leitura e protege o mapa de refer\u00eancia, n\u00e3o o agregador. Uma implementa\u00e7\u00e3o que declare prec=14 e HALF_EVEN dentro de localcontext() pode cumprir os testes descritos e falhar sobre entradas leg\u00edtimas quando outra biblioteca alterar o contexto global. Isso transforma uma execu\u00e7\u00e3o v\u00e1lida em ERRO e contradiz a precis\u00e3o nunca herdada.",
+      "evidence": "Prot\u00f3tipo executado: localcontext() com prec=14 e ROUND_HALF_EVEN, herdando Emax=5, levanta Overflow ao somar 78521752562.12; herdando trap Inexact=True, levanta Inexact ao quantizar 2.345 para duas casas. A leitura B-1 j\u00e1 reconhece exatamente esses dois modos de falha.",
       "cites": [
         "cvg/docs/tech-spec/tech-spec-pda-beneficios.md \u00a7 Requirements, R-4",
-        "cvg/docs/adrs/0003-money-rounds-half-to-even-at-two-decimals.md \u00a7 Decision: nenhum valor monet\u00e1rio existe como float",
-        "cvg/docs/adrs/0009-the-derived-precision-assumes-a-monotonic-sum-with-no-negative-values.md \u00a7 Consequences: preserva\u00e7\u00e3o das camadas herdadas"
-      ],
-      "proposal": null
+        "cvg/docs/adrs/0009-the-derived-precision-assumes-a-monotonic-sum-with-no-negative-values.md \u00a7 Consequences",
+        "cvg/swimlanes/lanes/leitura/LEG-LEITURA-POSICIONAL.md \u00a7 behavior B-1"
+      ]
     },
     {
       "id": "C2",
       "severity": "high",
       "rank": 2,
-      "confidence": 0.94,
-      "attack_class": "cross-lane-interface",
-      "swimlane": "leitura",
-      "leg": "LEG-LEITURA-POSICIONAL",
+      "attack_class": "unverified-assumption",
+      "swimlane": "contrato",
+      "leg": "LEG-CONTRATO-RECUSA-SEM-ANCORA",
+      "title": "A valida\u00e7\u00e3o de dom\u00ednio protege o envelope, mas deixa o referencial parcialmente descoberto",
       "location": {
-        "plan_file": "cvg/swimlanes/lanes/leitura/LEG-LEITURA-POSICIONAL.md",
-        "section": "tasks[0].behavior[B-2]"
+        "plan_file": "cvg/swimlanes/lanes/contrato/LEG-CONTRATO-RECUSA-SEM-ANCORA.md",
+        "section": "tasks[0].behavior B-1"
       },
-      "title": "Negativos e excesso de escala n\u00e3o t\u00eam destino inequ\u00edvoco nos controles",
-      "body": "A leitura deve classificar valores negativos e fora de escala sem som\u00e1-los, mas n\u00e3o estabelece se ambos s\u00e3o VALOR_ILEGIVEL, se incrementam linhas_invalidas e se tamb\u00e9m ficam fora dos extremos. A agrega\u00e7\u00e3o conta somente ileg\u00edveis como inv\u00e1lidos; a fronteira confere somente defeitos VALOR_ILEGIVEL. Dois implementadores podem cumprir seus textos e discordar: a leitura exclui um negativo com tipo pr\u00f3prio e incrementa inv\u00e1lidos, enquanto a fronteira exige zero; ou ambos deixam inv\u00e1lidos em zero embora um registro tenha sido exclu\u00eddo. A classifica\u00e7\u00e3o n\u00e3o resolve a defini\u00e7\u00e3o dos cinco controles.",
-      "evidence": "Leitura B-2: 'Valor fora da escala contratada \u00e9 defeito classificado, e valor NEGATIVO tamb\u00e9m'. Agrega\u00e7\u00e3o B-1: 'linhas_invalidas conta s\u00f3 os ileg\u00edveis'. Fronteira, anti_patterns: 'conferir linhas_invalidas s\u00f3 contra defeitos do tipo VALOR_ILEGIVEL'.",
+      "body": "O carregador recusa float monet\u00e1rio e pol\u00edtica contradit\u00f3ria, mas n\u00e3o explicita a recusa de \u00e2ncora monet\u00e1ria textual n\u00e3o finita nem de contagens booleanas ou fracion\u00e1rias. A fronteira protege apenas o envelope. Assim, 'Infinity' ou 'NaN' no total podem alcan\u00e7ar a deriva\u00e7\u00e3o de precis\u00e3o; False em linhas_invalidas e 41572553.0 em count_linhas podem passar por igualdade contra inteiros leg\u00edtimos. O referencial pode provocar exce\u00e7\u00e3o operacional ou ser tratado como contrato validado apesar de conter controles fora do dom\u00ednio.",
+      "evidence": "Prot\u00f3tipo executado: int(Decimal('NaN')) levanta ValueError; int(Decimal('Infinity')) levanta OverflowError. Tamb\u00e9m confirmado: False == 0 e 41572553.0 == 41572553. B-1 exige especificamente recusa de float monet\u00e1rio, enquanto a recusa de n\u00e3o finitos e contagens booleanas est\u00e1 escrita somente na fronteira B-2.",
       "cites": [
-        "cvg/swimlanes/lanes/agregacao/LEG-AGREGADO-EXATO.md \u00a7 behavior B-1",
-        "cvg/swimlanes/lanes/fronteira/LEG-ENVELOPE-VINCULADO.md \u00a7 behavior B-2 e anti_patterns",
-        "cvg/docs/adrs/0009-the-derived-precision-assumes-a-monotonic-sum-with-no-negative-values.md \u00a7 Consequences",
-        "cvg/docs/tech-spec/tech-spec-pda-beneficios.md \u00a7 Requirements, R-5 e R-6"
-      ],
-      "proposal": null
+        "cvg/docs/tech-spec/tech-spec-pda-beneficios.md \u00a7 Requirements, R-1 e R-5",
+        "cvg/docs/adrs/0001-the-2026-01-anchor-is-41572553-rows-summing-78521752562-12.md \u00a7 Decision",
+        "cvg/swimlanes/lanes/fronteira/LEG-ENVELOPE-VINCULADO.md \u00a7 behavior B-2"
+      ]
     },
     {
       "id": "C3",
-      "severity": "high",
+      "severity": "medium",
       "rank": 3,
-      "confidence": 0.98,
-      "attack_class": "unverified-assumption",
-      "swimlane": "agregacao",
-      "leg": "LEG-AGREGADO-EXATO",
+      "attack_class": "cross-lane-interface",
+      "swimlane": "fronteira",
+      "leg": "LEG-ENVELOPE-VINCULADO",
+      "title": "C\u00f3digo presente somente em registros inv\u00e1lidos n\u00e3o tem representa\u00e7\u00e3o acordada",
       "location": {
-        "plan_file": "cvg/swimlanes/lanes/agregacao/LEG-AGREGADO-EXATO.md",
-        "section": "tasks[0].behavior[B-2]; eval_2"
+        "plan_file": "cvg/swimlanes/lanes/fronteira/LEG-ENVELOPE-VINCULADO.md",
+        "section": "tasks[0].behavior B-2: cardinalidade ancorada e mapas por c\u00f3digo"
       },
-      "title": "O teste de precis\u00e3o baixa n\u00e3o prova independ\u00eancia do contexto decimal global",
-      "body": "Precis\u00e3o e arredondamento n\u00e3o s\u00e3o todo o contexto Decimal. Um localcontext() que declara prec=14 e HALF_EVEN ainda herda limites de expoente e traps. Executei dois contraexemplos: com Emax global igual a 5, somar o total ancorado levanta Overflow; com trap Inexact global ativo, quantizar um intermedi\u00e1rio leg\u00edtimo de tr\u00eas casas levanta Inexact. Uma implementa\u00e7\u00e3o passa no teste prescrito de precis\u00e3o baixa e ainda transforma uma execu\u00e7\u00e3o v\u00e1lida em ERRO por altera\u00e7\u00e3o externa do contexto.",
-      "evidence": "Experimento Python executado: contexto externo com Emax=5 ou traps[Inexact]=True; contexto interno com prec=14 e rounding=ROUND_HALF_EVEN; soma Decimal('78521752562.12') + Decimal('0.005') e quantiza\u00e7\u00e3o para 0.01. Resultados: Overflow e Inexact, respectivamente.",
+      "body": "A fronteira exige a cardinalidade de todos os c\u00f3digos da compet\u00eancia e igualdade dos mapas. A leitura exclui valores ileg\u00edveis dos mapas, e a agrega\u00e7\u00e3o prev\u00ea explicitamente o caso sem nenhum registro leg\u00edvel. N\u00e3o est\u00e1 decidido o que o mapa cont\u00e9m quando um c\u00f3digo existe na fonte, mas todos os seus valores s\u00e3o inv\u00e1lidos: chave ausente, soma vazia zero ou aus\u00eancia. Leitura e produtor podem cumprir seus textos e emitir mapas diferentes. Uma compet\u00eancia legitimamente ancorada com esses defeitos pode ser recusada apenas pela representa\u00e7\u00e3o escolhida, antes da compara\u00e7\u00e3o dos cinco controles.",
+      "evidence": "Contraexemplo de interface: dois c\u00f3digos A e B; A tem um valor v\u00e1lido e B apenas VALOR_ILEGIVEL. A cardinalidade da fonte \u00e9 2, mas um mapa constru\u00eddo somente ao somar v\u00e1lidos tem uma chave. O caso extremo com todos os valores inv\u00e1lidos est\u00e1 expressamente autorizado pela agrega\u00e7\u00e3o B-1.",
       "cites": [
-        "cvg/docs/tech-spec/tech-spec-pda-beneficios.md \u00a7 Requirements, R-4",
-        "cvg/docs/adrs/0003-money-rounds-half-to-even-at-two-decimals.md \u00a7 Decision",
-        "cvg/swimlanes/lanes/leitura/LEG-LEITURA-POSICIONAL.md \u00a7 behavior B-1: contexto pr\u00f3prio e contexto global adverso"
-      ],
-      "proposal": null
+        "cvg/docs/tech-spec/tech-spec-pda-beneficios.md \u00a7 Requirements, R-3, R-5 e R-6",
+        "cvg/swimlanes/lanes/leitura/LEG-LEITURA-POSICIONAL.md \u00a7 behavior B-2",
+        "cvg/swimlanes/lanes/agregacao/LEG-AGREGADO-EXATO.md \u00a7 behavior B-1"
+      ]
     },
     {
       "id": "C4",
       "severity": "medium",
       "rank": 4,
-      "confidence": 0.9,
       "attack_class": "cross-lane-interface",
-      "swimlane": "fronteira",
-      "leg": "LEG-ENVELOPE-VINCULADO",
+      "swimlane": "evidencia",
+      "leg": "LEG-EVIDENCIA-RECONSTROI",
+      "title": "Preservar o tipo monet\u00e1rio ainda n\u00e3o define um round-trip de Decimal",
       "location": {
-        "plan_file": "cvg/swimlanes/lanes/fronteira/LEG-ENVELOPE-VINCULADO.md",
-        "section": "tasks[0].behavior[B-2]; done_condition"
+        "plan_file": "cvg/swimlanes/lanes/evidencia/LEG-EVIDENCIA-RECONSTROI.md",
+        "section": "tasks[0].behavior B-1: preserva\u00e7\u00e3o do tipo original"
       },
-      "title": "Os dois controles de contagem permanecem sem dom\u00ednio declarado",
-      "body": "O plano fecha detalhadamente o dom\u00ednio de todo dinheiro, mas n\u00e3o define os tipos aceitos para count_linhas e linhas_invalidas. Compara\u00e7\u00e3o num\u00e9rica em Python considera 41572553.0 igual a 41572553 e False igual a 0. Portanto um envelope pode satisfazer as compara\u00e7\u00f5es dos cinco controles com contagem fracion\u00e1ria representada como float ou booleano usado como contagem zero. A gera\u00e7\u00e3o do schema e a implementa\u00e7\u00e3o do ju\u00edzo podem divergir sobre a validade estrutural desse mesmo envelope. Trata-se de lacuna no contrato j\u00e1 previsto, n\u00e3o de necessidade de novo componente.",
-      "evidence": "B-2 exige recusa antes da convers\u00e3o para TODO campo monet\u00e1rio; para contagens exige coer\u00eancia com defeitos, mas n\u00e3o estabelece inteiro, exclus\u00e3o de booleanos nem limites entre inv\u00e1lidos e lidos.",
+      "body": "A fronteira admite Decimal finito e recusa Decimal n\u00e3o finito; a evid\u00eancia deve preservar o tipo original de ambos para rederivar o resultado. O plano n\u00e3o declara a representa\u00e7\u00e3o persistida que distingue Decimal('0.00') de string '0.00', nem como preserva Decimal('sNaN') recebido e recusado. Serializa\u00e7\u00e3o JSON comum n\u00e3o aceita Decimal, e converter para string viola a preserva\u00e7\u00e3o exigida. Dois implementadores podem escolher representa\u00e7\u00f5es incompat\u00edveis, ou o gravador falhar justamente no registro de uma recusa leg\u00edtima.",
+      "evidence": "O contrato de entrada da fronteira B-2 inclui string ou Decimal e cita explicitamente Decimal n\u00e3o finito. Evid\u00eancia B-1 exige preservar o tipo sem normalizar, mas n\u00e3o declara formato de interc\u00e2mbio nem avalia\u00e7\u00e3o de round-trip desses casos.",
       "cites": [
-        "cvg/docs/tech-spec/tech-spec-pda-beneficios.md \u00a7 Requirements, R-5",
-        "cvg/swimlanes/lanes/juizo/LEG-JUIZO-ACUSA.md \u00a7 behavior B-1",
-        "cvg/swimlanes/lanes/agregacao/LEG-AGREGADO-EXATO.md \u00a7 behavior B-1"
-      ],
-      "proposal": null
+        "cvg/swimlanes/lanes/fronteira/LEG-ENVELOPE-VINCULADO.md \u00a7 behavior B-2",
+        "cvg/swimlanes/lanes/orquestracao/LEG-DESFECHO-COM-PACOTE.md \u00a7 behavior B-2",
+        "cvg/docs/tech-spec/tech-spec-pda-beneficios.md \u00a7 Scope: pacote de evid\u00eancia por execu\u00e7\u00e3o"
+      ]
     },
     {
       "id": "C5",
       "severity": "medium",
       "rank": 5,
-      "confidence": 0.99,
-      "attack_class": "drift",
-      "swimlane": "fronteira",
-      "leg": "LEG-ENVELOPE-VINCULADO",
+      "attack_class": "cross-lane-interface",
+      "swimlane": "juizo",
+      "leg": "LEG-JUIZO-ACUSA",
+      "title": "A execu\u00e7\u00e3o depende de classifica\u00e7\u00f5es cuja origem n\u00e3o foi contratada",
       "location": {
-        "plan_file": "cvg/swimlanes/lanes/fronteira/LEG-ENVELOPE-VINCULADO.md",
-        "section": "tasks[0].behavior[B-2]; anti_patterns[2]"
+        "plan_file": "cvg/swimlanes/lanes/juizo/LEG-JUIZO-ACUSA.md",
+        "section": "requires; tasks[0].behavior B-2"
       },
-      "title": "O exemplo de milh\u00f5es de truncamentos contradiz a unidade vigente do defeito",
-      "body": "A fronteira justifica seu caso aceito afirmando que janeiro tem milh\u00f5es de truncamentos. O ADR 0008 substituiu esse crit\u00e9rio: largura n\u00e3o prova defeito; a unidade \u00e9 a descri\u00e7\u00e3o que cobre v\u00e1rios c\u00f3digos, e h\u00e1 11 desses defeitos na compet\u00eancia. A leitura j\u00e1 promete emitir uma ocorr\u00eancia por descri\u00e7\u00e3o ao fim da varredura. Um teste de fronteira constru\u00eddo literalmente a partir do exemplo de milh\u00f5es de defeitos n\u00e3o pode simultaneamente representar a leitura contratada e passar na igualdade por identidade. A afirma\u00e7\u00e3o antiga deixa duas unidades de defeito concorrentes no mesmo caminho.",
-      "evidence": "Fronteira B-2 e anti_patterns: 'a compet\u00eancia 2026-01 tem linhas_invalidas=0 com milh\u00f5es de truncamentos'. Leitura B-2: 'A unidade do defeito \u00e9 a DESCRI\u00c7\u00c3O, n\u00e3o a ocorr\u00eancia'. ADR 0008 Decision: '11 descri\u00e7\u00f5es cobrem 24 c\u00f3digos distintos'.",
+      "body": "B-2 come\u00e7a com diferen\u00e7as j\u00e1 classificadas e define sua preced\u00eancia, mas os requisitos da lane s\u00e3o apenas envelope e contrato validado. A leitura produz defeitos observados; a fronteira confere sua identidade; nenhum desses contratos declara quem fornece a classifica\u00e7\u00e3o, como ela \u00e9 vinculada \u00e0 identidade ou quem tem autoridade para APPROVED_BEHAVIOR_CHANGE. A compet\u00eancia correta j\u00e1 cont\u00e9m 11 defeitos que precisam dessa entrada. Sem ela, a execu\u00e7\u00e3o real bloqueia apesar dos controles corretos; se o ju\u00edzo inventar classifica\u00e7\u00f5es para alcan\u00e7ar ACEITO, a implementa\u00e7\u00e3o ter\u00e1 tomado uma decis\u00e3o de neg\u00f3cio n\u00e3o contratada. Esta \u00e9 uma pergunta aberta de interface e autoridade, n\u00e3o autoriza\u00e7\u00e3o para acrescentar um fluxo de aprova\u00e7\u00e3o.",
+      "evidence": "Ju\u00edzo B-2 exige exatamente uma classifica\u00e7\u00e3o e permite que CONFIRMED/APPROVED apenas registrem defeitos fora dos controles. Leitura B-2 emite os 11 colapsos; orquestra\u00e7\u00e3o B-1 promete uma execu\u00e7\u00e3o ACEITO. Falta explicitar a entrada que conecta esses dois comportamentos.",
       "cites": [
-        "cvg/docs/adrs/0008-the-description-defect-is-collapsed-identity-not-field-width.md \u00a7 Decision e Consequences",
-        "cvg/swimlanes/lanes/leitura/LEG-LEITURA-POSICIONAL.md \u00a7 behavior B-2",
-        "cvg/docs/tech-spec/tech-spec-pda-beneficios.md \u00a7 Requirements, R-6"
-      ],
-      "proposal": null
+        "cvg/docs/tech-spec/tech-spec-pda-beneficios.md \u00a7 Requirements, R-6",
+        "cvg/docs/adrs/0008-the-description-defect-is-collapsed-identity-not-field-width.md \u00a7 Consequences",
+        "cvg/swimlanes/lanes/orquestracao/LEG-DESFECHO-COM-PACOTE.md \u00a7 behavior B-1"
+      ]
     }
   ],
   "cross_lane_interfaces": [],
   "fork": {
     "choice": "B",
-    "reason": "Transcri\u00e7\u00e3o do FORK j\u00e1 declarado nos sete _lane.md; nenhuma escolha feita pelo advers\u00e1rio.",
+    "reason": "Declara\u00e7\u00e3o existente nos sete arquivos _lane.md; apenas transcrita, n\u00e3o escolhida pelo advers\u00e1rio.",
     "per_plan_declared": true
   },
   "open_questions": [
     {
-      "q": "Qual representa\u00e7\u00e3o de log pr\u00e9-SHARPEN \u00e9 autorizada, dado que o schema exige decis\u00f5es humanas e o advers\u00e1rio est\u00e1 proibido de tom\u00e1-las?",
+      "q": "Qual representa\u00e7\u00e3o dos mapas vale para c\u00f3digos sem nenhum valor monet\u00e1rio v\u00e1lido?",
       "blocks_build": true
     },
     {
-      "q": "Valores negativos e fora de escala pertencem a VALOR_ILEGIVEL e afetam quais controles? A decis\u00e3o precisa eliminar a ambiguidade C2 antes da implementa\u00e7\u00e3o das interfaces.",
+      "q": "Qual representa\u00e7\u00e3o persistida preserva e reconstr\u00f3i os tipos monet\u00e1rios aceitos e recusados?",
+      "blocks_build": true
+    },
+    {
+      "q": "Quem fornece as classifica\u00e7\u00f5es, por qual interface e com qual autoridade para registrar mudan\u00e7as aprovadas?",
+      "blocks_build": true
+    },
+    {
+      "q": "Como registrar o ataque ainda sem decis\u00e3o humana, dado que o schema exige resolution decidida para toda obje\u00e7\u00e3o?",
       "blocks_build": true
     }
   ],

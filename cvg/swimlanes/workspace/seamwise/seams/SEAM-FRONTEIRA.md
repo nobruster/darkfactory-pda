@@ -120,7 +120,11 @@ swimlane:
           e o de referência; com um mapa só, deslocar valores entre códigos seria aprovado por comparação
           consigo mesmo. Os dois mapas trafegam como soma EXATA, não quantizada, e a comparação é exata
           — um código cuja soma é 2,345 chega 2,345 dos dois lados, e quantizar um só faria a fronteira
-          recusar dois lados corretos. A soma global vem dos valores originais, NUNCA dos totais por código
+          recusar dois lados corretos. Um código que existe na fonte com TODOS os valores inválidos aparece
+          nos dois mapas com a chave PRESENTE e soma ausente, nunca com chave omitida nem com zero — zero
+          inventaria dinheiro que ninguém recebeu, e omitir faria leitura e produtor emitirem mapas diferentes
+          cumprindo cada um o seu texto, recusando uma competência legitimamente ancorada antes de o juízo
+          comparar os cinco controles. A soma global vem dos valores originais, NUNCA dos totais por código
           já arredondados, porque arredondar uma vez no total é camada do ADR 0007 herdada do 0003 — dois
           códigos de 2,345 dão 4,69 no total e 4,68 somando grupos arredondados. Um produtor que agrupasse
           por descrição e atribuísse o total ao primeiro código, zerando os demais, manteria todas as
