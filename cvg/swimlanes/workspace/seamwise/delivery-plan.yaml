@@ -1,17 +1,17 @@
 schema_version: 1
 status: DELIVERY_PLAN=READY
-seam_map_sha256: 38a41def0c17cacb5a37be40cb7ee3a783d7b2d8fc24835cf44abcf568586c8b
+seam_map_sha256: 00eef61e1211f0a194c5a1be3231c1ef6b7815ce9e665c701f6f0d40291cf97b
 swimlanes:
 - id: LANE-CONTRATO
   seam_id: SEAM-CONTRATO
   owner: contrato
   path: seamwise/swimlanes/LANE-CONTRATO.md
-  sha256: 3bd0ecfaef895e3df8a8d2bd8f0b82a20fec2d1efc0aab519075bb5f9c6680b0
+  sha256: 1a94a5e83e6daadd4181676246e1e11f68b826cbcfbdb1e006a71aabc9f5b5d3
 - id: LANE-LEITURA
   seam_id: SEAM-LEITURA
   owner: leitura
   path: seamwise/swimlanes/LANE-LEITURA.md
-  sha256: f563fd4ff8ca43f447e8244fc518ed27706f12f672f4cd9337de2ea6ed3de7d2
+  sha256: 8e05522479bab670104136da7b29e2c1c9295bf5280d5b87ccd841aff105c667
 - id: LANE-AGREGACAO
   seam_id: SEAM-AGREGACAO
   owner: agregacao
@@ -36,18 +36,18 @@ swimlanes:
   seam_id: SEAM-FRONTEIRA
   owner: fronteira
   path: seamwise/swimlanes/LANE-FRONTEIRA.md
-  sha256: 1fb0a8b83962f00298e9b3532b188b1a05e6684d8d0d365c61478496719704f4
+  sha256: 9bef716992672e8f54dceea77b98cf9ff3c3f9cc3136a6d80f0f369a3b8abdf2
 legs:
 - id: LEG-CONTRATO-RECUSA-SEM-ANCORA
   seam_id: SEAM-CONTRATO
   swimlane_id: LANE-CONTRATO
   path: seamwise/legs/LEG-CONTRATO-RECUSA-SEM-ANCORA.md
-  sha256: 730dae21c5782660a26e41959181a7d78873601cfcf021c6e24bb07fb2bd868a
+  sha256: 8f54b97a11c8e27985bf35d03a303d5f6cf27dd5659b3bfab4cf763996aa08a1
 - id: LEG-LEITURA-POSICIONAL
   seam_id: SEAM-LEITURA
   swimlane_id: LANE-LEITURA
   path: seamwise/legs/LEG-LEITURA-POSICIONAL.md
-  sha256: c89144e5d4f7670a73929dea5935026f02a95cbce0ec520f7fb9656595424695
+  sha256: e73f52c58af168c1f09991d7df68ea99a607eae33bc292335f359617936f4a52
 - id: LEG-AGREGADO-EXATO
   seam_id: SEAM-AGREGACAO
   swimlane_id: LANE-AGREGACAO
@@ -72,7 +72,7 @@ legs:
   seam_id: SEAM-FRONTEIRA
   swimlane_id: LANE-FRONTEIRA
   path: seamwise/legs/LEG-ENVELOPE-VINCULADO.md
-  sha256: 187058ab15c90f015093e157d5a506fa218b7db079a16723a4057ebc8168409f
+  sha256: d55efa3d605af0e8e37a4a4db93119f5941d017e6e2d0d3f17316d0f378fd4d7
 steel_thread:
 - LEG-CONTRATO-RECUSA-SEM-ANCORA
 - LEG-LEITURA-POSICIONAL
@@ -693,7 +693,76 @@ objections:
     fenômenos reais na média, além de um máximo de 2026-01 três vezes maior que o de fevereiro e março.
     Entrou em out_of_scope como limite conhecido. E a validação cruzada do ADR 0001 foi conferida contra
     contracts/layout.yaml do outro repositório — contagem, total e zip_sha256 batem nos três (XVAL=OK).
+- id: OBJ-R14-C1
+  status: FIXED
+  summary: O próprio contrato podia carregar a âncora como float — as recusas do agregador e do envelope
+    não protegem o referencial.
+  owner: Bruno Nunes
+  rationale: '`sum_vl_liquido: 78521752562.12` sem aspas é float no YAML; Decimal(str(v)) apagaria a origem
+    e Decimal(v) traria a aproximação binária. B-1 do contrato passou a recusar float nos controles da
+    âncora, antes de qualquer conversão.'
+- id: OBJ-R14-C2
+  status: FIXED
+  summary: Minha correção de R13-C3 mandava classificar negativo e fora de escala sem dizer o destino
+    deles nos cinco controles.
+  owner: Bruno Nunes
+  rationale: 'Dois implementadores podiam cumprir seus textos e discordar — a leitura incrementando inválidos
+    com tipo próprio enquanto a fronteira exige zero. B-2 da leitura passou a dar-lhes o MESMO destino
+    do ilegível: tipo VALOR_ILEGIVEL, incrementam linhas_invalidas, fora da soma e dos extremos.'
+- id: OBJ-R14-C3
+  status: FIXED
+  summary: Declarar precisão e arredondamento não isola o contexto decimal — Emax, Emin e traps continuam
+    herdados do global.
+  owner: Bruno Nunes
+  rationale: CONTRAEXEMPLO EXECUTADO e confirmado nos dois eixos — com Emax=5 a soma do total ancorado
+    levanta Overflow; com o trap Inexact ativo, quantizar um intermediário legítimo de três casas levanta
+    Inexact. Execução VÁLIDA vira ERRO por alteração externa do contexto. É o princípio do ADR 0009 aplicado
+    ao contexto inteiro, não só à precisão. B-1 da leitura passou a exigir contexto próprio e COMPLETO,
+    com teste sob global adverso nos três eixos.
+- id: OBJ-R14-C4
+  status: FIXED
+  summary: Os dois controles de contagem não tinham domínio declarado — float e booleano passariam na
+    comparação.
+  owner: Bruno Nunes
+  rationale: Em Python 41572553.0 == 41572553 e False == 0, então um envelope com contagem fracionária
+    ou booleana satisfaria a comparação dos cinco controles enquanto schema e juízo divergiriam sobre
+    sua validade estrutural. B-2 da fronteira passou a contratá-los como inteiros não negativos.
+- id: OBJ-R14-C5
+  status: FIXED
+  summary: Texto obsoleto — "milhões de truncamentos" sobreviveu à troca de critério do ADR 0008 e criava
+    duas unidades de defeito concorrentes.
+  owner: Bruno Nunes
+  rationale: 'O ADR 0008 substituiu largura por identidade colapsada, e a unidade é a DESCRIÇÃO: são 11
+    defeitos na competência, não milhões. Um teste de fronteira construído literalmente do exemplo antigo
+    não poderia representar a leitura contratada e passar na igualdade por identidade. Corrigido em B-2
+    da fronteira e no anti_pattern. Lição — trocar um critério exige varrer o texto inteiro, não só o
+    ponto onde ele foi escrito.'
+- id: OBJ-AG-CERCAS
+  status: FIXED
+  summary: Achado pelo agente fabrica-architect, não pelo adversário — o PDA não tinha .cvg/gate.yaml,
+    e o .claude/settings.json era cópia byte-a-byte da bancada.
+  owner: Bruno Nunes
+  rationale: 'CONFERIDO — o sha256 do settings.json era idêntico ao do template, e .cvg/ não existia.
+    As quatro pastas que a doutrina manda cercar numa fábrica gerada estavam desprotegidas nas DUAS cercas:
+    _raw/ com 12 GB, contracts/, cvg/docs/adrs/ com os 10 ADRs, e evidence/ com a âncora. O próprio settings.json
+    previa o erro e nomeava o remédio, que nunca foi executado. Criado .cvg/gate.yaml com os caminhos
+    REAIS — cvg/docs/adrs, não docs/adrs, que casaria com zero arquivo como na objeção #11 do inss. Acrescentadas
+    20 regras ao settings.json, de 38 para 58. E criado scripts/verificar_cercas.py, testado contra divergência
+    injetada (CERCAS=DIVERGEM, e volta a OK). Ele também acusa cerca que casa com zero arquivo — achou
+    .github/workflows, que não existe aqui. É a Regra 8 valendo — o adversário lê o plano e não confere
+    cerca nenhuma; catorze rodadas não viram isto.'
+- id: OBJ-AG-TECHSPEC
+  status: FIXED
+  summary: Achado pelo agente — o R-3 da tech-spec, um `must`, citava os números que o ADR 0008 mediu
+    e refutou.
+  owner: Bruno Nunes
+  rationale: O requisito dizia "51 códigos colapsam em 40 descrições truncadas em 20 caracteres (ADR 0004)".
+    São 65 e 52, e o critério de largura marcaria toda linha. Implementar R-3 ao pé da letra recusaria
+    o arquivo correto — o mesmo defeito que a rodada 7 achou no plano, sobrevivendo na tech-spec. Decidido
+    com Bruno Nunes corrigir o requisito citando o ADR 0008, e o R-4 passou a citar o 0009 com a precisão
+    derivada e a não-negatividade. Alterar Pass 1 reabre CHECK_TECH_SPEC, mas deixar um `must` com número
+    refutado é pior. O hash da tech-spec mudou e checar_evidencia.py acusou, dando o novo.
 contentions: []
 steel_thread_path: seamwise/steel-thread.md
 steel_thread_sha256: ffb28ecb19188999bee9ce19aa55f8f43a0d1e1bd3e01017d7f9ad3a6d47fb7b
-review_authority_sha256: 4b81a571dbe3aafe97f52b9f845f5ec823345773877deae9db0693907c75fc58
+review_authority_sha256: 66cabaab40f63e701e12ef307650299aed1d92f5f2dd7b80818f0d8c7a5362a5

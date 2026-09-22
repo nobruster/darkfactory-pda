@@ -6,7 +6,7 @@ id: LANE-CONTRATO
 name: Contrato lane
 owner: contrato
 seam_id: SEAM-CONTRATO
-source_seam_sha256: 06125a48c798c59bec368f46135a3cd4a7356f4f70a73cfc79640e33972ffb08
+source_seam_sha256: cc309399112663551dbea55d771518a9bbee2a36a1e304d835ea074a23d6beb9
 legs:
 - LEG-CONTRATO-RECUSA-SEM-ANCORA
 ---

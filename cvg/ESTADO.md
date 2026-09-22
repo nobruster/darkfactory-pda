@@ -9,12 +9,36 @@ Atualizado em 21/09/2026.
 |---|---|---|
 | 0 · Capture | `cvg capture` | 🟢 `CHECK_BRD=PASS` |
 | 1 · Intent | `cvg intent` | 🟢 `CHECK_TECH_SPEC=PASS` |
-| 2 · Structure | `cvg structure` | 🟢 `CHECK_ADR=OK` — 5 ADRs |
-| 3 · Decompose | `seamwise` | ⬜ próximo |
-| 4 · Consensus | `cvg review` | ⬜ 🛑 barreira |
-| 5 · Tasking | `taskspec gate --stamp` | ⬜ |
+| 2 · Structure | `cvg structure` | 🟢 `CHECK_ADR=OK` — 10 ADRs, 4 superseded |
+| 3 · Decompose | `seamwise` | 🟢 `TASK_GRAPH=READY` — 7 costuras |
+| 4 · Consensus | `cvg review` | 🟡 **em curso** — 14 rodadas |
+| 5 · Tasking | `taskspec gate --stamp` | ⬜ 🛑 Barreira D |
 | 7 · Bind | `cvg bind` | ⬜ |
 | 8 · Loop | `cvg loop` | ⬜ |
+
+⚠️ **O Pass 4 fecha por decisão, não por zerar objeções.** O gate exige que o
+texto revisado seja o texto selado — corrigir depois da review move os hashes
+e pede nova review. A saída é rodar uma review e **decidir sem editar**:
+`--fix` para o já corrigido, `--accept --owner <nome> --risk <por quê>` para o
+resto.
+
+### O que as rodadas acharam
+
+Quatro gates que **recusariam o arquivo correto**, cada um por um número que
+foi declarado sem medir:
+
+| Estava escrito | A fonte diz |
+|---|---|
+| 51 códigos | **65** |
+| precisão 13 | **14** |
+| gramática de ponto decimal | **vírgula** — `'        1.621,00'` |
+| truncamento = 20 caracteres brutos | **todas** as linhas têm 20 |
+
+E um defeito no mundo, não no texto: o CSV estava `0644`, violando W-1
+(`chmod 444`), com o teste de hash antes/depois passando assim mesmo.
+
+⚠️ **Despache os agentes junto com o adversário.** Ele lê o plano; não abre o
+dado nem confere `ls -l`. Ver Regra 8 no `AGENTS.md` do template.
 
 ## A âncora — medida, não declarada
 
@@ -52,15 +76,26 @@ Agrupar por descrição somaria quatro espécies numa linha só — **e o total
 continuaria batendo**. É o modo de falha que esta fábrica existe para
 impedir.
 
-## Os 5 ADRs
+## Os 10 ADRs
+
+Seis vigentes. Quatro superseded — e **revisão de ADR se faz com ADR novo**,
+nunca editando o antigo: o motivo da mudança é a parte que importa.
 
 | # | Decisão |
 |---|---|
 | [0000](docs/adrs/0000-context.md) | terreno brownfield; o script atual é evidência, não especificação |
-| [0001](docs/adrs/0001-the-2026-01-anchor-is-41572553-rows-summing-78521752562-12.md) | a âncora de 2026-01, medida na origem |
+| [0001](docs/adrs/0001-the-2026-01-anchor-is-41572553-rows-summing-78521752562-12.md) | a âncora de 2026-01, medida na origem e validada contra o `darkfactory-inss` |
 | [0002](docs/adrs/0002-especie-appears-twice-so-columns-are-read-by-position.md) | leitura posicional, nunca por nome |
-| [0003](docs/adrs/0003-money-rounds-half-to-even-at-two-decimals.md) | precisão declarada → arredonda no total → meio-para-par |
-| [0004](docs/adrs/0004-column-13-is-a-truncated-description-not-a-second-code.md) | a chave é o código; agrupar por descrição é proibido |
+| [0006](docs/adrs/0006-the-judge-ships-before-the-spark-producer-that-it-will-judge.md) | juízo e produtor Spark são entregáveis separáveis |
+| [0008](docs/adrs/0008-the-description-defect-is-collapsed-identity-not-field-width.md) | o defeito da descrição é identidade colapsada, não largura |
+| [0009](docs/adrs/0009-the-derived-precision-assumes-a-monotonic-sum-with-no-negative-values.md) | a precisão derivada assume soma monotônica; negativo é defeito |
+
+| superseded | por | porque |
+|---|---|---|
+| 0003 | 0007 → 0009 | a conta dos dígitos estava errada; 11 inteiros, não 12 |
+| 0004 | 0008 | o critério de largura marcaria **toda** linha |
+| 0005 | 0006 | prendia a infra Spark ao mesmo plano |
+| 0007 | 0009 | a fórmula tinha premissa tácita de não-negatividade |
 
 ## O que o script atual faz de errado
 

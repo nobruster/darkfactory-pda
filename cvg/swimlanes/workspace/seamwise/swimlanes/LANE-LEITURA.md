@@ -6,7 +6,7 @@ id: LANE-LEITURA
 name: Leitura lane
 owner: leitura
 seam_id: SEAM-LEITURA
-source_seam_sha256: 57e04003c08d9f6b9c217c68ace450a810363ddd0f79bb786c593aafc55e998c
+source_seam_sha256: 933575b842cf9a432c8b2264add7b98e465b423b498c02afc23bd24164ccff52
 legs:
 - LEG-LEITURA-POSICIONAL
 ---

@@ -1,0 +1,66 @@
+# Cerca de escrita — Fábrica PDA Benefícios Emitidos
+#
+# Task-Specs estreitam autoridade. Esta política é o TETO PERMANENTE,
+# que nenhuma tarefa pode alargar. A autoridade só desce, nunca sobe.
+#
+# ⚠ Esta cerca precisa CONCORDAR com .claude/settings.json. Duas cercas que
+# discordam são uma cerca com buraco, e ninguém sabe qual metade vale.
+# Quem confere: scripts/verificar_cercas.py
+#
+# Base: Converge 0.2.0 + os caminhos REAIS deste projeto.
+version: 2
+
+protected_paths:
+  # ── genéricos (vieram do Converge) ───────────────────────────
+  - "**/.git/**"
+  - "**/.cvg/**"
+  - "**/.env"
+  - "**/.env.*"
+  - "**/secrets/**"
+  - "**/credentials/**"
+  - "**/*_key*"
+  - "**/*_secret*"
+  - "**/id_rsa*"
+  - ".cvg/gate.yaml"            # protege a si mesmo
+  - ".github/workflows/**"      # senão o CI seria desligado para "passar"
+
+  # ── deste projeto ────────────────────────────────────────────
+  # ⚠ Os ADRs do PDA vivem em cvg/docs/adrs/, NÃO em docs/adrs/ — copiar o
+  # padrão do darkfactory-inss casaria com ZERO arquivos, que é o mesmo
+  # defeito da objeção #11 de lá: cerca que existe no papel e não protege.
+  - "_raw/**"                   # a fonte: 12,2 GB, chmod 444, sha256
+  - "contracts/**"              # o juiz desta fábrica
+  - "cvg/docs/adrs/**"          # 10 decisões vinculantes, 4 superseded
+  - "cvg/docs/tech-spec/**"     # os requisitos que os ADRs aterram
+  - "evidence/**"               # _ancora.json e os pacotes por execução
+  - "scripts/medir_*.py"        # quem produz a âncora não pode ser editado
+                                # para um gate passar
+
+max_changed_files: 12
+
+# ─────────────────────────────────────────────────────────────
+# POR QUE cada bloco do projeto existe
+# ─────────────────────────────────────────────────────────────
+# _raw/       Reescrever a fonte apagaria a evidência do defeito. E os bytes
+#             são imutáveis por W-1: chmod 444 + sha256 verificável.
+#             Confere: scripts/checar_w1.py
+#
+# contracts/  Ajustar a expectativa para um teste passar é trapaça, não
+#             correção. Se o número mudou, alguém do negócio re-aprova.
+#
+# cvg/docs/adrs/     Revisão de ADR se faz com ADR NOVO. Um ADR corrigido em
+#             silêncio apaga o registro de que a decisão mudou — e o motivo
+#             da mudança é a parte que importa. Quatro já foram superseded
+#             aqui: 0003→0007→0009, 0004→0008, 0005→0006.
+#
+# cvg/docs/tech-spec/  Os requisitos numerados. Um `must` editado para o
+#             plano passar inverte a direção: o plano obedece ao requisito,
+#             nunca o contrário.
+#
+# evidence/   _ancora.json é o oráculo — 41.572.553 linhas somando
+#             78.521.752.562,12, validado contra o darkfactory-inss.
+#             Um agente que edita a âncora faz o gate comparar contra nada.
+#
+# scripts/medir_*.py  Quem MEDE a âncora não pode ser editado por quem é
+#             julgado por ela. É a mesma doutrina do ADR 0005: o juiz não
+#             usa o motor que julga.

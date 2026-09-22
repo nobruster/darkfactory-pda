@@ -11,7 +11,7 @@ intent:
   source:
     uri: cvg/docs/tech-spec/tech-spec-pda-beneficios.md
     captured_at: "2026-09-21T00:00:00Z"
-    sha256: "94a7379f89cc795d8a355774626fc3984f116272b4184278ed9ab50750998573"
+    sha256: "e619ead9d343282533110bc8cb8f1203614d8e733565b21e3157df2b8f157b88"
   success:
     - Sem âncora medida o veredito não autoriza publicar.
     - Os cinco controles são comparados individualmente.
@@ -154,7 +154,7 @@ seams:
                 - id: B-1
                   given: um contrato com os cinco controles nomeados, a procedência, o layout posicional e os DOIS hashes — o do ZIP publicado e o do CSV extraído sobre o qual a âncora foi medida
                   when: o contrato é carregado
-                  then: âncora, procedência, layout, os dois hashes, a CARDINALIDADE de códigos medida na competência inteira — 65 nesta, não os 51 amostrados pelo ADR 0004 — a CONTAGEM MEDIDA DE COLAPSOS que o ADR 0008 exige junto dela, 11 descrições cobrindo 24 códigos, e a POLÍTICA DECIMAL com escala e não-negatividade saem juntas — precisão, granularidade e modo de arredondamento são dados carregados do contrato, como o ADR 0003 exige, não escolha privada de quem implementa. Contrato SEM política decimal é NAO_MEDIDO, senão o agregador local fixa a sua, passa nos exemplos, e um produtor externo escolhe outra sem nada acusar. E contrato COM política que contradiz o ADR — HALF_UP, ou granularidade por campo — é RECUSADO no carregamento, não validado, porque um contrato contraditório deixaria o agregador entre obedecer ao contrato e obedecer à decisão vinculante; a validação confere a política contra o ADR, e nunca o contrário. A precisão é conferida por SUFICIÊNCIA e é DERIVADA, como manda o ADR 0009 — dígitos inteiros da âncora mais a escala máxima declarada para os intermediários, 11 + 3 = 14 nesta competência, sob a premissa DECLARADA de soma monotônica; o contrato declara a escala e a NÃO-NEGATIVIDADE do domínio, medidas na fonte, em vez de assumir um padrão, porque um acumulador que exceda o total quebraria a fórmula e 14 perderia o centavo. A escala declarada é verificada por QUEM RECEBE O VALOR, não pelo carregador, que roda antes da leitura e não vê registro nenhum — a leitura confere cada valor da fonte, e a fronteira confere cada monetário do envelope externo, ambos contra a escala do contrato; um valor que a exceda é defeito classificado, nunca somado em silêncio. Escala finita não é escala menor ou igual a 3, e sem essa verificação na etapa consumidora a precisão validada perderia informação durante a soma e ainda devolveria o mesmo total global arredondado, com os mapas por código errados. Precisão 6 com HALF_EVEN e arredondamento final satisfaz presença, modo e granularidade e devolve 7.85218E+10 no lugar de 78.521.752.562,12; prec=13 representa o total e ainda assim perde o centavo ao SOMAR 78521752562,12 + 0,005 + 0,005, porque a perda acontece durante a soma e não na quantização. Contrato com precisão insuficiente é RECUSADO no carregamento, não descoberto durante a agregação. Falta o hash do CSV e também é NAO_MEDIDO, porque hoje só o ZIP tem checksum e a âncora foi medida no CSV — sem o par, trocar o CSV extraído não seria detectado; sem aprovador ou sem data, idem
+                  then: os controles monetários da ÂNCORA são recusados se vierem como float no YAML — um sum_vl_liquido sem aspas é float, e Decimal(str(v)) apagaria a origem enquanto Decimal(v) traria a aproximação binária; a recusa é do carregamento, antes de qualquer conversão, porque as recusas do agregador e do envelope não protegem o próprio referencial. Âncora, procedência, layout, os dois hashes, a CARDINALIDADE de códigos medida na competência inteira — 65 nesta, não os 51 amostrados pelo ADR 0004 — a CONTAGEM MEDIDA DE COLAPSOS que o ADR 0008 exige junto dela, 11 descrições cobrindo 24 códigos, e a POLÍTICA DECIMAL com escala e não-negatividade saem juntas — precisão, granularidade e modo de arredondamento são dados carregados do contrato, como o ADR 0003 exige, não escolha privada de quem implementa. Contrato SEM política decimal é NAO_MEDIDO, senão o agregador local fixa a sua, passa nos exemplos, e um produtor externo escolhe outra sem nada acusar. E contrato COM política que contradiz o ADR — HALF_UP, ou granularidade por campo — é RECUSADO no carregamento, não validado, porque um contrato contraditório deixaria o agregador entre obedecer ao contrato e obedecer à decisão vinculante; a validação confere a política contra o ADR, e nunca o contrário. A precisão é conferida por SUFICIÊNCIA e é DERIVADA, como manda o ADR 0009 — dígitos inteiros da âncora mais a escala máxima declarada para os intermediários, 11 + 3 = 14 nesta competência, sob a premissa DECLARADA de soma monotônica; o contrato declara a escala e a NÃO-NEGATIVIDADE do domínio, medidas na fonte, em vez de assumir um padrão, porque um acumulador que exceda o total quebraria a fórmula e 14 perderia o centavo. A escala declarada é verificada por QUEM RECEBE O VALOR, não pelo carregador, que roda antes da leitura e não vê registro nenhum — a leitura confere cada valor da fonte, e a fronteira confere cada monetário do envelope externo, ambos contra a escala do contrato; um valor que a exceda é defeito classificado, nunca somado em silêncio. Escala finita não é escala menor ou igual a 3, e sem essa verificação na etapa consumidora a precisão validada perderia informação durante a soma e ainda devolveria o mesmo total global arredondado, com os mapas por código errados. Precisão 6 com HALF_EVEN e arredondamento final satisfaz presença, modo e granularidade e devolve 7.85218E+10 no lugar de 78.521.752.562,12; prec=13 representa o total e ainda assim perde o centavo ao SOMAR 78521752562,12 + 0,005 + 0,005, porque a perda acontece durante a soma e não na quantização. Contrato com precisão insuficiente é RECUSADO no carregamento, não descoberto durante a agregação. Falta o hash do CSV e também é NAO_MEDIDO, porque hoje só o ZIP tem checksum e a âncora foi medida no CSV — sem o par, trocar o CSV extraído não seria detectado; sem aprovador ou sem data, idem
                 - id: B-2
                   given: uma competência sem âncora no contrato
                   when: o contrato é carregado
@@ -237,11 +237,11 @@ seams:
                 - id: B-1
                   given: um arquivo com Espécie repetida e o layout declarado, e outro em que as DUAS colunas de cabeçalho idêntico Espécie — índices 12 e 13 — tiveram os valores trocados entre si, deixando o cabeçalho byte a byte igual
                   when: a leitura começa
-                  then: no primeiro o sha256 fica idêntico E a proteção de escrita é conferida antes de ler — W-1 exige chmod 444 nos bytes de origem, e hash antes/depois não prova proteção, porque um arquivo em 0666 passa nesse teste quando ninguém escreve durante ele; a leitura recusa começar se _raw não estiver protegido. Código e descrição vêm dos índices 12 e 13; os totais por código que a leitura produz são somados em contexto decimal PRÓPRIO, com a precisão derivada do contrato, e o teste força um contexto global adverso e exige exatidão mesmo assim — a proteção escrita para a agregação não alcança a leitura, e uma referência corrompida faria a fronteira recusar um produtor correto com os testes da leitura verdes. No segundo a leitura BLOQUEIA, e o gate NÃO pode ser conferência de cabeçalho — cabeçalho idêntico não distingue as duas — e sim o formato de cada posição, MEDIDO nas 41.572.553 linhas — o índice 12 é sempre só dígitos, largura 2 após strip, alinhado à direita, e o 13 é sempre textual, alinhado à esquerda, sem uma única linha em que os dois sejam indistinguíveis; o teste falha se for satisfeito trocando colunas de nomes diferentes, porque é esta troca, de nomes iguais, que motivou o ADR 0002 e que os cinco controles preservam
+                  then: no primeiro o sha256 fica idêntico E a proteção de escrita é conferida antes de ler — W-1 exige chmod 444 nos bytes de origem, e hash antes/depois não prova proteção, porque um arquivo em 0666 passa nesse teste quando ninguém escreve durante ele; a leitura recusa começar se _raw não estiver protegido. Código e descrição vêm dos índices 12 e 13; os totais por código que a leitura produz são somados em contexto decimal PRÓPRIO e COMPLETO — precisão derivada, arredondamento, Emax, Emin e traps, todos declarados, porque localcontext() herda do global tudo que não for dito — com Emax=5 a soma do total ancorado levanta Overflow, e com o trap Inexact ativo quantizar um intermediário legítimo de três casas levanta Inexact, transformando execução VÁLIDA em ERRO por alteração externa. O teste força um contexto global adverso nos três eixos e exige exatidão mesmo assim — a proteção escrita para a agregação não alcança a leitura, e uma referência corrompida faria a fronteira recusar um produtor correto com os testes da leitura verdes. No segundo a leitura BLOQUEIA, e o gate NÃO pode ser conferência de cabeçalho — cabeçalho idêntico não distingue as duas — e sim o formato de cada posição, MEDIDO nas 41.572.553 linhas — o índice 12 é sempre só dígitos, largura 2 após strip, alinhado à direita, e o 13 é sempre textual, alinhado à esquerda, sem uma única linha em que os dois sejam indistinguíveis; o teste falha se for satisfeito trocando colunas de nomes diferentes, porque é esta troca, de nomes iguais, que motivou o ADR 0002 e que os cinco controles preservam
                 - id: B-2
                   given: um registro cujo campo monetário é ilegível, os valores 'NaN', 'Infinity', '1_000' e '1e3', e os quatro exemplos do ADR 0004 — entre eles 'Pensão por Morte de ' com 20 caracteres brutos e 19 após strip
                   when: os registros são contados
-                  then: o primeiro entra em linhas_invalidas com identidade, valor original e posição. Os quatro valores especiais TAMBÉM entram como inválidos, porque legível é o que casa a gramática monetária MEDIDA NA FONTE, e não o que Decimal() aceita. A fonte publica no formato brasileiro com preenchimento à esquerda — '        1.621,00', ponto de milhar e vírgula decimal, escala 2 nas 41.572.553 linhas, zero recusas — de modo que Decimal(bruto) RECUSA toda linha legítima e a normalização é parte da gramática, não um passo implícito — retira o preenchimento, exige o padrão e só então converte. E cada valor convertido é conferido contra a ESCALA CARREGADA do contrato, não contra duas casas fixas, antes de entrar nos mapas de referência — é a verificação que o carregador delega a quem recebe o valor; fixar duas casas recusaria uma fonte futura com escala maior legitimamente declarada, e não conferir deixaria um contrato de escala 1 aceitar '1,23' com a precisão validada para outro domínio. Valor fora da escala contratada é defeito classificado, e valor NEGATIVO também, porque o ADR 0009 derivou a precisão sob soma monotônica. Uma gramática de ponto decimal recusaria a competência inteira — os quatro passam pelo construtor, e um NaN chegaria vivo aos extremos, onde min levanta InvalidOperation e transformaria defeito de UMA linha em ERRO da execução inteira. E a descrição emite defeito de IDENTIDADE COLAPSADA, sem tornar a linha inválida, quando cobre mais de um código — critério do ADR 0008, medido na competência inteira — 11 descrições cobrem 24 códigos, entre elas 'Pensão por Morte de ' fundindo 01, 03, 23 e 59. A unidade do defeito é a DESCRIÇÃO, não a ocorrência, ele só é emitido ao fim da varredura, porque colapso é propriedade do conjunto, e a contagem observada é conferida contra a CONTAGEM MEDIDA que o contrato carrega — senão a leitura poderia omitir um colapso, o envelope local reproduzir a mesma lista, e a comparação por identidade concordar com cardinalidade, mapas e controles todos corretos — um leitor incremental que emitisse a partir do segundo código deixaria sem registro todas as ocorrências anteriores, e a fronteira concordaria com a lista incompleta por ter a própria leitura como referência. Largura NÃO é critério — as 41.572.553 descrições têm 20 caracteres brutos, então bruto==20 acusaria toda linha, e strip==20 deixaria de fora justamente esse colapso de quatro códigos, cujo strip é 19
+                  then: o primeiro entra em linhas_invalidas com identidade, valor original e posição. Os quatro valores especiais TAMBÉM entram como inválidos, porque legível é o que casa a gramática monetária MEDIDA NA FONTE, e não o que Decimal() aceita. A fonte publica no formato brasileiro com preenchimento à esquerda — '        1.621,00', ponto de milhar e vírgula decimal, escala 2 nas 41.572.553 linhas, zero recusas — de modo que Decimal(bruto) RECUSA toda linha legítima e a normalização é parte da gramática, não um passo implícito — retira o preenchimento, exige o padrão e só então converte. E cada valor convertido é conferido contra a ESCALA CARREGADA do contrato, não contra duas casas fixas, antes de entrar nos mapas de referência — é a verificação que o carregador delega a quem recebe o valor; fixar duas casas recusaria uma fonte futura com escala maior legitimamente declarada, e não conferir deixaria um contrato de escala 1 aceitar '1,23' com a precisão validada para outro domínio. Valor fora da escala contratada é defeito classificado, e valor NEGATIVO também, porque o ADR 0009 derivou a precisão sob soma monotônica — e os dois têm o MESMO destino que o ilegível — tipo VALOR_ILEGIVEL, incrementam linhas_invalidas, ficam fora da soma e fora dos extremos. Um destino só, porque a fronteira confere linhas_invalidas contra defeitos do tipo VALOR_ILEGIVEL, e dar-lhes tipo próprio faria a leitura incrementar inválidos enquanto a fronteira exige zero — dois implementadores cumprindo seus textos e discordando. Uma gramática de ponto decimal recusaria a competência inteira — os quatro passam pelo construtor, e um NaN chegaria vivo aos extremos, onde min levanta InvalidOperation e transformaria defeito de UMA linha em ERRO da execução inteira. E a descrição emite defeito de IDENTIDADE COLAPSADA, sem tornar a linha inválida, quando cobre mais de um código — critério do ADR 0008, medido na competência inteira — 11 descrições cobrem 24 códigos, entre elas 'Pensão por Morte de ' fundindo 01, 03, 23 e 59. A unidade do defeito é a DESCRIÇÃO, não a ocorrência, ele só é emitido ao fim da varredura, porque colapso é propriedade do conjunto, e a contagem observada é conferida contra a CONTAGEM MEDIDA que o contrato carrega — senão a leitura poderia omitir um colapso, o envelope local reproduzir a mesma lista, e a comparação por identidade concordar com cardinalidade, mapas e controles todos corretos — um leitor incremental que emitisse a partir do segundo código deixaria sem registro todas as ocorrências anteriores, e a fronteira concordaria com a lista incompleta por ter a própria leitura como referência. Largura NÃO é critério — as 41.572.553 descrições têm 20 caracteres brutos, então bruto==20 acusaria toda linha, e strip==20 deixaria de fora justamente esse colapso de quatro códigos, cujo strip é 19
               evals:
                 - id: eval_1
                   description: Leitura posicional; _raw sem 444 bloqueia; Espécie 12 e 13 trocadas bloqueiam
@@ -669,7 +669,7 @@ seams:
                 - id: B-2
                   given: um envelope onde linhas_invalidas diverge dos defeitos do tipo VALOR_ILEGIVEL, outro com linhas_invalidas=0 e defeitos de truncamento, outro produzido por motor que não é o juiz, outro cujos três controles monetários vêm como número JSON, e outro que OMITE truncamentos que a leitura observou
                   when: o envelope é validado
-                  then: o primeiro é recusado; o segundo é ACEITO — truncamento é defeito numa linha válida, e a competência 2026-01 tem linhas_invalidas=0 com milhões de truncamentos; o terceiro é aceito sem que o juiz importe nada do motor produtor. O quarto é RECUSADO na fronteira, antes de qualquer conversão — TODO campo monetário do envelope é contratado como string ou Decimal FINITO, NÃO NEGATIVO e dentro da escala do contrato — 'NaN', 'sNaN', 'Infinity' e Decimal não finito satisfazem o tipo e são RECUSADOS pelo domínio, e '-0.01' também, porque a não-negatividade do ADR 0009 vale para o produtor externo e carregá-la no contrato não demonstra que a fronteira a aplica; recusar alguns negativos por divergência numérica depois não cobre a classificação do domínio. O valor original fica preservado na evidência, porque a gramática brasileira roda sobre o CSV e não alcança produtor externo; a recusa é do envelope, nunca uma InvalidOperation levantada ao comparar. Há UMA representação de ausência declarada no schema, o literal JSON null, para o caso em que nenhum registro é legível e min e max não têm valor; campo omitido ou marcador textual é recusado, senão o caso que a agregação prevê morreria na validação antes de o juízo comparar, os três controles globais e também cada total por código, porque R-4 e o ADR 0003 valem para todo dinheiro e não só para os três; um envelope com controles em string e totais por espécie como número JSON satisfaria uma recusa escrita só para os três. Converter com Decimal(str(v)) apagaria a prova de que veio float, então a recusa do agregador local não cobre produtor externo. O quinto é RECUSADO por omissão — e a conferência é POR IDENTIDADE de cada defeito, a que a leitura produz com valor original e posição, não por contagem e tipo — dois defeitos A e B do mesmo tipo, com A duplicado e B omitido, preservam contagem e tipo, cada entrada declarada recebe sua classificação única, e B nunca é classificado, violando R-6 com juízo e rederivação concordando entre si. Conferir por contagem deixaria a substituição passar, e só a omissão seria vista. E o envelope declara o agregado POR CÓDIGO de espécie, com as chaves conferidas contra a cardinalidade ANCORADA no contrato — medida na competência inteira, nunca os 51 do ADR 0004, que saíram de ~3 milhões de linhas; exigir 51 recusaria esta competência, que tem 65 códigos, entre eles o '60' com 1.395 ocorrências em 41,5 milhões. E cada total por código do envelope é CONFERIDO contra os totais por código DA LEITURA, capacidade própria que a leitura produz e a fronteira exige — dois valores de origens distintas, o declarado pelo produtor e o de referência; com um mapa só, deslocar valores entre códigos seria aprovado por comparação consigo mesmo. Os dois mapas trafegam como soma EXATA, não quantizada, e a comparação é exata — um código cuja soma é 2,345 chega 2,345 dos dois lados, e quantizar um só faria a fronteira recusar dois lados corretos. A soma global vem dos valores originais, NUNCA dos totais por código já arredondados, porque arredondar uma vez no total é camada do ADR 0007 herdada do 0003 — dois códigos de 2,345 dão 4,69 no total e 4,68 somando grupos arredondados. Um produtor que agrupasse por descrição e atribuísse o total ao primeiro código, zerando os demais, manteria todas as chaves, os cinco controles, hashes e defeitos idênticos, e só a comparação por valor o pega; R-3 prova-se por valor, não por forma, e a referência não vem do agregador julgado, pelo mesmo motivo do ADR 0005
+                  then: o primeiro é recusado; o segundo é ACEITO — identidade colapsada é defeito numa linha VÁLIDA, e a competência 2026-01 tem linhas_invalidas=0 com os 11 defeitos de colapso que o ADR 0008 contratou, um por descrição, não um por ocorrência; os dois controles de CONTAGEM são inteiros não negativos, recusando float e booleano, porque em Python 41572553.0 == 41572553 e False == 0, e um envelope com contagem fracionária ou booleana satisfaria a comparação dos cinco controles; o terceiro é aceito sem que o juiz importe nada do motor produtor. O quarto é RECUSADO na fronteira, antes de qualquer conversão — TODO campo monetário do envelope é contratado como string ou Decimal FINITO, NÃO NEGATIVO e dentro da escala do contrato — 'NaN', 'sNaN', 'Infinity' e Decimal não finito satisfazem o tipo e são RECUSADOS pelo domínio, e '-0.01' também, porque a não-negatividade do ADR 0009 vale para o produtor externo e carregá-la no contrato não demonstra que a fronteira a aplica; recusar alguns negativos por divergência numérica depois não cobre a classificação do domínio. O valor original fica preservado na evidência, porque a gramática brasileira roda sobre o CSV e não alcança produtor externo; a recusa é do envelope, nunca uma InvalidOperation levantada ao comparar. Há UMA representação de ausência declarada no schema, o literal JSON null, para o caso em que nenhum registro é legível e min e max não têm valor; campo omitido ou marcador textual é recusado, senão o caso que a agregação prevê morreria na validação antes de o juízo comparar, os três controles globais e também cada total por código, porque R-4 e o ADR 0003 valem para todo dinheiro e não só para os três; um envelope com controles em string e totais por espécie como número JSON satisfaria uma recusa escrita só para os três. Converter com Decimal(str(v)) apagaria a prova de que veio float, então a recusa do agregador local não cobre produtor externo. O quinto é RECUSADO por omissão — e a conferência é POR IDENTIDADE de cada defeito, a que a leitura produz com valor original e posição, não por contagem e tipo — dois defeitos A e B do mesmo tipo, com A duplicado e B omitido, preservam contagem e tipo, cada entrada declarada recebe sua classificação única, e B nunca é classificado, violando R-6 com juízo e rederivação concordando entre si. Conferir por contagem deixaria a substituição passar, e só a omissão seria vista. E o envelope declara o agregado POR CÓDIGO de espécie, com as chaves conferidas contra a cardinalidade ANCORADA no contrato — medida na competência inteira, nunca os 51 do ADR 0004, que saíram de ~3 milhões de linhas; exigir 51 recusaria esta competência, que tem 65 códigos, entre eles o '60' com 1.395 ocorrências em 41,5 milhões. E cada total por código do envelope é CONFERIDO contra os totais por código DA LEITURA, capacidade própria que a leitura produz e a fronteira exige — dois valores de origens distintas, o declarado pelo produtor e o de referência; com um mapa só, deslocar valores entre códigos seria aprovado por comparação consigo mesmo. Os dois mapas trafegam como soma EXATA, não quantizada, e a comparação é exata — um código cuja soma é 2,345 chega 2,345 dos dois lados, e quantizar um só faria a fronteira recusar dois lados corretos. A soma global vem dos valores originais, NUNCA dos totais por código já arredondados, porque arredondar uma vez no total é camada do ADR 0007 herdada do 0003 — dois códigos de 2,345 dão 4,69 no total e 4,68 somando grupos arredondados. Um produtor que agrupasse por descrição e atribuísse o total ao primeiro código, zerando os demais, manteria todas as chaves, os cinco controles, hashes e defeitos idênticos, e só a comparação por valor o pega; R-3 prova-se por valor, não por forma, e a referência não vem do agregador julgado, pelo mesmo motivo do ADR 0005
               evals:
                 - id: eval_1
                   description: Sha ausente, divergente, ou copiado de outro arquivo lido é recusado
@@ -691,7 +691,7 @@ seams:
                   reason: o juiz voltaria a depender de quem ele julga
                   instead: validar o envelope como dado, seja qual for a origem
                 - action: somar todo defeito em linhas_invalidas
-                  reason: truncamento é defeito numa linha VÁLIDA; a competência 2026-01 tem linhas_invalidas=0 com milhões de truncamentos, e a regra recusaria o dado correto
+                  reason: identidade colapsada é defeito numa linha VÁLIDA; a competência 2026-01 tem linhas_invalidas=0 com os 11 colapsos do ADR 0008, e a regra recusaria o dado correto
                   instead: conferir linhas_invalidas só contra defeitos do tipo VALOR_ILEGIVEL
               do_not_touch: [_raw, cvg/docs/adrs]
               rollback: Remover o validador de envelope e seus testes.
@@ -1577,4 +1577,104 @@ objections:
       validação cruzada do ADR 0001 foi conferida contra
       contracts/layout.yaml do outro repositório — contagem, total e
       zip_sha256 batem nos três (XVAL=OK).
+  - id: OBJ-R14-C1
+    status: FIXED
+    summary: >-
+      O próprio contrato podia carregar a âncora como float — as recusas do
+      agregador e do envelope não protegem o referencial.
+    owner: Bruno Nunes
+    rationale: >-
+      `sum_vl_liquido: 78521752562.12` sem aspas é float no YAML;
+      Decimal(str(v)) apagaria a origem e Decimal(v) traria a aproximação
+      binária. B-1 do contrato passou a recusar float nos controles da
+      âncora, antes de qualquer conversão.
+  - id: OBJ-R14-C2
+    status: FIXED
+    summary: >-
+      Minha correção de R13-C3 mandava classificar negativo e fora de escala
+      sem dizer o destino deles nos cinco controles.
+    owner: Bruno Nunes
+    rationale: >-
+      Dois implementadores podiam cumprir seus textos e discordar — a
+      leitura incrementando inválidos com tipo próprio enquanto a fronteira
+      exige zero. B-2 da leitura passou a dar-lhes o MESMO destino do
+      ilegível: tipo VALOR_ILEGIVEL, incrementam linhas_invalidas, fora da
+      soma e dos extremos.
+  - id: OBJ-R14-C3
+    status: FIXED
+    summary: >-
+      Declarar precisão e arredondamento não isola o contexto decimal —
+      Emax, Emin e traps continuam herdados do global.
+    owner: Bruno Nunes
+    rationale: >-
+      CONTRAEXEMPLO EXECUTADO e confirmado nos dois eixos — com Emax=5 a
+      soma do total ancorado levanta Overflow; com o trap Inexact ativo,
+      quantizar um intermediário legítimo de três casas levanta Inexact.
+      Execução VÁLIDA vira ERRO por alteração externa do contexto. É o
+      princípio do ADR 0009 aplicado ao contexto inteiro, não só à
+      precisão. B-1 da leitura passou a exigir contexto próprio e COMPLETO,
+      com teste sob global adverso nos três eixos.
+  - id: OBJ-R14-C4
+    status: FIXED
+    summary: >-
+      Os dois controles de contagem não tinham domínio declarado — float e
+      booleano passariam na comparação.
+    owner: Bruno Nunes
+    rationale: >-
+      Em Python 41572553.0 == 41572553 e False == 0, então um envelope com
+      contagem fracionária ou booleana satisfaria a comparação dos cinco
+      controles enquanto schema e juízo divergiriam sobre sua validade
+      estrutural. B-2 da fronteira passou a contratá-los como inteiros não
+      negativos.
+  - id: OBJ-R14-C5
+    status: FIXED
+    summary: >-
+      Texto obsoleto — "milhões de truncamentos" sobreviveu à troca de
+      critério do ADR 0008 e criava duas unidades de defeito concorrentes.
+    owner: Bruno Nunes
+    rationale: >-
+      O ADR 0008 substituiu largura por identidade colapsada, e a unidade é
+      a DESCRIÇÃO: são 11 defeitos na competência, não milhões. Um teste de
+      fronteira construído literalmente do exemplo antigo não poderia
+      representar a leitura contratada e passar na igualdade por
+      identidade. Corrigido em B-2 da fronteira e no anti_pattern. Lição —
+      trocar um critério exige varrer o texto inteiro, não só o ponto onde
+      ele foi escrito.
+  - id: OBJ-AG-CERCAS
+    status: FIXED
+    summary: >-
+      Achado pelo agente fabrica-architect, não pelo adversário — o PDA não
+      tinha .cvg/gate.yaml, e o .claude/settings.json era cópia byte-a-byte
+      da bancada.
+    owner: Bruno Nunes
+    rationale: >-
+      CONFERIDO — o sha256 do settings.json era idêntico ao do template, e
+      .cvg/ não existia. As quatro pastas que a doutrina manda cercar numa
+      fábrica gerada estavam desprotegidas nas DUAS cercas: _raw/ com 12 GB,
+      contracts/, cvg/docs/adrs/ com os 10 ADRs, e evidence/ com a âncora. O
+      próprio settings.json previa o erro e nomeava o remédio, que nunca foi
+      executado. Criado .cvg/gate.yaml com os caminhos REAIS — cvg/docs/adrs,
+      não docs/adrs, que casaria com zero arquivo como na objeção #11 do
+      inss. Acrescentadas 20 regras ao settings.json, de 38 para 58. E
+      criado scripts/verificar_cercas.py, testado contra divergência
+      injetada (CERCAS=DIVERGEM, e volta a OK). Ele também acusa cerca que
+      casa com zero arquivo — achou .github/workflows, que não existe aqui.
+      É a Regra 8 valendo — o adversário lê o plano e não confere cerca
+      nenhuma; catorze rodadas não viram isto.
+  - id: OBJ-AG-TECHSPEC
+    status: FIXED
+    summary: >-
+      Achado pelo agente — o R-3 da tech-spec, um `must`, citava os números
+      que o ADR 0008 mediu e refutou.
+    owner: Bruno Nunes
+    rationale: >-
+      O requisito dizia "51 códigos colapsam em 40 descrições truncadas em
+      20 caracteres (ADR 0004)". São 65 e 52, e o critério de largura
+      marcaria toda linha. Implementar R-3 ao pé da letra recusaria o
+      arquivo correto — o mesmo defeito que a rodada 7 achou no plano,
+      sobrevivendo na tech-spec. Decidido com Bruno Nunes corrigir o
+      requisito citando o ADR 0008, e o R-4 passou a citar o 0009 com a
+      precisão derivada e a não-negatividade. Alterar Pass 1 reabre
+      CHECK_TECH_SPEC, mas deixar um `must` com número refutado é pior.
+      O hash da tech-spec mudou e checar_evidencia.py acusou, dando o novo.
 contentions: []

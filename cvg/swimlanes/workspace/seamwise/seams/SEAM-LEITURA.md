@@ -71,16 +71,19 @@ swimlane:
           exige chmod 444 nos bytes de origem, e hash antes/depois não prova proteção, porque um arquivo
           em 0666 passa nesse teste quando ninguém escreve durante ele; a leitura recusa começar se _raw
           não estiver protegido. Código e descrição vêm dos índices 12 e 13; os totais por código que
-          a leitura produz são somados em contexto decimal PRÓPRIO, com a precisão derivada do contrato,
-          e o teste força um contexto global adverso e exige exatidão mesmo assim — a proteção escrita
-          para a agregação não alcança a leitura, e uma referência corrompida faria a fronteira recusar
-          um produtor correto com os testes da leitura verdes. No segundo a leitura BLOQUEIA, e o gate
-          NÃO pode ser conferência de cabeçalho — cabeçalho idêntico não distingue as duas — e sim o formato
-          de cada posição, MEDIDO nas 41.572.553 linhas — o índice 12 é sempre só dígitos, largura 2 após
-          strip, alinhado à direita, e o 13 é sempre textual, alinhado à esquerda, sem uma única linha
-          em que os dois sejam indistinguíveis; o teste falha se for satisfeito trocando colunas de nomes
-          diferentes, porque é esta troca, de nomes iguais, que motivou o ADR 0002 e que os cinco controles
-          preservam
+          a leitura produz são somados em contexto decimal PRÓPRIO e COMPLETO — precisão derivada, arredondamento,
+          Emax, Emin e traps, todos declarados, porque localcontext() herda do global tudo que não for
+          dito — com Emax=5 a soma do total ancorado levanta Overflow, e com o trap Inexact ativo quantizar
+          um intermediário legítimo de três casas levanta Inexact, transformando execução VÁLIDA em ERRO
+          por alteração externa. O teste força um contexto global adverso nos três eixos e exige exatidão
+          mesmo assim — a proteção escrita para a agregação não alcança a leitura, e uma referência corrompida
+          faria a fronteira recusar um produtor correto com os testes da leitura verdes. No segundo a
+          leitura BLOQUEIA, e o gate NÃO pode ser conferência de cabeçalho — cabeçalho idêntico não distingue
+          as duas — e sim o formato de cada posição, MEDIDO nas 41.572.553 linhas — o índice 12 é sempre
+          só dígitos, largura 2 após strip, alinhado à direita, e o 13 é sempre textual, alinhado à esquerda,
+          sem uma única linha em que os dois sejam indistinguíveis; o teste falha se for satisfeito trocando
+          colunas de nomes diferentes, porque é esta troca, de nomes iguais, que motivou o ADR 0002 e
+          que os cinco controles preservam
       - id: B-2
         given: um registro cujo campo monetário é ilegível, os valores 'NaN', 'Infinity', '1_000' e '1e3',
           e os quatro exemplos do ADR 0004 — entre eles 'Pensão por Morte de ' com 20 caracteres brutos
@@ -97,21 +100,25 @@ swimlane:
           delega a quem recebe o valor; fixar duas casas recusaria uma fonte futura com escala maior legitimamente
           declarada, e não conferir deixaria um contrato de escala 1 aceitar '1,23' com a precisão validada
           para outro domínio. Valor fora da escala contratada é defeito classificado, e valor NEGATIVO
-          também, porque o ADR 0009 derivou a precisão sob soma monotônica. Uma gramática de ponto decimal
-          recusaria a competência inteira — os quatro passam pelo construtor, e um NaN chegaria vivo aos
-          extremos, onde min levanta InvalidOperation e transformaria defeito de UMA linha em ERRO da
-          execução inteira. E a descrição emite defeito de IDENTIDADE COLAPSADA, sem tornar a linha inválida,
-          quando cobre mais de um código — critério do ADR 0008, medido na competência inteira — 11 descrições
-          cobrem 24 códigos, entre elas 'Pensão por Morte de ' fundindo 01, 03, 23 e 59. A unidade do
-          defeito é a DESCRIÇÃO, não a ocorrência, ele só é emitido ao fim da varredura, porque colapso
-          é propriedade do conjunto, e a contagem observada é conferida contra a CONTAGEM MEDIDA que o
-          contrato carrega — senão a leitura poderia omitir um colapso, o envelope local reproduzir a
-          mesma lista, e a comparação por identidade concordar com cardinalidade, mapas e controles todos
-          corretos — um leitor incremental que emitisse a partir do segundo código deixaria sem registro
-          todas as ocorrências anteriores, e a fronteira concordaria com a lista incompleta por ter a
-          própria leitura como referência. Largura NÃO é critério — as 41.572.553 descrições têm 20 caracteres
-          brutos, então bruto==20 acusaria toda linha, e strip==20 deixaria de fora justamente esse colapso
-          de quatro códigos, cujo strip é 19
+          também, porque o ADR 0009 derivou a precisão sob soma monotônica — e os dois têm o MESMO destino
+          que o ilegível — tipo VALOR_ILEGIVEL, incrementam linhas_invalidas, ficam fora da soma e fora
+          dos extremos. Um destino só, porque a fronteira confere linhas_invalidas contra defeitos do
+          tipo VALOR_ILEGIVEL, e dar-lhes tipo próprio faria a leitura incrementar inválidos enquanto
+          a fronteira exige zero — dois implementadores cumprindo seus textos e discordando. Uma gramática
+          de ponto decimal recusaria a competência inteira — os quatro passam pelo construtor, e um NaN
+          chegaria vivo aos extremos, onde min levanta InvalidOperation e transformaria defeito de UMA
+          linha em ERRO da execução inteira. E a descrição emite defeito de IDENTIDADE COLAPSADA, sem
+          tornar a linha inválida, quando cobre mais de um código — critério do ADR 0008, medido na competência
+          inteira — 11 descrições cobrem 24 códigos, entre elas 'Pensão por Morte de ' fundindo 01, 03,
+          23 e 59. A unidade do defeito é a DESCRIÇÃO, não a ocorrência, ele só é emitido ao fim da varredura,
+          porque colapso é propriedade do conjunto, e a contagem observada é conferida contra a CONTAGEM
+          MEDIDA que o contrato carrega — senão a leitura poderia omitir um colapso, o envelope local
+          reproduzir a mesma lista, e a comparação por identidade concordar com cardinalidade, mapas e
+          controles todos corretos — um leitor incremental que emitisse a partir do segundo código deixaria
+          sem registro todas as ocorrências anteriores, e a fronteira concordaria com a lista incompleta
+          por ter a própria leitura como referência. Largura NÃO é critério — as 41.572.553 descrições
+          têm 20 caracteres brutos, então bruto==20 acusaria toda linha, e strip==20 deixaria de fora
+          justamente esse colapso de quatro códigos, cujo strip é 19
       evals:
       - id: eval_1
         description: Leitura posicional; _raw sem 444 bloqueia; Espécie 12 e 13 trocadas bloqueiam

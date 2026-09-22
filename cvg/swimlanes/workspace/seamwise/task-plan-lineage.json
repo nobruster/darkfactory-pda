@@ -1,21 +1,21 @@
 {
   "contract": "SeamwiseTaskPlanLineage/v1",
-  "delivery_plan_sha256": "673b3546942baff172c599bf474ef04ed54d05a8d2543ff18ec77eaa834276e2",
+  "delivery_plan_sha256": "d2e32c74e0448cec6c0ef13d4993d2bbccd103fc98ed033faccdaeafb8bc5c88",
   "engine_version": "0.2.0",
   "intent": {
     "id": "DI-PDA-BENEFICIOS",
-    "sha256": "34922ec3593d648dafe84601e6110d8a45683dbe98c4286dae5008da0ffd9e90"
+    "sha256": "836a967d4deb3fe9260e1362fa94bcaf829e9b9268be0dd9fbcc6f06155050d6"
   },
   "review": {
     "fixture": false,
-    "plan_sha256": "673b3546942baff172c599bf474ef04ed54d05a8d2543ff18ec77eaa834276e2",
-    "reviewed_at": "2026-09-22T02:08:51.931579+00:00",
+    "plan_sha256": "d2e32c74e0448cec6c0ef13d4993d2bbccd103fc98ed033faccdaeafb8bc5c88",
+    "reviewed_at": "2026-09-22T02:21:25.905774+00:00",
     "reviewer": "Bruno Nunes",
-    "sha256": "3b848a8e1666acbcfdd52f7a16eb843bf25b33a020e9ddd92b8400afe05c94ea"
+    "sha256": "0a91c0e1d762a05df21559dd564f1d98421f2140cf6c347161516991af6cbf66"
   },
   "task_plan": {
     "contract": "TaskPlan/v1",
-    "digest": "3b7e6e992dbbbc1969878b3286a247aa5deb1b654f45406abf5afad42fa8b2b6",
+    "digest": "3bd4eca3fc930de03ffd3aee99d50ec118c81568541d6199a55ccc7c3299c28c",
     "path": "seamwise/task-plan.json"
   },
   "units": {
@@ -31,7 +31,7 @@
       "intent": "DI-PDA-BENEFICIOS",
       "leg": "LEG-CONTRATO-RECUSA-SEM-ANCORA",
       "seam": "SEAM-CONTRATO",
-      "source_sha256": "730dae21c5782660a26e41959181a7d78873601cfcf021c6e24bb07fb2bd868a",
+      "source_sha256": "8f54b97a11c8e27985bf35d03a303d5f6cf27dd5659b3bfab4cf763996aa08a1",
       "swimlane": "LANE-CONTRATO",
       "unit_id": "T-20260921-contrato-ancora"
     },
@@ -39,7 +39,7 @@
       "intent": "DI-PDA-BENEFICIOS",
       "leg": "LEG-ENVELOPE-VINCULADO",
       "seam": "SEAM-FRONTEIRA",
-      "source_sha256": "187058ab15c90f015093e157d5a506fa218b7db079a16723a4057ebc8168409f",
+      "source_sha256": "d55efa3d605af0e8e37a4a4db93119f5941d017e6e2d0d3f17316d0f378fd4d7",
       "swimlane": "LANE-FRONTEIRA",
       "unit_id": "T-20260921-envelope-fronteira"
     },
@@ -63,7 +63,7 @@
       "intent": "DI-PDA-BENEFICIOS",
       "leg": "LEG-LEITURA-POSICIONAL",
       "seam": "SEAM-LEITURA",
-      "source_sha256": "c89144e5d4f7670a73929dea5935026f02a95cbce0ec520f7fb9656595424695",
+      "source_sha256": "e73f52c58af168c1f09991d7df68ea99a607eae33bc292335f359617936f4a52",
       "swimlane": "LANE-LEITURA",
       "unit_id": "T-20260921-leitura-posicional"
     },

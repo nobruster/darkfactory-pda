@@ -7,7 +7,7 @@ claim: proposed
 source:
   uri: cvg/docs/tech-spec/tech-spec-pda-beneficios.md
   captured_at: '2026-09-21T00:00:00Z'
-  sha256: 94a7379f89cc795d8a355774626fc3984f116272b4184278ed9ab50750998573
+  sha256: e619ead9d343282533110bc8cb8f1203614d8e733565b21e3157df2b8f157b88
 success:
 - Sem âncora medida o veredito não autoriza publicar.
 - Os cinco controles são comparados individualmente.

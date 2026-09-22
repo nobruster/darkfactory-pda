@@ -634,6 +634,75 @@ objections:
     fenômenos reais na média, além de um máximo de 2026-01 três vezes maior que o de fevereiro e março.
     Entrou em out_of_scope como limite conhecido. E a validação cruzada do ADR 0001 foi conferida contra
     contracts/layout.yaml do outro repositório — contagem, total e zip_sha256 batem nos três (XVAL=OK).
+- id: OBJ-R14-C1
+  status: FIXED
+  summary: O próprio contrato podia carregar a âncora como float — as recusas do agregador e do envelope
+    não protegem o referencial.
+  owner: Bruno Nunes
+  rationale: '`sum_vl_liquido: 78521752562.12` sem aspas é float no YAML; Decimal(str(v)) apagaria a origem
+    e Decimal(v) traria a aproximação binária. B-1 do contrato passou a recusar float nos controles da
+    âncora, antes de qualquer conversão.'
+- id: OBJ-R14-C2
+  status: FIXED
+  summary: Minha correção de R13-C3 mandava classificar negativo e fora de escala sem dizer o destino
+    deles nos cinco controles.
+  owner: Bruno Nunes
+  rationale: 'Dois implementadores podiam cumprir seus textos e discordar — a leitura incrementando inválidos
+    com tipo próprio enquanto a fronteira exige zero. B-2 da leitura passou a dar-lhes o MESMO destino
+    do ilegível: tipo VALOR_ILEGIVEL, incrementam linhas_invalidas, fora da soma e dos extremos.'
+- id: OBJ-R14-C3
+  status: FIXED
+  summary: Declarar precisão e arredondamento não isola o contexto decimal — Emax, Emin e traps continuam
+    herdados do global.
+  owner: Bruno Nunes
+  rationale: CONTRAEXEMPLO EXECUTADO e confirmado nos dois eixos — com Emax=5 a soma do total ancorado
+    levanta Overflow; com o trap Inexact ativo, quantizar um intermediário legítimo de três casas levanta
+    Inexact. Execução VÁLIDA vira ERRO por alteração externa do contexto. É o princípio do ADR 0009 aplicado
+    ao contexto inteiro, não só à precisão. B-1 da leitura passou a exigir contexto próprio e COMPLETO,
+    com teste sob global adverso nos três eixos.
+- id: OBJ-R14-C4
+  status: FIXED
+  summary: Os dois controles de contagem não tinham domínio declarado — float e booleano passariam na
+    comparação.
+  owner: Bruno Nunes
+  rationale: Em Python 41572553.0 == 41572553 e False == 0, então um envelope com contagem fracionária
+    ou booleana satisfaria a comparação dos cinco controles enquanto schema e juízo divergiriam sobre
+    sua validade estrutural. B-2 da fronteira passou a contratá-los como inteiros não negativos.
+- id: OBJ-R14-C5
+  status: FIXED
+  summary: Texto obsoleto — "milhões de truncamentos" sobreviveu à troca de critério do ADR 0008 e criava
+    duas unidades de defeito concorrentes.
+  owner: Bruno Nunes
+  rationale: 'O ADR 0008 substituiu largura por identidade colapsada, e a unidade é a DESCRIÇÃO: são 11
+    defeitos na competência, não milhões. Um teste de fronteira construído literalmente do exemplo antigo
+    não poderia representar a leitura contratada e passar na igualdade por identidade. Corrigido em B-2
+    da fronteira e no anti_pattern. Lição — trocar um critério exige varrer o texto inteiro, não só o
+    ponto onde ele foi escrito.'
+- id: OBJ-AG-CERCAS
+  status: FIXED
+  summary: Achado pelo agente fabrica-architect, não pelo adversário — o PDA não tinha .cvg/gate.yaml,
+    e o .claude/settings.json era cópia byte-a-byte da bancada.
+  owner: Bruno Nunes
+  rationale: 'CONFERIDO — o sha256 do settings.json era idêntico ao do template, e .cvg/ não existia.
+    As quatro pastas que a doutrina manda cercar numa fábrica gerada estavam desprotegidas nas DUAS cercas:
+    _raw/ com 12 GB, contracts/, cvg/docs/adrs/ com os 10 ADRs, e evidence/ com a âncora. O próprio settings.json
+    previa o erro e nomeava o remédio, que nunca foi executado. Criado .cvg/gate.yaml com os caminhos
+    REAIS — cvg/docs/adrs, não docs/adrs, que casaria com zero arquivo como na objeção #11 do inss. Acrescentadas
+    20 regras ao settings.json, de 38 para 58. E criado scripts/verificar_cercas.py, testado contra divergência
+    injetada (CERCAS=DIVERGEM, e volta a OK). Ele também acusa cerca que casa com zero arquivo — achou
+    .github/workflows, que não existe aqui. É a Regra 8 valendo — o adversário lê o plano e não confere
+    cerca nenhuma; catorze rodadas não viram isto.'
+- id: OBJ-AG-TECHSPEC
+  status: FIXED
+  summary: Achado pelo agente — o R-3 da tech-spec, um `must`, citava os números que o ADR 0008 mediu
+    e refutou.
+  owner: Bruno Nunes
+  rationale: O requisito dizia "51 códigos colapsam em 40 descrições truncadas em 20 caracteres (ADR 0004)".
+    São 65 e 52, e o critério de largura marcaria toda linha. Implementar R-3 ao pé da letra recusaria
+    o arquivo correto — o mesmo defeito que a rodada 7 achou no plano, sobrevivendo na tech-spec. Decidido
+    com Bruno Nunes corrigir o requisito citando o ADR 0008, e o R-4 passou a citar o 0009 com a precisão
+    derivada e a não-negatividade. Alterar Pass 1 reabre CHECK_TECH_SPEC, mas deixar um `must` com número
+    refutado é pior. O hash da tech-spec mudou e checar_evidencia.py acusou, dando o novo.
 contentions: []
 ---
 # System Map

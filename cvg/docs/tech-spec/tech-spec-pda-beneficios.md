@@ -43,12 +43,19 @@ meses depois por que aquele número foi aceito.
   nunca por nome de cabeçalho. Com `Espécie` em 12 e 13, ler por nome perde
   uma das duas em silêncio (ADR 0002).
 - **R-3 (must).** Agrupamento, junção e contagem por espécie usam o **código**
-  (posição 12). Agrupar por `descricao_especie` é recusado: 51 códigos
-  colapsam em 40 descrições truncadas em 20 caracteres (ADR 0004).
-- **R-4 (must).** Campo monetário é somado com precisão declarada, sem
-  quantização intermediária, e arredondado uma vez no total com meio-para-par
-  a 2 casas. Ponto flutuante em campo monetário é **recusado na entrada**,
-  nunca convertido (ADR 0003).
+  (posição 12). Agrupar por `descricao_especie` é recusado porque a descrição
+  que cobre mais de um código **perdeu identidade** — medido na competência
+  inteira, 11 descrições cobrem 24 códigos (ADR 0008). O critério de largura
+  do ADR 0004 foi medido e **refutado**: as 41.572.553 descrições têm 20
+  caracteres brutos, e "truncada em 20 caracteres" marcaria toda linha. A
+  cardinalidade entra no contrato como valor **medido**, nunca fixada — são
+  65 códigos e 52 descrições, não os 51→40 amostrados em ~3 milhões de linhas.
+- **R-4 (must).** Campo monetário é somado com precisão **derivada** —
+  dígitos inteiros da âncora mais a escala máxima dos intermediários, 11+3=14
+  nesta competência — sem quantização intermediária, e arredondado uma vez no
+  total com meio-para-par a 2 casas. A derivação vale sob **soma monotônica**,
+  e valor negativo é defeito classificado, não entrada válida. Ponto flutuante
+  em campo monetário é **recusado na entrada**, nunca convertido (ADR 0009).
 - **R-5 (must).** Os **cinco** controles da âncora são comparados
   individualmente — `count_linhas`, `sum_vl_liquido`, `min_vl_liquido`,
   `max_vl_liquido`, `linhas_invalidas`. Divergência em qualquer um recusa,
