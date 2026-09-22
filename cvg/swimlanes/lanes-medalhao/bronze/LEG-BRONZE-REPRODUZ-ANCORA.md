@@ -1,6 +1,6 @@
 > Projetado de `LEG-BRONZE-REPRODUZ-ANCORA.md` pelo Seamwise.
 > **Não edite aqui** — edite a recipe e rode `seamwise plan`.
-> origem sha256: `0d172dbb87ac35967acb59947d718b59238b0925edcb08a66787c820d11a734a`
+> origem sha256: `cc97a19d46db611d54e9535ff7b73cdcc6c41adfd81a3b95c715733e51efed16`
 
 ---
 
@@ -17,6 +17,7 @@ proof: A partição lida reproduz os cinco controles ancorados; ausente ou vazia
 requires: []
 produces:
 - bronze conferido
+- totais por código de Bronze
 tasks:
 - id: T-20260922-bronze-confere-ancora
   title: Ler a partição do lago e conferi-la contra a âncora
@@ -27,9 +28,11 @@ tasks:
     instável a interface que Silver consome. Os evals rodam num ambiente que tem AO MESMO TEMPO pytest
     e um leitor de Parquet — medido, hoje nenhum tem: o host não tem pyspark, pyarrow, pandas, duckdb
     nem java, e o contêiner pda-spark não tem pytest. Montar esse ambiente é parte desta tarefa e tem
-    caminho declarado — infra/medalhao-evals.sh, que roda os evals num checkout limpo sem instalação manual.
-    Sem ele a obrigação existiria sem forma reproduzível de cumpri-la, e um agente que criasse o arquivo
-    mesmo assim receberia path_policy: fail.'
+    caminho declarado — infra/medalhao-evals.sh, que roda os evals num checkout limpo sem instalação manual
+    — e os nove evals das três camadas o INVOCAM, em vez de chamar pytest direto, porque criar o script
+    não muda o ambiente de quem executa e o eval falharia antes de testar Bronze. Sem ele a obrigação
+    existiria sem forma reproduzível de cumpri-la, e um agente que criasse o arquivo mesmo assim receberia
+    path_policy: fail.'
   effort: M
   profile: standard
   execution_backend: any
@@ -62,65 +65,72 @@ tasks:
       e linhas_invalidas. Contagem e soma sozinhas não bastam, e não bastam nem juntas: uma alteração
       COMPENSADA entre duas linhas preserva as duas e ainda assim empurra o máximo acima dos 183.725,76
       ancorados, com todos os valores finitos, não negativos e na escala permitida. Silver preservaria
-      a soma e Gold compararia soma e cardinalidade; nenhuma das três veria. Cada controle que diverge
-      é nomeado na saída, porque saber QUAL falhou é o que separa investigar de adivinhar — e cada diferença
-      recebe EXATAMENTE UMA das seis classificações da R-6 (CONFIRMED_SOURCE_DEFECT, CONFIRMED_LEGACY_DEFECT,
-      APPROVED_BEHAVIOR_CHANGE, MODERN_DEFECT, CONTRACT_AMBIGUITY, UNRESOLVED). DIVERGE é estado de MEDIÇÃO,
-      não classificação: recusar a partição corretamente e entregar diagnóstico sem classificação deixaria
-      a diferença sem dono. Diferença que a camada não saiba classificar recebe UNRESOLVED, que é uma
-      das seis e BLOQUEIA — nunca fica em branco. O tipo monetário da ENTRADA é recusado se não for decimal
-      — a R-4 manda recusar float, nunca convertê-lo, e converter apaga a evidência da entrada proibida:
-      Decimal(str(1.25)) devolve 1.25, finito, não negativo e na escala 2, satisfazendo todas as verificações
-      de domínio enquanto a origem era um DOUBLE. A recusa é do TIPO declarado no esquema do Parquet,
-      antes de ler valor algum. Só então a comparação monetária é entre Decimal e Decimal, e a igualdade
-      é exata — tolerância aqui seria a Regra 3 pelo avesso, afrouxar o oráculo para a camada passar.
-      Todo valor lido é conferido contra o domínio monetário do contrato antes de entrar no acumulador
-      — finito, NÃO NEGATIVO e dentro da escala declarada. A não-negatividade não é preferência, e sim
-      a premissa de soma MONOTÔNICA sob a qual o ADR 0009 deriva a precisão 14 — um valor negativo quebra
-      a premissa e a perda de centavo passa a acontecer DURANTE a soma, onde a comparação final não a
-      enxerga. Bronze lê Parquet, que não passa nem pela gramática do CSV nem pela fronteira do envelope,
-      e por isso é uma TERCEIRA porta de entrada para valores; fechá-la é obrigação desta camada. Valor
-      fora do domínio é defeito classificado com identidade, valor original e posição, nunca somado em
-      silêncio. A procedência do arquivo que originou a partição é APRESENTADA a Bronze junto da leitura
-      — hoje pelo pacote que a gravação emite, não por coluna do Parquet, porque MEDIDO em gravar_lago.py
-      a partição tem três colunas mais a de partição e nenhuma é procedência; exigir que ela viesse do
-      Parquet faria Bronze devolver NAO_MEDIDO na partição CORRETA, que é o defeito da Regra 9 pelo avesso.
-      Quando apresentada, o hash_csv_sha256 é comparado com o ancorado e divergência é DIVERGE, porque
-      reproduzir os dois controles não distingue o arquivo ancorado de outro com os mesmos totais, e a
-      âncora vale para UM arquivo. Fazer a partição carregar a procedência é melhoria desejável e exige
-      tarefa própria, por tocar em gravar_lago.py, que está sem Task-Spec (Regra 11) — enquanto não existir,
-      a ausência do vínculo tem CONSEQUÊNCIA definida e propagada — ''bronze conferido'' sai marcado PROCEDENCIA_NAO_VINCULADA,
-      Silver e Gold propagam a marca sem removê-la, e Gold NÃO PUBLICA sob ela. Registrar só uma ressalva
-      deixaria a cadeia publicar partição diferente da ancorada, porque o hash correto num pacote sem
-      vínculo verificável com a partição lida satisfaz a comparação textual e não prova nada. Partição
-      que diverge é DIVERGE, e Bronze não escreve nada'
+      a soma e Gold compararia soma e cardinalidade; nenhuma das três veria. Bronze PRODUZ o mapa total_por_codigo
+      — soma exata não quantizada, por código — e ele é parte declarada de ''bronze conferido''. É a ORIGEM
+      do mapa: quem lê o Parquet é quem sabe qual valor pertence a qual código, e uma camada posterior
+      que o recalcule a partir dos mesmos bytes repetiria um erro de atribuição nos dois lados da comparação,
+      aprovando-o. Cada controle que diverge é nomeado na saída, porque saber QUAL falhou é o que separa
+      investigar de adivinhar — e cada diferença recebe EXATAMENTE UMA das seis classificações da R-6
+      (CONFIRMED_SOURCE_DEFECT, CONFIRMED_LEGACY_DEFECT, APPROVED_BEHAVIOR_CHANGE, MODERN_DEFECT, CONTRACT_AMBIGUITY,
+      UNRESOLVED). DIVERGE é estado de MEDIÇÃO, não classificação: recusar a partição corretamente e entregar
+      diagnóstico sem classificação deixaria a diferença sem dono. Diferença que a camada não saiba classificar
+      recebe UNRESOLVED, que é uma das seis e BLOQUEIA — nunca fica em branco. O tipo monetário da ENTRADA
+      é recusado se não for decimal — a R-4 manda recusar float, nunca convertê-lo, e converter apaga
+      a evidência da entrada proibida: Decimal(str(1.25)) devolve 1.25, finito, não negativo e na escala
+      2, satisfazendo todas as verificações de domínio enquanto a origem era um DOUBLE. A recusa é do
+      TIPO declarado no esquema do Parquet, antes de ler valor algum. Só então a comparação monetária
+      é entre Decimal e Decimal, e a igualdade é exata — tolerância aqui seria a Regra 3 pelo avesso,
+      afrouxar o oráculo para a camada passar. Todo valor lido é conferido contra o domínio monetário
+      do contrato antes de entrar no acumulador — finito, NÃO NEGATIVO e dentro da escala declarada. A
+      não-negatividade não é preferência, e sim a premissa de soma MONOTÔNICA sob a qual o ADR 0009 deriva
+      a precisão 14 — um valor negativo quebra a premissa e a perda de centavo passa a acontecer DURANTE
+      a soma, onde a comparação final não a enxerga. Bronze lê Parquet, que não passa nem pela gramática
+      do CSV nem pela fronteira do envelope, e por isso é uma TERCEIRA porta de entrada para valores;
+      fechá-la é obrigação desta camada. Valor fora do domínio é defeito classificado com identidade,
+      valor original e posição, nunca somado em silêncio. A procedência do arquivo que originou a partição
+      é APRESENTADA a Bronze junto da leitura — hoje pelo pacote que a gravação emite, não por coluna
+      do Parquet, porque MEDIDO em gravar_lago.py a partição tem três colunas mais a de partição e nenhuma
+      é procedência; exigir que ela viesse do Parquet faria Bronze devolver NAO_MEDIDO na partição CORRETA,
+      que é o defeito da Regra 9 pelo avesso. Quando apresentada, o hash_csv_sha256 é comparado com o
+      ancorado e divergência é DIVERGE, porque reproduzir os dois controles não distingue o arquivo ancorado
+      de outro com os mesmos totais, e a âncora vale para UM arquivo. Fazer a partição carregar a procedência
+      é melhoria desejável e exige tarefa própria, por tocar em gravar_lago.py, que está sem Task-Spec
+      (Regra 11) — enquanto não existir, a ausência do vínculo tem CONSEQUÊNCIA definida e propagada —
+      ''bronze conferido'' sai marcado PROCEDENCIA_NAO_VINCULADA, Silver e Gold propagam a marca sem removê-la,
+      e Gold NÃO PUBLICA sob ela. Registrar só uma ressalva deixaria a cadeia publicar partição diferente
+      da ancorada, porque o hash correto num pacote sem vínculo verificável com a partição lida satisfaz
+      a comparação textual e não prova nada. Partição que diverge é DIVERGE, e Bronze não escreve nada'
   - id: B-2
     given: uma competência cuja partição não existe no lago, ou existe com zero linhas
     when: Bronze lê a partição
-    then: retorna NAO_MEDIDO como valor, sem escrever camada nenhuma e sem encerrar o processo; partição
+    then: 'retorna NAO_MEDIDO como valor, sem escrever camada nenhuma e sem encerrar o processo; partição
       ausente e partição vazia são casos distintos e ambos NAO_MEDIDO, porque ler o lago e não encontrar
       nada não é o mesmo que medir e encontrar zero — a Regra 9 existe porque o segundo caminho é o que
       veste NAO_MEDIDO de MEDIDO. As outras partições do lago são nomeadas E CONTADAS na saída, e a soma
       das contagens por partição é conferida contra o total lido — nomear sem contar afirma isolação sem
       medi-la, e a lista de nomes continuaria idêntica se as linhas de uma partição tivessem migrado para
-      outra. Se a soma das partições não fecha com o total, é DIVERGE, porque linha que não pertence a
-      partição nenhuma é contaminação, e foi para vê-la que este controle existe
+      outra. A PRECEDÊNCIA é declarada e não negociável: o estado da competência SOLICITADA decide primeiro.
+      Ausente ou vazia devolve NAO_MEDIDO mesmo que o lago tenha outros problemas, porque não se reprova
+      o que não se mediu. Só quando a competência existe e foi medida é que o fechamento do lago entra
+      — e aí, se a soma das partições não fecha com o total, é DIVERGE, porque linha que não pertence
+      a partição nenhuma é contaminação, e foi para vê-la que este controle existe'
   evals:
   - id: eval_1
     description: Os cinco controles comparados individualmente, e a partição medida isoladamente
-    bash: pytest -q tests/test_bronze.py -k "cinco_controles or alteracao_compensada or isola_particao
-      or nao_soma_uniao or precisao_declarada"
+    bash: bash infra/medalhao-evals.sh tests/test_bronze.py -k "cinco_controles or alteracao_compensada
+      or isola_particao or nao_soma_uniao or precisao_declarada"
     verifies:
     - B-1
   - id: eval_2
     description: Ausente e vazia devolvem NAO_MEDIDO; medida e divergente devolve DIVERGE
-    bash: pytest -q tests/test_bronze.py -k "particao_ausente or particao_vazia or diverge_nao_e_nao_medido"
+    bash: bash infra/medalhao-evals.sh tests/test_bronze.py -k "particao_ausente or particao_vazia or
+      diverge_nao_e_nao_medido"
     verifies:
     - B-2
   - id: eval_3
     description: Float recusado na entrada, e toda diferença com uma das seis classificações
-    bash: pytest -q tests/test_bronze.py -k "centavo_a_mais or maximo_acima_do_ancorado or recusa_float_na_entrada
-      or classificacao_das_seis"
+    bash: bash infra/medalhao-evals.sh tests/test_bronze.py -k "centavo_a_mais or maximo_acima_do_ancorado
+      or recusa_float_na_entrada or classificacao_das_seis"
     verifies:
     - B-1
   anti_patterns:
@@ -142,7 +152,7 @@ tasks:
   - contracts
   rollback: Remover o leitor Bronze e seus testes.
   observability: partições recusadas por controle divergente
-source_seam_sha256: 71d193f3bf9826f9d6382a9b73beef697747dc37755bea5bf6ded1c44f09fe63
+source_seam_sha256: 62b14968efdd71ae68d8e112eb043dbcc9fb242cd041b18366377f3c4aeb5dfc
 ---
 # Bronze só existe quando reproduz a âncora do contrato
 
@@ -152,7 +162,7 @@ A partição lida reproduz os cinco controles ancorados; ausente ou vazia devolv
 
 ## Runnable leaves
 
-- `T-20260922-bronze-confere-ancora` — Ler a partição do lago e conferi-la contra a âncora: Os cinco controles da partição real batem com o contrato. Partição AUSENTE ou VAZIA devolve NAO_MEDIDO; partição MEDIDA que diverge em qualquer controle devolve DIVERGE — os dois são estados distintos e nenhum escreve camada, porque confundir ausência de medição com reprovação torna instável a interface que Silver consome. Os evals rodam num ambiente que tem AO MESMO TEMPO pytest e um leitor de Parquet — medido, hoje nenhum tem: o host não tem pyspark, pyarrow, pandas, duckdb nem java, e o contêiner pda-spark não tem pytest. Montar esse ambiente é parte desta tarefa e tem caminho declarado — infra/medalhao-evals.sh, que roda os evals num checkout limpo sem instalação manual. Sem ele a obrigação existiria sem forma reproduzível de cumpri-la, e um agente que criasse o arquivo mesmo assim receberia path_policy: fail.
+- `T-20260922-bronze-confere-ancora` — Ler a partição do lago e conferi-la contra a âncora: Os cinco controles da partição real batem com o contrato. Partição AUSENTE ou VAZIA devolve NAO_MEDIDO; partição MEDIDA que diverge em qualquer controle devolve DIVERGE — os dois são estados distintos e nenhum escreve camada, porque confundir ausência de medição com reprovação torna instável a interface que Silver consome. Os evals rodam num ambiente que tem AO MESMO TEMPO pytest e um leitor de Parquet — medido, hoje nenhum tem: o host não tem pyspark, pyarrow, pandas, duckdb nem java, e o contêiner pda-spark não tem pytest. Montar esse ambiente é parte desta tarefa e tem caminho declarado — infra/medalhao-evals.sh, que roda os evals num checkout limpo sem instalação manual — e os nove evals das três camadas o INVOCAM, em vez de chamar pytest direto, porque criar o script não muda o ambiente de quem executa e o eval falharia antes de testar Bronze. Sem ele a obrigação existiria sem forma reproduzível de cumpri-la, e um agente que criasse o arquivo mesmo assim receberia path_policy: fail.
 
 The leg names a capability state, not an activity. Each leaf owns one coherent,
 independently provable done-condition.

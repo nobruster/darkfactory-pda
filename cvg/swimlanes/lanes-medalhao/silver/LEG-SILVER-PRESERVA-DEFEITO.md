@@ -1,6 +1,6 @@
 > Projetado de `LEG-SILVER-PRESERVA-DEFEITO.md` pelo Seamwise.
 > **Não edite aqui** — edite a recipe e rode `seamwise plan`.
-> origem sha256: `abc80dc7f21b4146e52612eec76b4b14c301e6284a1603d3b16fff176537eba5`
+> origem sha256: `95de745f037525ce519b4c3551d4ba9d20c81fd3f1b86f6f20f2fec47274e04e`
 
 ---
 
@@ -15,6 +15,7 @@ observable_state: Silver classifica o defeito e conserva o total
 proof: A soma de Silver é idêntica à de Bronze, e os 11 colapsos saem classificados em vez de corrigidos.
 requires:
 - bronze conferido
+- totais por código de Bronze
 produces:
 - silver classificado
 - totais por código de Silver
@@ -52,20 +53,24 @@ tasks:
       a normalizada, porque a normalização pode FUNDIR descrições que a fonte publica distintas: ''ABC''
       e ''abc'' de códigos diferentes viram um grupo só depois de igualar a caixa, e o colapso criado
       pela camada seria atribuído à fonte, ou uma partição correta receberia DIVERGE. Se as duas contagens
-      diferirem, a diferença é da normalização e sai nomeada, não somada aos 11 do contrato, que atravessa
-      como Decimal com a precisão declarada. A marca PROCEDENCIA_NAO_VINCULADA, quando Bronze a emite,
-      atravessa Silver SEM ser removida e segue em ''silver classificado'' — remover uma marca de limitação
-      é apagar prova, não normalizar. Silver PRODUZ o mapa total_por_codigo, em soma EXATA não quantizada,
-      e ele é parte declarada de ''silver classificado'' — Gold o consome, e sem essa declaração Gold
-      recalcularia os dois lados com a mesma transformação, perdendo a independência que o próprio plano
-      dele exige. A conservação provada NÃO é só a soma global: o mapa de Silver é comparado com o de
-      Bronze CÓDIGO A CÓDIGO, porque trocar os valores de dois códigos preserva soma, chaves, cardinalidades
-      e grupos — {''01'': 10.00, ''03'': 20.00} virando {''01'': 20.00, ''03'': 10.00} passa em toda prova
-      global e altera o resultado por espécie. A soma de Silver também é comparada com a de Bronze e precisa
-      ser IDÊNTICA — um pipeline que altera o total ao normalizar texto tem um defeito, não uma melhoria.
-      Cada colapso recebe EXATAMENTE UMA das seis classificações e a contagem medida é conferida contra
-      a do contrato — encontrar número diferente de 11 é DIVERGE, porque o contrato mediu na competência
-      inteira e a divergência significa fonte diferente da ancorada, não permissão para ajustar o número'
+      diferirem, a diferença é da normalização e sai nomeada, não somada aos 11 do contrato. E a descrição
+      ORIGINAL é PRESERVADA no registro do defeito, não apenas usada para contar — medir sobre ela e depois
+      gravar o texto normalizado faria ''ABC'' e ''abc'' virarem indistinguíveis na saída, com as contagens
+      corretas e a prova específica perdida. A Regra 4 pede preservar o defeito, e defeito de identidade
+      sem a identidade original não é preservação, que atravessa como Decimal com a precisão declarada.
+      A marca PROCEDENCIA_NAO_VINCULADA, quando Bronze a emite, atravessa Silver SEM ser removida e segue
+      em ''silver classificado'' — remover uma marca de limitação é apagar prova, não normalizar. Silver
+      PRODUZ o mapa total_por_codigo, em soma EXATA não quantizada, e ele é parte declarada de ''silver
+      classificado'' — Gold o consome, e sem essa declaração Gold recalcularia os dois lados com a mesma
+      transformação, perdendo a independência que o próprio plano dele exige. A conservação provada NÃO
+      é só a soma global: o mapa de Silver é comparado com o de Bronze CÓDIGO A CÓDIGO, porque trocar
+      os valores de dois códigos preserva soma, chaves, cardinalidades e grupos — {''01'': 10.00, ''03'':
+      20.00} virando {''01'': 20.00, ''03'': 10.00} passa em toda prova global e altera o resultado por
+      espécie. A soma de Silver também é comparada com a de Bronze e precisa ser IDÊNTICA — um pipeline
+      que altera o total ao normalizar texto tem um defeito, não uma melhoria. Cada colapso recebe EXATAMENTE
+      UMA das seis classificações e a contagem medida é conferida contra a do contrato — encontrar número
+      diferente de 11 é DIVERGE, porque o contrato mediu na competência inteira e a divergência significa
+      fonte diferente da ancorada, não permissão para ajustar o número'
   - id: B-2
     given: um código cuja descrição diverge do contrato, ou um colapso não declarado
     when: Silver normaliza
@@ -88,20 +93,20 @@ tasks:
   evals:
   - id: eval_1
     description: A chave é o código, o mapa por código é preservado e a soma não muda
-    bash: pytest -q tests/test_silver.py -k "chave_e_codigo or soma_identica or nao_agrupa_por_descricao
+    bash: bash infra/medalhao-evals.sh tests/test_silver.py -k "chave_e_codigo or soma_identica or nao_agrupa_por_descricao
       or mapa_por_codigo_preservado or valores_trocados_entre_codigos"
     verifies:
     - B-1
   - id: eval_2
     description: Os 11 colapsos saem classificados e a contagem confere
-    bash: pytest -q tests/test_silver.py -k "colapso_classificado or contagem_de_colapsos or classificacao_unica
-      or colapsos_na_descricao_original"
+    bash: bash infra/medalhao-evals.sh tests/test_silver.py -k "colapso_classificado or contagem_de_colapsos
+      or classificacao_unica or colapsos_na_descricao_original"
     verifies:
     - B-1
   - id: eval_3
     description: Defeito não classificado bloqueia em vez de passar
-    bash: pytest -q tests/test_silver.py -k "nao_classificado_bloqueia or valor_intacto or atravessa_sem_descartar
-      or unresolved_bloqueia or sem_mapa_nao_produz_capacidade"
+    bash: bash infra/medalhao-evals.sh tests/test_silver.py -k "nao_classificado_bloqueia or valor_intacto
+      or atravessa_sem_descartar or unresolved_bloqueia or sem_mapa_nao_produz_capacidade"
     verifies:
     - B-2
   anti_patterns:
@@ -121,7 +126,7 @@ tasks:
   - contracts
   rollback: Remover a camada Silver e seus testes.
   observability: colapsos classificados por competência
-source_seam_sha256: 1a1d1259bccd1acd5772754a8dadd8c515dbb33ed51f48e0448086a32d0e28a2
+source_seam_sha256: 09e7f12a2f9e6f9ba5afa1119b2f6eca8db4501d9a520c85b27bed0d16f8d911
 ---
 # Silver classifica o defeito e conserva o total
 

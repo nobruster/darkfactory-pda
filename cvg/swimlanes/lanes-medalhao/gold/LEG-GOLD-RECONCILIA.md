@@ -1,6 +1,6 @@
 > Projetado de `LEG-GOLD-RECONCILIA.md` pelo Seamwise.
 > **Não edite aqui** — edite a recipe e rode `seamwise plan`.
-> origem sha256: `8ee02449fc2944f238489cfd012456604094af3a7acaf0e24e6399b708d0189d`
+> origem sha256: `ed0a233f370cc68ae2b3447868ad77d6632b4d74ad3f6e2bb45afd9fbc45b48b`
 
 ---
 
@@ -81,22 +81,22 @@ tasks:
       uma categoria inteira
   evals:
   - id: eval_1
-    description: Arredondamento único no total, HALF_EVEN lido do contrato
-    bash: pytest -q tests/test_gold.py -k "arredonda_uma_vez or half_even_do_contrato or nao_arredonda_por_campo
-      or precisao_declarada"
+    description: Arredondamento único, precisão declarada, e recusa sob procedência não vinculada
+    bash: bash infra/medalhao-evals.sh tests/test_gold.py -k "arredonda_uma_vez or half_even_do_contrato
+      or nao_arredonda_por_campo or precisao_declarada or recusa_sob_procedencia_nao_vinculada"
     verifies:
     - B-1
   - id: eval_2
     description: Reconcilia recalculando, compara o mapa por código e confere os 65
-    bash: pytest -q tests/test_gold.py -k "reconcilia_recalculando or mapa_por_codigo or redistribuicao_compensada
-      or contagem_de_codigos"
+    bash: bash infra/medalhao-evals.sh tests/test_gold.py -k "reconcilia_recalculando or mapa_por_codigo
+      or redistribuicao_compensada or contagem_de_codigos"
     verifies:
     - B-1
     - B-2
   - id: eval_3
     description: DIVERGE e NAO_MEDIDO são estados distintos e nenhum publica
-    bash: pytest -q tests/test_gold.py -k "diverge_nao_publica or sem_ancora_nao_medido or destino_inalterado_durante
-      or classifica_diferenca_das_seis"
+    bash: bash infra/medalhao-evals.sh tests/test_gold.py -k "diverge_nao_publica or sem_ancora_nao_medido
+      or destino_inalterado_durante or classifica_diferenca_das_seis"
     verifies:
     - B-2
   anti_patterns:
@@ -117,7 +117,7 @@ tasks:
   - contracts
   rollback: Remover a camada Gold e seus testes.
   observability: agregados recusados por não reconciliar
-source_seam_sha256: 56f5b5d73e56505702ed149f8c10bb5d7331afdd572954aa00d0811ef4b751c5
+source_seam_sha256: 0bfd630894b39e46b1484cefed37771775b1bf0b50721ad3dc72591013a12c76
 ---
 # Gold só publica quando reconcilia com a âncora
 
