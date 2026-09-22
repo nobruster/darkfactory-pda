@@ -28,6 +28,19 @@ def main() -> int:
     violados = 0
     arquivos = sorted(p for p in RAW.iterdir() if p.is_file())
 
+    # A permissão de escrita em Unix é do DIRETÓRIO, não do arquivo. Com
+    # _raw em 755, um `rm` seguido de recriação substitui um arquivo 444 e
+    # o deixa com modo 444 de novo — este script diria "ok". Verificado:
+    # com o diretório em 555, o mesmo `rm` falha com Permission denied.
+    modo_dir = stat.S_IMODE(RAW.stat().st_mode)
+    if modo_dir & 0o222:
+        print(f"  DIRETÓRIO {RAW} em {oct(modo_dir)} — gravável")
+        print("    ^ chmod 444 no arquivo NÃO impede rm + recriar")
+        violados += 1
+    else:
+        print(f"  diretório {RAW} em {oct(modo_dir)}, não gravável")
+    print()
+
     print("  modo dos bytes de origem:")
     for p in arquivos:
         modo = stat.S_IMODE(p.stat().st_mode)
@@ -44,8 +57,24 @@ def main() -> int:
             if len(partes) == 2:
                 declarados[Path(partes[1]).name] = partes[0]
 
+    # Regra 2 — ausência de declaração NÃO é sucesso. Até 21/09/2026 este
+    # script devolvia W1=OK sobre um CSV de 11,6 GB sem hash nenhum, que é
+    # justamente o arquivo onde a âncora foi medida.
+    sem_hash = [
+        p.name for p in arquivos
+        if p.name != CHECKSUMS.name and p.name not in declarados
+    ]
+    if sem_hash:
+        print("  arquivos SEM sha256 declarado:")
+        for nome in sem_hash:
+            print(f"    {nome}")
+        print("    ^ trocar este arquivo não seria detectado por nada")
+        violados += len(sem_hash)
+        print()
+
     if not declarados:
         print("  nenhum sha256 declarado em CHECKSUMS.txt")
+        violados += 1
     else:
         print("  sha256 contra o declarado:")
         for nome, esperado in declarados.items():

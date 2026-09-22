@@ -41,13 +41,20 @@ def main() -> int:
             trecho = valor[max(0, s.start() - 30) : s.start() + 30]
             achados.append((n, trecho.strip()))
 
+    # PyYAML é OBRIGATÓRIO. O safe_load é o único mecanismo que pega a
+    # quebra de verdade — a camada de regex abaixo tem cobertura parcial.
+    # Tratar a ausência como sucesso seria verde permanente num CI enxuto.
     try:
         import yaml
+    except ImportError:
+        print("  PyYAML ausente — sem ele não há verificação de verdade")
+        print("  instale: pip install pyyaml")
+        print("YAML_RECEITA=ERRO")
+        return 1
 
+    try:
         yaml.safe_load(io.open(caminho, encoding="utf-8"))
         parseou = True
-    except ImportError:
-        parseou = None
     except Exception as e:
         parseou = False
         print(f"  yaml.safe_load FALHOU: {e}")

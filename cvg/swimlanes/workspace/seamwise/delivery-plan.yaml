@@ -1,6 +1,6 @@
 schema_version: 1
 status: DELIVERY_PLAN=READY
-seam_map_sha256: 00eef61e1211f0a194c5a1be3231c1ef6b7815ce9e665c701f6f0d40291cf97b
+seam_map_sha256: 360cbdc712dd5e09d1c8b08628dbf4759cbd15dce347c85dcb2cc2f1c94f60c0
 swimlanes:
 - id: LANE-CONTRATO
   seam_id: SEAM-CONTRATO
@@ -762,7 +762,31 @@ objections:
     com Bruno Nunes corrigir o requisito citando o ADR 0008, e o R-4 passou a citar o 0009 com a precisão
     derivada e a não-negatividade. Alterar Pass 1 reabre CHECK_TECH_SPEC, mas deixar um `must` com número
     refutado é pior. O hash da tech-spec mudou e checar_evidencia.py acusou, dando o novo.
+- id: OBJ-AG-VERIFICADORES
+  status: FIXED
+  summary: Achado pelo agente code-reviewer — os próprios verificadores tinham falsos verdes, inclusive
+    o que sustenta o ADR 0009.
+  owner: Bruno Nunes
+  rationale: 'Uma causa comum em todos — os scripts distinguiam "não achei o arquivo" de sucesso, mas
+    NÃO distinguiam "li e não havia nada". Reproduzi cada achado antes de corrigir. medir_sinal.py, que
+    mede a premissa do ADR 0009, imprimia "a fórmula do ADR vale" tendo lido ZERO valores, e somava com
+    precisão HERDADA — o script que mede a premissa violando a primeira camada do próprio ADR. checar_w1.py
+    devolvia W1=OK sobre o CSV de 11,6 GB sem hash nenhum, e chmod 444 no arquivo não impede rm-e-recriar,
+    porque a escrita é do DIRETÓRIO — verificado, com _raw em 755 o ataque funciona e em 555 falha. medir_ancora.py
+    aceitava Infinity, e sem gramática convertia ''1.621'' em 1621, inflação de 1000x contada como válida.
+    checar_yaml.py virava verde permanente sem PyYAML. Tudo corrigido e TESTADO contra defeito injetado.
+    E a âncora foi RE-MEDIDA com o script endurecido: os cinco controles batem, o número estava certo
+    e agora a prova também está.'
+- id: OBJ-AG-W1-DIRETORIO
+  status: FIXED
+  summary: A correção de R13-C5 fechou metade do W-1 — o modo do arquivo — e deixou o diretório gravável.
+  owner: Bruno Nunes
+  rationale: Permissão de escrita em Unix é do diretório. Com _raw em 755, um rm seguido de recriação
+    substitui um arquivo 444 e o deixa em 444 de novo, e checar_w1.py diria ok. Aplicado chmod 555 em
+    _raw, e o sha256 do CSV conferido antes e depois. E acrescentado o hash do CSV ao CHECKSUMS.txt —
+    até aqui só o ZIP tinha, e era o CSV onde a âncora foi medida. As duas metades da promessa de W-1
+    agora existem.
 contentions: []
 steel_thread_path: seamwise/steel-thread.md
 steel_thread_sha256: ffb28ecb19188999bee9ce19aa55f8f43a0d1e1bd3e01017d7f9ad3a6d47fb7b
-review_authority_sha256: 66cabaab40f63e701e12ef307650299aed1d92f5f2dd7b80818f0d8c7a5362a5
+review_authority_sha256: 129fdbb3c9675e0927ce46fea82215d37413151f77cec1fb73707f9fef170e8a

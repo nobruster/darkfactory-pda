@@ -28,6 +28,7 @@ from __future__ import annotations
 import argparse
 import csv
 import json
+import re
 import sys
 import time
 from decimal import Decimal, InvalidOperation, localcontext
@@ -37,18 +38,30 @@ from pathlib import Path
 # arredondamento, e quantizar depois não recupera
 PRECISAO = 40
 
+# A gramática monetária MEDIDA na fonte — formato brasileiro, ponto de
+# milhar e vírgula decimal, duas casas. Sem ela, `replace(".", "")` aceita
+# qualquer coisa e converte errado em silêncio:
+#   "1.621"     -> 1621      inflação de 1000x
+#   "1,621.00"  -> 1.62100   divisão por ~1000
+# E `Decimal()` aceita "Infinity" e "NaN", que são construções válidas: o
+# total do universo viraria Infinity com linhas_invalidas=0.
+# É a mesma gramática de medir_gramatica.py e medir_sinal.py — duas
+# gramáticas divergentes no mesmo diretório é que era o defeito.
+GRAMATICA = re.compile(r"^-?\d{1,3}(\.\d{3})*,\d{2}$")
+
 
 def para_decimal(bruto: str) -> Decimal | None:
     """Converte o texto da fonte em Decimal exato, ou devolve None.
 
     A fonte usa vírgula decimal. Nada de float em nenhum ponto: `float(x)`
-    aqui perderia o centavo antes de qualquer soma.
+    aqui perderia o centavo antes de qualquer soma. E nada de converter o
+    que não casa a gramática — ilegível é ilegível, não é zero nem infinito.
     """
-    t = (bruto or "").strip().replace(".", "").replace(",", ".")
-    if not t:
+    t = (bruto or "").strip()
+    if not GRAMATICA.match(t):
         return None
     try:
-        return Decimal(t)
+        return Decimal(t.replace(".", "").replace(",", "."))
     except InvalidOperation:
         return None
 
@@ -100,6 +113,20 @@ def main() -> int:
                 if n_linhas % 5_000_000 == 0:
                     print(f"  ... {n_linhas:,} linhas ({time.time()-t0:.0f}s)",
                           flush=True)
+
+    # Regra 2 — "li e não havia nada" NÃO é uma âncora. Um CSV vazio, ou só
+    # com cabeçalho, ou com _raw montado errado, devolvia count_linhas=0 e
+    # ANCORA=MEDIDA: o gate passaria a comparar contra zero. E uma âncora
+    # sem NENHUMA linha válida é o mesmo palpite por outro caminho.
+    validas = n_linhas - n_invalidas
+    if n_linhas == 0 or validas == 0:
+        print(f"  linhas lidas   : {n_linhas:,}")
+        print(f"  linhas válidas : {validas:,}")
+        print()
+        print("  nenhuma linha válida — não há âncora a declarar")
+        print("  um número que ninguém viu medir é indistinguível de um palpite")
+        print("ANCORA=NAO_MEDIDO", flush=True)
+        return 1
 
     segundos = round(time.time() - t0)
     ancora = {

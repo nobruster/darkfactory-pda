@@ -3,8 +3,8 @@
   "approved": true,
   "kind": "TaskPlan",
   "metadata": {
-    "delivery_plan_review_sha256": "0a91c0e1d762a05df21559dd564f1d98421f2140cf6c347161516991af6cbf66",
-    "delivery_plan_sha256": "d2e32c74e0448cec6c0ef13d4993d2bbccd103fc98ed033faccdaeafb8bc5c88",
+    "delivery_plan_review_sha256": "b4a95a149029c993e6423794cee7cc1162e5e664cfa532ad95d73fab160a9572",
+    "delivery_plan_sha256": "616bedad6e3f2a7507fde37fb497857660dfa667627c4f2aeb28020a71891884",
     "name": "DI-PDA-BENEFICIOS",
     "producer": "seamwise",
     "producer_version": "0.2.0",

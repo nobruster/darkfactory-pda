@@ -3,9 +3,9 @@ status: SEAM_MAP=READY
 intent_id: DI-PDA-BENEFICIOS
 source_recipe:
   name: pda-recipe.yaml
-  sha256: 903f37b8c36c1da96ed8c5883728e959a117072fc82581081125b5d260403105
+  sha256: 332ea0e5d53a4ec3bb95847b328e2d4ca817580ad188e94fbae8c466fc5aff46
 intent_sha256: 836a967d4deb3fe9260e1362fa94bcaf829e9b9268be0dd9fbcc6f06155050d6
-system_map_sha256: 66faf289ae7f7019364123a6122de0ace2c802c9e464a6f0be666c0c06bb8e5f
+system_map_sha256: 41a046732d232cdfd8bd9d33fed05e870615dc29f449163d2cf8e7f360082a10
 evidence_sha256: f601d0840184c26f965db2920850c41b94472dd57c4647ccd73dff8b40a9ca3c
 decisions:
 - id: ADR-0002-POSICIONAL

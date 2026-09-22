@@ -1677,4 +1677,38 @@ objections:
       precisão derivada e a não-negatividade. Alterar Pass 1 reabre
       CHECK_TECH_SPEC, mas deixar um `must` com número refutado é pior.
       O hash da tech-spec mudou e checar_evidencia.py acusou, dando o novo.
+  - id: OBJ-AG-VERIFICADORES
+    status: FIXED
+    summary: >-
+      Achado pelo agente code-reviewer — os próprios verificadores tinham
+      falsos verdes, inclusive o que sustenta o ADR 0009.
+    owner: Bruno Nunes
+    rationale: >-
+      Uma causa comum em todos — os scripts distinguiam "não achei o
+      arquivo" de sucesso, mas NÃO distinguiam "li e não havia nada".
+      Reproduzi cada achado antes de corrigir. medir_sinal.py, que mede a
+      premissa do ADR 0009, imprimia "a fórmula do ADR vale" tendo lido ZERO
+      valores, e somava com precisão HERDADA — o script que mede a premissa
+      violando a primeira camada do próprio ADR. checar_w1.py devolvia
+      W1=OK sobre o CSV de 11,6 GB sem hash nenhum, e chmod 444 no arquivo
+      não impede rm-e-recriar, porque a escrita é do DIRETÓRIO — verificado,
+      com _raw em 755 o ataque funciona e em 555 falha. medir_ancora.py
+      aceitava Infinity, e sem gramática convertia '1.621' em 1621, inflação
+      de 1000x contada como válida. checar_yaml.py virava verde permanente
+      sem PyYAML. Tudo corrigido e TESTADO contra defeito injetado. E a
+      âncora foi RE-MEDIDA com o script endurecido: os cinco controles
+      batem, o número estava certo e agora a prova também está.
+  - id: OBJ-AG-W1-DIRETORIO
+    status: FIXED
+    summary: >-
+      A correção de R13-C5 fechou metade do W-1 — o modo do arquivo — e
+      deixou o diretório gravável.
+    owner: Bruno Nunes
+    rationale: >-
+      Permissão de escrita em Unix é do diretório. Com _raw em 755, um rm
+      seguido de recriação substitui um arquivo 444 e o deixa em 444 de
+      novo, e checar_w1.py diria ok. Aplicado chmod 555 em _raw, e o
+      sha256 do CSV conferido antes e depois. E acrescentado o hash do CSV
+      ao CHECKSUMS.txt — até aqui só o ZIP tinha, e era o CSV onde a âncora
+      foi medida. As duas metades da promessa de W-1 agora existem.
 contentions: []

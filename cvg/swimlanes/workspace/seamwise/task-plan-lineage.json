@@ -1,6 +1,6 @@
 {
   "contract": "SeamwiseTaskPlanLineage/v1",
-  "delivery_plan_sha256": "d2e32c74e0448cec6c0ef13d4993d2bbccd103fc98ed033faccdaeafb8bc5c88",
+  "delivery_plan_sha256": "616bedad6e3f2a7507fde37fb497857660dfa667627c4f2aeb28020a71891884",
   "engine_version": "0.2.0",
   "intent": {
     "id": "DI-PDA-BENEFICIOS",
@@ -8,14 +8,14 @@
   },
   "review": {
     "fixture": false,
-    "plan_sha256": "d2e32c74e0448cec6c0ef13d4993d2bbccd103fc98ed033faccdaeafb8bc5c88",
-    "reviewed_at": "2026-09-22T02:21:25.905774+00:00",
+    "plan_sha256": "616bedad6e3f2a7507fde37fb497857660dfa667627c4f2aeb28020a71891884",
+    "reviewed_at": "2026-09-22T02:32:38.357635+00:00",
     "reviewer": "Bruno Nunes",
-    "sha256": "0a91c0e1d762a05df21559dd564f1d98421f2140cf6c347161516991af6cbf66"
+    "sha256": "b4a95a149029c993e6423794cee7cc1162e5e664cfa532ad95d73fab160a9572"
   },
   "task_plan": {
     "contract": "TaskPlan/v1",
-    "digest": "3bd4eca3fc930de03ffd3aee99d50ec118c81568541d6199a55ccc7c3299c28c",
+    "digest": "21c2fa53c795d4b09643307c71f02ab95d056c288a2d5566bbdc53f60f43d929",
     "path": "seamwise/task-plan.json"
   },
   "units": {
