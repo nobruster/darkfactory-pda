@@ -28,10 +28,14 @@ execution_backend: any
 signed_off: true
 signed_off_by: nobru
 signed_off_at: 2026-09-22T02:47:14Z
-accepted: false
-accepted_by: (none)
-accepted_at: (none)
+accepted: true
+accepted_by: converge-loop
+accepted_at: 2026-09-22T03:22:32Z
 signed_off_sig: hmac-sha256-v3:85d3c104:4cead650a3723a41439d76317c4bb0dac933d55886291ee84c85618e791c6e2f
+accepted_tier: 1
+accepted_attempt_id: 7205ff26-8c2c-45cf-95eb-35015d0d3d37
+accepted_authorization_ref: hmac-sha256-v3:85d3c104:4cead650a3723a41439d76317c4bb0dac933d55886291ee84c85618e791c6e2f
+acceptance_record_digest: sha256:4c77d0dd08a348bee361b0dd6e1e2f80df007bc1e07724b4c76a44941a1ed9cd
 ---
 
 # Ler a competência por posição, sem alterar a fonte

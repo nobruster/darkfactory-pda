@@ -1,0 +1,40 @@
+{
+  "acceptance_tier": 1,
+  "accepted_at": "2026-09-22T03:22:32Z",
+  "accepted_by": "converge-loop",
+  "contract": "AcceptanceRecord/v1",
+  "gate_outcomes": {
+    "authorization": {
+      "code": "AUTHORIZATION_VALID",
+      "status": "pass"
+    },
+    "evaluation": {
+      "code": "EVAL_PASSED",
+      "status": "pass"
+    },
+    "evidence": {
+      "code": "EVIDENCE_SATISFIED",
+      "proof": [
+        "format v3 or earlier: v4 policy receipts are not required"
+      ],
+      "status": "pass"
+    },
+    "preflight": {
+      "code": "PREFLIGHT_PASSED",
+      "status": "pass",
+      "warnings": []
+    }
+  },
+  "outcome": {
+    "code": "ACCEPTED_TIER_1",
+    "status": "accepted"
+  },
+  "receipts": [],
+  "subject": {
+    "attempt_id": "7205ff26-8c2c-45cf-95eb-35015d0d3d37",
+    "authorization_ref": "hmac-sha256-v3:85d3c104:4cead650a3723a41439d76317c4bb0dac933d55886291ee84c85618e791c6e2f",
+    "base_commit": "28e8a5f4314859cc5937c20e7ce83db6b6a273ea",
+    "task_id": "T-20260921-leitura-posicional",
+    "task_revision_digest": "sha256:3d26413b8e644e185c49d7185043e82813bd812f09a9f6c935c753f886862d7a"
+  }
+}
