@@ -1,17 +1,17 @@
 schema_version: 1
 status: DELIVERY_PLAN=READY
-seam_map_sha256: 4d9ba42641d523b56f06bfd990b3f17884202126ba22d6e367d8431d42fab277
+seam_map_sha256: ca3acc9fae366a0fb1966d65e525bb6a80ec81f645088eabae44335c0b81ed86
 swimlanes:
 - id: LANE-CONTRATO
   seam_id: SEAM-CONTRATO
   owner: contrato
   path: seamwise/swimlanes/LANE-CONTRATO.md
-  sha256: 3346827d99d9f6456d030afd4e70dde3ff94e510535f665f100f9ca2b1a14ae0
+  sha256: df715158d8f9ccff762e0e5f92f3532cc1920314b54d8a9de3536fe875474753
 - id: LANE-LEITURA
   seam_id: SEAM-LEITURA
   owner: leitura
   path: seamwise/swimlanes/LANE-LEITURA.md
-  sha256: 23bdf85ce2d78cd8a90466df5f055ff515f04654fd730b3621aef45b609bfac5
+  sha256: f3d0497bd635a86e67e8b648079dd02345e72d0965c69cbc217c4c6002bc72b8
 - id: LANE-AGREGACAO
   seam_id: SEAM-AGREGACAO
   owner: agregacao
@@ -26,7 +26,7 @@ swimlanes:
   seam_id: SEAM-EVIDENCIA
   owner: evidencia
   path: seamwise/swimlanes/LANE-EVIDENCIA.md
-  sha256: e10eaa5d6e3fb48f708c96142f939c8051864b506a99be61484410b3d3ede386
+  sha256: e1cfb99b01f50b6b269a0460619008bd4890f7dc08080f9a27d428ed58f5b8ae
 - id: LANE-ORQUESTRACAO
   seam_id: SEAM-ORQUESTRACAO
   owner: orquestracao
@@ -36,18 +36,18 @@ swimlanes:
   seam_id: SEAM-FRONTEIRA
   owner: fronteira
   path: seamwise/swimlanes/LANE-FRONTEIRA.md
-  sha256: c501168c43bee831f13da69456662b9b8f223fee8a5d4d6a0d1accb8e1a58070
+  sha256: fa27d9b93f319d90b41a47904b4d10443df5faa9ea95ec452ef1c48657bc492f
 legs:
 - id: LEG-CONTRATO-RECUSA-SEM-ANCORA
   seam_id: SEAM-CONTRATO
   swimlane_id: LANE-CONTRATO
   path: seamwise/legs/LEG-CONTRATO-RECUSA-SEM-ANCORA.md
-  sha256: 15b640c5e43c58fb7f202c0f2b2de04338fff49a7752fec59e1c0317e14017b8
+  sha256: 18d5125eb8aee1b87a594069cbd7072a4b4e07fe8e52a7142acc6b3b3de8ead7
 - id: LEG-LEITURA-POSICIONAL
   seam_id: SEAM-LEITURA
   swimlane_id: LANE-LEITURA
   path: seamwise/legs/LEG-LEITURA-POSICIONAL.md
-  sha256: 3fbd4c94fc5d6ea61c9736f340f52e3f23e61d5cca462d0d9b1c63efa9a1896c
+  sha256: 77b9685a3496c012f0fd9f3843d06fd9a5fced0ebd1c3a068c4c3610410af71a
 - id: LEG-AGREGADO-EXATO
   seam_id: SEAM-AGREGACAO
   swimlane_id: LANE-AGREGACAO
@@ -62,7 +62,7 @@ legs:
   seam_id: SEAM-EVIDENCIA
   swimlane_id: LANE-EVIDENCIA
   path: seamwise/legs/LEG-EVIDENCIA-RECONSTROI.md
-  sha256: b522ff9e1a66f36031d2dcc7ce66ef87f9dd55d661e26d7ad3c647923530d2a9
+  sha256: 350845dcf275f3a5c9d5f6575625a5c9ade5efc26867034b684acba615f10ace
 - id: LEG-DESFECHO-COM-PACOTE
   seam_id: SEAM-ORQUESTRACAO
   swimlane_id: LANE-ORQUESTRACAO
@@ -72,7 +72,7 @@ legs:
   seam_id: SEAM-FRONTEIRA
   swimlane_id: LANE-FRONTEIRA
   path: seamwise/legs/LEG-ENVELOPE-VINCULADO.md
-  sha256: a2e5f27dfc278ce000a1660a7336a715c6e3464d0ecbd0bb963726183f24e777
+  sha256: 535e68e2eb52cd58afa1ad4c31c717786e9d3781277337c0957354d9316bb36f
 steel_thread:
 - LEG-CONTRATO-RECUSA-SEM-ANCORA
 - LEG-LEITURA-POSICIONAL
@@ -552,7 +552,51 @@ objections:
   rationale: Produtor e consumidor podiam escolher null, campo omitido ou marcador textual, e o caso que
     a agregação prevê morreria na validação antes de o juízo comparar. B-2 da fronteira passou a declarar
     UMA representação no schema, o literal JSON null, recusando as outras.
+- id: OBJ-R11-C1
+  status: FIXED
+  summary: O pacote não preservava todos os insumos que determinam a validade do contrato — política ausente
+    só era gravada quando recusada.
+  owner: Bruno Nunes
+  rationale: B-1 da evidência passou a gravar aprovador, data, política decimal e a escala declarada que
+    deriva a precisão, como foram lidos. Sem eles o leitor cumpre os campos enumerados e ainda precisa
+    confiar no rótulo da causa.
+- id: OBJ-R11-C2
+  status: FIXED
+  summary: A evidência podia apagar a distinção entre chave omitida e null explícito, que a fronteira
+    trata de formas opostas.
+  owner: Bruno Nunes
+  rationale: Um serializador com get() converte min_vl_liquido omitido e min_vl_liquido=null no mesmo
+    valor; a fronteira recusa a estrutura no primeiro e aceita a ausência no segundo. Numa competência
+    ancorada sem registros legíveis a perda mudaria o veredito rederivado. B-1 passou a distinguir os
+    dois estados.
+- id: OBJ-R11-C3
+  status: FIXED
+  summary: Minha correção de R10-C3 atribuiu a verificação de escala por valor ao carregador, que roda
+    antes da leitura e não vê registro.
+  owner: Bruno Nunes
+  rationale: Erro estrutural, não textual. A verificação passou para QUEM RECEBE O VALOR — a leitura sobre
+    a fonte, a fronteira sobre o envelope externo, ambas contra a escala do contrato. A gramática de duas
+    casas da fonte não cobre mapas externos, que podem ter três.
+- id: OBJ-R11-C4
+  status: FIXED
+  summary: String ou Decimal não garante valor finito — 'NaN', 'sNaN' e 'Infinity' satisfazem o tipo e
+    chegariam ao juízo.
+  owner: Bruno Nunes
+  rationale: A gramática brasileira roda sobre o CSV e não alcança produtor externo. B-2 da fronteira
+    passou a contratar o domínio monetário FINITO e dentro da escala, com recusa do envelope e valor original
+    preservado — nunca uma InvalidOperation levantada ao comparar.
+- id: OBJ-R11-C5
+  status: FIXED
+  summary: Achado por medição própria, antes do adversário — minha regra de truncamento (R2-C6) acusaria
+    TODAS as 41.572.553 linhas.
+  owner: Bruno Nunes
+  rationale: MEDIDO — o campo de descrição é de largura fixa, 20 caracteres brutos em todas as linhas,
+    então bruto==20 marca tudo e não classifica nada; e strip==20 deixa de fora 'Pensão por Morte de ',
+    strip=19, que sozinho funde quatro códigos. Largura é propriedade do layout, não do defeito. Decidido
+    com Bruno Nunes e registrado no ADR 0008, que SUPERSEDES o critério do 0004 — o defeito é IDENTIDADE
+    COLAPSADA, a descrição cobrir mais de um código. Na competência inteira, 11 descrições cobrem 24 códigos.
+    scripts/medir_layout.py e scripts/medir_colapso.py registram (LAYOUT=MEDIDO, COLAPSO=MEDIDO). CHECK_ADR=OK.
 contentions: []
 steel_thread_path: seamwise/steel-thread.md
 steel_thread_sha256: ffb28ecb19188999bee9ce19aa55f8f43a0d1e1bd3e01017d7f9ad3a6d47fb7b
-review_authority_sha256: 1580ddda09483b2668e31c1d2c2fbccb3d79123b4c138bc7e4f80dde1b0ac045
+review_authority_sha256: ffe78395909b6d088b3baf02aa2108f183748b816196ac979ab3d16614f5e844

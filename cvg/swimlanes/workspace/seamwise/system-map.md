@@ -493,6 +493,50 @@ objections:
   rationale: Produtor e consumidor podiam escolher null, campo omitido ou marcador textual, e o caso que
     a agregação prevê morreria na validação antes de o juízo comparar. B-2 da fronteira passou a declarar
     UMA representação no schema, o literal JSON null, recusando as outras.
+- id: OBJ-R11-C1
+  status: FIXED
+  summary: O pacote não preservava todos os insumos que determinam a validade do contrato — política ausente
+    só era gravada quando recusada.
+  owner: Bruno Nunes
+  rationale: B-1 da evidência passou a gravar aprovador, data, política decimal e a escala declarada que
+    deriva a precisão, como foram lidos. Sem eles o leitor cumpre os campos enumerados e ainda precisa
+    confiar no rótulo da causa.
+- id: OBJ-R11-C2
+  status: FIXED
+  summary: A evidência podia apagar a distinção entre chave omitida e null explícito, que a fronteira
+    trata de formas opostas.
+  owner: Bruno Nunes
+  rationale: Um serializador com get() converte min_vl_liquido omitido e min_vl_liquido=null no mesmo
+    valor; a fronteira recusa a estrutura no primeiro e aceita a ausência no segundo. Numa competência
+    ancorada sem registros legíveis a perda mudaria o veredito rederivado. B-1 passou a distinguir os
+    dois estados.
+- id: OBJ-R11-C3
+  status: FIXED
+  summary: Minha correção de R10-C3 atribuiu a verificação de escala por valor ao carregador, que roda
+    antes da leitura e não vê registro.
+  owner: Bruno Nunes
+  rationale: Erro estrutural, não textual. A verificação passou para QUEM RECEBE O VALOR — a leitura sobre
+    a fonte, a fronteira sobre o envelope externo, ambas contra a escala do contrato. A gramática de duas
+    casas da fonte não cobre mapas externos, que podem ter três.
+- id: OBJ-R11-C4
+  status: FIXED
+  summary: String ou Decimal não garante valor finito — 'NaN', 'sNaN' e 'Infinity' satisfazem o tipo e
+    chegariam ao juízo.
+  owner: Bruno Nunes
+  rationale: A gramática brasileira roda sobre o CSV e não alcança produtor externo. B-2 da fronteira
+    passou a contratar o domínio monetário FINITO e dentro da escala, com recusa do envelope e valor original
+    preservado — nunca uma InvalidOperation levantada ao comparar.
+- id: OBJ-R11-C5
+  status: FIXED
+  summary: Achado por medição própria, antes do adversário — minha regra de truncamento (R2-C6) acusaria
+    TODAS as 41.572.553 linhas.
+  owner: Bruno Nunes
+  rationale: MEDIDO — o campo de descrição é de largura fixa, 20 caracteres brutos em todas as linhas,
+    então bruto==20 marca tudo e não classifica nada; e strip==20 deixa de fora 'Pensão por Morte de ',
+    strip=19, que sozinho funde quatro códigos. Largura é propriedade do layout, não do defeito. Decidido
+    com Bruno Nunes e registrado no ADR 0008, que SUPERSEDES o critério do 0004 — o defeito é IDENTIDADE
+    COLAPSADA, a descrição cobrir mais de um código. Na competência inteira, 11 descrições cobrem 24 códigos.
+    scripts/medir_layout.py e scripts/medir_colapso.py registram (LAYOUT=MEDIDO, COLAPSO=MEDIDO). CHECK_ADR=OK.
 contentions: []
 ---
 # System Map

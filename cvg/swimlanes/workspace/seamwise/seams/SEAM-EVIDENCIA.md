@@ -74,8 +74,12 @@ swimlane:
           não é recusa incondicional, ela decide o veredito — e quem decide é a CAUSA registrada, não
           a falta de um hash. Contrato que devolveu NAO_MEDIDO por qualquer motivo — sem âncora, sem aprovador,
           sem data ou sem política decimal — dá ACEITO_SEM_ANCORA, mesmo que o hash ancorado exista e
-          nenhum observado tenha sido produzido; e o pacote grava os CAMPOS DE APROVAÇÃO do contrato como
-          foram lidos, presentes ou ausentes, não só a causa, porque dois contratos em estados de aprovação
+          nenhum observado tenha sido produzido; e o pacote grava TODOS os campos que determinam a validade
+          do contrato como foram lidos — aprovador, data, política decimal e a escala declarada que deriva
+          a precisão — cada um distinguindo CHAVE AUSENTE de valor null, porque montar o pacote com get()
+          tornaria os dois indistinguíveis e a fronteira trata um como estrutura recusada e o outro como
+          ausência aceita; numa competência ancorada sem registros legíveis essa perda mudaria o próprio
+          veredito rederivado. Grava os campos, não só a causa, porque dois contratos em estados de aprovação
           diferentes produziriam os mesmos dados auditáveis e o leitor apenas confiaria no rótulo da causa
           — trocar a confiança no rótulo do veredito pela confiança noutro rótulo não é rederivar, e uma
           causa incorreta passaria sem ninguém ver; ler a falta do hash como se fosse a causa recusaria

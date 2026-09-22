@@ -13,7 +13,7 @@
     "family": "anthropic"
   },
   "verdict": "REVISE",
-  "prompt_sha256": "7a9857cbffdab1c2e6e0db880cec14d1d0f682576033a51b3225af655b003719",
+  "prompt_sha256": "c646b1cb3b785e7cb8bc4efc597de4a0e20afe49aee03a8a551e1008a29bfad8",
   "inputs": [
     {
       "path": "agregacao/LEG-AGREGADO-EXATO.md",
@@ -25,27 +25,27 @@
     },
     {
       "path": "contrato/LEG-CONTRATO-RECUSA-SEM-ANCORA.md",
-      "sha256": "17f399c5bcae30a450dddcd3e390d39db872f91e89346460ba67e8279b7d379c"
+      "sha256": "c1a08b73f97d7c816148b8cb2ea953ba0afc852e7bbc7d2c0564f09c5ee9e952"
     },
     {
       "path": "contrato/_lane.md",
-      "sha256": "76de23098b120d21fbd983914f87ab323e83e422d7ec3faf73aad476c17f8cc8"
+      "sha256": "8ab4d9381cd88b85ab07494fc41bfc94b629bdf2697a78cac77425e3865cde61"
     },
     {
       "path": "evidencia/LEG-EVIDENCIA-RECONSTROI.md",
-      "sha256": "596ee98689f4135963aa5e04705c654527ad25cc13d913c012704f146a0c2753"
+      "sha256": "96de7492b0433271b426aa2f08402c7838513e71ab5f21294cbc5f1dc9322775"
     },
     {
       "path": "evidencia/_lane.md",
-      "sha256": "ee036eb791d28b84586ca248d11c8942ea116bee53ae7b2e056184807cd729ee"
+      "sha256": "ee10579d0ae8f04530cf44335d12232d578ad6ae2b60fb4c8b5ef78d95b5e2c8"
     },
     {
       "path": "fronteira/LEG-ENVELOPE-VINCULADO.md",
-      "sha256": "f76a7641a9795d379da575f4e71c716c15d45323de59a1fc4640f139510997ed"
+      "sha256": "941813be46192b1d7829e26bc306004f9b04c54958c828f765813c4f0a2ee252"
     },
     {
       "path": "fronteira/_lane.md",
-      "sha256": "031e295f480b73e1471706e2db32d79028e6ac8a7051366ee26349fe2f4e8be2"
+      "sha256": "272dc727c8e1c7b7a7d267e484fbd8f52135101a57f16c81b282d48413cded41"
     },
     {
       "path": "juizo/LEG-JUIZO-ACUSA.md",
@@ -57,11 +57,11 @@
     },
     {
       "path": "leitura/LEG-LEITURA-POSICIONAL.md",
-      "sha256": "75b442d1ddac59bb9362939462fc60142d864edbc8d8c84bfffe7b3b7cee438d"
+      "sha256": "9cd5b4cc612ac346d517306c35ab731a6599dafa59469c4bdc143929f6e3bafd"
     },
     {
       "path": "leitura/_lane.md",
-      "sha256": "646477fbe30c6b05f6d610fdad55e8c856502a276a66022b5be68c322303a017"
+      "sha256": "94b9683bcf416d1876b8d6d0a828176970d22d9058793cbcf2e316f9c5fa8235"
     },
     {
       "path": "orquestracao/LEG-DESFECHO-COM-PACOTE.md",
@@ -77,117 +77,130 @@
       "id": "C1",
       "severity": "high",
       "rank": 1,
-      "attack_class": "drift",
-      "swimlane": "leitura",
-      "leg": "LEG-LEITURA-POSICIONAL",
-      "title": "A gram\u00e1tica monet\u00e1ria declarada n\u00e3o reconhece o formato da fonte",
+      "confidence": 0.96,
+      "attack_class": "cross-lane-interface",
+      "swimlane": "evidencia",
+      "leg": "LEG-EVIDENCIA-RECONSTROI",
+      "title": "O pacote n\u00e3o promete todos os insumos que determinam a validade do contrato",
       "location": {
-        "plan_file": "cvg/swimlanes/lanes/leitura/LEG-LEITURA-POSICIONAL.md",
-        "section": "tasks[0].behavior B-2"
+        "plan_file": "cvg/swimlanes/lanes/evidencia/LEG-EVIDENCIA-RECONSTROI.md",
+        "section": "tasks[T-20260921-evidencia-packet].behavior[B-1]"
       },
-      "evidence": "O plano define legibilidade como 'd\u00edgitos com ponto decimal e escala finita'. A tech-spec documenta '1.621,00'; o ADR 0002 registra espa\u00e7os \u00e0 esquerda, ponto de milhar e v\u00edrgula decimal.",
-      "body": "Aplicada ao campo bruto, a gram\u00e1tica do plano classifica valores leg\u00edtimos como VALOR_ILEGIVEL. Aplicada depois de uma normaliza\u00e7\u00e3o n\u00e3o especificada, deixa indefinido quais textos originais s\u00e3o v\u00e1lidos e quais malforma\u00e7\u00f5es ser\u00e3o apagadas. Os testes enumerados exercitam valores especiais, mas n\u00e3o exigem aceitar o exemplo monet\u00e1rio real. Uma implementa\u00e7\u00e3o pode passar esses testes e recusar a compet\u00eancia correta.",
+      "evidence": "B-1 exige registrar campos de aprova\u00e7\u00e3o para NAO_MEDIDO e a pol\u00edtica recusada para RECUSADO. O contrato tamb\u00e9m retorna NAO_MEDIDO por pol\u00edtica ausente e recusa precis\u00e3o insuficiente derivada da \u00e2ncora e da escala.",
+      "body": "A rederiva\u00e7\u00e3o continua incompleta. Um contrato aprovado, com \u00e2ncora e hashes presentes, mas sem pol\u00edtica decimal deve terminar em ACEITO_SEM_ANCORA. O pacote n\u00e3o exige preservar a presen\u00e7a ou aus\u00eancia dessa pol\u00edtica nesse caminho; registr\u00e1-la \u00e9 exigido explicitamente apenas quando recusada. Para precis\u00e3o insuficiente, registrar somente a pol\u00edtica e a cl\u00e1usula violada tamb\u00e9m n\u00e3o garante preservar a escala declarada usada na deriva\u00e7\u00e3o. Implementa\u00e7\u00f5es podem cumprir os campos enumerados e ainda precisar confiar no r\u00f3tulo da causa. Isso quebra a promessa de reconstruir o veredito sem reexecutar nem confiar na conclus\u00e3o gravada.",
       "cites": [
-        "cvg/docs/tech-spec/tech-spec-pda-beneficios.md \u00a7 Data named",
-        "cvg/docs/adrs/0002-especie-appears-twice-so-columns-are-read-by-position.md \u00a7 Evidence e Consequences"
+        "cvg/swimlanes/lanes/contrato/LEG-CONTRATO-RECUSA-SEM-ANCORA.md \u00a7 behavior B-1",
+        "cvg/docs/adrs/0007-decimal-precision-is-derived-from-integer-digits-plus-intermediate-scale.md \u00a7 Decision",
+        "cvg/docs/tech-spec/tech-spec-pda-beneficios.md \u00a7 Scope: pacote de evid\u00eancia"
       ]
     },
     {
       "id": "C2",
       "severity": "high",
       "rank": 2,
+      "confidence": 0.94,
       "attack_class": "cross-lane-interface",
-      "swimlane": "leitura",
-      "leg": "LEG-LEITURA-POSICIONAL",
-      "title": "A refer\u00eancia por c\u00f3digo ganhou uma soma sem obriga\u00e7\u00e3o decimal verific\u00e1vel",
+      "swimlane": "evidencia",
+      "leg": "LEG-EVIDENCIA-RECONSTROI",
+      "title": "A evid\u00eancia pode apagar a distin\u00e7\u00e3o entre campo omitido e null expl\u00edcito",
       "location": {
-        "plan_file": "cvg/swimlanes/lanes/leitura/LEG-LEITURA-POSICIONAL.md",
-        "section": "produces; tasks[0].behavior e evals"
+        "plan_file": "cvg/swimlanes/lanes/evidencia/LEG-EVIDENCIA-RECONSTROI.md",
+        "section": "tasks[T-20260921-evidencia-packet].behavior[B-1]: preserva\u00e7\u00e3o de tipos e aus\u00eancias"
       },
-      "evidence": "A leitura produz 'totais por c\u00f3digo da leitura', mas seus comportamentos e avalia\u00e7\u00f5es n\u00e3o especificam contexto decimal para essa soma. A fronteira B-2 exige que os dois mapas sejam exatos. Contraexemplo executado: com prec=6, 10000.00 + 0.01 resulta em 10000.0; com prec=40, em 10000.01.",
-      "body": "A prote\u00e7\u00e3o de precis\u00e3o especificada para agregacao.py n\u00e3o protege automaticamente leitura.py, que calcula uma refer\u00eancia independente. Se a leitura herdar o contexto global, a fronteira recusar\u00e1 um produtor correto por diverg\u00eancia contra uma refer\u00eancia corrompida. Os testes da leitura podem permanecer verdes, pois nenhum exige exatid\u00e3o desse produto sob contexto ambiente adverso.",
+      "evidence": "A evid\u00eancia preserva o TIPO original dos monet\u00e1rios e marca campos n\u00e3o percorridos como ausentes. A fronteira aceita null para extremos sem registros leg\u00edveis, mas recusa campo omitido.",
+      "body": "Preservar o tipo de campos recebidos n\u00e3o preserva necessariamente quais chaves chegaram. Um serializador que use get para montar o pacote converte tanto min_vl_liquido omitido quanto min_vl_liquido=null no mesmo valor. No primeiro caso a fronteira recusa a estrutura; no segundo ela aceita a representa\u00e7\u00e3o de aus\u00eancia. Ambos os envelopes podem produzir controles globalmente divergentes nesta compet\u00eancia e terminar RECUSADO, escondendo a perda da causa. Para uma compet\u00eancia ancorada sem registros leg\u00edveis, a perda pode mudar o pr\u00f3prio veredito rederivado. A obriga\u00e7\u00e3o de distinguir esses estados n\u00e3o aparece no plano de evid\u00eancia, embora a fronteira dependa dela.",
       "cites": [
-        "cvg/docs/tech-spec/tech-spec-pda-beneficios.md \u00a7 Requirements R-4",
-        "cvg/docs/adrs/0007-decimal-precision-is-derived-from-integer-digits-plus-intermediate-scale.md \u00a7 Decision",
-        "cvg/swimlanes/lanes/fronteira/LEG-ENVELOPE-VINCULADO.md \u00a7 behavior B-2"
+        "cvg/swimlanes/lanes/fronteira/LEG-ENVELOPE-VINCULADO.md \u00a7 behavior B-2: null permitido; campo omitido recusado",
+        "cvg/swimlanes/lanes/agregacao/LEG-AGREGADO-EXATO.md \u00a7 behavior B-1: nenhum registro leg\u00edvel",
+        "cvg/docs/tech-spec/tech-spec-pda-beneficios.md \u00a7 Problem restated: reconstru\u00e7\u00e3o da decis\u00e3o"
       ]
     },
     {
       "id": "C3",
       "severity": "high",
       "rank": 3,
-      "attack_class": "unverified-assumption",
-      "swimlane": "agregacao",
-      "leg": "LEG-AGREGADO-EXATO",
-      "title": "A sufici\u00eancia da precis\u00e3o depende de uma escala que o fluxo n\u00e3o verifica",
+      "confidence": 0.9,
+      "attack_class": "cross-lane-interface",
+      "swimlane": "contrato",
+      "leg": "LEG-CONTRATO-RECUSA-SEM-ANCORA",
+      "title": "A verifica\u00e7\u00e3o de escala por valor foi atribu\u00edda a uma etapa sem acesso aos valores",
       "location": {
-        "plan_file": "cvg/swimlanes/lanes/agregacao/LEG-AGREGADO-EXATO.md",
-        "section": "tasks[0].behavior B-2"
+        "plan_file": "cvg/swimlanes/lanes/contrato/LEG-CONTRATO-RECUSA-SEM-ANCORA.md",
+        "section": "requires; tasks[T-20260921-contrato-ancora].behavior[B-1]"
       },
-      "evidence": "O contrato deriva prec=14 de 11 d\u00edgitos inteiros e escala m\u00e1xima 3. A leitura aceita 'escala finita', sem vincul\u00e1-la ao m\u00e1ximo contratado. Contraexemplo executado: em prec=14, 78521752562.12 + 0.0005 + 0.0005 resulta em 78521752562.120; a soma exata \u00e9 78521752562.1210.",
-      "body": "O carregador valida uma declara\u00e7\u00e3o, mas nenhuma obriga\u00e7\u00e3o do plano verifica que os valores usados na soma respeitam essa declara\u00e7\u00e3o. Escala finita n\u00e3o significa escala menor ou igual a 3. Assim, a precis\u00e3o validada pode perder informa\u00e7\u00e3o durante a soma e ainda produzir o mesmo total global arredondado. Isso viola a exatid\u00e3o prometida para os mapas por c\u00f3digo. Permanece aberta a decis\u00e3o de tratamento de uma entrada fora da escala contratada; n\u00e3o cabe ao advers\u00e1rio inventar esse desfecho.",
+      "evidence": "O contrato tem requires vazio e promete que 'A escala declarada \u00e9 VERIFICADA valor a valor'. A leitura declara sua gram\u00e1tica; a agrega\u00e7\u00e3o declara a soma; nenhuma das duas assume explicitamente essa verifica\u00e7\u00e3o contra a escala carregada.",
+      "body": "O carregador valida o contrato antes da leitura e n\u00e3o recebe registros. Portanto, n\u00e3o pode cumprir sozinho a verifica\u00e7\u00e3o por valor que sustenta a sufici\u00eancia da precis\u00e3o. A gram\u00e1tica de duas casas da fonte atual n\u00e3o cobre a entrada direta do agregador nem envelopes externos, cujos mapas devem permanecer exatos e podem ter tr\u00eas casas. Um valor de quatro casas pode alcan\u00e7ar a soma com precis\u00e3o derivada para tr\u00eas sem violar uma obriga\u00e7\u00e3o expl\u00edcita da etapa que o recebe. A perda pode contaminar mapas por c\u00f3digo antes da compara\u00e7\u00e3o. Os evals do contrato tamb\u00e9m n\u00e3o nomeiam um caso que exer\u00e7a a passagem desse valor pela etapa consumidora.",
       "cites": [
-        "cvg/docs/tech-spec/tech-spec-pda-beneficios.md \u00a7 Requirements R-4",
+        "cvg/swimlanes/lanes/leitura/LEG-LEITURA-POSICIONAL.md \u00a7 behavior B-1/B-2",
+        "cvg/swimlanes/lanes/agregacao/LEG-AGREGADO-EXATO.md \u00a7 behavior B-2",
+        "cvg/swimlanes/lanes/fronteira/LEG-ENVELOPE-VINCULADO.md \u00a7 behavior B-2: mapas n\u00e3o quantizados",
         "cvg/docs/adrs/0007-decimal-precision-is-derived-from-integer-digits-plus-intermediate-scale.md \u00a7 Decision e Consequences",
-        "cvg/swimlanes/lanes/contrato/LEG-CONTRATO-RECUSA-SEM-ANCORA.md \u00a7 behavior B-1",
-        "cvg/swimlanes/lanes/leitura/LEG-LEITURA-POSICIONAL.md \u00a7 behavior B-2"
+        "cvg/docs/tech-spec/tech-spec-pda-beneficios.md \u00a7 R-4"
       ]
     },
     {
       "id": "C4",
-      "severity": "high",
+      "severity": "medium",
       "rank": 4,
-      "attack_class": "observability",
-      "swimlane": "evidencia",
-      "leg": "LEG-EVIDENCIA-RECONSTROI",
-      "title": "NAO_MEDIDO \u00e9 reproduzido pela causa declarada, sem prova das condi\u00e7\u00f5es do contrato",
+      "confidence": 0.92,
+      "attack_class": "unverified-assumption",
+      "swimlane": "fronteira",
+      "leg": "LEG-ENVELOPE-VINCULADO",
+      "title": "String ou Decimal n\u00e3o garante um valor monet\u00e1rio finito no envelope externo",
       "location": {
-        "plan_file": "cvg/swimlanes/lanes/evidencia/LEG-EVIDENCIA-RECONSTROI.md",
-        "section": "tasks[0].behavior B-1"
+        "plan_file": "cvg/swimlanes/lanes/fronteira/LEG-ENVELOPE-VINCULADO.md",
+        "section": "tasks[T-20260921-envelope-fronteira].behavior[B-2]"
       },
-      "evidence": "O plano diz que 'quem decide \u00e9 a CAUSA registrada' e que 'NAO_MEDIDO decide antes'. Exige preservar pol\u00edtica e cl\u00e1usula violada para contrato RECUSADO, mas n\u00e3o exige preservar aprovador, data e estado da pol\u00edtica nos caminhos NAO_MEDIDO.",
-      "body": "Para uma \u00e2ncora existente que n\u00e3o foi validada por falta de aprovador, data ou pol\u00edtica, o pacote prometido n\u00e3o necessariamente cont\u00e9m os insumos que distinguem esses motivos. Dois contratos com estados de aprova\u00e7\u00e3o diferentes podem gerar os mesmos dados audit\u00e1veis, acrescidos apenas da causa declarada. O leitor consegue reproduzir a decis\u00e3o confiando nessa causa, mas n\u00e3o rederiv\u00e1-la nem detectar uma causa incorreta. A prova anunciada desloca a confian\u00e7a do r\u00f3tulo do veredito para outro r\u00f3tulo.",
+      "evidence": "B-2 exige string ou Decimal para todo dinheiro. A recusa expl\u00edcita de NaN e Infinity est\u00e1 no leitor do CSV, n\u00e3o no contrato do envelope externo.",
+      "body": "Um envelope pode trazer 'NaN', 'sNaN', 'Infinity' ou Decimal n\u00e3o finito e satisfazer a exig\u00eancia de tipo. A gram\u00e1tica brasileira aplicada ao CSV n\u00e3o \u00e9 executada sobre o produtor externo. Dependendo da opera\u00e7\u00e3o escolhida, a valida\u00e7\u00e3o pode levantar InvalidOperation em vez de produzir uma recusa de envelope, ou entregar valores especiais ao ju\u00edzo e ao serializador. A recusa de float n\u00e3o prova esse caso. Falta definir o dom\u00ednio monet\u00e1rio da fronteira e demonstrar que um valor especial termina como entrada recusada com evid\u00eancia preservada.",
       "cites": [
-        "cvg/docs/tech-spec/tech-spec-pda-beneficios.md \u00a7 Scope e Data named",
-        "cvg/swimlanes/lanes/contrato/LEG-CONTRATO-RECUSA-SEM-ANCORA.md \u00a7 behavior B-1 e B-2",
-        "cvg/swimlanes/lanes/evidencia/LEG-EVIDENCIA-RECONSTROI.md \u00a7 Observable proof"
+        "cvg/swimlanes/lanes/leitura/LEG-LEITURA-POSICIONAL.md \u00a7 behavior B-2: risco de NaN",
+        "cvg/swimlanes/lanes/orquestracao/LEG-DESFECHO-COM-PACOTE.md \u00a7 behavior B-2: exce\u00e7\u00f5es viram ERRO",
+        "cvg/docs/adrs/0006-the-judge-ships-before-the-spark-producer-that-it-will-judge.md \u00a7 Consequences: envelope declarado",
+        "cvg/docs/tech-spec/tech-spec-pda-beneficios.md \u00a7 R-4 e R-5"
       ]
     },
     {
       "id": "C5",
       "severity": "medium",
       "rank": 5,
-      "attack_class": "cross-lane-interface",
-      "swimlane": "fronteira",
-      "leg": "LEG-ENVELOPE-VINCULADO",
-      "title": "Extremos ausentes n\u00e3o t\u00eam representa\u00e7\u00e3o contratada na fronteira",
+      "confidence": 0.85,
+      "attack_class": "unverified-assumption",
+      "swimlane": "leitura",
+      "leg": "LEG-LEITURA-POSICIONAL",
+      "title": "A interface pode exigir materializa\u00e7\u00e3o incompat\u00edvel com a compet\u00eancia completa",
       "location": {
-        "plan_file": "cvg/swimlanes/lanes/fronteira/LEG-ENVELOPE-VINCULADO.md",
-        "section": "tasks[0].behavior B-2; creates_paths"
+        "plan_file": "cvg/swimlanes/lanes/leitura/LEG-LEITURA-POSICIONAL.md",
+        "section": "produces; tasks[T-20260921-leitura-posicional].behavior[B-1/B-2]"
       },
-      "evidence": "A agrega\u00e7\u00e3o B-1 determina min/max AUSENTES quando nenhum registro \u00e9 leg\u00edvel e exige que a aus\u00eancia atravesse a fronteira. A fronteira exige string ou Decimal para TODO campo monet\u00e1rio, incluindo os tr\u00eas controles globais, sem definir uma variante de aus\u00eancia.",
-      "body": "O produtor pode emitir null, omitir o campo ou emitir um marcador textual, enquanto o schema e o consumidor escolhem representa\u00e7\u00f5es incompat\u00edveis. O caso explicitamente previsto pela agrega\u00e7\u00e3o ent\u00e3o falha na valida\u00e7\u00e3o ou na convers\u00e3o, antes de o ju\u00edzo comparar os controles. Os testes enumerados da fronteira n\u00e3o exercitam esse caminho. A obriga\u00e7\u00e3o de transportar aus\u00eancia existe, mas sua representa\u00e7\u00e3o e interpreta\u00e7\u00e3o ainda n\u00e3o constituem um contrato entre as lanes.",
+      "evidence": "A leitura entrega registros, defeitos, hash final e totais por c\u00f3digo. A evid\u00eancia exige duas listas de defeitos separadas. O terreno documenta CSV de 10,88 GB, 41.572.553 registros e milh\u00f5es de truncamentos.",
+      "body": "N\u00e3o est\u00e1 definido se registros e defeitos s\u00e3o materializados ou consumidos progressivamente, nem como o consumidor obt\u00e9m o hash final e os totais ao terminar o consumo. Devolver uma lista de registros ap\u00f3s concluir a leitura \u00e9 uma implementa\u00e7\u00e3o compat\u00edvel com o texto e pode exceder a mem\u00f3ria dispon\u00edvel; devolver um iterador muda o momento em que as demais capacidades ficam completas. As duas listas de defeitos e sua serializa\u00e7\u00e3o ampliam o risco. A fixture m\u00ednima n\u00e3o refuta nenhuma dessas falhas. Trata-se de uma pergunta de interface e viabilidade, n\u00e3o de uma exig\u00eancia nova de infraestrutura ou de timeout.",
       "cites": [
-        "cvg/docs/tech-spec/tech-spec-pda-beneficios.md \u00a7 Requirements R-5",
-        "cvg/swimlanes/lanes/agregacao/LEG-AGREGADO-EXATO.md \u00a7 behavior B-1",
-        "cvg/swimlanes/lanes/evidencia/LEG-EVIDENCIA-RECONSTROI.md \u00a7 behavior B-1"
+        "cvg/swimlanes/lanes/agregacao/LEG-AGREGADO-EXATO.md \u00a7 requires",
+        "cvg/swimlanes/lanes/evidencia/LEG-EVIDENCIA-RECONSTROI.md \u00a7 behavior B-1: duas listas de defeitos",
+        "cvg/docs/adrs/0000-context.md \u00a7 Given surface: CSV de 10,88 GB",
+        "cvg/docs/tech-spec/tech-spec-pda-beneficios.md \u00a7 R-9"
       ]
     }
   ],
   "cross_lane_interfaces": [],
   "fork": {
     "choice": "B",
-    "reason": "Escolha j\u00e1 declarada nos planos; n\u00e3o decidida pelo advers\u00e1rio.",
+    "reason": "Transcrito dos sete arquivos _lane.md; nenhuma escolha feita pelo advers\u00e1rio.",
     "per_plan_declared": true
   },
   "open_questions": [
     {
-      "q": "Qual desfecho contratual se aplica quando a escala monet\u00e1ria observada excede a escala m\u00e1xima usada para derivar a precis\u00e3o? A decis\u00e3o precisa voltar ao contrato, sem ser inventada na implementa\u00e7\u00e3o.",
+      "q": "Qual etapa existente assume a verifica\u00e7\u00e3o da escala de cada valor contra o contrato antes de qualquer soma?",
       "blocks_build": true
     },
     {
-      "q": "Como registrar formalmente obje\u00e7\u00f5es abertas se o schema exige resolu\u00e7\u00e3o humana em todas elas? Este ataque n\u00e3o cont\u00e9m decis\u00f5es FIX ou ACCEPT.",
+      "q": "Quais campos e estados de presen\u00e7a do contrato e do envelope comp\u00f5em a entrada completa da rederiva\u00e7\u00e3o?",
       "blocks_build": true
+    },
+    {
+      "q": "Como registros, defeitos e resultados finais da leitura atravessam a interface sem exigir a materializa\u00e7\u00e3o da compet\u00eancia inteira?",
+      "blocks_build": false
     }
   ],
   "rounds_run": 1

@@ -1,6 +1,6 @@
 > Projetado de `LEG-EVIDENCIA-RECONSTROI.md` pelo Seamwise.
 > **Não edite aqui** — edite a recipe e rode `seamwise plan`.
-> origem sha256: `b522ff9e1a66f36031d2dcc7ce66ef87f9dd55d661e26d7ad3c647923530d2a9`
+> origem sha256: `350845dcf275f3a5c9d5f6575625a5c9ade5efc26867034b684acba615f10ace`
 
 ---
 
@@ -58,20 +58,24 @@ tasks:
       ela decide o veredito — e quem decide é a CAUSA registrada, não a falta de um hash. Contrato que
       devolveu NAO_MEDIDO por qualquer motivo — sem âncora, sem aprovador, sem data ou sem política decimal
       — dá ACEITO_SEM_ANCORA, mesmo que o hash ancorado exista e nenhum observado tenha sido produzido;
-      e o pacote grava os CAMPOS DE APROVAÇÃO do contrato como foram lidos, presentes ou ausentes, não
-      só a causa, porque dois contratos em estados de aprovação diferentes produziriam os mesmos dados
-      auditáveis e o leitor apenas confiaria no rótulo da causa — trocar a confiança no rótulo do veredito
-      pela confiança noutro rótulo não é rederivar, e uma causa incorreta passaria sem ninguém ver; ler
-      a falta do hash como se fosse a causa recusaria justamente o pacote que a orquestração deve gravar.
-      Falta o observado COM evento de falha registrado e é execução interrompida, desfecho ERRO. Contrato
-      RECUSADO no carregamento, por política que contradiz o ADR, é um terceiro caminho antecipado — termina
-      sem hash observado, sem agregado e sem envelope, não é NAO_MEDIDO nem exceção, e o pacote grava
-      a política recusada e a cláusula do ADR violada, que é o que a rederivação precisa para reconstruir
-      esse RECUSADO sem depender do rótulo. A precedência é declarada, não deduzida — NAO_MEDIDO decide
-      antes, RECUSADO por contrato exige a política gravada, e ERRO exige o evento. Os três casos gravam
-      pacote válido; recusar qualquer um impediria de gravar justamente a execução que precisa de registro.
-      Só é recusado o pacote cujo rótulo não bate com o que os insumos rederivam; campos não percorridos
-      são marcados ausentes, nunca zerados
+      e o pacote grava TODOS os campos que determinam a validade do contrato como foram lidos — aprovador,
+      data, política decimal e a escala declarada que deriva a precisão — cada um distinguindo CHAVE AUSENTE
+      de valor null, porque montar o pacote com get() tornaria os dois indistinguíveis e a fronteira trata
+      um como estrutura recusada e o outro como ausência aceita; numa competência ancorada sem registros
+      legíveis essa perda mudaria o próprio veredito rederivado. Grava os campos, não só a causa, porque
+      dois contratos em estados de aprovação diferentes produziriam os mesmos dados auditáveis e o leitor
+      apenas confiaria no rótulo da causa — trocar a confiança no rótulo do veredito pela confiança noutro
+      rótulo não é rederivar, e uma causa incorreta passaria sem ninguém ver; ler a falta do hash como
+      se fosse a causa recusaria justamente o pacote que a orquestração deve gravar. Falta o observado
+      COM evento de falha registrado e é execução interrompida, desfecho ERRO. Contrato RECUSADO no carregamento,
+      por política que contradiz o ADR, é um terceiro caminho antecipado — termina sem hash observado,
+      sem agregado e sem envelope, não é NAO_MEDIDO nem exceção, e o pacote grava a política recusada
+      e a cláusula do ADR violada, que é o que a rederivação precisa para reconstruir esse RECUSADO sem
+      depender do rótulo. A precedência é declarada, não deduzida — NAO_MEDIDO decide antes, RECUSADO
+      por contrato exige a política gravada, e ERRO exige o evento. Os três casos gravam pacote válido;
+      recusar qualquer um impediria de gravar justamente a execução que precisa de registro. Só é recusado
+      o pacote cujo rótulo não bate com o que os insumos rederivam; campos não percorridos são marcados
+      ausentes, nunca zerados
   - id: B-2
     given: duas execuções da mesma competência
     when: a segunda é gravada
@@ -108,7 +112,7 @@ tasks:
   - evidence
   rollback: Remover o gravador de evidência e seus testes.
   observability: pacotes gravados por competência
-source_seam_sha256: 3976ca5bfeee6c425fc18401d3c329bd099e2ff7c1aecc3020f4692aa79780b7
+source_seam_sha256: af9b55a61fe92faceea980b8ced4466ffb99d9347a966a5640835c8b0ab371f7
 ---
 # O pacote reconstrói o veredito sem reexecutar
 

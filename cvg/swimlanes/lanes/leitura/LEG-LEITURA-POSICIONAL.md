@@ -1,6 +1,6 @@
 > Projetado de `LEG-LEITURA-POSICIONAL.md` pelo Seamwise.
 > **Não edite aqui** — edite a recipe e rode `seamwise plan`.
-> origem sha256: `3fbd4c94fc5d6ea61c9736f340f52e3f23e61d5cca462d0d9b1c63efa9a1896c`
+> origem sha256: `77b9685a3496c012f0fd9f3843d06fd9a5fced0ebd1c3a068c4c3610410af71a`
 
 ---
 
@@ -69,9 +69,12 @@ tasks:
       é parte da gramática, não um passo implícito — retira o preenchimento, exige o padrão e só então
       converte. Uma gramática de ponto decimal recusaria a competência inteira — os quatro passam pelo
       construtor, e um NaN chegaria vivo aos extremos, onde min levanta InvalidOperation e transformaria
-      defeito de UMA linha em ERRO da execução inteira. Os quatro exemplos do ADR emitem defeito de truncamento
-      sem serem inválidos, porque o critério é o campo BRUTO ocupar os 20 caracteres do layout — medir
-      após strip deixaria o exemplo principal do ADR de fora
+      defeito de UMA linha em ERRO da execução inteira. E a descrição emite defeito de IDENTIDADE COLAPSADA,
+      sem tornar a linha inválida, quando cobre mais de um código — critério do ADR 0008, medido na competência
+      inteira — 11 descrições cobrem 24 códigos, entre elas 'Pensão por Morte de ' fundindo 01, 03, 23
+      e 59. Largura NÃO é critério — as 41.572.553 descrições têm 20 caracteres brutos, então bruto==20
+      acusaria toda linha, e strip==20 deixaria de fora justamente esse colapso de quatro códigos, cujo
+      strip é 19
   evals:
   - id: eval_1
     description: Leitura posicional; Espécie 12 e 13 trocadas entre si bloqueiam
@@ -79,8 +82,8 @@ tasks:
     verifies:
     - B-1
   - id: eval_2
-    description: Ilegível vira inválida; NaN e Infinity também; truncada emite defeito
-    bash: pytest -q tests/test_leitura.py -k "invalida or gramatica_monetaria or truncamento_emitido"
+    description: Ilegível vira inválida; NaN também; descrição que colapsa códigos acusa
+    bash: pytest -q tests/test_leitura.py -k "invalida or gramatica_monetaria or identidade_colapsada"
     verifies:
     - B-2
   - id: eval_3
@@ -103,7 +106,7 @@ tasks:
   - _raw
   rollback: Remover o leitor e seus testes.
   observability: registros lidos e defeitos por tipo
-source_seam_sha256: 567a04e3b5791d31fc62f1e369f489ed31a4537dd54a3e18cc5f4e35f2f2fcb9
+source_seam_sha256: 6cfd00cd1f7000c62d0e3c30355f1080ab429fdc03bd87a1ef6140b4324837a2
 ---
 # A leitura é posicional e não altera a fonte
 

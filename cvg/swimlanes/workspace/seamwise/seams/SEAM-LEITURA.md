@@ -89,9 +89,12 @@ swimlane:
           e a normalização é parte da gramática, não um passo implícito — retira o preenchimento, exige
           o padrão e só então converte. Uma gramática de ponto decimal recusaria a competência inteira
           — os quatro passam pelo construtor, e um NaN chegaria vivo aos extremos, onde min levanta InvalidOperation
-          e transformaria defeito de UMA linha em ERRO da execução inteira. Os quatro exemplos do ADR
-          emitem defeito de truncamento sem serem inválidos, porque o critério é o campo BRUTO ocupar
-          os 20 caracteres do layout — medir após strip deixaria o exemplo principal do ADR de fora
+          e transformaria defeito de UMA linha em ERRO da execução inteira. E a descrição emite defeito
+          de IDENTIDADE COLAPSADA, sem tornar a linha inválida, quando cobre mais de um código — critério
+          do ADR 0008, medido na competência inteira — 11 descrições cobrem 24 códigos, entre elas 'Pensão
+          por Morte de ' fundindo 01, 03, 23 e 59. Largura NÃO é critério — as 41.572.553 descrições têm
+          20 caracteres brutos, então bruto==20 acusaria toda linha, e strip==20 deixaria de fora justamente
+          esse colapso de quatro códigos, cujo strip é 19
       evals:
       - id: eval_1
         description: Leitura posicional; Espécie 12 e 13 trocadas entre si bloqueiam
@@ -99,8 +102,8 @@ swimlane:
         verifies:
         - B-1
       - id: eval_2
-        description: Ilegível vira inválida; NaN e Infinity também; truncada emite defeito
-        bash: pytest -q tests/test_leitura.py -k "invalida or gramatica_monetaria or truncamento_emitido"
+        description: Ilegível vira inválida; NaN também; descrição que colapsa códigos acusa
+        bash: pytest -q tests/test_leitura.py -k "invalida or gramatica_monetaria or identidade_colapsada"
         verifies:
         - B-2
       - id: eval_3
