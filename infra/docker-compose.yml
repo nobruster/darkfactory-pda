@@ -60,7 +60,16 @@ services:
         condition: service_completed_successfully
     # Sem SPARK_MODE: a imagem oficial não tem o entrypoint do Bitnami.
     # O contêiner fica vivo e o produtor roda via `docker compose exec`.
-    command: ["sleep", "infinity"]
+    #
+    # PyYAML entra aqui, não à mão: o contrato é YAML e `carregar_contrato`
+    # precisa dele. Instalar por fora daria um contêiner que funciona nesta
+    # máquina e falha na próxima — o mesmo tipo de armadilha ambiental que
+    # reprovou o selo do Pass 5 três vezes.
+    user: root
+    command:
+      - /bin/sh
+      - -c
+      - "pip install --quiet --no-cache-dir pyyaml==6.0.2 && sleep infinity"
     environment:
       # A imagem oficial traz pyspark.zip em /opt/spark/python/lib mas deixa
       # SPARK_HOME e PYTHONPATH vazios — sem isto, `import pyspark` falha
