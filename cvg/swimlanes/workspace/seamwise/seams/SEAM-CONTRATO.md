@@ -57,16 +57,17 @@ swimlane:
         given: um contrato com os cinco controles nomeados, a procedência, o layout posicional e os DOIS
           hashes — o do ZIP publicado e o do CSV extraído sobre o qual a âncora foi medida
         when: o contrato é carregado
-        then: âncora, procedência, layout, os dois hashes e a POLÍTICA DECIMAL saem juntos — precisão,
-          granularidade e modo de arredondamento são dados carregados do contrato, como o ADR 0003 exige,
-          não escolha privada de quem implementa. Contrato SEM política decimal é NAO_MEDIDO, senão o
-          agregador local fixa a sua, passa nos exemplos, e um produtor externo escolhe outra sem nada
-          acusar. E contrato COM política que contradiz o ADR — HALF_UP, ou granularidade por campo —
-          é RECUSADO no carregamento, não validado, porque um contrato contraditório deixaria o agregador
-          entre obedecer ao contrato e obedecer à decisão vinculante; a validação confere a política contra
-          o ADR, e nunca o contrário. Falta o hash do CSV e também é NAO_MEDIDO, porque hoje só o ZIP
-          tem checksum e a âncora foi medida no CSV — sem o par, trocar o CSV extraído não seria detectado;
-          sem aprovador ou sem data, idem
+        then: âncora, procedência, layout, os dois hashes, a CARDINALIDADE de códigos medida na competência
+          inteira — 65 nesta, não os 51 amostrados pelo ADR 0004 — e a POLÍTICA DECIMAL saem juntos —
+          precisão, granularidade e modo de arredondamento são dados carregados do contrato, como o ADR
+          0003 exige, não escolha privada de quem implementa. Contrato SEM política decimal é NAO_MEDIDO,
+          senão o agregador local fixa a sua, passa nos exemplos, e um produtor externo escolhe outra
+          sem nada acusar. E contrato COM política que contradiz o ADR — HALF_UP, ou granularidade por
+          campo — é RECUSADO no carregamento, não validado, porque um contrato contraditório deixaria
+          o agregador entre obedecer ao contrato e obedecer à decisão vinculante; a validação confere
+          a política contra o ADR, e nunca o contrário. Falta o hash do CSV e também é NAO_MEDIDO, porque
+          hoje só o ZIP tem checksum e a âncora foi medida no CSV — sem o par, trocar o CSV extraído não
+          seria detectado; sem aprovador ou sem data, idem
       - id: B-2
         given: uma competência sem âncora no contrato
         when: o contrato é carregado

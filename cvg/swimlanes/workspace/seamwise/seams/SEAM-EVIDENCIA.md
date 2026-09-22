@@ -71,10 +71,14 @@ swimlane:
           decimal — dá ACEITO_SEM_ANCORA, mesmo que o hash ancorado exista e nenhum observado tenha sido
           produzido; ler a falta do hash como se fosse a causa recusaria justamente o pacote que a orquestração
           deve gravar. Falta o observado COM evento de falha registrado e é execução interrompida, desfecho
-          ERRO. A precedência é declarada, não deduzida — NAO_MEDIDO decide antes, e ERRO exige o evento.
-          Os três casos gravam pacote válido; recusar qualquer um impediria de gravar justamente a execução
-          que precisa de registro. Só é recusado o pacote cujo rótulo não bate com o que os insumos rederivam;
-          campos não percorridos são marcados ausentes, nunca zerados
+          ERRO. Contrato RECUSADO no carregamento, por política que contradiz o ADR, é um terceiro caminho
+          antecipado — termina sem hash observado, sem agregado e sem envelope, não é NAO_MEDIDO nem exceção,
+          e o pacote grava a política recusada e a cláusula do ADR violada, que é o que a rederivação
+          precisa para reconstruir esse RECUSADO sem depender do rótulo. A precedência é declarada, não
+          deduzida — NAO_MEDIDO decide antes, RECUSADO por contrato exige a política gravada, e ERRO exige
+          o evento. Os três casos gravam pacote válido; recusar qualquer um impediria de gravar justamente
+          a execução que precisa de registro. Só é recusado o pacote cujo rótulo não bate com o que os
+          insumos rederivam; campos não percorridos são marcados ausentes, nunca zerados
       - id: B-2
         given: duas execuções da mesma competência
         when: a segunda é gravada

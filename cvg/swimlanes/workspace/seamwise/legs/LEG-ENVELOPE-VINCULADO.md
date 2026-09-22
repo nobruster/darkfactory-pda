@@ -54,15 +54,23 @@ tasks:
     when: o envelope é validado
     then: o primeiro é recusado; o segundo é ACEITO — truncamento é defeito numa linha válida, e a competência
       2026-01 tem linhas_invalidas=0 com milhões de truncamentos; o terceiro é aceito sem que o juiz importe
-      nada do motor produtor. O quarto é RECUSADO na fronteira, antes de qualquer conversão — os três
-      monetários são contratados como string ou Decimal, e converter com Decimal(str(v)) apagaria a prova
-      de que veio float, então a recusa do agregador local não cobre produtor externo. O quinto é RECUSADO
-      por omissão — os defeitos observados na leitura têm de chegar ao juiz por contagem e por tipo, senão
-      o juiz aprova lista vazia sem violar classificação única, porque o defeito sumiu antes de chegar
-      nele. E o envelope declara o agregado POR CÓDIGO de espécie, com os 51 códigos do ADR 0004 como
-      chaves — um produtor externo que agrupasse por descrição colapsaria espécies e ainda declararia
-      os mesmos cinco controles, hashes e defeitos, e nada na fronteira ou no juízo distinguiria; R-3
-      vale para o produtor externo, não só para o local
+      nada do motor produtor. O quarto é RECUSADO na fronteira, antes de qualquer conversão — TODO campo
+      monetário do envelope é contratado como string ou Decimal, os três controles globais e também cada
+      total por código, porque R-4 e o ADR 0003 valem para todo dinheiro e não só para os três; um envelope
+      com controles em string e totais por espécie como número JSON satisfaria uma recusa escrita só para
+      os três. Converter com Decimal(str(v)) apagaria a prova de que veio float, então a recusa do agregador
+      local não cobre produtor externo. O quinto é RECUSADO por omissão — e a conferência é POR IDENTIDADE
+      de cada defeito, a que a leitura produz com valor original e posição, não por contagem e tipo —
+      dois defeitos A e B do mesmo tipo, com A duplicado e B omitido, preservam contagem e tipo, cada
+      entrada declarada recebe sua classificação única, e B nunca é classificado, violando R-6 com juízo
+      e rederivação concordando entre si. Conferir por contagem deixaria a substituição passar, e só a
+      omissão seria vista. E o envelope declara o agregado POR CÓDIGO de espécie, com as chaves conferidas
+      contra a cardinalidade ANCORADA no contrato — medida na competência inteira, nunca os 51 do ADR
+      0004, que saíram de ~3 milhões de linhas; exigir 51 recusaria esta competência, que tem 65 códigos,
+      entre eles o '60' com 1.395 ocorrências em 41,5 milhões. E cada total por código é CONFERIDO contra
+      a leitura, não só a presença da chave — um produtor que agrupasse por descrição e atribuísse o total
+      ao primeiro código, zerando os demais, manteria todas as chaves, os cinco controles, hashes e defeitos
+      idênticos; R-3 vale para o produtor externo, e prova-se por valor, não por forma
   evals:
   - id: eval_1
     description: Sha ausente, divergente, ou copiado de outro arquivo lido é recusado
@@ -70,9 +78,9 @@ tasks:
     verifies:
     - B-1
   - id: eval_2
-    description: linhas_invalidas por tipo; float recusado na fronteira; omissão de defeito recusada
-    bash: pytest -q tests/test_envelope.py -k "invalidas_por_tipo or truncamento_nao_invalida or float_no_envelope
-      or defeito_omitido"
+    description: Float em todo campo monetário; defeito por identidade; total por código conferido
+    bash: pytest -q tests/test_envelope.py -k "invalidas_por_tipo or float_em_todo_monetario or defeito_por_identidade
+      or total_por_codigo"
     verifies:
     - B-2
   - id: eval_3
@@ -97,7 +105,7 @@ tasks:
   - cvg/docs/adrs
   rollback: Remover o validador de envelope e seus testes.
   observability: envelopes recusados por motivo
-source_seam_sha256: 5ef1d24ee47daa1e741f8d63e85aa51c55ec65fbf534a7bc8359f0ef34acd365
+source_seam_sha256: dcc5e436c0f1bc485dea6ac890700cc9e3805addc700942b8375c629373e22f5
 ---
 # O envelope liga o agregado ao arquivo que o gerou
 

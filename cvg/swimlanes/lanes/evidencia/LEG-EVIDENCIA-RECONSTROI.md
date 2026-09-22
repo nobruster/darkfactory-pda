@@ -1,6 +1,6 @@
 > Projetado de `LEG-EVIDENCIA-RECONSTROI.md` pelo Seamwise.
 > **Não edite aqui** — edite a recipe e rode `seamwise plan`.
-> origem sha256: `4d1a4d806c3aba709819bc6cf539aea93cd425aaf54e1adcce24c9f2d39942a7`
+> origem sha256: `99daf12fc49c25d9a349154161c4ddd60eba2795333e0b2534d53dbe9405433f`
 
 ---
 
@@ -54,8 +54,12 @@ tasks:
       motivo — sem âncora, sem aprovador, sem data ou sem política decimal — dá ACEITO_SEM_ANCORA, mesmo
       que o hash ancorado exista e nenhum observado tenha sido produzido; ler a falta do hash como se
       fosse a causa recusaria justamente o pacote que a orquestração deve gravar. Falta o observado COM
-      evento de falha registrado e é execução interrompida, desfecho ERRO. A precedência é declarada,
-      não deduzida — NAO_MEDIDO decide antes, e ERRO exige o evento. Os três casos gravam pacote válido;
+      evento de falha registrado e é execução interrompida, desfecho ERRO. Contrato RECUSADO no carregamento,
+      por política que contradiz o ADR, é um terceiro caminho antecipado — termina sem hash observado,
+      sem agregado e sem envelope, não é NAO_MEDIDO nem exceção, e o pacote grava a política recusada
+      e a cláusula do ADR violada, que é o que a rederivação precisa para reconstruir esse RECUSADO sem
+      depender do rótulo. A precedência é declarada, não deduzida — NAO_MEDIDO decide antes, RECUSADO
+      por contrato exige a política gravada, e ERRO exige o evento. Os três casos gravam pacote válido;
       recusar qualquer um impediria de gravar justamente a execução que precisa de registro. Só é recusado
       o pacote cujo rótulo não bate com o que os insumos rederivam; campos não percorridos são marcados
       ausentes, nunca zerados
@@ -95,7 +99,7 @@ tasks:
   - evidence
   rollback: Remover o gravador de evidência e seus testes.
   observability: pacotes gravados por competência
-source_seam_sha256: 233b620d755094821f5641a9a186d24655f2bd1a1388e9c504cc1b99ec86b2a7
+source_seam_sha256: 8e43a4963b9c98454e75f8bab3c849165068a71303027946a8d00e0ae0b87994
 ---
 # O pacote reconstrói o veredito sem reexecutar
 

@@ -1,6 +1,6 @@
 > Projetado de `LEG-DESFECHO-COM-PACOTE.md` pelo Seamwise.
 > **Não edite aqui** — edite a recipe e rode `seamwise plan`.
-> origem sha256: `3c45bde1aa7e7908963a4a01a173a11f1ffa1cded81ea0308a32bd2739146786`
+> origem sha256: `ef94a338230e4c8ae2880216cb2f2b8b4a8f12e376ad0f070a9aa3ac6e2d2f4e`
 
 ---
 
@@ -54,14 +54,16 @@ tasks:
       FALHA se um juízo permissivo for injetado. Sem reancorar, a fronteira recusaria pelo sha256 antes
       do juízo comparar, e o teste ficaria verde com juízo permissivo — provando metade do que R-7 escreveu
   - id: B-2
-    given: uma exceção real levantada dentro da leitura, e uma execução cujo tempo total é medido
+    given: uma exceção real levantada dentro da leitura, uma execução com contrato de política HALF_UP,
+      e uma execução cujo tempo total é medido
     when: a orquestração conduz a execução
-    then: a exceção vira ERRO com pacote gravado, e o tempo do início da leitura ao veredito é medido
-      e REGISTRADO no pacote, sem virar recusa — R-9 é should, e o pacote passa a carregar o número para
-      que a cobertura de R-9 seja decidida contra competência real, não contra relógio simulado. Se o
-      PRÓPRIO gravador falhar — permissão negada, disco cheio — o desfecho é ERRO com código próprio e
-      a falha vai para a saída de erro; nunca se devolve ACEITO sem pacote, porque autorização sem evidência
-      é o que esta fábrica existe para impedir
+    then: o contrato HALF_UP termina em RECUSADO com pacote gravado, sem chegar à leitura — caminho exercido
+      aqui, não só declarado no contrato; a exceção vira ERRO com pacote gravado, e o tempo do início
+      da leitura ao veredito é medido e REGISTRADO no pacote, sem virar recusa — R-9 é should, e o pacote
+      passa a carregar o número para que a cobertura de R-9 seja decidida contra competência real, não
+      contra relógio simulado. Se o PRÓPRIO gravador falhar — permissão negada, disco cheio — o desfecho
+      é ERRO com código próprio e a falha vai para a saída de erro; nunca se devolve ACEITO sem pacote,
+      porque autorização sem evidência é o que esta fábrica existe para impedir
   evals:
   - id: eval_1
     description: R-7 numa prova só — centavo alterado, hash reancorado, juízo permissivo falha
@@ -94,7 +96,7 @@ tasks:
   - cvg/docs/adrs
   rollback: Remover a orquestração e seus testes.
   observability: desfechos por tipo e segundos até o veredito
-source_seam_sha256: 00f982524034c26ed6c4481689e926a715a859b6734c83bb693ae7bdf390e6a1
+source_seam_sha256: d60e54d99ed9a2cf2cefcb80089ef00582b4abf3140d7695f3c09ec76633dd8b
 ---
 # Todo caminho termina com pacote e código de saída
 

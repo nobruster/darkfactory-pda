@@ -2,7 +2,7 @@ FORK: B (task-driven) — rota única desde a v3.4 — o consenso sempre entrega
 
 > Projetado de `LANE-ORQUESTRACAO.md` pelo Seamwise.
 > **Não edite aqui** — edite a recipe e rode `seamwise plan`.
-> origem sha256: `46125fc69cb057df25cb23e28a032749b2653a3fae19ab1d9fefb3141cd0b96c`
+> origem sha256: `e83b9f8b621e55f56fabe5d5d577de267b36bc1c1d7d1beb42acc33a963b03bf`
 
 ---
 
@@ -14,7 +14,7 @@ id: LANE-ORQUESTRACAO
 name: Orquestração lane
 owner: orquestracao
 seam_id: SEAM-ORQUESTRACAO
-source_seam_sha256: 00f982524034c26ed6c4481689e926a715a859b6734c83bb693ae7bdf390e6a1
+source_seam_sha256: d60e54d99ed9a2cf2cefcb80089ef00582b4abf3140d7695f3c09ec76633dd8b
 legs:
 - LEG-DESFECHO-COM-PACOTE
 ---

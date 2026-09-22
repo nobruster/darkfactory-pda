@@ -321,6 +321,49 @@ objections:
     a declarar que R-9 NÃO está coberto aqui, e o tempo é medido e registrado no pacote para que a cobertura
     seja decidida contra competência real. Declarar cobertura que o teste não entrega é verde pelo motivo
     errado.
+- id: OBJ-R7-C1
+  status: FIXED
+  summary: Minha correção de R6-C3 tratou os 51 códigos do ADR 0004 como o universo; eles saíram de uma
+    AMOSTRA de ~3 milhões de linhas.
+  owner: Bruno Nunes
+  rationale: 'MEDIDO NA COMPETÊNCIA INTEIRA, e o adversário estava certo — são 65 códigos, não 51. A regra
+    que escrevi RECUSARIA o arquivo correto. A cauda mostra por que a amostra não os viu: o código ''60''
+    aparece 1.395 vezes em 41.572.553 linhas. É a Regra 3 pelo avesso — um gate calibrado em amostra recusa
+    a verdade. A cardinalidade passou a ser ANCORADA no contrato, medida na competência inteira, e scripts/medir_codigos.py
+    registra a medição (CODIGOS=MEDIDO).'
+- id: OBJ-R7-C2
+  status: FIXED
+  summary: Minha correção de R6-C4 criou um RECUSADO no carregamento do contrato sem caminho de rederivação
+    nem exercício na orquestração.
+  owner: Bruno Nunes
+  rationale: Mesmo padrão das rodadas 5 e 6 — garantia nova cria estado novo cuja consequência eu não
+    declaro. B-1 da evidência passou a antecipar o terceiro caminho, gravando a política recusada e a
+    cláusula do ADR violada; B-2 da orquestração passou a exercitá-lo.
+- id: OBJ-R7-C3
+  status: FIXED
+  summary: Exigir os códigos como chaves não prova agrupamento correto — dá para atribuir o total ao primeiro
+    código e zerar os demais.
+  owner: Bruno Nunes
+  rationale: Todas as chaves presentes, cinco controles, hashes e defeitos idênticos, e as espécies fundidas
+    mesmo assim. B-2 da fronteira passou a CONFERIR cada total por código contra a leitura — R-3 prova-se
+    por valor, não por forma.
+- id: OBJ-R7-C4
+  status: FIXED
+  summary: A recusa de float cobria os três controles globais e deixava o dinheiro por espécie sem contrato.
+  owner: Bruno Nunes
+  rationale: Um envelope com controles em string e totais por espécie como número JSON satisfaria a recusa
+    escrita só para os três, e o produtor externo introduziria float sem passar pelo agregador local.
+    B-2 da fronteira passou a contratar TODO campo monetário, porque R-4 e o ADR 0003 valem para todo
+    dinheiro.
+- id: OBJ-R7-C5
+  status: FIXED
+  summary: Conferir defeitos por contagem e tipo não detecta substituição — A duplicado e B omitido preserva
+    ambas as contagens.
+  owner: Bruno Nunes
+  rationale: 'Contraexemplo válido e mais fino que a omissão que eu tinha coberto: cada entrada declarada
+    recebe classificação única, B nunca é classificado, e juízo e rederivação concordam violando R-6.
+    B-2 da fronteira passou a conferir POR IDENTIDADE, com valor original e posição, que é o que a leitura
+    já produz.'
 contentions: []
 ---
 # System Map

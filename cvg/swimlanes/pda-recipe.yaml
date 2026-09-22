@@ -145,7 +145,7 @@ seams:
                 - id: B-1
                   given: um contrato com os cinco controles nomeados, a procedência, o layout posicional e os DOIS hashes — o do ZIP publicado e o do CSV extraído sobre o qual a âncora foi medida
                   when: o contrato é carregado
-                  then: âncora, procedência, layout, os dois hashes e a POLÍTICA DECIMAL saem juntos — precisão, granularidade e modo de arredondamento são dados carregados do contrato, como o ADR 0003 exige, não escolha privada de quem implementa. Contrato SEM política decimal é NAO_MEDIDO, senão o agregador local fixa a sua, passa nos exemplos, e um produtor externo escolhe outra sem nada acusar. E contrato COM política que contradiz o ADR — HALF_UP, ou granularidade por campo — é RECUSADO no carregamento, não validado, porque um contrato contraditório deixaria o agregador entre obedecer ao contrato e obedecer à decisão vinculante; a validação confere a política contra o ADR, e nunca o contrário. Falta o hash do CSV e também é NAO_MEDIDO, porque hoje só o ZIP tem checksum e a âncora foi medida no CSV — sem o par, trocar o CSV extraído não seria detectado; sem aprovador ou sem data, idem
+                  then: âncora, procedência, layout, os dois hashes, a CARDINALIDADE de códigos medida na competência inteira — 65 nesta, não os 51 amostrados pelo ADR 0004 — e a POLÍTICA DECIMAL saem juntos — precisão, granularidade e modo de arredondamento são dados carregados do contrato, como o ADR 0003 exige, não escolha privada de quem implementa. Contrato SEM política decimal é NAO_MEDIDO, senão o agregador local fixa a sua, passa nos exemplos, e um produtor externo escolhe outra sem nada acusar. E contrato COM política que contradiz o ADR — HALF_UP, ou granularidade por campo — é RECUSADO no carregamento, não validado, porque um contrato contraditório deixaria o agregador entre obedecer ao contrato e obedecer à decisão vinculante; a validação confere a política contra o ADR, e nunca o contrário. Falta o hash do CSV e também é NAO_MEDIDO, porque hoje só o ZIP tem checksum e a âncora foi medida no CSV — sem o par, trocar o CSV extraído não seria detectado; sem aprovador ou sem data, idem
                 - id: B-2
                   given: uma competência sem âncora no contrato
                   when: o contrato é carregado
@@ -315,7 +315,7 @@ seams:
                 - id: B-2
                   given: um contexto decimal de precisão baixa, valores em empate exato, e a alternativa meio-para-cima
                   when: o total é calculado
-                  then: o resultado é o de HALF_EVEN a duas casas — comparado contra o valor que HALF_UP produziria, e RECUSANDO-o; declarar um modo não basta, o teste falha se a implementação usar meio-para-cima. A perda por precisão baixa também é acusada, e arredondar por campo difere de arredondar no total. E a SAÍDA do agregador preserva os códigos distintos do ADR 0004 — os 51 códigos que colapsam em 40 descrições aparecem como 51 chaves, e o teste falha se a chave do agregador entregue for a descrição, porque demonstrar dentro do teste que os dois agrupamentos diferem continuaria verdadeiro com um agregador que usa a descrição
+                  then: o resultado é o de HALF_EVEN a duas casas — comparado contra o valor que HALF_UP produziria, e RECUSANDO-o; declarar um modo não basta, o teste falha se a implementação usar meio-para-cima. A perda por precisão baixa também é acusada, e arredondar por campo difere de arredondar no total. E a SAÍDA do agregador preserva os códigos distintos — tantos quantos a competência tiver, conferidos contra a cardinalidade ancorada no contrato e NÃO contra os 51 do ADR 0004, que foram medidos em ~3 milhões de linhas; na competência inteira são 65, e fixar 51 recusaria o arquivo correto. O teste falha se a chave do agregador entregue for a descrição, porque demonstrar dentro do teste que os dois agrupamentos diferem continuaria verdadeiro com um agregador que usa a descrição
               evals:
                 - id: eval_1
                   description: Float recusado; dois de contagem e três monetários; ilegível excluído, não zerado
@@ -326,8 +326,8 @@ seams:
                   bash: pytest -q tests/test_agregacao.py -k "recusa_half_up or precisao_declarada or granularidade"
                   verifies: [B-2]
                 - id: eval_3
-                  description: A saída preserva os 51 códigos; trocar a chave por descrição faz falhar
-                  bash: pytest -q tests/test_agregacao.py -k "chave_e_codigo or saida_preserva_codigos"
+                  description: A saída preserva a cardinalidade ancorada; chave por descrição faz falhar
+                  bash: pytest -q tests/test_agregacao.py -k "chave_e_codigo or cardinalidade_ancorada"
                   verifies: [B-1, B-2]
               anti_patterns:
                 - action: herdar o arredondamento padrão da linguagem
@@ -473,7 +473,7 @@ seams:
                 - id: B-1
                   given: uma execução com âncora, outra que terminou antes da leitura, e um pacote adulterado onde só o rótulo do veredito foi trocado
                   when: o pacote é lido de volta
-                  then: o veredito é REDERIVADO dos cinco controles, da âncora, das classificações de cada diferença, dos hashes e das DUAS listas de defeitos — a observada na leitura e a declarada no envelope, gravadas separadamente, senão um RECUSADO legítimo por omissão rederivaria ACEITO, já que controles e hashes coincidem e só a divergência entre as listas explica a recusa; o pacote adulterado é recusado porque o rótulo discorda do que esses insumos produzem. São TRÊS os hashes gravados, os mesmos que a fronteira compara — o ANCORADO do contrato, o OBSERVADO computado na leitura e o DECLARADO no envelope; com dois só, um pacote legítimo de RECUSADO por ancorado=observado e declarado divergente rederivaria ACEITO e seria rejeitado. A ausência não é recusa incondicional, ela decide o veredito — e quem decide é a CAUSA registrada, não a falta de um hash. Contrato que devolveu NAO_MEDIDO por qualquer motivo — sem âncora, sem aprovador, sem data ou sem política decimal — dá ACEITO_SEM_ANCORA, mesmo que o hash ancorado exista e nenhum observado tenha sido produzido; ler a falta do hash como se fosse a causa recusaria justamente o pacote que a orquestração deve gravar. Falta o observado COM evento de falha registrado e é execução interrompida, desfecho ERRO. A precedência é declarada, não deduzida — NAO_MEDIDO decide antes, e ERRO exige o evento. Os três casos gravam pacote válido; recusar qualquer um impediria de gravar justamente a execução que precisa de registro. Só é recusado o pacote cujo rótulo não bate com o que os insumos rederivam; campos não percorridos são marcados ausentes, nunca zerados
+                  then: o veredito é REDERIVADO dos cinco controles, da âncora, das classificações de cada diferença, dos hashes e das DUAS listas de defeitos — a observada na leitura e a declarada no envelope, gravadas separadamente, senão um RECUSADO legítimo por omissão rederivaria ACEITO, já que controles e hashes coincidem e só a divergência entre as listas explica a recusa; o pacote adulterado é recusado porque o rótulo discorda do que esses insumos produzem. São TRÊS os hashes gravados, os mesmos que a fronteira compara — o ANCORADO do contrato, o OBSERVADO computado na leitura e o DECLARADO no envelope; com dois só, um pacote legítimo de RECUSADO por ancorado=observado e declarado divergente rederivaria ACEITO e seria rejeitado. A ausência não é recusa incondicional, ela decide o veredito — e quem decide é a CAUSA registrada, não a falta de um hash. Contrato que devolveu NAO_MEDIDO por qualquer motivo — sem âncora, sem aprovador, sem data ou sem política decimal — dá ACEITO_SEM_ANCORA, mesmo que o hash ancorado exista e nenhum observado tenha sido produzido; ler a falta do hash como se fosse a causa recusaria justamente o pacote que a orquestração deve gravar. Falta o observado COM evento de falha registrado e é execução interrompida, desfecho ERRO. Contrato RECUSADO no carregamento, por política que contradiz o ADR, é um terceiro caminho antecipado — termina sem hash observado, sem agregado e sem envelope, não é NAO_MEDIDO nem exceção, e o pacote grava a política recusada e a cláusula do ADR violada, que é o que a rederivação precisa para reconstruir esse RECUSADO sem depender do rótulo. A precedência é declarada, não deduzida — NAO_MEDIDO decide antes, RECUSADO por contrato exige a política gravada, e ERRO exige o evento. Os três casos gravam pacote válido; recusar qualquer um impediria de gravar justamente a execução que precisa de registro. Só é recusado o pacote cujo rótulo não bate com o que os insumos rederivam; campos não percorridos são marcados ausentes, nunca zerados
                 - id: B-2
                   given: duas execuções da mesma competência
                   when: a segunda é gravada
@@ -561,9 +561,9 @@ seams:
                   when: a orquestração conduz o fluxo inteiro
                   then: as três gravam pacote, com ACEITO_SEM_ANCORA, ACEITO e RECUSADO de códigos de saída distintos, e só ACEITO autoriza publicar. O caso de R-7 é UMA prova conjunta, não duas separadas — a alteração é real nos bytes, a recusa vem do JUÍZO comparando contra a âncora monetária original, e o teste FALHA se um juízo permissivo for injetado. Sem reancorar, a fronteira recusaria pelo sha256 antes do juízo comparar, e o teste ficaria verde com juízo permissivo — provando metade do que R-7 escreveu
                 - id: B-2
-                  given: uma exceção real levantada dentro da leitura, e uma execução cujo tempo total é medido
+                  given: uma exceção real levantada dentro da leitura, uma execução com contrato de política HALF_UP, e uma execução cujo tempo total é medido
                   when: a orquestração conduz a execução
-                  then: a exceção vira ERRO com pacote gravado, e o tempo do início da leitura ao veredito é medido e REGISTRADO no pacote, sem virar recusa — R-9 é should, e o pacote passa a carregar o número para que a cobertura de R-9 seja decidida contra competência real, não contra relógio simulado. Se o PRÓPRIO gravador falhar — permissão negada, disco cheio — o desfecho é ERRO com código próprio e a falha vai para a saída de erro; nunca se devolve ACEITO sem pacote, porque autorização sem evidência é o que esta fábrica existe para impedir
+                  then: o contrato HALF_UP termina em RECUSADO com pacote gravado, sem chegar à leitura — caminho exercido aqui, não só declarado no contrato; a exceção vira ERRO com pacote gravado, e o tempo do início da leitura ao veredito é medido e REGISTRADO no pacote, sem virar recusa — R-9 é should, e o pacote passa a carregar o número para que a cobertura de R-9 seja decidida contra competência real, não contra relógio simulado. Se o PRÓPRIO gravador falhar — permissão negada, disco cheio — o desfecho é ERRO com código próprio e a falha vai para a saída de erro; nunca se devolve ACEITO sem pacote, porque autorização sem evidência é o que esta fábrica existe para impedir
               evals:
                 - id: eval_1
                   description: R-7 numa prova só — centavo alterado, hash reancorado, juízo permissivo falha
@@ -660,15 +660,15 @@ seams:
                 - id: B-2
                   given: um envelope onde linhas_invalidas diverge dos defeitos do tipo VALOR_ILEGIVEL, outro com linhas_invalidas=0 e defeitos de truncamento, outro produzido por motor que não é o juiz, outro cujos três controles monetários vêm como número JSON, e outro que OMITE truncamentos que a leitura observou
                   when: o envelope é validado
-                  then: o primeiro é recusado; o segundo é ACEITO — truncamento é defeito numa linha válida, e a competência 2026-01 tem linhas_invalidas=0 com milhões de truncamentos; o terceiro é aceito sem que o juiz importe nada do motor produtor. O quarto é RECUSADO na fronteira, antes de qualquer conversão — os três monetários são contratados como string ou Decimal, e converter com Decimal(str(v)) apagaria a prova de que veio float, então a recusa do agregador local não cobre produtor externo. O quinto é RECUSADO por omissão — os defeitos observados na leitura têm de chegar ao juiz por contagem e por tipo, senão o juiz aprova lista vazia sem violar classificação única, porque o defeito sumiu antes de chegar nele. E o envelope declara o agregado POR CÓDIGO de espécie, com os 51 códigos do ADR 0004 como chaves — um produtor externo que agrupasse por descrição colapsaria espécies e ainda declararia os mesmos cinco controles, hashes e defeitos, e nada na fronteira ou no juízo distinguiria; R-3 vale para o produtor externo, não só para o local
+                  then: o primeiro é recusado; o segundo é ACEITO — truncamento é defeito numa linha válida, e a competência 2026-01 tem linhas_invalidas=0 com milhões de truncamentos; o terceiro é aceito sem que o juiz importe nada do motor produtor. O quarto é RECUSADO na fronteira, antes de qualquer conversão — TODO campo monetário do envelope é contratado como string ou Decimal, os três controles globais e também cada total por código, porque R-4 e o ADR 0003 valem para todo dinheiro e não só para os três; um envelope com controles em string e totais por espécie como número JSON satisfaria uma recusa escrita só para os três. Converter com Decimal(str(v)) apagaria a prova de que veio float, então a recusa do agregador local não cobre produtor externo. O quinto é RECUSADO por omissão — e a conferência é POR IDENTIDADE de cada defeito, a que a leitura produz com valor original e posição, não por contagem e tipo — dois defeitos A e B do mesmo tipo, com A duplicado e B omitido, preservam contagem e tipo, cada entrada declarada recebe sua classificação única, e B nunca é classificado, violando R-6 com juízo e rederivação concordando entre si. Conferir por contagem deixaria a substituição passar, e só a omissão seria vista. E o envelope declara o agregado POR CÓDIGO de espécie, com as chaves conferidas contra a cardinalidade ANCORADA no contrato — medida na competência inteira, nunca os 51 do ADR 0004, que saíram de ~3 milhões de linhas; exigir 51 recusaria esta competência, que tem 65 códigos, entre eles o '60' com 1.395 ocorrências em 41,5 milhões. E cada total por código é CONFERIDO contra a leitura, não só a presença da chave — um produtor que agrupasse por descrição e atribuísse o total ao primeiro código, zerando os demais, manteria todas as chaves, os cinco controles, hashes e defeitos idênticos; R-3 vale para o produtor externo, e prova-se por valor, não por forma
               evals:
                 - id: eval_1
                   description: Sha ausente, divergente, ou copiado de outro arquivo lido é recusado
                   bash: pytest -q tests/test_envelope.py -k "sha_ausente or sha_divergente or sha_copiado_outro_arquivo"
                   verifies: [B-1]
                 - id: eval_2
-                  description: linhas_invalidas por tipo; float recusado na fronteira; omissão de defeito recusada
-                  bash: pytest -q tests/test_envelope.py -k "invalidas_por_tipo or truncamento_nao_invalida or float_no_envelope or defeito_omitido"
+                  description: Float em todo campo monetário; defeito por identidade; total por código conferido
+                  bash: pytest -q tests/test_envelope.py -k "invalidas_por_tipo or float_em_todo_monetario or defeito_por_identidade or total_por_codigo"
                   verifies: [B-2]
                 - id: eval_3
                   description: O schema aceita envelope de qualquer produtor, sem importar o motor
@@ -1119,4 +1119,64 @@ objections:
       tempo é medido e registrado no pacote para que a cobertura seja
       decidida contra competência real. Declarar cobertura que o teste não
       entrega é verde pelo motivo errado.
+  - id: OBJ-R7-C1
+    status: FIXED
+    summary: >-
+      Minha correção de R6-C3 tratou os 51 códigos do ADR 0004 como o
+      universo; eles saíram de uma AMOSTRA de ~3 milhões de linhas.
+    owner: Bruno Nunes
+    rationale: >-
+      MEDIDO NA COMPETÊNCIA INTEIRA, e o adversário estava certo — são 65
+      códigos, não 51. A regra que escrevi RECUSARIA o arquivo correto. A
+      cauda mostra por que a amostra não os viu: o código '60' aparece 1.395
+      vezes em 41.572.553 linhas. É a Regra 3 pelo avesso — um gate
+      calibrado em amostra recusa a verdade. A cardinalidade passou a ser
+      ANCORADA no contrato, medida na competência inteira, e
+      scripts/medir_codigos.py registra a medição (CODIGOS=MEDIDO).
+  - id: OBJ-R7-C2
+    status: FIXED
+    summary: >-
+      Minha correção de R6-C4 criou um RECUSADO no carregamento do contrato
+      sem caminho de rederivação nem exercício na orquestração.
+    owner: Bruno Nunes
+    rationale: >-
+      Mesmo padrão das rodadas 5 e 6 — garantia nova cria estado novo cuja
+      consequência eu não declaro. B-1 da evidência passou a antecipar o
+      terceiro caminho, gravando a política recusada e a cláusula do ADR
+      violada; B-2 da orquestração passou a exercitá-lo.
+  - id: OBJ-R7-C3
+    status: FIXED
+    summary: >-
+      Exigir os códigos como chaves não prova agrupamento correto — dá para
+      atribuir o total ao primeiro código e zerar os demais.
+    owner: Bruno Nunes
+    rationale: >-
+      Todas as chaves presentes, cinco controles, hashes e defeitos
+      idênticos, e as espécies fundidas mesmo assim. B-2 da fronteira passou
+      a CONFERIR cada total por código contra a leitura — R-3 prova-se por
+      valor, não por forma.
+  - id: OBJ-R7-C4
+    status: FIXED
+    summary: >-
+      A recusa de float cobria os três controles globais e deixava o
+      dinheiro por espécie sem contrato.
+    owner: Bruno Nunes
+    rationale: >-
+      Um envelope com controles em string e totais por espécie como número
+      JSON satisfaria a recusa escrita só para os três, e o produtor externo
+      introduziria float sem passar pelo agregador local. B-2 da fronteira
+      passou a contratar TODO campo monetário, porque R-4 e o ADR 0003 valem
+      para todo dinheiro.
+  - id: OBJ-R7-C5
+    status: FIXED
+    summary: >-
+      Conferir defeitos por contagem e tipo não detecta substituição — A
+      duplicado e B omitido preserva ambas as contagens.
+    owner: Bruno Nunes
+    rationale: >-
+      Contraexemplo válido e mais fino que a omissão que eu tinha coberto:
+      cada entrada declarada recebe classificação única, B nunca é
+      classificado, e juízo e rederivação concordam violando R-6. B-2 da
+      fronteira passou a conferir POR IDENTIDADE, com valor original e
+      posição, que é o que a leitura já produz.
 contentions: []

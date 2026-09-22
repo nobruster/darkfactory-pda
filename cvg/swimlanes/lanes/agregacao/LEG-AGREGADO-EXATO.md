@@ -1,6 +1,6 @@
 > Projetado de `LEG-AGREGADO-EXATO.md` pelo Seamwise.
 > **Não edite aqui** — edite a recipe e rode `seamwise plan`.
-> origem sha256: `0c4cd9237a9dbcf2a2a790d0831e2607484f89bc90499953b7d44e091bc8b6c2`
+> origem sha256: `0f82e61d42b134cf8bb4fea9eef8d1c3c7debe88b481ab70183ca322c7fd5824`
 
 ---
 
@@ -54,10 +54,11 @@ tasks:
     then: o resultado é o de HALF_EVEN a duas casas — comparado contra o valor que HALF_UP produziria,
       e RECUSANDO-o; declarar um modo não basta, o teste falha se a implementação usar meio-para-cima.
       A perda por precisão baixa também é acusada, e arredondar por campo difere de arredondar no total.
-      E a SAÍDA do agregador preserva os códigos distintos do ADR 0004 — os 51 códigos que colapsam em
-      40 descrições aparecem como 51 chaves, e o teste falha se a chave do agregador entregue for a descrição,
-      porque demonstrar dentro do teste que os dois agrupamentos diferem continuaria verdadeiro com um
-      agregador que usa a descrição
+      E a SAÍDA do agregador preserva os códigos distintos — tantos quantos a competência tiver, conferidos
+      contra a cardinalidade ancorada no contrato e NÃO contra os 51 do ADR 0004, que foram medidos em
+      ~3 milhões de linhas; na competência inteira são 65, e fixar 51 recusaria o arquivo correto. O teste
+      falha se a chave do agregador entregue for a descrição, porque demonstrar dentro do teste que os
+      dois agrupamentos diferem continuaria verdadeiro com um agregador que usa a descrição
   evals:
   - id: eval_1
     description: Float recusado; dois de contagem e três monetários; ilegível excluído, não zerado
@@ -70,8 +71,8 @@ tasks:
     verifies:
     - B-2
   - id: eval_3
-    description: A saída preserva os 51 códigos; trocar a chave por descrição faz falhar
-    bash: pytest -q tests/test_agregacao.py -k "chave_e_codigo or saida_preserva_codigos"
+    description: A saída preserva a cardinalidade ancorada; chave por descrição faz falhar
+    bash: pytest -q tests/test_agregacao.py -k "chave_e_codigo or cardinalidade_ancorada"
     verifies:
     - B-1
     - B-2
@@ -90,7 +91,7 @@ tasks:
   - cvg/docs/adrs
   rollback: Remover o agregador e seus testes.
   observability: total agregado e espécies distintas
-source_seam_sha256: 50ec56f83d5e4da8cc261130ee67ee326d5c5cb077d9aa43380a9a54909e50c8
+source_seam_sha256: d4808ada70840e657ba99c2029030db307a9d0228a685fa80aaf9f2649a0a6f2
 ---
 # O agregado é exato e a chave é o código
 

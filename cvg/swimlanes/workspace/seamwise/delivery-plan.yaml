@@ -1,12 +1,12 @@
 schema_version: 1
 status: DELIVERY_PLAN=READY
-seam_map_sha256: b619babe8cf5075c266b4ef0cde4152353d9cf8ba20d94a77e12e4b5738735fa
+seam_map_sha256: 91c557f852dede06d501c6733254915f956dc8c1d0262e14003e645f71834527
 swimlanes:
 - id: LANE-CONTRATO
   seam_id: SEAM-CONTRATO
   owner: contrato
   path: seamwise/swimlanes/LANE-CONTRATO.md
-  sha256: fd5b6e94f0211c7a0b33996ad60e3fb493836ac3059f8fe13f8d90f20b91a42a
+  sha256: 0a8e1a67eaa20b2329c8644a888b8c73cca6c6babb323c2638c3c33a2f8b28b0
 - id: LANE-LEITURA
   seam_id: SEAM-LEITURA
   owner: leitura
@@ -16,7 +16,7 @@ swimlanes:
   seam_id: SEAM-AGREGACAO
   owner: agregacao
   path: seamwise/swimlanes/LANE-AGREGACAO.md
-  sha256: 87baaf59985d6c352498b6e35da2db34482b162a0af815a8c7cb687b2915216d
+  sha256: d0765dc0b720256de35687ed9f6aa4d76ef81df0885e8f3db3ed4305f9acd85b
 - id: LANE-JUIZO
   seam_id: SEAM-JUIZO
   owner: juizo
@@ -26,23 +26,23 @@ swimlanes:
   seam_id: SEAM-EVIDENCIA
   owner: evidencia
   path: seamwise/swimlanes/LANE-EVIDENCIA.md
-  sha256: facaabd81822b675193ae9f56b42ff1a632086b79e16c80f36014bef21a6ca4f
+  sha256: ffd587b518e281e485623b08c6c27dc2c19385dab0633cb8f63f7121e1690c7e
 - id: LANE-ORQUESTRACAO
   seam_id: SEAM-ORQUESTRACAO
   owner: orquestracao
   path: seamwise/swimlanes/LANE-ORQUESTRACAO.md
-  sha256: 46125fc69cb057df25cb23e28a032749b2653a3fae19ab1d9fefb3141cd0b96c
+  sha256: e83b9f8b621e55f56fabe5d5d577de267b36bc1c1d7d1beb42acc33a963b03bf
 - id: LANE-FRONTEIRA
   seam_id: SEAM-FRONTEIRA
   owner: fronteira
   path: seamwise/swimlanes/LANE-FRONTEIRA.md
-  sha256: ffeaf1267bf8d0985f8cb98b71a1cedcf0aacd1f4573ba82182adaaf691da519
+  sha256: a5c8f24de04b81ef79c8077d9da8e697cb443539a758ccabb1ea05799b1038c8
 legs:
 - id: LEG-CONTRATO-RECUSA-SEM-ANCORA
   seam_id: SEAM-CONTRATO
   swimlane_id: LANE-CONTRATO
   path: seamwise/legs/LEG-CONTRATO-RECUSA-SEM-ANCORA.md
-  sha256: 8baf3a4ebe785f7f3b19c0df72950165a427c1a25001af6df57ca7f069fa403f
+  sha256: c3ae9d6ee20d9281b72cae8e864801871f1a9429d6b9739721312da73a7fc85a
 - id: LEG-LEITURA-POSICIONAL
   seam_id: SEAM-LEITURA
   swimlane_id: LANE-LEITURA
@@ -52,7 +52,7 @@ legs:
   seam_id: SEAM-AGREGACAO
   swimlane_id: LANE-AGREGACAO
   path: seamwise/legs/LEG-AGREGADO-EXATO.md
-  sha256: 0c4cd9237a9dbcf2a2a790d0831e2607484f89bc90499953b7d44e091bc8b6c2
+  sha256: 0f82e61d42b134cf8bb4fea9eef8d1c3c7debe88b481ab70183ca322c7fd5824
 - id: LEG-JUIZO-ACUSA
   seam_id: SEAM-JUIZO
   swimlane_id: LANE-JUIZO
@@ -62,17 +62,17 @@ legs:
   seam_id: SEAM-EVIDENCIA
   swimlane_id: LANE-EVIDENCIA
   path: seamwise/legs/LEG-EVIDENCIA-RECONSTROI.md
-  sha256: 4d1a4d806c3aba709819bc6cf539aea93cd425aaf54e1adcce24c9f2d39942a7
+  sha256: 99daf12fc49c25d9a349154161c4ddd60eba2795333e0b2534d53dbe9405433f
 - id: LEG-DESFECHO-COM-PACOTE
   seam_id: SEAM-ORQUESTRACAO
   swimlane_id: LANE-ORQUESTRACAO
   path: seamwise/legs/LEG-DESFECHO-COM-PACOTE.md
-  sha256: 3c45bde1aa7e7908963a4a01a173a11f1ffa1cded81ea0308a32bd2739146786
+  sha256: ef94a338230e4c8ae2880216cb2f2b8b4a8f12e376ad0f070a9aa3ac6e2d2f4e
 - id: LEG-ENVELOPE-VINCULADO
   seam_id: SEAM-FRONTEIRA
   swimlane_id: LANE-FRONTEIRA
   path: seamwise/legs/LEG-ENVELOPE-VINCULADO.md
-  sha256: d3acf0cd15cf369d5da54a1e8dc45e80f0658b0c40d3927fb5edfbc0769b0b60
+  sha256: 556d23ff48446ea16d8da220fd741cd1c17bac8493e1d96c4ba5931a64a7e098
 steel_thread:
 - LEG-CONTRATO-RECUSA-SEM-ANCORA
 - LEG-LEITURA-POSICIONAL
@@ -380,7 +380,50 @@ objections:
     a declarar que R-9 NÃO está coberto aqui, e o tempo é medido e registrado no pacote para que a cobertura
     seja decidida contra competência real. Declarar cobertura que o teste não entrega é verde pelo motivo
     errado.
+- id: OBJ-R7-C1
+  status: FIXED
+  summary: Minha correção de R6-C3 tratou os 51 códigos do ADR 0004 como o universo; eles saíram de uma
+    AMOSTRA de ~3 milhões de linhas.
+  owner: Bruno Nunes
+  rationale: 'MEDIDO NA COMPETÊNCIA INTEIRA, e o adversário estava certo — são 65 códigos, não 51. A regra
+    que escrevi RECUSARIA o arquivo correto. A cauda mostra por que a amostra não os viu: o código ''60''
+    aparece 1.395 vezes em 41.572.553 linhas. É a Regra 3 pelo avesso — um gate calibrado em amostra recusa
+    a verdade. A cardinalidade passou a ser ANCORADA no contrato, medida na competência inteira, e scripts/medir_codigos.py
+    registra a medição (CODIGOS=MEDIDO).'
+- id: OBJ-R7-C2
+  status: FIXED
+  summary: Minha correção de R6-C4 criou um RECUSADO no carregamento do contrato sem caminho de rederivação
+    nem exercício na orquestração.
+  owner: Bruno Nunes
+  rationale: Mesmo padrão das rodadas 5 e 6 — garantia nova cria estado novo cuja consequência eu não
+    declaro. B-1 da evidência passou a antecipar o terceiro caminho, gravando a política recusada e a
+    cláusula do ADR violada; B-2 da orquestração passou a exercitá-lo.
+- id: OBJ-R7-C3
+  status: FIXED
+  summary: Exigir os códigos como chaves não prova agrupamento correto — dá para atribuir o total ao primeiro
+    código e zerar os demais.
+  owner: Bruno Nunes
+  rationale: Todas as chaves presentes, cinco controles, hashes e defeitos idênticos, e as espécies fundidas
+    mesmo assim. B-2 da fronteira passou a CONFERIR cada total por código contra a leitura — R-3 prova-se
+    por valor, não por forma.
+- id: OBJ-R7-C4
+  status: FIXED
+  summary: A recusa de float cobria os três controles globais e deixava o dinheiro por espécie sem contrato.
+  owner: Bruno Nunes
+  rationale: Um envelope com controles em string e totais por espécie como número JSON satisfaria a recusa
+    escrita só para os três, e o produtor externo introduziria float sem passar pelo agregador local.
+    B-2 da fronteira passou a contratar TODO campo monetário, porque R-4 e o ADR 0003 valem para todo
+    dinheiro.
+- id: OBJ-R7-C5
+  status: FIXED
+  summary: Conferir defeitos por contagem e tipo não detecta substituição — A duplicado e B omitido preserva
+    ambas as contagens.
+  owner: Bruno Nunes
+  rationale: 'Contraexemplo válido e mais fino que a omissão que eu tinha coberto: cada entrada declarada
+    recebe classificação única, B nunca é classificado, e juízo e rederivação concordam violando R-6.
+    B-2 da fronteira passou a conferir POR IDENTIDADE, com valor original e posição, que é o que a leitura
+    já produz.'
 contentions: []
 steel_thread_path: seamwise/steel-thread.md
 steel_thread_sha256: ffb28ecb19188999bee9ce19aa55f8f43a0d1e1bd3e01017d7f9ad3a6d47fb7b
-review_authority_sha256: 3557a4c89dfa5b3aee7e2fedea9b6dbd2b6b1d40b56be06433dff0c4bcdaab40
+review_authority_sha256: 23b6f5817255701c5ae979a470f2e3fd31e884539b909a8af8c5bddb1cc50d28
