@@ -28,10 +28,14 @@ execution_backend: any
 signed_off: true
 signed_off_by: nobru
 signed_off_at: 2026-09-22T02:47:14Z
-accepted: false
-accepted_by: (none)
-accepted_at: (none)
+accepted: true
+accepted_by: converge-loop
+accepted_at: 2026-09-22T03:54:48Z
 signed_off_sig: hmac-sha256-v3:85d3c104:0a85d3bd124cab5dc67704986205d329d646931ed81303ad51cb05b5b3de4f1a
+accepted_tier: 1
+accepted_attempt_id: 895f594e-7a7f-47b5-bc84-4828e3c88eb4
+accepted_authorization_ref: hmac-sha256-v3:85d3c104:0a85d3bd124cab5dc67704986205d329d646931ed81303ad51cb05b5b3de4f1a
+acceptance_record_digest: sha256:7f35f9bc7037fde4171434830e3db649b5ab2498627e08db82ab461847e53894
 ---
 
 # Comparar os cinco controles e classificar a diferença
