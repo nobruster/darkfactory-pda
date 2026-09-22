@@ -1,6 +1,6 @@
 > Projetado de `LEG-ENVELOPE-VINCULADO.md` pelo Seamwise.
 > **Não edite aqui** — edite a recipe e rode `seamwise plan`.
-> origem sha256: `ec3771d568c71ab7022055112fd1c3192cd7139a670dcccf93a5cd16c0fd911b`
+> origem sha256: `d3acf0cd15cf369d5da54a1e8dc45e80f0658b0c40d3927fb5edfbc0769b0b60`
 
 ---
 
@@ -65,7 +65,10 @@ tasks:
       de que veio float, então a recusa do agregador local não cobre produtor externo. O quinto é RECUSADO
       por omissão — os defeitos observados na leitura têm de chegar ao juiz por contagem e por tipo, senão
       o juiz aprova lista vazia sem violar classificação única, porque o defeito sumiu antes de chegar
-      nele
+      nele. E o envelope declara o agregado POR CÓDIGO de espécie, com os 51 códigos do ADR 0004 como
+      chaves — um produtor externo que agrupasse por descrição colapsaria espécies e ainda declararia
+      os mesmos cinco controles, hashes e defeitos, e nada na fronteira ou no juízo distinguiria; R-3
+      vale para o produtor externo, não só para o local
   evals:
   - id: eval_1
     description: Sha ausente, divergente, ou copiado de outro arquivo lido é recusado
@@ -100,7 +103,7 @@ tasks:
   - cvg/docs/adrs
   rollback: Remover o validador de envelope e seus testes.
   observability: envelopes recusados por motivo
-source_seam_sha256: 4e607967cfb9de1b07664fcc77201e9db1025d11b5bd8027574322953ca355e5
+source_seam_sha256: 5ef1d24ee47daa1e741f8d63e85aa51c55ec65fbf534a7bc8359f0ef34acd365
 ---
 # O envelope liga o agregado ao arquivo que o gerou
 

@@ -272,6 +272,55 @@ objections:
   rationale: B-1 do contrato passou a carregar a política decimal junto com âncora, layout e hashes, e
     contrato sem ela é NAO_MEDIDO. A agregação passou a exigir contrato validado entre seus requisitos,
     para que a política atravesse o grafo em vez de ser fixada dentro do agregador.
+- id: OBJ-R6-C1
+  status: FIXED
+  summary: Minha correção de R5-C2 criou uma recusa por omissão que a evidência não conseguia rederivar.
+  owner: Bruno Nunes
+  rationale: Contraexemplo válido — leitura observa truncamento, envelope declara lista vazia, controles
+    e os três hashes coincidem; a recusa é legítima e só a divergência entre as listas a explica. B-1
+    da evidência passou a gravar as DUAS listas separadamente, a observada e a declarada.
+- id: OBJ-R6-C2
+  status: FIXED
+  summary: NAO_MEDIDO tem várias causas — sem aprovador, sem data, sem política decimal — e minha regra
+    lia a falta do hash como se fosse a causa.
+  owner: Bruno Nunes
+  rationale: 'Contraexemplo válido — contrato com âncora e os dois hashes, mas sem aprovador, parando
+    antes da leitura sem exceção: há hash ancorado, não há observado, não há evento de falha, e nenhuma
+    regra determinava o desfecho. B-1 da evidência passou a decidir pela CAUSA registrada: NAO_MEDIDO
+    por qualquer motivo dá ACEITO_SEM_ANCORA, e ERRO exige evento de falha.'
+- id: OBJ-R6-C3
+  status: FIXED
+  summary: Produtor externo podia agrupar por descrição, colapsar espécies e declarar os mesmos cinco
+    controles, hashes e defeitos.
+  owner: Bruno Nunes
+  rationale: Mesma raiz da rodada 5 — R-3 estava provado só no agregador local, enquanto o envelope é
+    o contrato do produtor externo. B-2 da fronteira passou a exigir o agregado declarado POR CÓDIGO,
+    com os 51 códigos do ADR 0004 como chaves.
+- id: OBJ-R6-C4
+  status: FIXED
+  summary: Minha correção de R5-C5 cobria política decimal ausente, mas não política presente e contraditória.
+  owner: Bruno Nunes
+  rationale: Um contrato com HALF_UP satisfaria a condição de presença e sairia validado, deixando o agregador
+    entre obedecer ao contrato e obedecer ao ADR. B-1 do contrato passou a RECUSAR no carregamento a política
+    que contradiz o ADR 0003. A validação confere a política contra o ADR, nunca o contrário — afrouxar
+    o ADR para o contrato passar é a manobra que a Regra 3 proíbe.
+- id: OBJ-R6-C5
+  status: FIXED
+  summary: Minha correção de R4-C5 dividiu R-7 em duas provas; R-7 escreveu uma propriedade CONJUNTA.
+  owner: Bruno Nunes
+  rationale: R-7 exige alteração real no arquivo, recusada, "provada por teste que falha se o juízo aceitar".
+    Separadas, um juízo permissivo deixa o teste da alteração real verde. Decidido com Bruno Nunes — o
+    teste altera um centavo E reancora o sha256 do arquivo alterado, de modo que a fronteira passe e o
+    JUÍZO seja quem recusa, contra a âncora monetária original. Uma prova só, conjunta, como R-7 escreveu.
+- id: OBJ-R6-C6
+  status: FIXED
+  summary: O done_condition dizia "medido contra R-9", mas medir com relógio simulado não demonstra orçamento
+    de competência completa.
+  owner: Bruno Nunes
+  rationale: R-9 é should, e a lacuna não autoriza inventar recusa por timeout. O done_condition passou
+    a declarar que R-9 NÃO está coberto aqui, e o tempo é medido e registrado no pacote para que a cobertura
+    seja decidida contra competência real. Declarar cobertura que o teste não entrega é verde pelo motivo
+    errado.
 contentions: []
 ---
 # System Map

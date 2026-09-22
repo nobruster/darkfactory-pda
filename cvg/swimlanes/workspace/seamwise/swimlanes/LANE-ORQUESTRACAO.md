@@ -6,7 +6,7 @@ id: LANE-ORQUESTRACAO
 name: Orquestração lane
 owner: orquestracao
 seam_id: SEAM-ORQUESTRACAO
-source_seam_sha256: a8bfe08e8fd90577dfd58ee0706e67d8a4d4a65a8e838a5388d957adccdd830a
+source_seam_sha256: 00f982524034c26ed6c4481689e926a715a859b6734c83bb693ae7bdf390e6a1
 legs:
 - LEG-DESFECHO-COM-PACOTE
 ---

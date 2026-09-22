@@ -37,18 +37,21 @@ tasks:
     when: o contrato é carregado
     then: âncora, procedência, layout, os dois hashes e a POLÍTICA DECIMAL saem juntos — precisão, granularidade
       e modo de arredondamento são dados carregados do contrato, como o ADR 0003 exige, não escolha privada
-      de quem implementa; contrato sem política decimal é NAO_MEDIDO, senão o agregador local fixa a sua,
-      passa nos exemplos, e um produtor externo escolhe outra sem nada acusar. Falta o hash do CSV e também
-      é NAO_MEDIDO, porque hoje só o ZIP tem checksum e a âncora foi medida no CSV — sem o par, trocar
-      o CSV extraído não seria detectado; sem aprovador ou sem data, idem
+      de quem implementa. Contrato SEM política decimal é NAO_MEDIDO, senão o agregador local fixa a sua,
+      passa nos exemplos, e um produtor externo escolhe outra sem nada acusar. E contrato COM política
+      que contradiz o ADR — HALF_UP, ou granularidade por campo — é RECUSADO no carregamento, não validado,
+      porque um contrato contraditório deixaria o agregador entre obedecer ao contrato e obedecer à decisão
+      vinculante; a validação confere a política contra o ADR, e nunca o contrário. Falta o hash do CSV
+      e também é NAO_MEDIDO, porque hoje só o ZIP tem checksum e a âncora foi medida no CSV — sem o par,
+      trocar o CSV extraído não seria detectado; sem aprovador ou sem data, idem
   - id: B-2
     given: uma competência sem âncora no contrato
     when: o contrato é carregado
     then: retorna NAO_MEDIDO como valor, sem gravar nem encerrar o processo
   evals:
   - id: eval_1
-    description: Controles com procedência; hashes distintos; sem política decimal vira NAO_MEDIDO
-    bash: pytest -q tests/test_contrato.py -k "ancorada or sem_procedencia or hash_zip_e_csv or sem_politica_decimal"
+    description: Hashes distintos; política ausente vira NAO_MEDIDO e política HALF_UP é recusada
+    bash: pytest -q tests/test_contrato.py -k "ancorada or hash_zip_e_csv or sem_politica_decimal or politica_contradiz_adr"
     verifies:
     - B-1
   - id: eval_2
@@ -77,7 +80,7 @@ tasks:
   - cvg/docs/adrs
   rollback: Remover o carregador de contrato e seus testes.
   observability: competências ancoradas no contrato
-source_seam_sha256: 5e888b5f89b816aa6207bcec5a9d1fbea79457e2ebc7ac58373f31a0689b7185
+source_seam_sha256: e549ab80d1662c71292dbcce33d197a713af88a5f6405ee638563437c00a4000
 ---
 # A fábrica recusa construir sem âncora medida
 

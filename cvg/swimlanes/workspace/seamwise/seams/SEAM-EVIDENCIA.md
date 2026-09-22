@@ -58,19 +58,23 @@ swimlane:
         given: uma execução com âncora, outra que terminou antes da leitura, e um pacote adulterado onde
           só o rótulo do veredito foi trocado
         when: o pacote é lido de volta
-        then: o veredito é REDERIVADO dos cinco controles, da âncora, das classificações de cada diferença
-          e dos hashes gravados — nunca lido do rótulo; o pacote adulterado é recusado porque o rótulo
-          discorda do que esses insumos produzem. São TRÊS os hashes gravados, os mesmos que a fronteira
-          compara — o ANCORADO do contrato, o OBSERVADO computado na leitura e o DECLARADO no envelope;
-          com dois só, um pacote legítimo de RECUSADO por ancorado=observado e declarado divergente rederivaria
-          ACEITO e seria rejeitado. A ausência não é recusa incondicional, ela decide o veredito. Falta
-          o ancorado e o desfecho é ACEITO_SEM_ANCORA com causa NAO_MEDIDO — inclusive quando o observado
-          também falta, porque a execução parou em NAO_MEDIDO antes de ler, e essa precedência é declarada,
-          não deduzida. Falta o observado COM evento de falha registrado e é execução interrompida, desfecho
-          ERRO; sem evento de falha e sem ancorado, o caminho é o sem âncora. Os três casos gravam pacote
-          válido; recusar qualquer um impediria de gravar justamente a execução que precisa de registro.
-          Só é recusado o pacote cujo rótulo não bate com o que os insumos rederivam; campos não percorridos
-          são marcados ausentes, nunca zerados
+        then: o veredito é REDERIVADO dos cinco controles, da âncora, das classificações de cada diferença,
+          dos hashes e das DUAS listas de defeitos — a observada na leitura e a declarada no envelope,
+          gravadas separadamente, senão um RECUSADO legítimo por omissão rederivaria ACEITO, já que controles
+          e hashes coincidem e só a divergência entre as listas explica a recusa; o pacote adulterado
+          é recusado porque o rótulo discorda do que esses insumos produzem. São TRÊS os hashes gravados,
+          os mesmos que a fronteira compara — o ANCORADO do contrato, o OBSERVADO computado na leitura
+          e o DECLARADO no envelope; com dois só, um pacote legítimo de RECUSADO por ancorado=observado
+          e declarado divergente rederivaria ACEITO e seria rejeitado. A ausência não é recusa incondicional,
+          ela decide o veredito — e quem decide é a CAUSA registrada, não a falta de um hash. Contrato
+          que devolveu NAO_MEDIDO por qualquer motivo — sem âncora, sem aprovador, sem data ou sem política
+          decimal — dá ACEITO_SEM_ANCORA, mesmo que o hash ancorado exista e nenhum observado tenha sido
+          produzido; ler a falta do hash como se fosse a causa recusaria justamente o pacote que a orquestração
+          deve gravar. Falta o observado COM evento de falha registrado e é execução interrompida, desfecho
+          ERRO. A precedência é declarada, não deduzida — NAO_MEDIDO decide antes, e ERRO exige o evento.
+          Os três casos gravam pacote válido; recusar qualquer um impediria de gravar justamente a execução
+          que precisa de registro. Só é recusado o pacote cujo rótulo não bate com o que os insumos rederivam;
+          campos não percorridos são marcados ausentes, nunca zerados
       - id: B-2
         given: duas execuções da mesma competência
         when: a segunda é gravada

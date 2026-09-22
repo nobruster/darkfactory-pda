@@ -13,39 +13,39 @@
     "family": "anthropic"
   },
   "verdict": "REVISE",
-  "prompt_sha256": "80efed6a4dbb4636497ce825b90a1e29f69f386a268f401fc3061abeb05c1bb8",
+  "prompt_sha256": "686ee9a1bd59c890ee0ae83b85a306890ed710f1bb5dd3b404653d927bd40d10",
   "inputs": [
     {
       "path": "agregacao/LEG-AGREGADO-EXATO.md",
-      "sha256": "589d9e50bb306eff5e2e915ffe292ac3f28b00a42612060d5b5885efd25f0467"
+      "sha256": "fe44bb3fb768983d5b87384744d05349e34fd447d624761a8ddba94e7c8cd02e"
     },
     {
       "path": "agregacao/_lane.md",
-      "sha256": "0b14bae05a351dc2e6cb20095a3fbd560dd411ced6f137b20369430505bcbd1c"
+      "sha256": "907c8651d82c8518919a5adb903ff0ebe79b0f21b5e46b868d52a92170c77973"
     },
     {
       "path": "contrato/LEG-CONTRATO-RECUSA-SEM-ANCORA.md",
-      "sha256": "b830da9f2eed1d053ec3f30c7db8dc15078704e2cfdcdcd1fbbd359748c1a62a"
+      "sha256": "92a1f776832df508847903704a5fccf223d11bad99d95b54e04c773df1d0f6f1"
     },
     {
       "path": "contrato/_lane.md",
-      "sha256": "fa3cdbe7ebf1f5925eeffe3ada42149c9de17de56e4c2e2cae914ff92a746f96"
+      "sha256": "52680291429433fa43a477a44704a4d415794f63da36788f58e574ca2db82a30"
     },
     {
       "path": "evidencia/LEG-EVIDENCIA-RECONSTROI.md",
-      "sha256": "32584e4d7c4e8cc160a85310049bf513881114202d1f14bc5af4b118b082382f"
+      "sha256": "df8e6cc6334e2a7054d188a32a0f2a406d8fedccdca8411f20c9d204d208791a"
     },
     {
       "path": "evidencia/_lane.md",
-      "sha256": "1b725d51ba5d30ef92b001a09fd62836d58c5703c54c7a072b9bce5ede3ce3af"
+      "sha256": "0f535f23c50fd4ac05eaccfd5cf5b0bfa9c646d4693826668b7b2dcc804bfcc2"
     },
     {
       "path": "fronteira/LEG-ENVELOPE-VINCULADO.md",
-      "sha256": "d5ae28f1b5f76adb563fc4576f887f684f304e4250cdc518ae17eaf333e7c3dd"
+      "sha256": "064444a6b14181e9dffada48a946bfcbcdf23140a01668fdbf0b31152c6cd8f5"
     },
     {
       "path": "fronteira/_lane.md",
-      "sha256": "9dcd18fe0bf9e7b06df2d5c866bb1a95a9c006ba76e823714465b5593e50d7ef"
+      "sha256": "6ccf1cf6a482196ed1ba084c9616ae4c7a07ccd8942e12b31819f4013c3c8253"
     },
     {
       "path": "juizo/LEG-JUIZO-ACUSA.md",
@@ -78,19 +78,19 @@
       "severity": "high",
       "rank": 1,
       "attack_class": "cross-lane-interface",
-      "swimlane": "fronteira",
-      "leg": "LEG-ENVELOPE-VINCULADO",
+      "swimlane": "evidencia",
+      "leg": "LEG-EVIDENCIA-RECONSTROI",
       "location": {
-        "plan_file": "cvg/swimlanes/lanes/fronteira/LEG-ENVELOPE-VINCULADO.md",
-        "section": "tasks[0].behavior B-2; eval_3"
+        "plan_file": "cvg/swimlanes/lanes/evidencia/LEG-EVIDENCIA-RECONSTROI.md",
+        "section": "tasks.behavior[B-1]"
       },
-      "title": "Produtor externo contorna a \u00fanica recusa expl\u00edcita de float",
-      "body": "A recusa de float est\u00e1 contratada no agregador local, mas o envelope aceita produtores que n\u00e3o passam por ele. A fronteira n\u00e3o declara os tipos dos tr\u00eas controles monet\u00e1rios nem exige recusa de float antes de qualquer convers\u00e3o. Um validador pode converter n\u00fameros JSON por Decimal(str(valor)) e satisfazer os testes descritos, apagando a evid\u00eancia de que recebeu float. A permiss\u00e3o de produtor externo torna esse caminho parte do contrato atual.",
-      "evidence": "B-2 aceita motor que n\u00e3o \u00e9 o juiz; eval_3 verifica produtor agn\u00f3stico. B-1 e os demais evals verificam hashes e contagens, sem caso de tipo monet\u00e1rio inv\u00e1lido.",
+      "title": "A rederiva\u00e7\u00e3o n\u00e3o conserva a prova de omiss\u00e3o de defeitos",
+      "body": "A fronteira recusa um envelope que omite truncamentos observados, mesmo com os cinco controles e os tr\u00eas hashes corretos. A evid\u00eancia promete rederivar o veredito desses controles, hashes e classifica\u00e7\u00f5es, mas n\u00e3o contrata a preserva\u00e7\u00e3o separada dos defeitos observados e dos declarados. Contraprova: leitura observa um truncamento; envelope declara lista vazia; hashes e controles coincidem. O resultado leg\u00edtimo \u00e9 RECUSADO na fronteira. Com apenas a lista declarada vazia, a rederiva\u00e7\u00e3o perde o motivo da recusa e pode produzir ACEITO, recusando o pacote leg\u00edtimo ou tornando necess\u00e1ria uma depend\u00eancia n\u00e3o declarada.",
+      "evidence": "Evid\u00eancia B-1: 'rederivado dos cinco controles, da \u00e2ncora, das classifica\u00e7\u00f5es de cada diferen\u00e7a e dos hashes gravados'. Fronteira B-2: 'O quinto \u00e9 RECUSADO por omiss\u00e3o'.",
       "cites": [
-        "cvg/docs/tech-spec/tech-spec-pda-beneficios.md \u00a7 Requirements R-4",
-        "cvg/docs/adrs/0003-money-rounds-half-to-even-at-two-decimals.md \u00a7 Decision",
-        "cvg/docs/adrs/0006-the-judge-ships-before-the-spark-producer-that-it-will-judge.md \u00a7 Consequences"
+        "cvg/swimlanes/lanes/fronteira/LEG-ENVELOPE-VINCULADO.md \u00a7 tasks.behavior[B-2]",
+        "cvg/docs/tech-spec/tech-spec-pda-beneficios.md \u00a7 Scope: pacote de evid\u00eancia",
+        "cvg/docs/tech-spec/tech-spec-pda-beneficios.md \u00a7 Requirements/R-6"
       ]
     },
     {
@@ -98,93 +98,121 @@
       "severity": "high",
       "rank": 2,
       "attack_class": "cross-lane-interface",
-      "swimlane": "fronteira",
-      "leg": "LEG-ENVELOPE-VINCULADO",
+      "swimlane": "evidencia",
+      "leg": "LEG-EVIDENCIA-RECONSTROI",
       "location": {
-        "plan_file": "cvg/swimlanes/lanes/fronteira/LEG-ENVELOPE-VINCULADO.md",
-        "section": "requires; tasks[0].behavior B-2"
+        "plan_file": "cvg/swimlanes/lanes/evidencia/LEG-EVIDENCIA-RECONSTROI.md",
+        "section": "tasks.behavior[B-1]; evals[eval_3]"
       },
-      "title": "Truncamentos observados podem desaparecer antes da classifica\u00e7\u00e3o",
-      "body": "A leitura produz defeitos observados, mas a \u00fanica reconcilia\u00e7\u00e3o exigida na fronteira \u00e9 linhas_invalidas contra VALOR_ILEGIVEL. Contraexemplo: a leitura observa truncamentos; o envelope omite todos eles, mant\u00e9m linhas_invalidas=0, controles corretos e hashes corretos. As verifica\u00e7\u00f5es descritas n\u00e3o exigem recusar essa omiss\u00e3o. O juiz ent\u00e3o pode aprovar uma lista vazia sem violar seu teste de classifica\u00e7\u00e3o \u00fanica, pois o defeito desapareceu antes de chegar a ele.",
-      "evidence": "B-2 confere linhas_invalidas somente contra VALOR_ILEGIVEL e aceita truncamento com linhas_invalidas=0; n\u00e3o exige correspond\u00eancia completa entre defeitos observados e defeitos transportados.",
+      "title": "NAO_MEDIDO n\u00e3o equivale \u00e0 aus\u00eancia do hash ancorado",
+      "body": "O contrato retorna NAO_MEDIDO tamb\u00e9m quando faltam aprovador, data ou pol\u00edtica decimal, ainda que o hash ancorado exista. A rederiva\u00e7\u00e3o s\u00f3 explicita ACEITO_SEM_ANCORA quando falta esse hash. Contraprova: contrato cont\u00e9m \u00e2ncora num\u00e9rica e ambos os hashes, mas n\u00e3o cont\u00e9m aprovador; a execu\u00e7\u00e3o para antes da leitura sem exce\u00e7\u00e3o. H\u00e1 hash ancorado, n\u00e3o h\u00e1 observado e n\u00e3o h\u00e1 evento de falha. Nenhuma das regras declaradas determina o resultado desse caminho. O gravador pode recusar justamente o pacote ACEITO_SEM_ANCORA que a orquestra\u00e7\u00e3o deve produzir.",
+      "evidence": "Contrato B-1: 'sem aprovador ou sem data, idem'. Evid\u00eancia B-1: 'Falta o ancorado e o desfecho \u00e9 ACEITO_SEM_ANCORA'; 'Falta o observado COM evento de falha registrado ... ERRO'.",
       "cites": [
-        "cvg/docs/tech-spec/tech-spec-pda-beneficios.md \u00a7 Requirements R-6",
-        "cvg/docs/adrs/0004-column-13-is-a-truncated-description-not-a-second-code.md \u00a7 Consequences",
-        "cvg/swimlanes/lanes/leitura/LEG-LEITURA-POSICIONAL.md \u00a7 behavior B-2",
-        "cvg/swimlanes/lanes/juizo/LEG-JUIZO-ACUSA.md \u00a7 behavior B-2"
+        "cvg/swimlanes/lanes/contrato/LEG-CONTRATO-RECUSA-SEM-ANCORA.md \u00a7 tasks.behavior[B-1]",
+        "cvg/swimlanes/lanes/orquestracao/LEG-DESFECHO-COM-PACOTE.md \u00a7 tasks.behavior[B-1]",
+        "cvg/docs/tech-spec/tech-spec-pda-beneficios.md \u00a7 Requirements/R-1"
       ]
     },
     {
       "id": "C3",
       "severity": "high",
       "rank": 3,
-      "attack_class": "cross-lane-interface",
-      "swimlane": "evidencia",
-      "leg": "LEG-EVIDENCIA-RECONSTROI",
+      "attack_class": "drift",
+      "swimlane": "fronteira",
+      "leg": "LEG-ENVELOPE-VINCULADO",
       "location": {
-        "plan_file": "cvg/swimlanes/lanes/evidencia/LEG-EVIDENCIA-RECONSTROI.md",
-        "section": "tasks[0].behavior B-1"
+        "plan_file": "cvg/swimlanes/lanes/fronteira/LEG-ENVELOPE-VINCULADO.md",
+        "section": "done_condition; tasks.behavior[B-2]; evals[eval_3]"
       },
-      "title": "Os dois hashes da rederiva\u00e7\u00e3o n\u00e3o cobrem toda recusa da fronteira",
-      "body": "A fronteira compara tr\u00eas valores: hash ancorado, observado pela leitura e declarado no envelope. A evid\u00eancia explicita apenas ancorado e observado. Contraexemplo: ancorado=observado=A, envelope declara B, controles corretos. A fronteira recusa, mas um pacote com somente os dois hashes prometidos perde a raz\u00e3o da recusa. A rederiva\u00e7\u00e3o pode produzir ACEITO e rejeitar o pacote leg\u00edtimo rotulado RECUSADO. O evento de falha citado em B-1 est\u00e1 associado \u00e0 execu\u00e7\u00e3o interrompida; n\u00e3o contrata esse caso de valida\u00e7\u00e3o.",
-      "evidence": "B-1 identifica os dois hashes como ANCORADO e OBSERVADO e promete recusar somente o pacote cujo r\u00f3tulo discorde dos insumos rederivados.",
+      "title": "O produtor externo pode violar R-3 sem alterar os controles",
+      "body": "O agregador local prova que sua sa\u00edda usa c\u00f3digos, mas o envelope aceito de qualquer produtor s\u00f3 contrata cinco controles, hash e defeitos. Um produtor externo pode agrupar por descri\u00e7\u00e3o, colapsar esp\u00e9cies e ainda declarar exatamente os mesmos cinco controles, hashes e defeitos. Nada na fronteira ou no ju\u00edzo contratado distingue esse resultado. A promessa de recusar agrupamento por descri\u00e7\u00e3o fica restrita ao teste do produtor local, embora o envelope seja o contrato do futuro produtor externo.",
+      "evidence": "Fronteira done_condition: 'cinco controles, o sha256 do arquivo lido e os defeitos'. B-2: produtor de outro motor '\u00e9 aceito'. ADR 0004 registra que agrupar por descri\u00e7\u00e3o mant\u00e9m soma e contagem corretas.",
       "cites": [
-        "cvg/docs/tech-spec/tech-spec-pda-beneficios.md \u00a7 Problem restated; Scope",
-        "cvg/swimlanes/lanes/fronteira/LEG-ENVELOPE-VINCULADO.md \u00a7 behavior B-1",
-        "cvg/swimlanes/lanes/orquestracao/LEG-DESFECHO-COM-PACOTE.md \u00a7 behavior B-1"
+        "cvg/docs/tech-spec/tech-spec-pda-beneficios.md \u00a7 Requirements/R-3",
+        "cvg/docs/adrs/0004-column-13-is-a-truncated-description-not-a-second-code.md \u00a7 Rejected reading",
+        "cvg/docs/adrs/0006-the-judge-ships-before-the-spark-producer-that-it-will-judge.md \u00a7 Consequences",
+        "cvg/swimlanes/lanes/agregacao/LEG-AGREGADO-EXATO.md \u00a7 tasks.behavior[B-2]",
+        "cvg/swimlanes/lanes/juizo/LEG-JUIZO-ACUSA.md \u00a7 tasks.behavior[B-1]"
       ]
     },
     {
       "id": "C4",
       "severity": "high",
       "rank": 4,
-      "attack_class": "cross-lane-interface",
-      "swimlane": "evidencia",
-      "leg": "LEG-EVIDENCIA-RECONSTROI",
-      "location": {
-        "plan_file": "cvg/swimlanes/lanes/evidencia/LEG-EVIDENCIA-RECONSTROI.md",
-        "section": "tasks[0].behavior B-1"
-      },
-      "title": "O caminho sem \u00e2ncora satisfaz duas regras de desfecho incompat\u00edveis",
-      "body": "Uma execu\u00e7\u00e3o encerrada por NAO_MEDIDO antes da leitura n\u00e3o tem hash ancorado nem observado. B-1 associa a primeira aus\u00eancia a ACEITO_SEM_ANCORA e a segunda a ERRO. O evento de falha ajuda a distinguir uma exce\u00e7\u00e3o, mas o plano n\u00e3o declara que aus\u00eancia de observado sem evento de falha \u00e9 v\u00e1lida no caminho sem \u00e2ncora, nem a preced\u00eancia quando ambos faltam. Implementa\u00e7\u00f5es independentes da orquestra\u00e7\u00e3o e da rederiva\u00e7\u00e3o podem discordar e impedir a grava\u00e7\u00e3o do pacote exigido por R-1.",
-      "evidence": "B-1 afirma que falta do ANCORADO produz ACEITO_SEM_ANCORA e falta do OBSERVADO significa execu\u00e7\u00e3o interrompida; tamb\u00e9m inclui execu\u00e7\u00e3o terminada antes da leitura.",
-      "cites": [
-        "cvg/docs/tech-spec/tech-spec-pda-beneficios.md \u00a7 Requirements R-1",
-        "cvg/swimlanes/lanes/contrato/LEG-CONTRATO-RECUSA-SEM-ANCORA.md \u00a7 behavior B-2",
-        "cvg/swimlanes/lanes/orquestracao/LEG-DESFECHO-COM-PACOTE.md \u00a7 behavior B-1"
-      ]
-    },
-    {
-      "id": "C5",
-      "severity": "medium",
-      "rank": 5,
-      "attack_class": "drift",
+      "attack_class": "unverified-assumption",
       "swimlane": "contrato",
       "leg": "LEG-CONTRATO-RECUSA-SEM-ANCORA",
       "location": {
         "plan_file": "cvg/swimlanes/lanes/contrato/LEG-CONTRATO-RECUSA-SEM-ANCORA.md",
-        "section": "tasks[0].done_condition; behavior B-1; evals"
+        "section": "tasks.behavior[B-1]; evals[eval_1]"
       },
-      "title": "A precis\u00e3o foi declarada como decis\u00e3o de contrato, mas n\u00e3o atravessa o carregador",
-      "body": "O ADR 0003 coloca precis\u00e3o, granularidade e arredondamento no contrato. O carregador promete controles, proced\u00eancia, layout e hashes, sem declarar a pol\u00edtica decimal entre os dados carregados ou validados. O agregador pode fixar sua pr\u00f3pria precis\u00e3o e passar os exemplos descritos enquanto outro produtor escolhe outra. A express\u00e3o precis\u00e3o declarada n\u00e3o resolve onde ela \u00e9 declarada nem qual dom\u00ednio suporta. A deriva \u00e9 entre a pol\u00edtica contratual exigida pelo ADR e uma escolha que o plano ainda permite ficar privada na implementa\u00e7\u00e3o.",
-      "evidence": "B-1 enumera a sa\u00edda do carregador sem pol\u00edtica decimal; os tr\u00eas evals cobrem proced\u00eancia, hashes, aus\u00eancia de \u00e2ncora e layout.",
+      "title": "Pol\u00edtica decimal presente pode contradizer a decis\u00e3o vinculante",
+      "body": "O plano cobre pol\u00edtica ausente, mas n\u00e3o pol\u00edtica presente e incompat\u00edvel. Um contrato com modo HALF_UP ou granularidade por campo satisfaz a condi\u00e7\u00e3o expl\u00edcita de presen\u00e7a e pode sair como contrato validado. O agregador fica entre obedecer ao contrato carregado e obedecer ao ADR. Os testes de HALF_EVEN do agregador n\u00e3o demonstram que a valida\u00e7\u00e3o rejeita esse contrato contradit\u00f3rio. \u00c9 uma lacuna na valida\u00e7\u00e3o do requisito existente, n\u00e3o autoriza\u00e7\u00e3o para mudar a pol\u00edtica.",
+      "evidence": "B-1: 'precis\u00e3o, granularidade e modo de arredondamento s\u00e3o dados carregados do contrato'; a recusa explicitada \u00e9 'contrato sem pol\u00edtica decimal \u00e9 NAO_MEDIDO'.",
       "cites": [
-        "cvg/docs/tech-spec/tech-spec-pda-beneficios.md \u00a7 Requirements R-4",
-        "cvg/docs/adrs/0003-money-rounds-half-to-even-at-two-decimals.md \u00a7 Context; Decision",
-        "cvg/swimlanes/lanes/agregacao/LEG-AGREGADO-EXATO.md \u00a7 behavior B-2"
+        "cvg/docs/adrs/0003-money-rounds-half-to-even-at-two-decimals.md \u00a7 Decision",
+        "cvg/docs/tech-spec/tech-spec-pda-beneficios.md \u00a7 Requirements/R-4",
+        "cvg/swimlanes/lanes/agregacao/LEG-AGREGADO-EXATO.md \u00a7 tasks.behavior[B-2]"
+      ]
+    },
+    {
+      "id": "C5",
+      "severity": "high",
+      "rank": 5,
+      "attack_class": "drift",
+      "swimlane": "orquestracao",
+      "leg": "LEG-DESFECHO-COM-PACOTE",
+      "location": {
+        "plan_file": "cvg/swimlanes/lanes/orquestracao/LEG-DESFECHO-COM-PACOTE.md",
+        "section": "tasks.behavior[B-1]; evals[eval_1]"
+      },
+      "title": "A divis\u00e3o dos testes enfraquece a prova exigida por R-7",
+      "body": "R-7 exige uma altera\u00e7\u00e3o real no arquivo provada por teste que falha se o ju\u00edzo aceitar. O plano permite que esse caso termine na fronteira pelo hash e desloca a sensibilidade ao ju\u00edzo permissivo para outro caso, com arquivo \u00edntegro e agregado divergente. Assim, injetar um ju\u00edzo que sempre aceita pode deixar o teste da altera\u00e7\u00e3o real verde. Os dois testes provam propriedades \u00fateis, mas n\u00e3o a propriedade conjunta que R-7 escreveu. Trata-se de conflito textual a resolver na cadeia de especifica\u00e7\u00e3o, sem o advers\u00e1rio escolher uma nova interpreta\u00e7\u00e3o.",
+      "evidence": "B-1 permite recusa do centavo alterado 'ainda que recusada pela fronteira via sha256'; apenas 'o do arquivo \u00edntegro' exige falhar com ju\u00edzo permissivo.",
+      "cites": [
+        "cvg/docs/tech-spec/tech-spec-pda-beneficios.md \u00a7 Requirements/R-7",
+        "cvg/docs/adrs/0006-the-judge-ships-before-the-spark-producer-that-it-will-judge.md \u00a7 Consequences"
+      ]
+    },
+    {
+      "id": "C6",
+      "severity": "medium",
+      "rank": 6,
+      "attack_class": "drift",
+      "swimlane": "orquestracao",
+      "leg": "LEG-DESFECHO-COM-PACOTE",
+      "location": {
+        "plan_file": "cvg/swimlanes/lanes/orquestracao/LEG-DESFECHO-COM-PACOTE.md",
+        "section": "done_condition; tasks.behavior[B-2]; evals[eval_2]"
+      },
+      "title": "Medir dura\u00e7\u00e3o n\u00e3o demonstra o or\u00e7amento de uma compet\u00eancia",
+      "body": "A condi\u00e7\u00e3o de conclus\u00e3o promete medir contra R-9, mas B-2 s\u00f3 determina que o tempo total seja medido. N\u00e3o determina o resultado observ\u00e1vel quando o or\u00e7amento \u00e9 excedido, nem exige evid\u00eancia de uma compet\u00eancia completa. Um teste com rel\u00f3gio simulado pode passar enquanto a execu\u00e7\u00e3o real excede 20 minutos ou esgota mem\u00f3ria ao acumular registros e milh\u00f5es de defeitos. R-9 \u00e9 should: a lacuna n\u00e3o autoriza inventar uma recusa funcional por timeout, mas impede declarar sua cobertura demonstrada.",
+      "evidence": "B-2 inclui 'uma execu\u00e7\u00e3o que estoura o limite de tempo', por\u00e9m o then apenas afirma que 'o tempo \u00e9 medido ... no total'. eval_2 seleciona 'excecao or tempo_total'.",
+      "cites": [
+        "cvg/docs/tech-spec/tech-spec-pda-beneficios.md \u00a7 Requirements/R-9",
+        "cvg/docs/tech-spec/tech-spec-pda-beneficios.md \u00a7 Success metrics",
+        "cvg/docs/adrs/0001-the-2026-01-anchor-is-41572553-rows-summing-78521752562-12.md \u00a7 Decision"
       ]
     }
   ],
   "cross_lane_interfaces": [],
   "fork": {
     "choice": "B",
-    "reason": "Transcri\u00e7\u00e3o da rota j\u00e1 declarada nos arquivos _lane.md; nenhuma escolha feita pelo advers\u00e1rio.",
+    "reason": "Transcri\u00e7\u00e3o da rota j\u00e1 declarada nos planos; nenhuma escolha feita pelo advers\u00e1rio.",
     "per_plan_declared": true
   },
   "open_questions": [
     {
-      "q": "Como registrar obje\u00e7\u00f5es ainda abertas no schema 1.1, que exige resolution com decis\u00e3o humana em toda obje\u00e7\u00e3o?",
+      "q": "Como o processo representa obje\u00e7\u00f5es ainda abertas, se o schema exige resolution com decis\u00e3o humana j\u00e1 no registro do ataque?",
       "blocks_build": true
+    },
+    {
+      "q": "Em R-7, a sensibilidade ao ju\u00edzo permissivo deve ocorrer no mesmo cen\u00e1rio de altera\u00e7\u00e3o real do arquivo ou a especifica\u00e7\u00e3o autoriza provas separadas?",
+      "blocks_build": true
+    },
+    {
+      "q": "Qual evid\u00eancia demonstra R-9 para uma compet\u00eancia completa, e como seu descumprimento \u00e9 registrado sem transformar um should em nova regra de publica\u00e7\u00e3o?",
+      "blocks_build": false
     }
   ],
   "rounds_run": 1

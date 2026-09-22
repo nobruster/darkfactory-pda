@@ -91,7 +91,10 @@ swimlane:
           apagaria a prova de que veio float, então a recusa do agregador local não cobre produtor externo.
           O quinto é RECUSADO por omissão — os defeitos observados na leitura têm de chegar ao juiz por
           contagem e por tipo, senão o juiz aprova lista vazia sem violar classificação única, porque
-          o defeito sumiu antes de chegar nele
+          o defeito sumiu antes de chegar nele. E o envelope declara o agregado POR CÓDIGO de espécie,
+          com os 51 códigos do ADR 0004 como chaves — um produtor externo que agrupasse por descrição
+          colapsaria espécies e ainda declararia os mesmos cinco controles, hashes e defeitos, e nada
+          na fronteira ou no juízo distinguiria; R-3 vale para o produtor externo, não só para o local
       evals:
       - id: eval_1
         description: Sha ausente, divergente, ou copiado de outro arquivo lido é recusado

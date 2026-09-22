@@ -19,7 +19,9 @@ tasks:
   title: Decidir o desfecho e garantir o pacote em todo caminho
   goal: Dar dono ao fluxo — sem ele a lacuna migra de etapa em etapa.
   done_condition: Os quatro desfechos gravam pacote com código próprio; exceção real vira ERRO; o tempo
-    total é medido contra R-9.
+    total é medido e registrado no pacote. R-9 é should e NÃO é declarado coberto aqui — medir com relógio
+    simulado não demonstra orçamento de competência completa, e inventar recusa por timeout seria afrouxar
+    o que a tech-spec não pediu.
   effort: M
   profile: standard
   execution_backend: any
@@ -36,26 +38,28 @@ tasks:
   - tests/test_orquestracao.py
   behavior:
   - id: B-1
-    given: execução sem âncora, execução que bate, e DUAS execuções que devem recusar — a do arquivo com
-      um centavo alterado nos bytes, que R-7 exige, e a do arquivo íntegro em que o agregador divergiu
-      de um controle
+    given: execução sem âncora, execução que bate, e a execução de R-7 — um centavo alterado nos bytes
+      do arquivo, com o sha256 do arquivo ALTERADO reancorado no contrato, de modo que a fronteira passe
+      e o juízo seja quem decide
     when: a orquestração conduz o fluxo inteiro
-    then: as quatro gravam pacote, com ACEITO_SEM_ANCORA, ACEITO e dois RECUSADO de códigos de saída distintos,
-      e só ACEITO autoriza publicar. Os dois casos de recusa provam coisas diferentes e nenhum substitui
-      o outro — o do centavo alterado prova que uma mudança real nos bytes atravessa o fluxo até a recusa
-      sem publicar, ainda que recusada pela fronteira via sha256; o do arquivo íntegro prova que o JUÍZO
-      é chamado e respeitado, porque o teste falha se um juízo permissivo for injetado
+    then: as três gravam pacote, com ACEITO_SEM_ANCORA, ACEITO e RECUSADO de códigos de saída distintos,
+      e só ACEITO autoriza publicar. O caso de R-7 é UMA prova conjunta, não duas separadas — a alteração
+      é real nos bytes, a recusa vem do JUÍZO comparando contra a âncora monetária original, e o teste
+      FALHA se um juízo permissivo for injetado. Sem reancorar, a fronteira recusaria pelo sha256 antes
+      do juízo comparar, e o teste ficaria verde com juízo permissivo — provando metade do que R-7 escreveu
   - id: B-2
-    given: uma exceção real levantada dentro da leitura, e uma execução que estoura o limite de tempo
+    given: uma exceção real levantada dentro da leitura, e uma execução cujo tempo total é medido
     when: a orquestração conduz a execução
-    then: a exceção vira ERRO com pacote gravado, e o tempo é medido do início da leitura ao veredito,
-      no total. Se o PRÓPRIO gravador falhar — permissão negada, disco cheio — o desfecho é ERRO com código
-      próprio e a falha vai para a saída de erro; nunca se devolve ACEITO sem pacote, porque autorização
-      sem evidência é o que esta fábrica existe para impedir
+    then: a exceção vira ERRO com pacote gravado, e o tempo do início da leitura ao veredito é medido
+      e REGISTRADO no pacote, sem virar recusa — R-9 é should, e o pacote passa a carregar o número para
+      que a cobertura de R-9 seja decidida contra competência real, não contra relógio simulado. Se o
+      PRÓPRIO gravador falhar — permissão negada, disco cheio — o desfecho é ERRO com código próprio e
+      a falha vai para a saída de erro; nunca se devolve ACEITO sem pacote, porque autorização sem evidência
+      é o que esta fábrica existe para impedir
   evals:
   - id: eval_1
-    description: Desfechos gravam pacote; centavo alterado recusa e juízo permissivo faz falhar
-    bash: pytest -q tests/test_orquestracao.py -k "desfechos or centavo_alterado or juizo_permissivo_falha"
+    description: R-7 numa prova só — centavo alterado, hash reancorado, juízo permissivo falha
+    bash: pytest -q tests/test_orquestracao.py -k "desfechos or r7_centavo_reancorado"
     verifies:
     - B-1
   - id: eval_2
@@ -84,7 +88,7 @@ tasks:
   - cvg/docs/adrs
   rollback: Remover a orquestração e seus testes.
   observability: desfechos por tipo e segundos até o veredito
-source_seam_sha256: a8bfe08e8fd90577dfd58ee0706e67d8a4d4a65a8e838a5388d957adccdd830a
+source_seam_sha256: 00f982524034c26ed6c4481689e926a715a859b6734c83bb693ae7bdf390e6a1
 ---
 # Todo caminho termina com pacote e código de saída
 
@@ -94,7 +98,7 @@ Os quatro desfechos gravam pacote; uma exceção dentro da leitura vira ERRO com
 
 ## Runnable leaves
 
-- `T-20260921-orquestra-desfecho` — Decidir o desfecho e garantir o pacote em todo caminho: Os quatro desfechos gravam pacote com código próprio; exceção real vira ERRO; o tempo total é medido contra R-9.
+- `T-20260921-orquestra-desfecho` — Decidir o desfecho e garantir o pacote em todo caminho: Os quatro desfechos gravam pacote com código próprio; exceção real vira ERRO; o tempo total é medido e registrado no pacote. R-9 é should e NÃO é declarado coberto aqui — medir com relógio simulado não demonstra orçamento de competência completa, e inventar recusa por timeout seria afrouxar o que a tech-spec não pediu.
 
 The leg names a capability state, not an activity. Each leaf owns one coherent,
 independently provable done-condition.
