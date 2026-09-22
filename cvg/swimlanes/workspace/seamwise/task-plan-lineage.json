@@ -1,6 +1,6 @@
 {
   "contract": "SeamwiseTaskPlanLineage/v1",
-  "delivery_plan_sha256": "206ce463676e05168ca975b125d609d731ec438736688f891c0d11493411a4f7",
+  "delivery_plan_sha256": "2927268a31a06d9c397aae8dba8739bfa3bdbb52b570262f5e6409859a663bfa",
   "engine_version": "0.2.0",
   "intent": {
     "id": "DI-PDA-BENEFICIOS",
@@ -8,14 +8,14 @@
   },
   "review": {
     "fixture": false,
-    "plan_sha256": "206ce463676e05168ca975b125d609d731ec438736688f891c0d11493411a4f7",
-    "reviewed_at": "2026-09-22T00:27:50.332045+00:00",
+    "plan_sha256": "2927268a31a06d9c397aae8dba8739bfa3bdbb52b570262f5e6409859a663bfa",
+    "reviewed_at": "2026-09-22T00:33:06.135041+00:00",
     "reviewer": "Bruno Nunes",
-    "sha256": "e9df2c8b5964113cd20a367b4ff261d32ac8e91d2d6443deba538e1c4dd8a3b2"
+    "sha256": "3f8e86308275a0896fd468f6cbea5323261c50ccf75ffbac6cd64eb7a0dd8780"
   },
   "task_plan": {
     "contract": "TaskPlan/v1",
-    "digest": "66130e5c5e7077771af50884cdd623d71fc2647ff861290f3feacf271b4a0b4c",
+    "digest": "4bde24f789c0334b09c23a4bd5653c736283e8901294527e5a62517c0f3fd60a",
     "path": "seamwise/task-plan.json"
   },
   "units": {
@@ -23,7 +23,7 @@
       "intent": "DI-PDA-BENEFICIOS",
       "leg": "LEG-AGREGADO-EXATO",
       "seam": "SEAM-AGREGACAO",
-      "source_sha256": "13dc396650b3598fa6f28c20a87fd314c948f7e2e9c2b56f30d938fc314ba1e3",
+      "source_sha256": "18cfddf0f438ddf65e37f2300263cc74046d26ef787c11361c05105b5ccabfd7",
       "swimlane": "LANE-AGREGACAO",
       "unit_id": "T-20260921-agregacao-exata"
     },
@@ -39,7 +39,7 @@
       "intent": "DI-PDA-BENEFICIOS",
       "leg": "LEG-ENVELOPE-VINCULADO",
       "seam": "SEAM-FRONTEIRA",
-      "source_sha256": "70739b0560976a1f7c2f54c8ea58977981987ac1d20e90a305625352c5adf9e1",
+      "source_sha256": "bb03250c554bf6eff992ab2b1defa8896f2aa3adb4c4864c2dc595e2e44e4a44",
       "swimlane": "LANE-FRONTEIRA",
       "unit_id": "T-20260921-envelope-fronteira"
     },
@@ -47,7 +47,7 @@
       "intent": "DI-PDA-BENEFICIOS",
       "leg": "LEG-EVIDENCIA-RECONSTROI",
       "seam": "SEAM-EVIDENCIA",
-      "source_sha256": "6d08c1a4a1c7026a99475d7a354c1ab3201173fd319f88043056d313548982dc",
+      "source_sha256": "ba69f891483f8188c7e28be24bcd3efd2fa45c677f87c622c708fa4a3e01a3a6",
       "swimlane": "LANE-EVIDENCIA",
       "unit_id": "T-20260921-evidencia-packet"
     },
@@ -63,7 +63,7 @@
       "intent": "DI-PDA-BENEFICIOS",
       "leg": "LEG-LEITURA-POSICIONAL",
       "seam": "SEAM-LEITURA",
-      "source_sha256": "89ddcb5c4e323308daf17b2a0558b7cebdd9ab460a245983832a262bd62daed7",
+      "source_sha256": "82ba5d141794667004687ac92a84815cdae0dae208b66617cea955934ccde3a3",
       "swimlane": "LANE-LEITURA",
       "unit_id": "T-20260921-leitura-posicional"
     },
@@ -71,7 +71,7 @@
       "intent": "DI-PDA-BENEFICIOS",
       "leg": "LEG-DESFECHO-COM-PACOTE",
       "seam": "SEAM-ORQUESTRACAO",
-      "source_sha256": "db30f489b8dc30cdb03a22ddffadb11c8d5cf7b29b975377ce3280572f76998f",
+      "source_sha256": "3afe22126ee672462bb133e36633ee731570929f93dffb8b2b87674cb2af9081",
       "swimlane": "LANE-ORQUESTRACAO",
       "unit_id": "T-20260921-orquestra-desfecho"
     }

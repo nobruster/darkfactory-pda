@@ -1,6 +1,6 @@
 > Projetado de `LEG-ENVELOPE-VINCULADO.md` pelo Seamwise.
 > **Não edite aqui** — edite a recipe e rode `seamwise plan`.
-> origem sha256: `70739b0560976a1f7c2f54c8ea58977981987ac1d20e90a305625352c5adf9e1`
+> origem sha256: `bb03250c554bf6eff992ab2b1defa8896f2aa3adb4c4864c2dc595e2e44e4a44`
 
 ---
 
@@ -17,6 +17,7 @@ proof: Envelope sem sha256 do arquivo é recusado; sha256 divergente do ancorado
 requires:
 - agregado da competência
 - defeitos observados
+- sha256 computado na leitura
 produces:
 - envelope do produtor
 tasks:
@@ -45,11 +46,13 @@ tasks:
     given: um envelope sem o sha256 do arquivo lido, outro cujo sha256 difere do ancorado, e um terceiro
       que COPIOU o sha256 ancorado mas foi produzido lendo outro arquivo
     when: o envelope é validado
-    then: os três são recusados — o sha256 não é campo declarado e sim SAÍDA do leitor, computado sobre
-      os mesmos bytes que alimentaram os controles e emitido junto com eles; o terceiro é recusado porque
-      o hash que o leitor computou discorda do que o envelope declara, e é esse caso, não a mera igualdade,
-      que prova o vínculo — um hash copiado, com os cinco controles coincidindo, passaria em qualquer
-      teste de igualdade
+    then: os três são recusados. O hash computado chega ao validador como capacidade própria, sha256 computado
+      na leitura, que a leitura declara entre seus produtos e a fronteira exige entre seus requisitos
+      — não como mais um campo do envelope, senão os dois campos viriam da mesma mão e repetir o ancorado
+      bastaria. O terceiro é recusado porque o hash que a leitura computou discorda do que o envelope
+      declara, e é esse caso, não a mera igualdade, que prova o vínculo. Para produtor externo, que o
+      ADR 0006 permite, vale o mesmo — sem a capacidade computada por quem leu os bytes, o envelope é
+      recusado por falta de insumo, nunca aceito por ausência de contraditório
   - id: B-2
     given: um envelope onde linhas_invalidas diverge da contagem de defeitos do tipo VALOR_ILEGIVEL, e
       outro com linhas_invalidas=0 e defeitos de truncamento, e outro produzido por um motor que não é
@@ -91,7 +94,7 @@ tasks:
   - cvg/docs/adrs
   rollback: Remover o validador de envelope e seus testes.
   observability: envelopes recusados por motivo
-source_seam_sha256: 79d576add826943381a84fde5b1b3cf823fff30277e7c47dcf9b9a1a5ae40a49
+source_seam_sha256: 29b6d98644c70132abfc8175cca43b153e94f4371746ece97d77a3c6d4d1283a
 ---
 # O envelope liga o agregado ao arquivo que o gerou
 

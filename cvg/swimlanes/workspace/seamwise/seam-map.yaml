@@ -3,9 +3,9 @@ status: SEAM_MAP=READY
 intent_id: DI-PDA-BENEFICIOS
 source_recipe:
   name: pda-recipe.yaml
-  sha256: 6de0dbcd8a24b625e8aea7d68191b8e9f09cf2e52f3c7e051fb3f25ca64b0362
+  sha256: b62192654048f2770b24ddfbae74800b312f9f63a69e19e3c8bfe4caf62599c8
 intent_sha256: 7e97b240616bd07633d782d99a1b165ec4bd7527e0eeb9e6d2f088f7b0717fff
-system_map_sha256: 7ddb9e62f8b9de9d9f88397b928c4f77477aa8ff92474cb10151112c35aff80e
+system_map_sha256: 7ba95a0c21e7da2aa3f36a04787540cea2076458aec34b4317284b3881cb659d
 evidence_sha256: 2f99c72ec331b73c69d5b61ea60268f45989f9cb56f51cbe9f33d3e9829b6bc3
 decisions:
 - id: ADR-0002-POSICIONAL
@@ -38,14 +38,14 @@ seams:
   evidence:
   - E-ESPECIE-TRUNCADA
   swimlane_id: LANE-LEITURA
-  sha256: 3d961ff0182fb1f6018230a186100b7c66473179c5da85fe9586b95a5819e7a0
+  sha256: e604fba7563151f72505f8c8b6bea7a42de72e66bc0dd6bcd18f7b985735ff2d
 - id: SEAM-AGREGACAO
   path: seamwise/seams/SEAM-AGREGACAO.md
   owner: agregacao
   evidence:
   - E-ANCORA-202601
   swimlane_id: LANE-AGREGACAO
-  sha256: 261802931a30d1dd85c995e06baa346dd830d5f1ac45515d1988c2875ceea955
+  sha256: 73663c7301b69f13acaf4b220edecb7c3b20a98d117b5b4f7ca0f6ec2b51909f
 - id: SEAM-JUIZO
   path: seamwise/seams/SEAM-JUIZO.md
   owner: juizo
@@ -59,18 +59,18 @@ seams:
   evidence:
   - E-ANCORA-202601
   swimlane_id: LANE-EVIDENCIA
-  sha256: 3474e47fccc93c6ac733c088241d5c486d8640ff33c7f4c02457fbda0a0d39c2
+  sha256: c40ed800ae4b3871050518bce36577cad0a014e8e2a4e10fa453ae9f4d26288f
 - id: SEAM-ORQUESTRACAO
   path: seamwise/seams/SEAM-ORQUESTRACAO.md
   owner: orquestracao
   evidence:
   - E-ANCORA-202601
   swimlane_id: LANE-ORQUESTRACAO
-  sha256: fd89ea958bca1e7b48352427d924ded930b6159a2d39e57eb3a6a847ee1c52b2
+  sha256: a8bfe08e8fd90577dfd58ee0706e67d8a4d4a65a8e838a5388d957adccdd830a
 - id: SEAM-FRONTEIRA
   path: seamwise/seams/SEAM-FRONTEIRA.md
   owner: fronteira
   evidence:
   - E-ANCORA-202601
   swimlane_id: LANE-FRONTEIRA
-  sha256: 79d576add826943381a84fde5b1b3cf823fff30277e7c47dcf9b9a1a5ae40a49
+  sha256: 29b6d98644c70132abfc8175cca43b153e94f4371746ece97d77a3c6d4d1283a

@@ -13,15 +13,15 @@
     "family": "anthropic"
   },
   "verdict": "REVISE",
-  "prompt_sha256": "ff1db80d98205e885a973d2c1aae150db28db8ef8491434d247b41cb62ed49f3",
+  "prompt_sha256": "9ba6b1ca9c4674ed4889e75980679b245dd4534bd5352ca70b96fa309ba84329",
   "inputs": [
     {
       "path": "agregacao/LEG-AGREGADO-EXATO.md",
-      "sha256": "d48bc4157045d2c586bb05378eca17752c7214e0ad0c0745cdbde19606f74e3b"
+      "sha256": "c8bac9a130765a700e29febbf2f8f7601aca99e563f1cd1a4ecc3884d03bf5a2"
     },
     {
       "path": "agregacao/_lane.md",
-      "sha256": "b272da6ed2c5862b0d347bb3d3cd6c6f12d711913cdcdbed235b5847a15399e9"
+      "sha256": "beefbcd5cb99515b634397b720dff0ca27338ccba36e0050d15b6bc4c302010a"
     },
     {
       "path": "contrato/LEG-CONTRATO-RECUSA-SEM-ANCORA.md",
@@ -33,19 +33,19 @@
     },
     {
       "path": "evidencia/LEG-EVIDENCIA-RECONSTROI.md",
-      "sha256": "891a195ef848d6e839c5d30b45f3afaa17eb3b8703c2d0bf103b3a24ac0bbe9d"
+      "sha256": "1fc8d42b28a245eb8561d54cb1269149be716ae3fdabde12d9a96bc0a32efb15"
     },
     {
       "path": "evidencia/_lane.md",
-      "sha256": "f9d094caca7995fb26a6aafceb912809e2576910f86ab465ffe463dc5d491619"
+      "sha256": "ff96f94056f501b45c9890ac49d3db18e84294cd40a840517db0f3bd6c77e44e"
     },
     {
       "path": "fronteira/LEG-ENVELOPE-VINCULADO.md",
-      "sha256": "0d229fedbed3cefbf460ba2e4ff6a2fce5e5e76814e61bba9427c571892c8b85"
+      "sha256": "e151b03e948ce234526abe7bbff0dee5c79e0e896d3e000de47245c6f3867720"
     },
     {
       "path": "fronteira/_lane.md",
-      "sha256": "47e50b57340f429f3c470884f5bd9d04a1bab0973a572121a6a64af49f4ba53b"
+      "sha256": "6398e8677bc3157b9107c928d285a4dab0f910117a1a5146a0f4350c98caad85"
     },
     {
       "path": "juizo/LEG-JUIZO-ACUSA.md",
@@ -65,11 +65,11 @@
     },
     {
       "path": "orquestracao/LEG-DESFECHO-COM-PACOTE.md",
-      "sha256": "85fd34f226ef4ca3b0fc5c9c32af681022622ed5724114530b3dddf510c6218e"
+      "sha256": "a5064aa959d6d7f839106f8c1a97ed104718c12bcc23dd99dad3e7e11a95a599"
     },
     {
       "path": "orquestracao/_lane.md",
-      "sha256": "c7a92afe53f03e16ea3d9911831b5b84e71f4007ae14efde51314a9d96768e4a"
+      "sha256": "5e7dfd37e0e3c756cd7380b06d1cb742f4ea82f70d32a822238713ba8af8ea57"
     }
   ],
   "objections": [
@@ -77,19 +77,20 @@
       "id": "C1",
       "severity": "high",
       "rank": 1,
-      "attack_class": "drift",
-      "swimlane": "orquestracao",
-      "leg": "LEG-DESFECHO-COM-PACOTE",
+      "attack_class": "cross-lane-interface",
+      "swimlane": "fronteira",
+      "leg": "LEG-ENVELOPE-VINCULADO",
       "location": {
-        "plan_file": "cvg/swimlanes/lanes/orquestracao/LEG-DESFECHO-COM-PACOTE.md",
-        "section": "tasks / depends_on, creates_paths, behavior B-1"
+        "plan_file": "cvg/swimlanes/lanes/fronteira/LEG-ENVELOPE-VINCULADO.md",
+        "section": "tasks / behavior B-1, B-2; anti_patterns"
       },
-      "title": "O fluxo dito inteiro n\u00e3o entrega a arquitetura vinculante do ADR 0005",
-      "body": "B-1 promete conduzir o fluxo inteiro, mas a cadeia de tarefas termina em m\u00f3dulos de leitura, agrega\u00e7\u00e3o, valida\u00e7\u00e3o e evid\u00eancia, sem tarefa que assuma Spark, MinIO ou a escrita no lago. O ADR 0005 exige esses componentes e declara expressamente que montar a infraestrutura entra no plano. As sete tarefas podem terminar verdes sem existir o produtor que o juiz deveria conferir. H\u00e1 ainda tens\u00e3o com a tech-spec, que mant\u00e9m a substitui\u00e7\u00e3o do carregamento fora de escopo. \u00c9 uma quest\u00e3o bloqueante para Pass 1/2/3; esta revis\u00e3o n\u00e3o adiciona infraestrutura ao escopo por conta pr\u00f3pria.",
-      "evidence": "Orquestra\u00e7\u00e3o B-1: 'a orquestra\u00e7\u00e3o conduz o fluxo inteiro'. ADR 0005, Decision: 'Spark grava. Python puro confere.' Consequences: 'Subir Spark + MinIO \u00e9 trabalho no plano, n\u00e3o pr\u00e9-requisito silencioso.'",
+      "title": "A recusa do hash copiado depende de uma entrada independente ainda n\u00e3o contratada",
+      "body": "B-1 agora exige comparar o hash declarado com o computado pelo leitor, mas o plano n\u00e3o define como esse segundo valor chega ao validador nem qual componente garante sua proced\u00eancia. Leitura n\u00e3o o declara entre seus produtos; agrega\u00e7\u00e3o tampouco promete transport\u00e1-lo. Para um produtor externo, permitido por B-2 e pelo ADR 0006, dois campos do mesmo envelope podem repetir o hash ancorado. Nesse caso o validador recebe dados indistingu\u00edveis dos de uma execu\u00e7\u00e3o correta e n\u00e3o consegue cumprir a recusa prometida. Um teste que entrega separadamente o hash verdadeiro pode passar sem provar que a integra\u00e7\u00e3o real possui essa entrada.",
+      "evidence": "B-1: 'o hash que o leitor computou discorda do que o envelope declara'. B-2 aceita motor externo sem import\u00e1-lo. Leitura / produces enumera somente 'registros lidos' e 'defeitos observados'.",
       "cites": [
-        "cvg/docs/adrs/0005-the-judge-uses-a-different-engine-from-the-pipeline-it-judges.md \u00a7 Decision, Evidence, Consequences",
-        "cvg/docs/tech-spec/tech-spec-pda-beneficios.md \u00a7 Scope"
+        "cvg/swimlanes/lanes/leitura/LEG-LEITURA-POSICIONAL.md \u00a7 produces; behavior B-1",
+        "cvg/swimlanes/lanes/agregacao/LEG-AGREGADO-EXATO.md \u00a7 produces",
+        "cvg/docs/adrs/0006-the-judge-ships-before-the-spark-producer-that-it-will-judge.md \u00a7 Consequences"
       ]
     },
     {
@@ -103,32 +104,33 @@
         "plan_file": "cvg/swimlanes/lanes/evidencia/LEG-EVIDENCIA-RECONSTROI.md",
         "section": "tasks / behavior B-1; eval_3"
       },
-      "title": "O pacote obrigat\u00f3rio recusa os pr\u00f3prios desfechos sem hashes",
-      "body": "O contrato retorna NAO_MEDIDO quando falta o hash do CSV. A orquestra\u00e7\u00e3o precisa preservar esse caminho como ACEITO_SEM_ANCORA com pacote, mas a leitura do pacote recusa incondicionalmente a aus\u00eancia de qualquer hash. Uma execu\u00e7\u00e3o sem contrato ancorado ou interrompida antes de obter hashes n\u00e3o pode cumprir simultaneamente essas promessas. Gravar o pacote n\u00e3o resolve: ele ser\u00e1 rejeitado na reconstru\u00e7\u00e3o. Preencher campos ausentes tamb\u00e9m contrariaria B-1.",
-      "evidence": "Evid\u00eancia B-1: 'um pacote sem os hashes do ZIP e do CSV \u00e9 recusado antes disso'; 'campos n\u00e3o percorridos s\u00e3o marcados ausentes'. Contrato B-1: 'falta o hash do CSV e o resultado \u00e9 NAO_MEDIDO'. Orquestra\u00e7\u00e3o B-1 exige pacote para ACEITO_SEM_ANCORA.",
+      "title": "A regra de aus\u00eancia de hash n\u00e3o distingue falta de \u00e2ncora de falha na execu\u00e7\u00e3o",
+      "body": "Uma execu\u00e7\u00e3o com contrato completo pode falhar dentro da leitura antes de produzir o hash observado e os controles. A orquestra\u00e7\u00e3o exige ERRO com pacote; B-1 da evid\u00eancia associa aus\u00eancia de hash do CSV a ACEITO_SEM_ANCORA. O plano n\u00e3o distingue explicitamente hash ancorado de hash observado nessa regra, nem inclui o evento de falha entre os insumos da rederiva\u00e7\u00e3o. Mesmo quando todos os hashes est\u00e3o dispon\u00edveis, controles ausentes ap\u00f3s uma exce\u00e7\u00e3o n\u00e3o determinam ERRO por si. A implementa\u00e7\u00e3o pode rejeitar um pacote leg\u00edtimo de ERRO ou reclassific\u00e1-lo como aus\u00eancia de \u00e2ncora.",
+      "evidence": "Evid\u00eancia B-1: 'sem hash do CSV o desfecho \u00e9 ACEITO_SEM_ANCORA'; rederiva\u00e7\u00e3o enumera controles, \u00e2ncora, classifica\u00e7\u00f5es e hashes. Orquestra\u00e7\u00e3o B-2: 'a exce\u00e7\u00e3o vira ERRO com pacote gravado'.",
       "cites": [
-        "cvg/swimlanes/lanes/contrato/LEG-CONTRATO-RECUSA-SEM-ANCORA.md \u00a7 behavior B-1 e B-2",
-        "cvg/swimlanes/lanes/orquestracao/LEG-DESFECHO-COM-PACOTE.md \u00a7 behavior B-1 e B-2",
-        "cvg/docs/tech-spec/tech-spec-pda-beneficios.md \u00a7 Requirements R-1"
+        "cvg/swimlanes/lanes/orquestracao/LEG-DESFECHO-COM-PACOTE.md \u00a7 behavior B-2",
+        "cvg/swimlanes/lanes/contrato/LEG-CONTRATO-RECUSA-SEM-ANCORA.md \u00a7 behavior B-1",
+        "cvg/docs/tech-spec/tech-spec-pda-beneficios.md \u00a7 Requirements R-1; Scope"
       ]
     },
     {
       "id": "C3",
       "severity": "high",
       "rank": 3,
-      "attack_class": "cross-lane-interface",
-      "swimlane": "evidencia",
-      "leg": "LEG-EVIDENCIA-RECONSTROI",
+      "attack_class": "unverified-assumption",
+      "swimlane": "leitura",
+      "leg": "LEG-LEITURA-POSICIONAL",
       "location": {
-        "plan_file": "cvg/swimlanes/lanes/evidencia/LEG-EVIDENCIA-RECONSTROI.md",
-        "section": "tasks / behavior B-1"
+        "plan_file": "cvg/swimlanes/lanes/leitura/LEG-LEITURA-POSICIONAL.md",
+        "section": "tasks / behavior B-1; eval_1"
       },
-      "title": "Os insumos declarados para rederivar o veredito n\u00e3o determinam o veredito",
-      "body": "Cinco controles, \u00e2ncora e hashes id\u00eanticos admitem decis\u00f5es distintas no plano do ju\u00edzo: um defeito fora dos controles com CONFIRMED_SOURCE_DEFECT apenas registra, enquanto o mesmo defeito com UNRESOLVED bloqueia. Portanto, uma reconstru\u00e7\u00e3o baseada somente nos insumos enumerados em B-1 n\u00e3o reproduz a decis\u00e3o. Embora o done_condition inclua classifica\u00e7\u00f5es no pacote, B-1 n\u00e3o as inclui na regra de rederiva\u00e7\u00e3o. Uma implementa\u00e7\u00e3o literal pode rejeitar uma recusa leg\u00edtima ou deixar de detectar a troca de RECUSADO por ACEITO.",
-      "evidence": "Evid\u00eancia B-1: 'REDERIVADO dos cinco controles, da \u00e2ncora e dos dois hashes gravados'. Ju\u00edzo B-2: 'fora dos controles, MODERN_DEFECT, CONTRACT_AMBIGUITY e UNRESOLVED bloqueiam'.",
+      "title": "O teste de cabe\u00e7alho n\u00e3o cobre a invers\u00e3o das duas colunas Esp\u00e9cie",
+      "body": "As posi\u00e7\u00f5es 12 e 13 s\u00e3o duas colunas n\u00e3o monet\u00e1rias com cabe\u00e7alhos id\u00eanticos. Inverter seus valores preserva o cabe\u00e7alho de 14 posi\u00e7\u00f5es e os cinco controles. Portanto, a valida\u00e7\u00e3o de cabe\u00e7alho nomeada em eval_1 n\u00e3o consegue cumprir a promessa geral de bloquear essa troca antes de ler qualquer registro. O teste pode passar trocando colunas de nomes diferentes enquanto o caso que motivou a leitura posicional continua descoberto. O hash pode recusar um arquivo alterado contra a \u00e2ncora antiga, mas isso n\u00e3o demonstra a capacidade prometida ao gate de layout, inclusive para uma nova publica\u00e7\u00e3o legitimamente ancorada.",
+      "evidence": "B-1 exige bloquear 'duas colunas n\u00e3o monet\u00e1rias trocadas de lugar' antes de qualquer registro; eval_1 descreve 'cabe\u00e7alho fora de ordem'. As posi\u00e7\u00f5es 12 e 13 t\u00eam ambas o nome Esp\u00e9cie.",
       "cites": [
-        "cvg/swimlanes/lanes/juizo/LEG-JUIZO-ACUSA.md \u00a7 behavior B-2",
-        "cvg/docs/tech-spec/tech-spec-pda-beneficios.md \u00a7 Requirements R-6; Problem restated"
+        "cvg/docs/adrs/0002-especie-appears-twice-so-columns-are-read-by-position.md \u00a7 Decision; Rejected reading",
+        "cvg/docs/adrs/0004-column-13-is-a-truncated-description-not-a-second-code.md \u00a7 Decision",
+        "cvg/docs/tech-spec/tech-spec-pda-beneficios.md \u00a7 Requirements R-2, R-3"
       ]
     },
     {
@@ -140,40 +142,21 @@
       "leg": "LEG-AGREGADO-EXATO",
       "location": {
         "plan_file": "cvg/swimlanes/lanes/agregacao/LEG-AGREGADO-EXATO.md",
-        "section": "tasks / behavior B-1"
+        "section": "proof; tasks / done_condition; eval_3"
       },
-      "title": "A defini\u00e7\u00e3o operacional dos cinco controles contradiz a \u00e2ncora",
-      "body": "H\u00e1 dois controles de contagem e tr\u00eas monet\u00e1rios; somente um dos monet\u00e1rios \u00e9 soma. B-1 manda que 'os quatro monet\u00e1rios somam', deixando uma instru\u00e7\u00e3o incompat\u00edvel com min_vl_liquido, max_vl_liquido e linhas_invalidas. Al\u00e9m disso, adicionar zero n\u00e3o altera a soma, contrariando a justificativa apresentada. Uma implementa\u00e7\u00e3o literal pode calcular extremos como somas ou tratar a contagem de inv\u00e1lidos como dinheiro, e ser\u00e1 recusada pelo juiz mesmo sobre a fonte correta.",
-      "evidence": "B-1: 'count_linhas conta TODO registro lido, os quatro monet\u00e1rios somam s\u00f3 os leg\u00edveis'; 'contar o ileg\u00edvel no monet\u00e1rio somaria zero e faria a \u00e2ncora medida deixar de bater'. R-5 enumera count_linhas, sum_vl_liquido, min_vl_liquido, max_vl_liquido e linhas_invalidas.",
+      "title": "Demonstrar diferen\u00e7a entre dois agrupamentos n\u00e3o prova qual agrupamento o agregador usa",
+      "body": "A prova declarada pode ser satisfeita calculando, dentro do teste, agrupamentos por c\u00f3digo e por descri\u00e7\u00e3o e demonstrando que diferem. Isso continua verdadeiro se o agregador entregue usar descri\u00e7\u00e3o ou emitir apenas controles globais. O plano n\u00e3o exige expressamente que a sa\u00edda real preserve os c\u00f3digos distintos nem que o teste falhe ao substituir sua chave por descri\u00e7\u00e3o. O ADR 0004 exige justamente essa sensibilidade. Como os cinco controles globais podem permanecer iguais, o ju\u00edzo n\u00e3o cobre a lacuna e uma implementa\u00e7\u00e3o incorreta pode obter ACEITO.",
+      "evidence": "done_condition e eval_3 exigem apenas 'agrupar por descri\u00e7\u00e3o diverge de agrupar por c\u00f3digo'. ADR 0004 exige teste que 'falha se algu\u00e9m reintroduzir o agrupamento por nome'.",
       "cites": [
-        "cvg/docs/tech-spec/tech-spec-pda-beneficios.md \u00a7 Requirements R-5",
-        "cvg/docs/adrs/0001-the-2026-01-anchor-is-41572553-rows-summing-78521752562-12.md \u00a7 Decision"
+        "cvg/docs/adrs/0004-column-13-is-a-truncated-description-not-a-second-code.md \u00a7 Consequences",
+        "cvg/docs/tech-spec/tech-spec-pda-beneficios.md \u00a7 Requirements R-3",
+        "cvg/swimlanes/lanes/juizo/LEG-JUIZO-ACUSA.md \u00a7 behavior B-1"
       ]
     },
     {
       "id": "C5",
-      "severity": "high",
-      "rank": 5,
-      "attack_class": "unverified-assumption",
-      "swimlane": "fronteira",
-      "leg": "LEG-ENVELOPE-VINCULADO",
-      "location": {
-        "plan_file": "cvg/swimlanes/lanes/fronteira/LEG-ENVELOPE-VINCULADO.md",
-        "section": "proof; tasks / behavior B-1"
-      },
-      "title": "Comparar o hash declarado n\u00e3o prova que ele veio do arquivo processado",
-      "body": "B-1 testa aus\u00eancia e diverg\u00eancia do hash declarado, mas n\u00e3o atribui a nenhuma etapa a produ\u00e7\u00e3o verific\u00e1vel desse hash a partir dos bytes efetivamente consumidos. O leitor promete apenas igualdade antes/depois, sem declarar o hash como sa\u00edda vinculada ao agregado. Um produtor com configura\u00e7\u00e3o ou cache incorreto pode processar outro CSV e copiar o hash ancorado para o envelope. Se os cinco controles coincidirem, todos os casos descritos passam. A alega\u00e7\u00e3o de detectar republica\u00e7\u00e3o com controles iguais permanece sem prova.",
-      "evidence": "Fronteira B-1 afirma que uma republica\u00e7\u00e3o com os mesmos controles seria detectada pelo v\u00ednculo. Leitura declara como produtos apenas 'registros lidos' e 'defeitos observados', com prova 'sha256 id\u00eantico antes e depois'. Nenhuma dessas condi\u00e7\u00f5es relaciona explicitamente o hash entregue no envelope aos bytes usados para calcular seu agregado.",
-      "cites": [
-        "cvg/swimlanes/lanes/leitura/LEG-LEITURA-POSICIONAL.md \u00a7 produces; done_condition; behavior B-1",
-        "cvg/docs/adrs/0001-the-2026-01-anchor-is-41572553-rows-summing-78521752562-12.md \u00a7 Consequences",
-        "cvg/docs/adrs/0005-the-judge-uses-a-different-engine-from-the-pipeline-it-judges.md \u00a7 Decision"
-      ]
-    },
-    {
-      "id": "C6",
       "severity": "medium",
-      "rank": 6,
+      "rank": 5,
       "attack_class": "drift",
       "swimlane": "orquestracao",
       "leg": "LEG-DESFECHO-COM-PACOTE",
@@ -181,29 +164,32 @@
         "plan_file": "cvg/swimlanes/lanes/orquestracao/LEG-DESFECHO-COM-PACOTE.md",
         "section": "tasks / behavior B-1; eval_1"
       },
-      "title": "A prova integrada de R-7 pode passar sem exercitar a recusa do ju\u00edzo",
-      "body": "Remover uma linha do arquivo tamb\u00e9m muda seu hash. O envelope deve recusar esse hash antes da compara\u00e7\u00e3o monet\u00e1ria; assim, o teste integrado pode observar RECUSADO mesmo se o ju\u00edzo estiver aceitando qualquer agregado. Os testes unit\u00e1rios do ju\u00edzo ajudam, mas B-1 n\u00e3o demonstra que a integra\u00e7\u00e3o chama e respeita esse ju\u00edzo. Isso deixa descoberta a exig\u00eancia expl\u00edcita de R-7 de uma prova que falhe se o ju\u00edzo aceitar.",
-      "evidence": "Orquestra\u00e7\u00e3o B-1 usa 'o arquivo com uma linha removida'. Fronteira B-1 recusa hash divergente. R-7 exige diverg\u00eancia 'provada por teste que falha se o ju\u00edzo aceitar'.",
+      "title": "O novo teste fortalece a integra\u00e7\u00e3o do ju\u00edzo, mas substitui o cen\u00e1rio obrigat\u00f3rio de R-7",
+      "body": "R-7 exige uma linha removida ou um centavo alterado no arquivo. B-1 substitui explicitamente esse cen\u00e1rio por diverg\u00eancia do agregador sobre arquivo \u00edntegro. Essa prova \u00e9 \u00fatil para detectar um ju\u00edzo permissivo, mas n\u00e3o demonstra que uma altera\u00e7\u00e3o real nos bytes atravessa o fluxo at\u00e9 a recusa, sem publica\u00e7\u00e3o. Os testes unit\u00e1rios de hash n\u00e3o demonstram essa liga\u00e7\u00e3o na orquestra\u00e7\u00e3o. A alega\u00e7\u00e3o de cumprir R-7 permanece parcial: o teste de muta\u00e7\u00e3o do ju\u00edzo e o teste de altera\u00e7\u00e3o da fonte verificam falhas diferentes.",
+      "evidence": "B-1 especifica 'n\u00e3o o arquivo alterado' e conclui 'como R-7 exige'. R-7 especifica 'uma linha removida ou um centavo alterado no arquivo'.",
       "cites": [
         "cvg/docs/tech-spec/tech-spec-pda-beneficios.md \u00a7 Requirements R-7",
-        "cvg/swimlanes/lanes/fronteira/LEG-ENVELOPE-VINCULADO.md \u00a7 behavior B-1",
-        "cvg/swimlanes/lanes/juizo/LEG-JUIZO-ACUSA.md \u00a7 behavior B-1; eval_1"
+        "cvg/swimlanes/lanes/fronteira/LEG-ENVELOPE-VINCULADO.md \u00a7 eval_1"
       ]
     }
   ],
   "cross_lane_interfaces": [],
   "fork": {
     "choice": "B",
-    "reason": "Transcri\u00e7\u00e3o da rota j\u00e1 declarada nos sete arquivos _lane.md; nenhuma escolha feita pelo advers\u00e1rio.",
+    "reason": "Transcri\u00e7\u00e3o da rota j\u00e1 declarada nos sete _lane.md; nenhuma escolha feita pelo advers\u00e1rio.",
     "per_plan_declared": true
   },
   "open_questions": [
     {
-      "q": "C1: qual delimita\u00e7\u00e3o aprovada concilia o ADR 0005, que exige produtor Spark + MinIO e infraestrutura no plano, com o escopo da tech-spec e as sete tarefas apresentadas? A decis\u00e3o pertence aos passes anteriores.",
+      "q": "Qual entrada independente permite ao validador distinguir hash computado de hash copiado quando recebe um envelope de produtor externo?",
       "blocks_build": true
     },
     {
-      "q": "Como representar formalmente obje\u00e7\u00f5es ainda abertas no despacho, dado que o schema exige resolution com decis\u00e3o humana j\u00e1 tomada? Este registro n\u00e3o inventa FIX, ACCEPT, decided_by ou decided_at.",
+      "q": "Qual regra distingue falta de \u00e2ncora, aus\u00eancia de resultados por falha e ERRO na rederiva\u00e7\u00e3o do pacote?",
+      "blocks_build": true
+    },
+    {
+      "q": "Como representar obje\u00e7\u00f5es abertas no despacho sem inventar os campos de decis\u00e3o humana exigidos por resolution no schema 1.1?",
       "blocks_build": true
     }
   ],

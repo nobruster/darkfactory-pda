@@ -1,6 +1,6 @@
 > Projetado de `LEG-DESFECHO-COM-PACOTE.md` pelo Seamwise.
 > **Não edite aqui** — edite a recipe e rode `seamwise plan`.
-> origem sha256: `db30f489b8dc30cdb03a22ddffadb11c8d5cf7b29b975377ce3280572f76998f`
+> origem sha256: `3afe22126ee672462bb133e36633ee731570929f93dffb8b2b87674cb2af9081`
 
 ---
 
@@ -42,14 +42,15 @@ tasks:
   - tests/test_orquestracao.py
   behavior:
   - id: B-1
-    given: execução sem âncora, execução que bate, e uma execução sobre o arquivo íntegro em que o agregador
-      divergiu de um controle — não o arquivo alterado, cujo sha256 mudaria e faria a fronteira recusar
-      antes de o juízo comparar
+    given: execução sem âncora, execução que bate, e DUAS execuções que devem recusar — a do arquivo com
+      um centavo alterado nos bytes, que R-7 exige, e a do arquivo íntegro em que o agregador divergiu
+      de um controle
     when: a orquestração conduz o fluxo inteiro
-    then: as três gravam pacote — ACEITO_SEM_ANCORA, ACEITO e RECUSADO — com códigos de saída distintos,
-      e só ACEITO autoriza publicar; o terceiro caso é RECUSADO pelo JUÍZO com hash íntegro, e o teste
-      falha se um juízo que aceita tudo for injetado, provando que a integração chama e respeita o juízo,
-      como R-7 exige
+    then: as quatro gravam pacote, com ACEITO_SEM_ANCORA, ACEITO e dois RECUSADO de códigos de saída distintos,
+      e só ACEITO autoriza publicar. Os dois casos de recusa provam coisas diferentes e nenhum substitui
+      o outro — o do centavo alterado prova que uma mudança real nos bytes atravessa o fluxo até a recusa
+      sem publicar, ainda que recusada pela fronteira via sha256; o do arquivo íntegro prova que o JUÍZO
+      é chamado e respeitado, porque o teste falha se um juízo permissivo for injetado
   - id: B-2
     given: uma exceção real levantada dentro da leitura, e uma execução que estoura o limite de tempo
     when: a orquestração conduz a execução
@@ -59,8 +60,8 @@ tasks:
       sem evidência é o que esta fábrica existe para impedir
   evals:
   - id: eval_1
-    description: Os quatro desfechos gravam pacote; juízo permissivo injetado faz o teste falhar
-    bash: pytest -q tests/test_orquestracao.py -k "desfechos or juizo_permissivo_falha"
+    description: Desfechos gravam pacote; centavo alterado recusa e juízo permissivo faz falhar
+    bash: pytest -q tests/test_orquestracao.py -k "desfechos or centavo_alterado or juizo_permissivo_falha"
     verifies:
     - B-1
   - id: eval_2
@@ -89,7 +90,7 @@ tasks:
   - cvg/docs/adrs
   rollback: Remover a orquestração e seus testes.
   observability: desfechos por tipo e segundos até o veredito
-source_seam_sha256: fd89ea958bca1e7b48352427d924ded930b6159a2d39e57eb3a6a847ee1c52b2
+source_seam_sha256: a8bfe08e8fd90577dfd58ee0706e67d8a4d4a65a8e838a5388d957adccdd830a
 ---
 # Todo caminho termina com pacote e código de saída
 

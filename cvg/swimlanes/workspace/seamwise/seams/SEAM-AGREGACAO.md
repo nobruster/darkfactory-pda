@@ -73,7 +73,10 @@ swimlane:
         then: o resultado é o de HALF_EVEN a duas casas — comparado contra o valor que HALF_UP produziria,
           e RECUSANDO-o; declarar um modo não basta, o teste falha se a implementação usar meio-para-cima.
           A perda por precisão baixa também é acusada, e arredondar por campo difere de arredondar no
-          total
+          total. E a SAÍDA do agregador preserva os códigos distintos do ADR 0004 — os 51 códigos que
+          colapsam em 40 descrições aparecem como 51 chaves, e o teste falha se a chave do agregador entregue
+          for a descrição, porque demonstrar dentro do teste que os dois agrupamentos diferem continuaria
+          verdadeiro com um agregador que usa a descrição
       evals:
       - id: eval_1
         description: Float recusado; dois de contagem e três monetários; ilegível excluído, não zerado
@@ -86,8 +89,8 @@ swimlane:
         verifies:
         - B-2
       - id: eval_3
-        description: Agrupar por descrição diverge de agrupar por código
-        bash: pytest -q tests/test_agregacao.py -k chave_e_codigo
+        description: A saída preserva os 51 códigos; trocar a chave por descrição faz falhar
+        bash: pytest -q tests/test_agregacao.py -k "chave_e_codigo or saida_preserva_codigos"
         verifies:
         - B-1
         - B-2

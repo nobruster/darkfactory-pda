@@ -61,18 +61,21 @@ swimlane:
         then: o veredito é REDERIVADO dos cinco controles, da âncora, das classificações de cada diferença
           e dos hashes gravados — nunca lido do rótulo; o pacote adulterado é recusado porque o rótulo
           discorda do que esses insumos produzem. A ausência de hash não é recusa incondicional — ela
-          decide o veredito, porque sem hash do CSV o desfecho é ACEITO_SEM_ANCORA com causa NAO_MEDIDO
-          e o pacote é válido; recusar aqui impediria de gravar justamente a execução que não tinha âncora.
-          Só é recusado o pacote cujo rótulo não bate com o que os insumos rederivam; campos não percorridos
-          são marcados ausentes, nunca zerados
+          decide o veredito, e os dois hashes são distintos. Falta o ANCORADO, que vem do contrato, e
+          o desfecho é ACEITO_SEM_ANCORA com causa NAO_MEDIDO. Falta o OBSERVADO, computado na leitura,
+          e não é falta de âncora e sim execução interrompida — o desfecho é ERRO, com o evento de falha
+          entre os insumos da rederivação, porque controles ausentes depois de uma exceção não determinam
+          ERRO por si. Os dois gravam pacote válido; recusar qualquer um impediria de gravar justamente
+          a execução que precisa de registro. Só é recusado o pacote cujo rótulo não bate com o que os
+          insumos rederivam; campos não percorridos são marcados ausentes, nunca zerados
       - id: B-2
         given: duas execuções da mesma competência
         when: a segunda é gravada
         then: as duas coexistem — a segunda não sobrescreve a primeira
       evals:
       - id: eval_1
-        description: Rederiva com classificações; rótulo trocado recusa; sem hash grava ACEITO_SEM_ANCORA
-        bash: pytest -q tests/test_evidencia.py -k "rederiva or ausente or rotulo_adulterado or sem_hash_aceito_sem_ancora"
+        description: Rederiva com classificações; falta ancorado dá SEM_ANCORA, falta observado dá ERRO
+        bash: pytest -q tests/test_evidencia.py -k "rederiva or rotulo_adulterado or sem_ancorado_vs_sem_observado"
         verifies:
         - B-1
       - id: eval_2

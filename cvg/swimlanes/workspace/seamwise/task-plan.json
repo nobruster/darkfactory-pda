@@ -3,8 +3,8 @@
   "approved": true,
   "kind": "TaskPlan",
   "metadata": {
-    "delivery_plan_review_sha256": "e9df2c8b5964113cd20a367b4ff261d32ac8e91d2d6443deba538e1c4dd8a3b2",
-    "delivery_plan_sha256": "206ce463676e05168ca975b125d609d731ec438736688f891c0d11493411a4f7",
+    "delivery_plan_review_sha256": "3f8e86308275a0896fd468f6cbea5323261c50ccf75ffbac6cd64eb7a0dd8780",
+    "delivery_plan_sha256": "2927268a31a06d9c397aae8dba8739bfa3bdbb52b570262f5e6409859a663bfa",
     "name": "DI-PDA-BENEFICIOS",
     "producer": "seamwise",
     "producer_version": "0.2.0",
@@ -29,7 +29,7 @@
         {
           "given": "um contexto decimal de precisão baixa, valores em empate exato, e a alternativa meio-para-cima",
           "id": "B-2",
-          "then": "o resultado é o de HALF_EVEN a duas casas — comparado contra o valor que HALF_UP produziria, e RECUSANDO-o; declarar um modo não basta, o teste falha se a implementação usar meio-para-cima. A perda por precisão baixa também é acusada, e arredondar por campo difere de arredondar no total",
+          "then": "o resultado é o de HALF_EVEN a duas casas — comparado contra o valor que HALF_UP produziria, e RECUSANDO-o; declarar um modo não basta, o teste falha se a implementação usar meio-para-cima. A perda por precisão baixa também é acusada, e arredondar por campo difere de arredondar no total. E a SAÍDA do agregador preserva os códigos distintos do ADR 0004 — os 51 códigos que colapsam em 40 descrições aparecem como 51 chaves, e o teste falha se a chave do agregador entregue for a descrição, porque demonstrar dentro do teste que os dois agrupamentos diferem continuaria verdadeiro com um agregador que usa a descrição",
           "when": "o total é calculado"
         }
       ],
@@ -69,8 +69,8 @@
           ]
         },
         {
-          "command": "pytest -q tests/test_agregacao.py -k chave_e_codigo",
-          "description": "Agrupar por descrição diverge de agrupar por código",
+          "command": "pytest -q tests/test_agregacao.py -k \"chave_e_codigo or saida_preserva_codigos\"",
+          "description": "A saída preserva os 51 códigos; trocar a chave por descrição faz falhar",
           "expected_duration_sec": 10,
           "id": "eval_3",
           "terminal": true,
@@ -192,7 +192,7 @@
         {
           "given": "um envelope sem o sha256 do arquivo lido, outro cujo sha256 difere do ancorado, e um terceiro que COPIOU o sha256 ancorado mas foi produzido lendo outro arquivo",
           "id": "B-1",
-          "then": "os três são recusados — o sha256 não é campo declarado e sim SAÍDA do leitor, computado sobre os mesmos bytes que alimentaram os controles e emitido junto com eles; o terceiro é recusado porque o hash que o leitor computou discorda do que o envelope declara, e é esse caso, não a mera igualdade, que prova o vínculo — um hash copiado, com os cinco controles coincidindo, passaria em qualquer teste de igualdade",
+          "then": "os três são recusados. O hash computado chega ao validador como capacidade própria, sha256 computado na leitura, que a leitura declara entre seus produtos e a fronteira exige entre seus requisitos — não como mais um campo do envelope, senão os dois campos viriam da mesma mão e repetir o ancorado bastaria. O terceiro é recusado porque o hash que a leitura computou discorda do que o envelope declara, e é esse caso, não a mera igualdade, que prova o vínculo. Para produtor externo, que o ADR 0006 permite, vale o mesmo — sem a capacidade computada por quem leu os bytes, o envelope é recusado por falta de insumo, nunca aceito por ausência de contraditório",
           "when": "o envelope é validado"
         },
         {
@@ -278,7 +278,7 @@
         {
           "given": "uma execução com âncora, outra que terminou antes da leitura, e um pacote adulterado onde só o rótulo do veredito foi trocado",
           "id": "B-1",
-          "then": "o veredito é REDERIVADO dos cinco controles, da âncora, das classificações de cada diferença e dos hashes gravados — nunca lido do rótulo; o pacote adulterado é recusado porque o rótulo discorda do que esses insumos produzem. A ausência de hash não é recusa incondicional — ela decide o veredito, porque sem hash do CSV o desfecho é ACEITO_SEM_ANCORA com causa NAO_MEDIDO e o pacote é válido; recusar aqui impediria de gravar justamente a execução que não tinha âncora. Só é recusado o pacote cujo rótulo não bate com o que os insumos rederivam; campos não percorridos são marcados ausentes, nunca zerados",
+          "then": "o veredito é REDERIVADO dos cinco controles, da âncora, das classificações de cada diferença e dos hashes gravados — nunca lido do rótulo; o pacote adulterado é recusado porque o rótulo discorda do que esses insumos produzem. A ausência de hash não é recusa incondicional — ela decide o veredito, e os dois hashes são distintos. Falta o ANCORADO, que vem do contrato, e o desfecho é ACEITO_SEM_ANCORA com causa NAO_MEDIDO. Falta o OBSERVADO, computado na leitura, e não é falta de âncora e sim execução interrompida — o desfecho é ERRO, com o evento de falha entre os insumos da rederivação, porque controles ausentes depois de uma exceção não determinam ERRO por si. Os dois gravam pacote válido; recusar qualquer um impediria de gravar justamente a execução que precisa de registro. Só é recusado o pacote cujo rótulo não bate com o que os insumos rederivam; campos não percorridos são marcados ausentes, nunca zerados",
           "when": "o pacote é lido de volta"
         },
         {
@@ -304,8 +304,8 @@
       "effort": "S",
       "evals": [
         {
-          "command": "pytest -q tests/test_evidencia.py -k \"rederiva or ausente or rotulo_adulterado or sem_hash_aceito_sem_ancora\"",
-          "description": "Rederiva com classificações; rótulo trocado recusa; sem hash grava ACEITO_SEM_ANCORA",
+          "command": "pytest -q tests/test_evidencia.py -k \"rederiva or rotulo_adulterado or sem_ancorado_vs_sem_observado\"",
+          "description": "Rederiva com classificações; falta ancorado dá SEM_ANCORA, falta observado dá ERRO",
           "expected_duration_sec": 10,
           "id": "eval_1",
           "terminal": false,
@@ -447,9 +447,9 @@
       ],
       "behaviors": [
         {
-          "given": "um arquivo com Espécie repetida e o layout declarado, e outro com duas colunas não monetárias trocadas de lugar",
+          "given": "um arquivo com Espécie repetida e o layout declarado, e outro em que as DUAS colunas de cabeçalho idêntico Espécie — índices 12 e 13 — tiveram os valores trocados entre si, deixando o cabeçalho byte a byte igual",
           "id": "B-1",
-          "then": "no primeiro o sha256 fica idêntico e código e descrição vêm das posições 12 e 13; no segundo a leitura BLOQUEIA antes de ler qualquer registro — trocar colunas não monetárias preserva os cinco controles, então o juiz monetário não supriria este gate",
+          "then": "no primeiro o sha256 fica idêntico e código e descrição vêm dos índices 12 e 13; no segundo a leitura BLOQUEIA, e o gate NÃO pode ser conferência de cabeçalho — cabeçalho idêntico não distingue as duas — e sim o formato de cada posição, o índice 12 com código de 2 dígitos à direita e o 13 com descrição textual; o teste falha se for satisfeito trocando colunas de nomes diferentes, porque é esta troca, de nomes iguais, que motivou o ADR 0002 e que os cinco controles preservam",
           "when": "a leitura começa"
         },
         {
@@ -475,8 +475,8 @@
       "effort": "M",
       "evals": [
         {
-          "command": "pytest -q tests/test_leitura.py -k \"sha256 or posicional or layout_incompativel\"",
-          "description": "Leitura posicional; cabeçalho fora de ordem bloqueia antes de ler",
+          "command": "pytest -q tests/test_leitura.py -k \"sha256 or posicional or especie_12_13_trocadas\"",
+          "description": "Leitura posicional; Espécie 12 e 13 trocadas entre si bloqueiam",
           "expected_duration_sec": 10,
           "id": "eval_1",
           "terminal": false,
@@ -532,9 +532,9 @@
       ],
       "behaviors": [
         {
-          "given": "execução sem âncora, execução que bate, e uma execução sobre o arquivo íntegro em que o agregador divergiu de um controle — não o arquivo alterado, cujo sha256 mudaria e faria a fronteira recusar antes de o juízo comparar",
+          "given": "execução sem âncora, execução que bate, e DUAS execuções que devem recusar — a do arquivo com um centavo alterado nos bytes, que R-7 exige, e a do arquivo íntegro em que o agregador divergiu de um controle",
           "id": "B-1",
-          "then": "as três gravam pacote — ACEITO_SEM_ANCORA, ACEITO e RECUSADO — com códigos de saída distintos, e só ACEITO autoriza publicar; o terceiro caso é RECUSADO pelo JUÍZO com hash íntegro, e o teste falha se um juízo que aceita tudo for injetado, provando que a integração chama e respeita o juízo, como R-7 exige",
+          "then": "as quatro gravam pacote, com ACEITO_SEM_ANCORA, ACEITO e dois RECUSADO de códigos de saída distintos, e só ACEITO autoriza publicar. Os dois casos de recusa provam coisas diferentes e nenhum substitui o outro — o do centavo alterado prova que uma mudança real nos bytes atravessa o fluxo até a recusa sem publicar, ainda que recusada pela fronteira via sha256; o do arquivo íntegro prova que o JUÍZO é chamado e respeitado, porque o teste falha se um juízo permissivo for injetado",
           "when": "a orquestração conduz o fluxo inteiro"
         },
         {
@@ -560,8 +560,8 @@
       "effort": "M",
       "evals": [
         {
-          "command": "pytest -q tests/test_orquestracao.py -k \"desfechos or juizo_permissivo_falha\"",
-          "description": "Os quatro desfechos gravam pacote; juízo permissivo injetado faz o teste falhar",
+          "command": "pytest -q tests/test_orquestracao.py -k \"desfechos or centavo_alterado or juizo_permissivo_falha\"",
+          "description": "Desfechos gravam pacote; centavo alterado recusa e juízo permissivo faz falhar",
           "expected_duration_sec": 10,
           "id": "eval_1",
           "terminal": false,

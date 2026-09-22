@@ -1,6 +1,6 @@
 schema_version: 1
 status: DELIVERY_PLAN=READY
-seam_map_sha256: 8d1bfdc03429aaec066467241926cbe1e356b9f38378840e7ef9ad0a6860d435
+seam_map_sha256: 33e80fc830d64a5a92d370a9ce9ab73f71f3a34cdfff4f8bf67a3cdbe7b94fa0
 swimlanes:
 - id: LANE-CONTRATO
   seam_id: SEAM-CONTRATO
@@ -11,12 +11,12 @@ swimlanes:
   seam_id: SEAM-LEITURA
   owner: leitura
   path: seamwise/swimlanes/LANE-LEITURA.md
-  sha256: 0634d8a386b5a51420f63be331fd5dec9cfb615e3d24f5743f114896ec58d8dc
+  sha256: 8fc0051589c0d00751b2d1f7f11b72ff9a96e1033136448dca3d031c29641bc7
 - id: LANE-AGREGACAO
   seam_id: SEAM-AGREGACAO
   owner: agregacao
   path: seamwise/swimlanes/LANE-AGREGACAO.md
-  sha256: 27e2aa69ce1fe6a24486e43880ba45ed2a62557a08ea7ae41ac68b1aefd9a055
+  sha256: b70436eec34b55ef3d9fe71359a2a4cfd44e84024e0b17d34049d0d43be82f83
 - id: LANE-JUIZO
   seam_id: SEAM-JUIZO
   owner: juizo
@@ -26,17 +26,17 @@ swimlanes:
   seam_id: SEAM-EVIDENCIA
   owner: evidencia
   path: seamwise/swimlanes/LANE-EVIDENCIA.md
-  sha256: 7357874678367ff6a232c8e9a815d13eaf388821844364ee684cfd2d0457bb07
+  sha256: 6c805f4f8d2c7cf6fa72becbfe87f2fa5789dcebf57117e51962a1c6355a2b96
 - id: LANE-ORQUESTRACAO
   seam_id: SEAM-ORQUESTRACAO
   owner: orquestracao
   path: seamwise/swimlanes/LANE-ORQUESTRACAO.md
-  sha256: 9a52d897d5fb1f187731f34930a8eb75fc4e0651ca521505d11f248e86f48d35
+  sha256: 6c29cd6b10496ef1135ae542aec785e3fae538ccc90335468b245c7392140478
 - id: LANE-FRONTEIRA
   seam_id: SEAM-FRONTEIRA
   owner: fronteira
   path: seamwise/swimlanes/LANE-FRONTEIRA.md
-  sha256: 9a0596b924bb5c612a507fde2c5848174b2fa267ea86bf77a56336476d2e08ec
+  sha256: 68baea2c57a9ed605d6e8a075e1c1d1c12029587aaba968163ffe8c5c5bb06fb
 legs:
 - id: LEG-CONTRATO-RECUSA-SEM-ANCORA
   seam_id: SEAM-CONTRATO
@@ -47,12 +47,12 @@ legs:
   seam_id: SEAM-LEITURA
   swimlane_id: LANE-LEITURA
   path: seamwise/legs/LEG-LEITURA-POSICIONAL.md
-  sha256: 89ddcb5c4e323308daf17b2a0558b7cebdd9ab460a245983832a262bd62daed7
+  sha256: 82ba5d141794667004687ac92a84815cdae0dae208b66617cea955934ccde3a3
 - id: LEG-AGREGADO-EXATO
   seam_id: SEAM-AGREGACAO
   swimlane_id: LANE-AGREGACAO
   path: seamwise/legs/LEG-AGREGADO-EXATO.md
-  sha256: 13dc396650b3598fa6f28c20a87fd314c948f7e2e9c2b56f30d938fc314ba1e3
+  sha256: 18cfddf0f438ddf65e37f2300263cc74046d26ef787c11361c05105b5ccabfd7
 - id: LEG-JUIZO-ACUSA
   seam_id: SEAM-JUIZO
   swimlane_id: LANE-JUIZO
@@ -62,17 +62,17 @@ legs:
   seam_id: SEAM-EVIDENCIA
   swimlane_id: LANE-EVIDENCIA
   path: seamwise/legs/LEG-EVIDENCIA-RECONSTROI.md
-  sha256: 6d08c1a4a1c7026a99475d7a354c1ab3201173fd319f88043056d313548982dc
+  sha256: ba69f891483f8188c7e28be24bcd3efd2fa45c677f87c622c708fa4a3e01a3a6
 - id: LEG-DESFECHO-COM-PACOTE
   seam_id: SEAM-ORQUESTRACAO
   swimlane_id: LANE-ORQUESTRACAO
   path: seamwise/legs/LEG-DESFECHO-COM-PACOTE.md
-  sha256: db30f489b8dc30cdb03a22ddffadb11c8d5cf7b29b975377ce3280572f76998f
+  sha256: 3afe22126ee672462bb133e36633ee731570929f93dffb8b2b87674cb2af9081
 - id: LEG-ENVELOPE-VINCULADO
   seam_id: SEAM-FRONTEIRA
   swimlane_id: LANE-FRONTEIRA
   path: seamwise/legs/LEG-ENVELOPE-VINCULADO.md
-  sha256: 70739b0560976a1f7c2f54c8ea58977981987ac1d20e90a305625352c5adf9e1
+  sha256: bb03250c554bf6eff992ab2b1defa8896f2aa3adb4c4864c2dc595e2e44e4a44
 steel_thread:
 - LEG-CONTRATO-RECUSA-SEM-ANCORA
 - LEG-LEITURA-POSICIONAL
@@ -248,7 +248,51 @@ objections:
   rationale: 'B-1 da orquestração trocou o caso: agora é o arquivo ÍNTEGRO com o agregador divergindo
     de um controle, recusado pelo JUÍZO com hash válido. E o teste falha se um juízo permissivo for injetado
     — é isso que prova que a integração chama e respeita o juízo, como R-7 exige.'
+- id: OBJ-R4-C1
+  status: FIXED
+  summary: Minha correção de R3-C5 exigia comparar o hash computado, mas nada no grafo levava esse valor
+    até o validador.
+  owner: Bruno Nunes
+  rationale: Verificado no grafo de capacidades — a leitura produzia apenas registros lidos e defeitos
+    observados; o hash computado não existia como capacidade, e dois campos do mesmo envelope podiam repetir
+    o ancorado. Criada a capacidade "sha256 computado na leitura", produzida pela leitura e exigida pela
+    fronteira. Para produtor externo, que o ADR 0006 permite, o envelope sem essa capacidade é recusado
+    por falta de insumo, nunca aceito por ausência de contraditório.
+- id: OBJ-R4-C2
+  status: FIXED
+  summary: Minha correção de R3-C2 não distinguia falta de âncora de falha na execução — as duas chegam
+    sem hash e não são o mesmo desfecho.
+  owner: Bruno Nunes
+  rationale: B-1 da evidência passou a separar os dois hashes. Falta o ANCORADO, do contrato, e é ACEITO_SEM_ANCORA
+    com causa NAO_MEDIDO. Falta o OBSERVADO, da leitura, e é execução interrompida — ERRO, com o evento
+    de falha entre os insumos da rederivação, porque controles ausentes depois de uma exceção não determinam
+    ERRO por si.
+- id: OBJ-R4-C3
+  status: FIXED
+  summary: O gate de layout não cobria a troca entre as duas colunas de cabeçalho idêntico — justamente
+    o caso que motivou a leitura posicional.
+  owner: Bruno Nunes
+  rationale: 'Verificado no arquivo real: os índices 12 e 13 trazem o MESMO cabeçalho ''Espécie'', um
+    com o código de 2 dígitos e outro com a descrição truncada. Trocar os valores entre si deixa o cabeçalho
+    byte a byte igual e preserva os cinco controles. Conferir cabeçalho não distingue as duas; B-1 da
+    leitura passou a exigir o formato de cada posição, e o teste falha se for satisfeito com colunas de
+    nomes diferentes.'
+- id: OBJ-R4-C4
+  status: FIXED
+  summary: Demonstrar que dois agrupamentos diferem não prova qual deles o agregador entregue usa.
+  owner: Bruno Nunes
+  rationale: A prova anterior era satisfeita dentro do teste, e continuaria verdadeira com um agregador
+    que agrupa por descrição. B-2 da agregação passou a exigir que a SAÍDA preserve os 51 códigos distintos
+    do ADR 0004, com o teste falhando se a chave entregue for a descrição.
+- id: OBJ-R4-C5
+  status: FIXED
+  summary: Minha correção de R3-C6 SUBSTITUIU o cenário obrigatório de R-7 em vez de somar a ele.
+  owner: Bruno Nunes
+  rationale: R-7 exige uma linha removida ou um centavo alterado no arquivo, e eu troquei esse caso por
+    divergência do agregador sobre arquivo íntegro. As duas provas verificam falhas diferentes e nenhuma
+    substitui a outra. B-1 da orquestração passou a exigir as DUAS execuções de recusa — a do centavo
+    alterado nos bytes e a do arquivo íntegro com juízo permissivo injetado.
 contentions: []
 steel_thread_path: seamwise/steel-thread.md
 steel_thread_sha256: ffb28ecb19188999bee9ce19aa55f8f43a0d1e1bd3e01017d7f9ad3a6d47fb7b
-review_authority_sha256: 1d36b635164f166cbcc7164dc7e6e481069a5f49199de1c4695f6acf3a7d431f
+review_authority_sha256: 7e3485b8706c707bc8b3accd377698db2ff4561d44fb18d7029f843461f2f336

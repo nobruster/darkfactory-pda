@@ -14,6 +14,7 @@ consumes:
 produces:
 - registros lidos
 - defeitos observados
+- sha256 computado na leitura
 owner: leitura
 independent_proof: O sha256 do arquivo é idêntico após a leitura, e cada campo vem da posição declarada
   mesmo com cabeçalho repetido.
@@ -36,6 +37,7 @@ swimlane:
     produces:
     - registros lidos
     - defeitos observados
+    - sha256 computado na leitura
     tasks:
     - id: T-20260921-leitura-posicional
       title: Ler a competência por posição, sem alterar a fonte
@@ -59,12 +61,15 @@ swimlane:
       - tests/fixtures/competencia-min.csv
       behavior:
       - id: B-1
-        given: um arquivo com Espécie repetida e o layout declarado, e outro com duas colunas não monetárias
-          trocadas de lugar
+        given: um arquivo com Espécie repetida e o layout declarado, e outro em que as DUAS colunas de
+          cabeçalho idêntico Espécie — índices 12 e 13 — tiveram os valores trocados entre si, deixando
+          o cabeçalho byte a byte igual
         when: a leitura começa
-        then: no primeiro o sha256 fica idêntico e código e descrição vêm das posições 12 e 13; no segundo
-          a leitura BLOQUEIA antes de ler qualquer registro — trocar colunas não monetárias preserva os
-          cinco controles, então o juiz monetário não supriria este gate
+        then: no primeiro o sha256 fica idêntico e código e descrição vêm dos índices 12 e 13; no segundo
+          a leitura BLOQUEIA, e o gate NÃO pode ser conferência de cabeçalho — cabeçalho idêntico não
+          distingue as duas — e sim o formato de cada posição, o índice 12 com código de 2 dígitos à direita
+          e o 13 com descrição textual; o teste falha se for satisfeito trocando colunas de nomes diferentes,
+          porque é esta troca, de nomes iguais, que motivou o ADR 0002 e que os cinco controles preservam
       - id: B-2
         given: um registro cujo campo monetário é ilegível, e os quatro exemplos do ADR 0004 — entre eles
           'Pensão por Morte de ' com 20 caracteres brutos e 19 após strip
@@ -74,8 +79,8 @@ swimlane:
           os 20 caracteres do layout — medir após strip deixaria o exemplo principal do ADR de fora
       evals:
       - id: eval_1
-        description: Leitura posicional; cabeçalho fora de ordem bloqueia antes de ler
-        bash: pytest -q tests/test_leitura.py -k "sha256 or posicional or layout_incompativel"
+        description: Leitura posicional; Espécie 12 e 13 trocadas entre si bloqueiam
+        bash: pytest -q tests/test_leitura.py -k "sha256 or posicional or especie_12_13_trocadas"
         verifies:
         - B-1
       - id: eval_2

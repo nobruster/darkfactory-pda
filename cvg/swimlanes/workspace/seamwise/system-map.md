@@ -189,6 +189,50 @@ objections:
   rationale: 'B-1 da orquestração trocou o caso: agora é o arquivo ÍNTEGRO com o agregador divergindo
     de um controle, recusado pelo JUÍZO com hash válido. E o teste falha se um juízo permissivo for injetado
     — é isso que prova que a integração chama e respeita o juízo, como R-7 exige.'
+- id: OBJ-R4-C1
+  status: FIXED
+  summary: Minha correção de R3-C5 exigia comparar o hash computado, mas nada no grafo levava esse valor
+    até o validador.
+  owner: Bruno Nunes
+  rationale: Verificado no grafo de capacidades — a leitura produzia apenas registros lidos e defeitos
+    observados; o hash computado não existia como capacidade, e dois campos do mesmo envelope podiam repetir
+    o ancorado. Criada a capacidade "sha256 computado na leitura", produzida pela leitura e exigida pela
+    fronteira. Para produtor externo, que o ADR 0006 permite, o envelope sem essa capacidade é recusado
+    por falta de insumo, nunca aceito por ausência de contraditório.
+- id: OBJ-R4-C2
+  status: FIXED
+  summary: Minha correção de R3-C2 não distinguia falta de âncora de falha na execução — as duas chegam
+    sem hash e não são o mesmo desfecho.
+  owner: Bruno Nunes
+  rationale: B-1 da evidência passou a separar os dois hashes. Falta o ANCORADO, do contrato, e é ACEITO_SEM_ANCORA
+    com causa NAO_MEDIDO. Falta o OBSERVADO, da leitura, e é execução interrompida — ERRO, com o evento
+    de falha entre os insumos da rederivação, porque controles ausentes depois de uma exceção não determinam
+    ERRO por si.
+- id: OBJ-R4-C3
+  status: FIXED
+  summary: O gate de layout não cobria a troca entre as duas colunas de cabeçalho idêntico — justamente
+    o caso que motivou a leitura posicional.
+  owner: Bruno Nunes
+  rationale: 'Verificado no arquivo real: os índices 12 e 13 trazem o MESMO cabeçalho ''Espécie'', um
+    com o código de 2 dígitos e outro com a descrição truncada. Trocar os valores entre si deixa o cabeçalho
+    byte a byte igual e preserva os cinco controles. Conferir cabeçalho não distingue as duas; B-1 da
+    leitura passou a exigir o formato de cada posição, e o teste falha se for satisfeito com colunas de
+    nomes diferentes.'
+- id: OBJ-R4-C4
+  status: FIXED
+  summary: Demonstrar que dois agrupamentos diferem não prova qual deles o agregador entregue usa.
+  owner: Bruno Nunes
+  rationale: A prova anterior era satisfeita dentro do teste, e continuaria verdadeira com um agregador
+    que agrupa por descrição. B-2 da agregação passou a exigir que a SAÍDA preserve os 51 códigos distintos
+    do ADR 0004, com o teste falhando se a chave entregue for a descrição.
+- id: OBJ-R4-C5
+  status: FIXED
+  summary: Minha correção de R3-C6 SUBSTITUIU o cenário obrigatório de R-7 em vez de somar a ele.
+  owner: Bruno Nunes
+  rationale: R-7 exige uma linha removida ou um centavo alterado no arquivo, e eu troquei esse caso por
+    divergência do agregador sobre arquivo íntegro. As duas provas verificam falhas diferentes e nenhuma
+    substitui a outra. B-1 da orquestração passou a exigir as DUAS execuções de recusa — a do centavo
+    alterado nos bytes e a do arquivo íntegro com juízo permissivo injetado.
 contentions: []
 ---
 # System Map

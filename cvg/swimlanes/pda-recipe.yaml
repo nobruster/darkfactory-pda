@@ -183,7 +183,7 @@ seams:
     responsibility: >-
       Ler os registros por posição declarada, preservando os bytes originais.
     consumes: [arquivo da competência, contrato validado]
-    produces: [registros lidos, defeitos observados]
+    produces: [registros lidos, defeitos observados, sha256 computado na leitura]
     owner: leitura
     independent_proof: >-
       O sha256 do arquivo é idêntico após a leitura, e cada campo vem da
@@ -205,7 +205,7 @@ seams:
             sha256 inalterado; a coluna 12 traz código numérico e a 13
             descrição de até 20 caracteres.
           requires: [contrato validado]
-          produces: [registros lidos, defeitos observados]
+          produces: [registros lidos, defeitos observados, sha256 computado na leitura]
           tasks:
             - id: T-20260921-leitura-posicional
               title: Ler a competência por posição, sem alterar a fonte
@@ -226,17 +226,17 @@ seams:
                 - tests/fixtures/competencia-min.csv
               behavior:
                 - id: B-1
-                  given: um arquivo com Espécie repetida e o layout declarado, e outro com duas colunas não monetárias trocadas de lugar
+                  given: um arquivo com Espécie repetida e o layout declarado, e outro em que as DUAS colunas de cabeçalho idêntico Espécie — índices 12 e 13 — tiveram os valores trocados entre si, deixando o cabeçalho byte a byte igual
                   when: a leitura começa
-                  then: no primeiro o sha256 fica idêntico e código e descrição vêm das posições 12 e 13; no segundo a leitura BLOQUEIA antes de ler qualquer registro — trocar colunas não monetárias preserva os cinco controles, então o juiz monetário não supriria este gate
+                  then: no primeiro o sha256 fica idêntico e código e descrição vêm dos índices 12 e 13; no segundo a leitura BLOQUEIA, e o gate NÃO pode ser conferência de cabeçalho — cabeçalho idêntico não distingue as duas — e sim o formato de cada posição, o índice 12 com código de 2 dígitos à direita e o 13 com descrição textual; o teste falha se for satisfeito trocando colunas de nomes diferentes, porque é esta troca, de nomes iguais, que motivou o ADR 0002 e que os cinco controles preservam
                 - id: B-2
                   given: um registro cujo campo monetário é ilegível, e os quatro exemplos do ADR 0004 — entre eles 'Pensão por Morte de ' com 20 caracteres brutos e 19 após strip
                   when: os registros são contados
                   then: o primeiro entra em linhas_invalidas com identidade, valor original e posição; os quatro emitem defeito de truncamento sem serem inválidos, porque o critério é o campo BRUTO ocupar os 20 caracteres do layout — medir após strip deixaria o exemplo principal do ADR de fora
               evals:
                 - id: eval_1
-                  description: Leitura posicional; cabeçalho fora de ordem bloqueia antes de ler
-                  bash: pytest -q tests/test_leitura.py -k "sha256 or posicional or layout_incompativel"
+                  description: Leitura posicional; Espécie 12 e 13 trocadas entre si bloqueiam
+                  bash: pytest -q tests/test_leitura.py -k "sha256 or posicional or especie_12_13_trocadas"
                   verifies: [B-1]
                 - id: eval_2
                   description: Ilegível vira inválida; descrição truncada emite defeito
@@ -315,7 +315,7 @@ seams:
                 - id: B-2
                   given: um contexto decimal de precisão baixa, valores em empate exato, e a alternativa meio-para-cima
                   when: o total é calculado
-                  then: o resultado é o de HALF_EVEN a duas casas — comparado contra o valor que HALF_UP produziria, e RECUSANDO-o; declarar um modo não basta, o teste falha se a implementação usar meio-para-cima. A perda por precisão baixa também é acusada, e arredondar por campo difere de arredondar no total
+                  then: o resultado é o de HALF_EVEN a duas casas — comparado contra o valor que HALF_UP produziria, e RECUSANDO-o; declarar um modo não basta, o teste falha se a implementação usar meio-para-cima. A perda por precisão baixa também é acusada, e arredondar por campo difere de arredondar no total. E a SAÍDA do agregador preserva os códigos distintos do ADR 0004 — os 51 códigos que colapsam em 40 descrições aparecem como 51 chaves, e o teste falha se a chave do agregador entregue for a descrição, porque demonstrar dentro do teste que os dois agrupamentos diferem continuaria verdadeiro com um agregador que usa a descrição
               evals:
                 - id: eval_1
                   description: Float recusado; dois de contagem e três monetários; ilegível excluído, não zerado
@@ -326,8 +326,8 @@ seams:
                   bash: pytest -q tests/test_agregacao.py -k "recusa_half_up or precisao_declarada or granularidade"
                   verifies: [B-2]
                 - id: eval_3
-                  description: Agrupar por descrição diverge de agrupar por código
-                  bash: pytest -q tests/test_agregacao.py -k chave_e_codigo
+                  description: A saída preserva os 51 códigos; trocar a chave por descrição faz falhar
+                  bash: pytest -q tests/test_agregacao.py -k "chave_e_codigo or saida_preserva_codigos"
                   verifies: [B-1, B-2]
               anti_patterns:
                 - action: herdar o arredondamento padrão da linguagem
@@ -473,15 +473,15 @@ seams:
                 - id: B-1
                   given: uma execução com âncora, outra que terminou antes da leitura, e um pacote adulterado onde só o rótulo do veredito foi trocado
                   when: o pacote é lido de volta
-                  then: o veredito é REDERIVADO dos cinco controles, da âncora, das classificações de cada diferença e dos hashes gravados — nunca lido do rótulo; o pacote adulterado é recusado porque o rótulo discorda do que esses insumos produzem. A ausência de hash não é recusa incondicional — ela decide o veredito, porque sem hash do CSV o desfecho é ACEITO_SEM_ANCORA com causa NAO_MEDIDO e o pacote é válido; recusar aqui impediria de gravar justamente a execução que não tinha âncora. Só é recusado o pacote cujo rótulo não bate com o que os insumos rederivam; campos não percorridos são marcados ausentes, nunca zerados
+                  then: o veredito é REDERIVADO dos cinco controles, da âncora, das classificações de cada diferença e dos hashes gravados — nunca lido do rótulo; o pacote adulterado é recusado porque o rótulo discorda do que esses insumos produzem. A ausência de hash não é recusa incondicional — ela decide o veredito, e os dois hashes são distintos. Falta o ANCORADO, que vem do contrato, e o desfecho é ACEITO_SEM_ANCORA com causa NAO_MEDIDO. Falta o OBSERVADO, computado na leitura, e não é falta de âncora e sim execução interrompida — o desfecho é ERRO, com o evento de falha entre os insumos da rederivação, porque controles ausentes depois de uma exceção não determinam ERRO por si. Os dois gravam pacote válido; recusar qualquer um impediria de gravar justamente a execução que precisa de registro. Só é recusado o pacote cujo rótulo não bate com o que os insumos rederivam; campos não percorridos são marcados ausentes, nunca zerados
                 - id: B-2
                   given: duas execuções da mesma competência
                   when: a segunda é gravada
                   then: as duas coexistem — a segunda não sobrescreve a primeira
               evals:
                 - id: eval_1
-                  description: Rederiva com classificações; rótulo trocado recusa; sem hash grava ACEITO_SEM_ANCORA
-                  bash: pytest -q tests/test_evidencia.py -k "rederiva or ausente or rotulo_adulterado or sem_hash_aceito_sem_ancora"
+                  description: Rederiva com classificações; falta ancorado dá SEM_ANCORA, falta observado dá ERRO
+                  bash: pytest -q tests/test_evidencia.py -k "rederiva or rotulo_adulterado or sem_ancorado_vs_sem_observado"
                   verifies: [B-1]
                 - id: eval_2
                   description: Duas execuções coexistem, sem overwrite
@@ -553,17 +553,17 @@ seams:
                 - tests/test_orquestracao.py
               behavior:
                 - id: B-1
-                  given: execução sem âncora, execução que bate, e uma execução sobre o arquivo íntegro em que o agregador divergiu de um controle — não o arquivo alterado, cujo sha256 mudaria e faria a fronteira recusar antes de o juízo comparar
+                  given: execução sem âncora, execução que bate, e DUAS execuções que devem recusar — a do arquivo com um centavo alterado nos bytes, que R-7 exige, e a do arquivo íntegro em que o agregador divergiu de um controle
                   when: a orquestração conduz o fluxo inteiro
-                  then: as três gravam pacote — ACEITO_SEM_ANCORA, ACEITO e RECUSADO — com códigos de saída distintos, e só ACEITO autoriza publicar; o terceiro caso é RECUSADO pelo JUÍZO com hash íntegro, e o teste falha se um juízo que aceita tudo for injetado, provando que a integração chama e respeita o juízo, como R-7 exige
+                  then: as quatro gravam pacote, com ACEITO_SEM_ANCORA, ACEITO e dois RECUSADO de códigos de saída distintos, e só ACEITO autoriza publicar. Os dois casos de recusa provam coisas diferentes e nenhum substitui o outro — o do centavo alterado prova que uma mudança real nos bytes atravessa o fluxo até a recusa sem publicar, ainda que recusada pela fronteira via sha256; o do arquivo íntegro prova que o JUÍZO é chamado e respeitado, porque o teste falha se um juízo permissivo for injetado
                 - id: B-2
                   given: uma exceção real levantada dentro da leitura, e uma execução que estoura o limite de tempo
                   when: a orquestração conduz a execução
                   then: a exceção vira ERRO com pacote gravado, e o tempo é medido do início da leitura ao veredito, no total. Se o PRÓPRIO gravador falhar — permissão negada, disco cheio — o desfecho é ERRO com código próprio e a falha vai para a saída de erro; nunca se devolve ACEITO sem pacote, porque autorização sem evidência é o que esta fábrica existe para impedir
               evals:
                 - id: eval_1
-                  description: Os quatro desfechos gravam pacote; juízo permissivo injetado faz o teste falhar
-                  bash: pytest -q tests/test_orquestracao.py -k "desfechos or juizo_permissivo_falha"
+                  description: Desfechos gravam pacote; centavo alterado recusa e juízo permissivo faz falhar
+                  bash: pytest -q tests/test_orquestracao.py -k "desfechos or centavo_alterado or juizo_permissivo_falha"
                   verifies: [B-1]
                 - id: eval_2
                   description: Exceção real vira ERRO; o tempo é medido no total
@@ -598,7 +598,7 @@ seams:
       Declarar e validar o envelope que o produtor entrega ao juiz — os
       cinco controles, a procedência do arquivo lido e os defeitos
       observados.
-    consumes: [agregado da competência, defeitos observados]
+    consumes: [agregado da competência, defeitos observados, sha256 computado na leitura]
     produces: [envelope do produtor]
     owner: fronteira
     independent_proof: >-
@@ -626,7 +626,7 @@ seams:
             Envelope sem sha256 do arquivo é recusado; sha256 divergente do
             ancorado é recusado; linhas_invalidas incoerente com os defeitos
             observados é recusado.
-          requires: [agregado da competência, defeitos observados]
+          requires: [agregado da competência, defeitos observados, sha256 computado na leitura]
           produces: [envelope do produtor]
           tasks:
             - id: T-20260921-envelope-fronteira
@@ -652,7 +652,7 @@ seams:
                 - id: B-1
                   given: um envelope sem o sha256 do arquivo lido, outro cujo sha256 difere do ancorado, e um terceiro que COPIOU o sha256 ancorado mas foi produzido lendo outro arquivo
                   when: o envelope é validado
-                  then: os três são recusados — o sha256 não é campo declarado e sim SAÍDA do leitor, computado sobre os mesmos bytes que alimentaram os controles e emitido junto com eles; o terceiro é recusado porque o hash que o leitor computou discorda do que o envelope declara, e é esse caso, não a mera igualdade, que prova o vínculo — um hash copiado, com os cinco controles coincidindo, passaria em qualquer teste de igualdade
+                  then: os três são recusados. O hash computado chega ao validador como capacidade própria, sha256 computado na leitura, que a leitura declara entre seus produtos e a fronteira exige entre seus requisitos — não como mais um campo do envelope, senão os dois campos viriam da mesma mão e repetir o ancorado bastaria. O terceiro é recusado porque o hash que a leitura computou discorda do que o envelope declara, e é esse caso, não a mera igualdade, que prova o vínculo. Para produtor externo, que o ADR 0006 permite, vale o mesmo — sem a capacidade computada por quem leu os bytes, o envelope é recusado por falta de insumo, nunca aceito por ausência de contraditório
                 - id: B-2
                   given: um envelope onde linhas_invalidas diverge da contagem de defeitos do tipo VALOR_ILEGIVEL, e outro com linhas_invalidas=0 e defeitos de truncamento, e outro produzido por um motor que não é o juiz
                   when: o envelope é validado
@@ -922,4 +922,68 @@ objections:
       agregador divergindo de um controle, recusado pelo JUÍZO com hash
       válido. E o teste falha se um juízo permissivo for injetado — é isso
       que prova que a integração chama e respeita o juízo, como R-7 exige.
+  - id: OBJ-R4-C1
+    status: FIXED
+    summary: >-
+      Minha correção de R3-C5 exigia comparar o hash computado, mas nada no
+      grafo levava esse valor até o validador.
+    owner: Bruno Nunes
+    rationale: >-
+      Verificado no grafo de capacidades — a leitura produzia apenas
+      registros lidos e defeitos observados; o hash computado não existia
+      como capacidade, e dois campos do mesmo envelope podiam repetir o
+      ancorado. Criada a capacidade "sha256 computado na leitura", produzida
+      pela leitura e exigida pela fronteira. Para produtor externo, que o
+      ADR 0006 permite, o envelope sem essa capacidade é recusado por falta
+      de insumo, nunca aceito por ausência de contraditório.
+  - id: OBJ-R4-C2
+    status: FIXED
+    summary: >-
+      Minha correção de R3-C2 não distinguia falta de âncora de falha na
+      execução — as duas chegam sem hash e não são o mesmo desfecho.
+    owner: Bruno Nunes
+    rationale: >-
+      B-1 da evidência passou a separar os dois hashes. Falta o ANCORADO, do
+      contrato, e é ACEITO_SEM_ANCORA com causa NAO_MEDIDO. Falta o
+      OBSERVADO, da leitura, e é execução interrompida — ERRO, com o evento
+      de falha entre os insumos da rederivação, porque controles ausentes
+      depois de uma exceção não determinam ERRO por si.
+  - id: OBJ-R4-C3
+    status: FIXED
+    summary: >-
+      O gate de layout não cobria a troca entre as duas colunas de cabeçalho
+      idêntico — justamente o caso que motivou a leitura posicional.
+    owner: Bruno Nunes
+    rationale: >-
+      Verificado no arquivo real: os índices 12 e 13 trazem o MESMO
+      cabeçalho 'Espécie', um com o código de 2 dígitos e outro com a
+      descrição truncada. Trocar os valores entre si deixa o cabeçalho byte
+      a byte igual e preserva os cinco controles. Conferir cabeçalho não
+      distingue as duas; B-1 da leitura passou a exigir o formato de cada
+      posição, e o teste falha se for satisfeito com colunas de nomes
+      diferentes.
+  - id: OBJ-R4-C4
+    status: FIXED
+    summary: >-
+      Demonstrar que dois agrupamentos diferem não prova qual deles o
+      agregador entregue usa.
+    owner: Bruno Nunes
+    rationale: >-
+      A prova anterior era satisfeita dentro do teste, e continuaria
+      verdadeira com um agregador que agrupa por descrição. B-2 da agregação
+      passou a exigir que a SAÍDA preserve os 51 códigos distintos do ADR
+      0004, com o teste falhando se a chave entregue for a descrição.
+  - id: OBJ-R4-C5
+    status: FIXED
+    summary: >-
+      Minha correção de R3-C6 SUBSTITUIU o cenário obrigatório de R-7 em vez
+      de somar a ele.
+    owner: Bruno Nunes
+    rationale: >-
+      R-7 exige uma linha removida ou um centavo alterado no arquivo, e eu
+      troquei esse caso por divergência do agregador sobre arquivo íntegro.
+      As duas provas verificam falhas diferentes e nenhuma substitui a
+      outra. B-1 da orquestração passou a exigir as DUAS execuções de
+      recusa — a do centavo alterado nos bytes e a do arquivo íntegro com
+      juízo permissivo injetado.
 contentions: []

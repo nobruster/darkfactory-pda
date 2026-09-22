@@ -1,6 +1,6 @@
 > Projetado de `LEG-AGREGADO-EXATO.md` pelo Seamwise.
 > **Não edite aqui** — edite a recipe e rode `seamwise plan`.
-> origem sha256: `13dc396650b3598fa6f28c20a87fd314c948f7e2e9c2b56f30d938fc314ba1e3`
+> origem sha256: `18cfddf0f438ddf65e37f2300263cc74046d26ef787c11361c05105b5ccabfd7`
 
 ---
 
@@ -52,7 +52,11 @@ tasks:
     when: o total é calculado
     then: o resultado é o de HALF_EVEN a duas casas — comparado contra o valor que HALF_UP produziria,
       e RECUSANDO-o; declarar um modo não basta, o teste falha se a implementação usar meio-para-cima.
-      A perda por precisão baixa também é acusada, e arredondar por campo difere de arredondar no total
+      A perda por precisão baixa também é acusada, e arredondar por campo difere de arredondar no total.
+      E a SAÍDA do agregador preserva os códigos distintos do ADR 0004 — os 51 códigos que colapsam em
+      40 descrições aparecem como 51 chaves, e o teste falha se a chave do agregador entregue for a descrição,
+      porque demonstrar dentro do teste que os dois agrupamentos diferem continuaria verdadeiro com um
+      agregador que usa a descrição
   evals:
   - id: eval_1
     description: Float recusado; dois de contagem e três monetários; ilegível excluído, não zerado
@@ -65,8 +69,8 @@ tasks:
     verifies:
     - B-2
   - id: eval_3
-    description: Agrupar por descrição diverge de agrupar por código
-    bash: pytest -q tests/test_agregacao.py -k chave_e_codigo
+    description: A saída preserva os 51 códigos; trocar a chave por descrição faz falhar
+    bash: pytest -q tests/test_agregacao.py -k "chave_e_codigo or saida_preserva_codigos"
     verifies:
     - B-1
     - B-2
@@ -85,7 +89,7 @@ tasks:
   - cvg/docs/adrs
   rollback: Remover o agregador e seus testes.
   observability: total agregado e espécies distintas
-source_seam_sha256: 261802931a30d1dd85c995e06baa346dd830d5f1ac45515d1988c2875ceea955
+source_seam_sha256: 73663c7301b69f13acaf4b220edecb7c3b20a98d117b5b4f7ca0f6ec2b51909f
 ---
 # O agregado é exato e a chave é o código
 
