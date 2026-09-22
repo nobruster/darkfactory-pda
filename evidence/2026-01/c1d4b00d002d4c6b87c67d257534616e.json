@@ -1,0 +1,716 @@
+{
+  "agregado_controles": {
+    "count_linhas": 41572553,
+    "linhas_invalidas": 0,
+    "max_vl_liquido": {
+      "texto": "183725.76",
+      "tipo": "Decimal"
+    },
+    "min_vl_liquido": {
+      "texto": "0.00",
+      "tipo": "Decimal"
+    },
+    "sum_vl_liquido": {
+      "texto": "78521752562.12",
+      "tipo": "Decimal"
+    }
+  },
+  "ancora_controles": {
+    "count_linhas": 41572553,
+    "linhas_invalidas": 0,
+    "max_vl_liquido": {
+      "texto": "183725.76",
+      "tipo": "Decimal"
+    },
+    "min_vl_liquido": {
+      "texto": "0.00",
+      "tipo": "Decimal"
+    },
+    "sum_vl_liquido": {
+      "texto": "78521752562.13",
+      "tipo": "Decimal"
+    }
+  },
+  "causa_gravada": "DIVERGENCIA",
+  "classificacoes": {},
+  "clausula_adr_violada": null,
+  "competencia_contrato": "2026-01",
+  "competencia_envelope": "2026-01",
+  "competencia_solicitada": "2026-01",
+  "contrato_status": "OK",
+  "contrato_validade": {
+    "aprovado_em": "2026-09-21",
+    "aprovador": "Bruno Nunes",
+    "escala": 2,
+    "politica_decimal_modo": "HALF_EVEN"
+  },
+  "defeitos_envelope": [
+    {
+      "identidade": "Pensão por Morte de",
+      "posicao": 13,
+      "tipo": "IDENTIDADE_COLAPSADA",
+      "valor_original": "Pensão por Morte de"
+    },
+    {
+      "identidade": "Pensão por Morte Aci",
+      "posicao": 13,
+      "tipo": "IDENTIDADE_COLAPSADA",
+      "valor_original": "Pensão por Morte Aci"
+    },
+    {
+      "identidade": "Aposentadoria por In",
+      "posicao": 13,
+      "tipo": "IDENTIDADE_COLAPSADA",
+      "valor_original": "Aposentadoria por In"
+    },
+    {
+      "identidade": "Aposent. Invalidez A",
+      "posicao": 13,
+      "tipo": "IDENTIDADE_COLAPSADA",
+      "valor_original": "Aposent. Invalidez A"
+    },
+    {
+      "identidade": "Pensão por Morte Ex-",
+      "posicao": 13,
+      "tipo": "IDENTIDADE_COLAPSADA",
+      "valor_original": "Pensão por Morte Ex-"
+    },
+    {
+      "identidade": "Renda Mensal Vitalíc",
+      "posicao": 13,
+      "tipo": "IDENTIDADE_COLAPSADA",
+      "valor_original": "Renda Mensal Vitalíc"
+    },
+    {
+      "identidade": "Aposentadoria Invali",
+      "posicao": 13,
+      "tipo": "IDENTIDADE_COLAPSADA",
+      "valor_original": "Aposentadoria Invali"
+    },
+    {
+      "identidade": "Aposent. Tempo Servi",
+      "posicao": 13,
+      "tipo": "IDENTIDADE_COLAPSADA",
+      "valor_original": "Aposent. Tempo Servi"
+    },
+    {
+      "identidade": "Aposentadoria Especi",
+      "posicao": 13,
+      "tipo": "IDENTIDADE_COLAPSADA",
+      "valor_original": "Aposentadoria Especi"
+    },
+    {
+      "identidade": "Aposent. Invalidez E",
+      "posicao": 13,
+      "tipo": "IDENTIDADE_COLAPSADA",
+      "valor_original": "Aposent. Invalidez E"
+    },
+    {
+      "identidade": "Abono Permanencia em",
+      "posicao": 13,
+      "tipo": "IDENTIDADE_COLAPSADA",
+      "valor_original": "Abono Permanencia em"
+    }
+  ],
+  "defeitos_leitura": [
+    {
+      "identidade": "Pensão por Morte de",
+      "posicao": 13,
+      "tipo": "IDENTIDADE_COLAPSADA",
+      "valor_original": "Pensão por Morte de"
+    },
+    {
+      "identidade": "Pensão por Morte Aci",
+      "posicao": 13,
+      "tipo": "IDENTIDADE_COLAPSADA",
+      "valor_original": "Pensão por Morte Aci"
+    },
+    {
+      "identidade": "Aposentadoria por In",
+      "posicao": 13,
+      "tipo": "IDENTIDADE_COLAPSADA",
+      "valor_original": "Aposentadoria por In"
+    },
+    {
+      "identidade": "Aposent. Invalidez A",
+      "posicao": 13,
+      "tipo": "IDENTIDADE_COLAPSADA",
+      "valor_original": "Aposent. Invalidez A"
+    },
+    {
+      "identidade": "Pensão por Morte Ex-",
+      "posicao": 13,
+      "tipo": "IDENTIDADE_COLAPSADA",
+      "valor_original": "Pensão por Morte Ex-"
+    },
+    {
+      "identidade": "Renda Mensal Vitalíc",
+      "posicao": 13,
+      "tipo": "IDENTIDADE_COLAPSADA",
+      "valor_original": "Renda Mensal Vitalíc"
+    },
+    {
+      "identidade": "Aposentadoria Invali",
+      "posicao": 13,
+      "tipo": "IDENTIDADE_COLAPSADA",
+      "valor_original": "Aposentadoria Invali"
+    },
+    {
+      "identidade": "Aposent. Tempo Servi",
+      "posicao": 13,
+      "tipo": "IDENTIDADE_COLAPSADA",
+      "valor_original": "Aposent. Tempo Servi"
+    },
+    {
+      "identidade": "Aposentadoria Especi",
+      "posicao": 13,
+      "tipo": "IDENTIDADE_COLAPSADA",
+      "valor_original": "Aposentadoria Especi"
+    },
+    {
+      "identidade": "Aposent. Invalidez E",
+      "posicao": 13,
+      "tipo": "IDENTIDADE_COLAPSADA",
+      "valor_original": "Aposent. Invalidez E"
+    },
+    {
+      "identidade": "Abono Permanencia em",
+      "posicao": 13,
+      "tipo": "IDENTIDADE_COLAPSADA",
+      "valor_original": "Abono Permanencia em"
+    }
+  ],
+  "duracao_segundos": 105.81947484200009,
+  "evento_falha": null,
+  "execucao_id": "c1d4b00d002d4c6b87c67d257534616e",
+  "gravado_em": "2026-09-22T15:24:41Z",
+  "hash_ancorado": "505725d95ad6e9d825579b10012341f1cf87566ad6004eefbdd73154e9e7056f",
+  "hash_declarado": "505725d95ad6e9d825579b10012341f1cf87566ad6004eefbdd73154e9e7056f",
+  "hash_observado": "505725d95ad6e9d825579b10012341f1cf87566ad6004eefbdd73154e9e7056f",
+  "politica_recusada": null,
+  "totais_envelope": {
+    "01": {
+      "texto": "364685270.55",
+      "tipo": "Decimal"
+    },
+    "02": {
+      "texto": "2160165.69",
+      "tipo": "Decimal"
+    },
+    "03": {
+      "texto": "7283764.87",
+      "tipo": "Decimal"
+    },
+    "04": {
+      "texto": "69331537.19",
+      "tipo": "Decimal"
+    },
+    "05": {
+      "texto": "2716147.63",
+      "tipo": "Decimal"
+    },
+    "06": {
+      "texto": "645709.64",
+      "tipo": "Decimal"
+    },
+    "07": {
+      "texto": "35820032.99",
+      "tipo": "Decimal"
+    },
+    "08": {
+      "texto": "442510.26",
+      "tipo": "Decimal"
+    },
+    "10": {
+      "texto": "1621.00",
+      "tipo": "Decimal"
+    },
+    "11": {
+      "texto": "28042407.22",
+      "tipo": "Decimal"
+    },
+    "12": {
+      "texto": "1268818.80",
+      "tipo": "Decimal"
+    },
+    "13": {
+      "texto": "6484.00",
+      "tipo": "Decimal"
+    },
+    "16": {
+      "texto": "4200.00",
+      "tipo": "Decimal"
+    },
+    "18": {
+      "texto": "870202.06",
+      "tipo": "Decimal"
+    },
+    "21": {
+      "texto": "15002386265.83",
+      "tipo": "Decimal"
+    },
+    "22": {
+      "texto": "771094.97",
+      "tipo": "Decimal"
+    },
+    "23": {
+      "texto": "12645695.86",
+      "tipo": "Decimal"
+    },
+    "25": {
+      "texto": "20724672.67",
+      "tipo": "Decimal"
+    },
+    "26": {
+      "texto": "652913.01",
+      "tipo": "Decimal"
+    },
+    "27": {
+      "texto": "1038158.89",
+      "tipo": "Decimal"
+    },
+    "28": {
+      "texto": "762833.67",
+      "tipo": "Decimal"
+    },
+    "29": {
+      "texto": "2658986.54",
+      "tipo": "Decimal"
+    },
+    "30": {
+      "texto": "41215027.70",
+      "tipo": "Decimal"
+    },
+    "31": {
+      "texto": "2257417394.42",
+      "tipo": "Decimal"
+    },
+    "32": {
+      "texto": "6066939359.18",
+      "tipo": "Decimal"
+    },
+    "33": {
+      "texto": "104723.31",
+      "tipo": "Decimal"
+    },
+    "34": {
+      "texto": "2107.30",
+      "tipo": "Decimal"
+    },
+    "36": {
+      "texto": "265166420.04",
+      "tipo": "Decimal"
+    },
+    "37": {
+      "texto": "3242.00",
+      "tipo": "Decimal"
+    },
+    "38": {
+      "texto": "1621.00",
+      "tipo": "Decimal"
+    },
+    "40": {
+      "texto": "2099905.80",
+      "tipo": "Decimal"
+    },
+    "41": {
+      "texto": "22212167999.57",
+      "tipo": "Decimal"
+    },
+    "42": {
+      "texto": "19011078875.35",
+      "tipo": "Decimal"
+    },
+    "43": {
+      "texto": "223320.45",
+      "tipo": "Decimal"
+    },
+    "44": {
+      "texto": "1196236.70",
+      "tipo": "Decimal"
+    },
+    "45": {
+      "texto": "826454.76",
+      "tipo": "Decimal"
+    },
+    "46": {
+      "texto": "1795133779.99",
+      "tipo": "Decimal"
+    },
+    "47": {
+      "texto": "1648.99",
+      "tipo": "Decimal"
+    },
+    "48": {
+      "texto": "37225.12",
+      "tipo": "Decimal"
+    },
+    "49": {
+      "texto": "3711.42",
+      "tipo": "Decimal"
+    },
+    "51": {
+      "texto": "36955.83",
+      "tipo": "Decimal"
+    },
+    "54": {
+      "texto": "37684.75",
+      "tipo": "Decimal"
+    },
+    "55": {
+      "texto": "262853.56",
+      "tipo": "Decimal"
+    },
+    "56": {
+      "texto": "6784759.00",
+      "tipo": "Decimal"
+    },
+    "57": {
+      "texto": "536715854.43",
+      "tipo": "Decimal"
+    },
+    "58": {
+      "texto": "1349664.12",
+      "tipo": "Decimal"
+    },
+    "59": {
+      "texto": "4615787.29",
+      "tipo": "Decimal"
+    },
+    "60": {
+      "texto": "10538107.69",
+      "tipo": "Decimal"
+    },
+    "72": {
+      "texto": "11778.70",
+      "tipo": "Decimal"
+    },
+    "79": {
+      "texto": "242.17",
+      "tipo": "Decimal"
+    },
+    "80": {
+      "texto": "177028003.56",
+      "tipo": "Decimal"
+    },
+    "82": {
+      "texto": "235555.69",
+      "tipo": "Decimal"
+    },
+    "83": {
+      "texto": "60521.18",
+      "tipo": "Decimal"
+    },
+    "84": {
+      "texto": "2383499.01",
+      "tipo": "Decimal"
+    },
+    "85": {
+      "texto": "3572408.06",
+      "tipo": "Decimal"
+    },
+    "86": {
+      "texto": "14546906.80",
+      "tipo": "Decimal"
+    },
+    "87": {
+      "texto": "5208384756.69",
+      "tipo": "Decimal"
+    },
+    "88": {
+      "texto": "3886069676.32",
+      "tipo": "Decimal"
+    },
+    "89": {
+      "texto": "57167.03",
+      "tipo": "Decimal"
+    },
+    "91": {
+      "texto": "204289850.79",
+      "tipo": "Decimal"
+    },
+    "92": {
+      "texto": "472198241.11",
+      "tipo": "Decimal"
+    },
+    "93": {
+      "texto": "182613787.92",
+      "tipo": "Decimal"
+    },
+    "94": {
+      "texto": "586597532.51",
+      "tipo": "Decimal"
+    },
+    "95": {
+      "texto": "7120120.26",
+      "tipo": "Decimal"
+    },
+    "96": {
+      "texto": "7702301.21",
+      "tipo": "Decimal"
+    }
+  },
+  "totais_leitura": {
+    "01": {
+      "texto": "364685270.55",
+      "tipo": "Decimal"
+    },
+    "02": {
+      "texto": "2160165.69",
+      "tipo": "Decimal"
+    },
+    "03": {
+      "texto": "7283764.87",
+      "tipo": "Decimal"
+    },
+    "04": {
+      "texto": "69331537.19",
+      "tipo": "Decimal"
+    },
+    "05": {
+      "texto": "2716147.63",
+      "tipo": "Decimal"
+    },
+    "06": {
+      "texto": "645709.64",
+      "tipo": "Decimal"
+    },
+    "07": {
+      "texto": "35820032.99",
+      "tipo": "Decimal"
+    },
+    "08": {
+      "texto": "442510.26",
+      "tipo": "Decimal"
+    },
+    "10": {
+      "texto": "1621.00",
+      "tipo": "Decimal"
+    },
+    "11": {
+      "texto": "28042407.22",
+      "tipo": "Decimal"
+    },
+    "12": {
+      "texto": "1268818.80",
+      "tipo": "Decimal"
+    },
+    "13": {
+      "texto": "6484.00",
+      "tipo": "Decimal"
+    },
+    "16": {
+      "texto": "4200.00",
+      "tipo": "Decimal"
+    },
+    "18": {
+      "texto": "870202.06",
+      "tipo": "Decimal"
+    },
+    "21": {
+      "texto": "15002386265.83",
+      "tipo": "Decimal"
+    },
+    "22": {
+      "texto": "771094.97",
+      "tipo": "Decimal"
+    },
+    "23": {
+      "texto": "12645695.86",
+      "tipo": "Decimal"
+    },
+    "25": {
+      "texto": "20724672.67",
+      "tipo": "Decimal"
+    },
+    "26": {
+      "texto": "652913.01",
+      "tipo": "Decimal"
+    },
+    "27": {
+      "texto": "1038158.89",
+      "tipo": "Decimal"
+    },
+    "28": {
+      "texto": "762833.67",
+      "tipo": "Decimal"
+    },
+    "29": {
+      "texto": "2658986.54",
+      "tipo": "Decimal"
+    },
+    "30": {
+      "texto": "41215027.70",
+      "tipo": "Decimal"
+    },
+    "31": {
+      "texto": "2257417394.42",
+      "tipo": "Decimal"
+    },
+    "32": {
+      "texto": "6066939359.18",
+      "tipo": "Decimal"
+    },
+    "33": {
+      "texto": "104723.31",
+      "tipo": "Decimal"
+    },
+    "34": {
+      "texto": "2107.30",
+      "tipo": "Decimal"
+    },
+    "36": {
+      "texto": "265166420.04",
+      "tipo": "Decimal"
+    },
+    "37": {
+      "texto": "3242.00",
+      "tipo": "Decimal"
+    },
+    "38": {
+      "texto": "1621.00",
+      "tipo": "Decimal"
+    },
+    "40": {
+      "texto": "2099905.80",
+      "tipo": "Decimal"
+    },
+    "41": {
+      "texto": "22212167999.57",
+      "tipo": "Decimal"
+    },
+    "42": {
+      "texto": "19011078875.35",
+      "tipo": "Decimal"
+    },
+    "43": {
+      "texto": "223320.45",
+      "tipo": "Decimal"
+    },
+    "44": {
+      "texto": "1196236.70",
+      "tipo": "Decimal"
+    },
+    "45": {
+      "texto": "826454.76",
+      "tipo": "Decimal"
+    },
+    "46": {
+      "texto": "1795133779.99",
+      "tipo": "Decimal"
+    },
+    "47": {
+      "texto": "1648.99",
+      "tipo": "Decimal"
+    },
+    "48": {
+      "texto": "37225.12",
+      "tipo": "Decimal"
+    },
+    "49": {
+      "texto": "3711.42",
+      "tipo": "Decimal"
+    },
+    "51": {
+      "texto": "36955.83",
+      "tipo": "Decimal"
+    },
+    "54": {
+      "texto": "37684.75",
+      "tipo": "Decimal"
+    },
+    "55": {
+      "texto": "262853.56",
+      "tipo": "Decimal"
+    },
+    "56": {
+      "texto": "6784759.00",
+      "tipo": "Decimal"
+    },
+    "57": {
+      "texto": "536715854.43",
+      "tipo": "Decimal"
+    },
+    "58": {
+      "texto": "1349664.12",
+      "tipo": "Decimal"
+    },
+    "59": {
+      "texto": "4615787.29",
+      "tipo": "Decimal"
+    },
+    "60": {
+      "texto": "10538107.69",
+      "tipo": "Decimal"
+    },
+    "72": {
+      "texto": "11778.70",
+      "tipo": "Decimal"
+    },
+    "79": {
+      "texto": "242.17",
+      "tipo": "Decimal"
+    },
+    "80": {
+      "texto": "177028003.56",
+      "tipo": "Decimal"
+    },
+    "82": {
+      "texto": "235555.69",
+      "tipo": "Decimal"
+    },
+    "83": {
+      "texto": "60521.18",
+      "tipo": "Decimal"
+    },
+    "84": {
+      "texto": "2383499.01",
+      "tipo": "Decimal"
+    },
+    "85": {
+      "texto": "3572408.06",
+      "tipo": "Decimal"
+    },
+    "86": {
+      "texto": "14546906.80",
+      "tipo": "Decimal"
+    },
+    "87": {
+      "texto": "5208384756.69",
+      "tipo": "Decimal"
+    },
+    "88": {
+      "texto": "3886069676.32",
+      "tipo": "Decimal"
+    },
+    "89": {
+      "texto": "57167.03",
+      "tipo": "Decimal"
+    },
+    "91": {
+      "texto": "204289850.79",
+      "tipo": "Decimal"
+    },
+    "92": {
+      "texto": "472198241.11",
+      "tipo": "Decimal"
+    },
+    "93": {
+      "texto": "182613787.92",
+      "tipo": "Decimal"
+    },
+    "94": {
+      "texto": "586597532.51",
+      "tipo": "Decimal"
+    },
+    "95": {
+      "texto": "7120120.26",
+      "tipo": "Decimal"
+    },
+    "96": {
+      "texto": "7702301.21",
+      "tipo": "Decimal"
+    }
+  },
+  "veredito_gravado": "RECUSADO"
+}
