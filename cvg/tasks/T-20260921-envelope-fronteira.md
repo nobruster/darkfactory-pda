@@ -28,10 +28,14 @@ execution_backend: any
 signed_off: true
 signed_off_by: nobru
 signed_off_at: 2026-09-22T02:47:12Z
-accepted: false
-accepted_by: (none)
-accepted_at: (none)
+accepted: true
+accepted_by: converge-loop
+accepted_at: 2026-09-22T03:49:59Z
 signed_off_sig: hmac-sha256-v3:85d3c104:f0ac3797f8071fa59ef26f5caec53c4c005041c8754e6378e564ff87f2285d31
+accepted_tier: 1
+accepted_attempt_id: fe3488e1-7006-4dfb-bb2e-77107ce527a4
+accepted_authorization_ref: hmac-sha256-v3:85d3c104:f0ac3797f8071fa59ef26f5caec53c4c005041c8754e6378e564ff87f2285d31
+acceptance_record_digest: sha256:db9274905201e7b4f141f0abfcdb3553cce7854144a6f4d206f23c66bb1c0b07
 ---
 
 # Declarar e validar o envelope entre produtor e juiz
