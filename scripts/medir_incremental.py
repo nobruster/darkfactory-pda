@@ -29,15 +29,19 @@ ANCORA_LOCAL = Path("evidence/_ancora.json")
 def _competencias() -> dict[str, tuple[int, Decimal]]:
     pontos: dict[str, tuple[int, Decimal]] = {}
 
-    for f in sorted(glob.glob(str(INSS / "evidence/_totais-*.json"))):
-        m = re.search(r"_totais-(\d{4})(\d{2})", f)
-        if not m:
-            continue
-        d = json.load(open(f, encoding="utf-8"))
-        n = d.get("count_linhas") or d.get("linhas")
-        s = d.get("sum_vl_liquido") or d.get("soma")
-        if n and s is not None:
-            pontos[f"{m.group(1)}-{m.group(2)}"] = (int(n), Decimal(str(s)))
+    # DUAS origens, como em medir_serie.py: o outro repositório e a
+    # evidência local. Ler só uma esconde metade da série.
+    for padrao in (str(INSS / "evidence/_totais-*.json"),
+                   "evidence/_totais-*.json"):
+        for f in sorted(glob.glob(padrao)):
+            m = re.search(r"_totais-(\d{4})(\d{2})", f)
+            if not m:
+                continue
+            d = json.load(open(f, encoding="utf-8"))
+            n = d.get("count_linhas") or d.get("linhas")
+            s = d.get("sum_vl_liquido") or d.get("soma")
+            if n and s is not None:
+                pontos[f"{m.group(1)}-{m.group(2)}"] = (int(n), Decimal(str(s)))
 
     if ANCORA_LOCAL.exists():
         d = json.load(open(ANCORA_LOCAL, encoding="utf-8"))

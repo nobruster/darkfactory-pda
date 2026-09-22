@@ -33,16 +33,25 @@ DESTAQUE_PCT = Decimal("5")
 def _competencias() -> list[tuple[str, int, Decimal]]:
     pontos: dict[str, tuple[int, Decimal]] = {}
 
-    for f in sorted(glob.glob(str(INSS / "evidence/_totais-*.json"))):
-        m = re.search(r"_totais-(\d{4})(\d{2})", f)
-        if not m:
-            continue
-        d = json.load(open(f, encoding="utf-8"))
-        n = d.get("count_linhas") or d.get("linhas")
-        s = d.get("sum_vl_liquido") or d.get("soma")
-        if not n or s is None:
-            continue
-        pontos[f"{m.group(1)}-{m.group(2)}"] = (int(n), Decimal(str(s)))
+    # DUAS origens: o darkfactory-inss, que mediu cinco competências com
+    # outro código, e a evidência local, onde as que baixamos são gravadas.
+    # Ler só uma delas esconde metade da série.
+    fontes = [
+        str(INSS / "evidence/_totais-*.json"),
+        "evidence/_totais-*.json",
+    ]
+
+    for padrao in fontes:
+        for f in sorted(glob.glob(padrao)):
+            m = re.search(r"_totais-(\d{4})(\d{2})", f)
+            if not m:
+                continue
+            d = json.load(open(f, encoding="utf-8"))
+            n = d.get("count_linhas") or d.get("linhas")
+            s = d.get("sum_vl_liquido") or d.get("soma")
+            if not n or s is None:
+                continue
+            pontos[f"{m.group(1)}-{m.group(2)}"] = (int(n), Decimal(str(s)))
 
     if ANCORA_LOCAL.exists():
         d = json.load(open(ANCORA_LOCAL, encoding="utf-8"))
