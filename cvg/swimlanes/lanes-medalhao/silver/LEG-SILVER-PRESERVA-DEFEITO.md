@@ -1,6 +1,6 @@
 > Projetado de `LEG-SILVER-PRESERVA-DEFEITO.md` pelo Seamwise.
 > **Não edite aqui** — edite a recipe e rode `seamwise plan`.
-> origem sha256: `95de745f037525ce519b4c3551d4ba9d20c81fd3f1b86f6f20f2fec47274e04e`
+> origem sha256: `c107ee8f2a2143b6dde9fb4baf9d8c042698ab3a21a1e31f0bb40e1955fe236d`
 
 ---
 
@@ -34,7 +34,6 @@ tasks:
   - python3
   - pytest
   - docker
-  - pyspark
   depends_on:
   - T-20260922-bronze-confere-ancora
   touches_paths: []
@@ -89,7 +88,11 @@ tasks:
       por defeito — e esse NAO_MEDIDO IMPEDE produzir ''silver classificado'', porque uma capacidade chamada
       ''classificado'' que sai com a identidade não medida mente no próprio nome. A cadeia para aqui com
       o motivo nomeado, em vez de seguir e publicar com a identidade em aberto. Declarar esse mapa é trabalho
-      do contrato, com aprovador e data, não desta camada.'
+      do contrato, com aprovador e data, não desta camada — e ENQUANTO ele não existir, esta tarefa entrega
+      apenas a capacidade CONDICIONAL: o caminho NAO_MEDIDO provado, e o caminho positivo provado contra
+      contrato de teste, jamais contra a competência contratada. Concluir Bronze NÃO habilita a prova
+      positiva de Silver sobre 2026-01, e o plano não finge que habilita. scripts/medir_colapso.py já
+      mede os 11 grupos na competência inteira; falta a aprovação, que é decisão de negócio.'
   evals:
   - id: eval_1
     description: A chave é o código, o mapa por código é preservado e a soma não muda
@@ -126,7 +129,7 @@ tasks:
   - contracts
   rollback: Remover a camada Silver e seus testes.
   observability: colapsos classificados por competência
-source_seam_sha256: 09e7f12a2f9e6f9ba5afa1119b2f6eca8db4501d9a520c85b27bed0d16f8d911
+source_seam_sha256: 48992807477f9ff9a6e2eb5cffd35bdadf4d3843ed22ffa76b2736a1aa8907c2
 ---
 # Silver classifica o defeito e conserva o total
 

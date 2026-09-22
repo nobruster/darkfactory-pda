@@ -1,6 +1,6 @@
 > Projetado de `LEG-GOLD-RECONCILIA.md` pelo Seamwise.
 > **Não edite aqui** — edite a recipe e rode `seamwise plan`.
-> origem sha256: `ed0a233f370cc68ae2b3447868ad77d6632b4d74ad3f6e2bb45afd9fbc45b48b`
+> origem sha256: `5c7039e3c7a17adeb209222c3aed008edb51889ed6788257bd23af71cf5c0969`
 
 ---
 
@@ -32,7 +32,6 @@ tasks:
   - python3
   - pytest
   - docker
-  - pyspark
   depends_on:
   - T-20260922-silver-classifica-colapso
   touches_paths: []
@@ -66,7 +65,11 @@ tasks:
       destino para depois serem relidas, o dado divergente já teria ficado exposto antes de qualquer veredito,
       e remover depois não desfaz a exposição. Um teste que confira só o resultado final ou a ausência
       de arquivos ao término não vê isso — o eval observa que o caminho de destino permanece inalterado
-      DURANTE a reconciliação'
+      DURANTE a reconciliação. E a publicação em si é uma transição INDIVISÍVEL de visibilidade: o conjunto
+      publicado é exatamente o conjunto reconciliado, tudo ou nada. Copiar vários arquivos expondo-os
+      à medida que chegam deixaria um consumidor lendo parte das candidatas, ou misturadas com as da execução
+      anterior, com a reconciliação correta e o total lido por ninguém aprovado — e uma interrupção no
+      meio congela esse estado. Publicação interrompida deixa o destino como estava antes'
   - id: B-2
     given: um Silver cujo total não reproduz a âncora, ou uma competência sem âncora no contrato
     when: Gold agrega
@@ -117,7 +120,7 @@ tasks:
   - contracts
   rollback: Remover a camada Gold e seus testes.
   observability: agregados recusados por não reconciliar
-source_seam_sha256: 0bfd630894b39e46b1484cefed37771775b1bf0b50721ad3dc72591013a12c76
+source_seam_sha256: a13745618e85463a44b7b99635d4b4c3be45f67651bdfc2a329a1507a97b2998
 ---
 # Gold só publica quando reconcilia com a âncora
 

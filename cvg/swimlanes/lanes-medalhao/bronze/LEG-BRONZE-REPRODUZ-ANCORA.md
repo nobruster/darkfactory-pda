@@ -1,6 +1,6 @@
 > Projetado de `LEG-BRONZE-REPRODUZ-ANCORA.md` pelo Seamwise.
 > **Não edite aqui** — edite a recipe e rode `seamwise plan`.
-> origem sha256: `cc97a19d46db611d54e9535ff7b73cdcc6c41adfd81a3b95c715733e51efed16`
+> origem sha256: `b4b39196ce4fb7a5e0854eb0dfde11e383dc7d3114611941337dfcb5490c3309`
 
 ---
 
@@ -27,12 +27,15 @@ tasks:
     estados distintos e nenhum escreve camada, porque confundir ausência de medição com reprovação torna
     instável a interface que Silver consome. Os evals rodam num ambiente que tem AO MESMO TEMPO pytest
     e um leitor de Parquet — medido, hoje nenhum tem: o host não tem pyspark, pyarrow, pandas, duckdb
-    nem java, e o contêiner pda-spark não tem pytest. Montar esse ambiente é parte desta tarefa e tem
-    caminho declarado — infra/medalhao-evals.sh, que roda os evals num checkout limpo sem instalação manual
-    — e os nove evals das três camadas o INVOCAM, em vez de chamar pytest direto, porque criar o script
-    não muda o ambiente de quem executa e o eval falharia antes de testar Bronze. Sem ele a obrigação
-    existiria sem forma reproduzível de cumpri-la, e um agente que criasse o arquivo mesmo assim receberia
-    path_policy: fail.'
+    nem java, e o contêiner pda-spark não tem pytest. As ferramentas do HOST são git, bash, python3, pytest
+    e docker: pyspark NÃO entra em required_tools, porque o pré-voo confere o PATH do host com shutil.which
+    e a tarefa que existe PARA montar o ambiente seria impedida de começar por exigir o que ela mesma
+    vai prover — pyspark vive dentro do contêiner, que o docker levanta. Montar esse ambiente é parte
+    desta tarefa e tem caminho declarado — infra/medalhao-evals.sh, que roda os evals num checkout limpo
+    sem instalação manual — e os nove evals das três camadas o INVOCAM, em vez de chamar pytest direto,
+    porque criar o script não muda o ambiente de quem executa e o eval falharia antes de testar Bronze.
+    Sem ele a obrigação existiria sem forma reproduzível de cumpri-la, e um agente que criasse o arquivo
+    mesmo assim receberia path_policy: fail.'
   effort: M
   profile: standard
   execution_backend: any
@@ -42,7 +45,6 @@ tasks:
   - python3
   - pytest
   - docker
-  - pyspark
   depends_on: []
   touches_paths: []
   creates_paths:
@@ -113,7 +115,12 @@ tasks:
       Ausente ou vazia devolve NAO_MEDIDO mesmo que o lago tenha outros problemas, porque não se reprova
       o que não se mediu. Só quando a competência existe e foi medida é que o fechamento do lago entra
       — e aí, se a soma das partições não fecha com o total, é DIVERGE, porque linha que não pertence
-      a partição nenhuma é contaminação, e foi para vê-la que este controle existe'
+      a partição nenhuma é contaminação — e o total vem de um UNIVERSO INDEPENDENTE, a listagem dos objetos
+      do lago, nunca da mesma leitura agrupada: somar contagens agrupadas pela própria relação lida é
+      identidade, fecha sempre, inclusive somando o grupo nulo, e não veria arquivo que as DUAS leituras
+      ignoraram. As chaves que constituem partição válida são as declaradas no contrato; objeto fora delas,
+      ou linha cuja chave de partição é nula, conta como não pertencente e faz o controle reprovar, e
+      foi para vê-la que este controle existe'
   evals:
   - id: eval_1
     description: Os cinco controles comparados individualmente, e a partição medida isoladamente
@@ -152,7 +159,7 @@ tasks:
   - contracts
   rollback: Remover o leitor Bronze e seus testes.
   observability: partições recusadas por controle divergente
-source_seam_sha256: 62b14968efdd71ae68d8e112eb043dbcc9fb242cd041b18366377f3c4aeb5dfc
+source_seam_sha256: 4c74dcfd7a1b58e0d8f79ae0affbe67c7cf823baff236c63437ba72726d17154
 ---
 # Bronze só existe quando reproduz a âncora do contrato
 
@@ -162,7 +169,7 @@ A partição lida reproduz os cinco controles ancorados; ausente ou vazia devolv
 
 ## Runnable leaves
 
-- `T-20260922-bronze-confere-ancora` — Ler a partição do lago e conferi-la contra a âncora: Os cinco controles da partição real batem com o contrato. Partição AUSENTE ou VAZIA devolve NAO_MEDIDO; partição MEDIDA que diverge em qualquer controle devolve DIVERGE — os dois são estados distintos e nenhum escreve camada, porque confundir ausência de medição com reprovação torna instável a interface que Silver consome. Os evals rodam num ambiente que tem AO MESMO TEMPO pytest e um leitor de Parquet — medido, hoje nenhum tem: o host não tem pyspark, pyarrow, pandas, duckdb nem java, e o contêiner pda-spark não tem pytest. Montar esse ambiente é parte desta tarefa e tem caminho declarado — infra/medalhao-evals.sh, que roda os evals num checkout limpo sem instalação manual — e os nove evals das três camadas o INVOCAM, em vez de chamar pytest direto, porque criar o script não muda o ambiente de quem executa e o eval falharia antes de testar Bronze. Sem ele a obrigação existiria sem forma reproduzível de cumpri-la, e um agente que criasse o arquivo mesmo assim receberia path_policy: fail.
+- `T-20260922-bronze-confere-ancora` — Ler a partição do lago e conferi-la contra a âncora: Os cinco controles da partição real batem com o contrato. Partição AUSENTE ou VAZIA devolve NAO_MEDIDO; partição MEDIDA que diverge em qualquer controle devolve DIVERGE — os dois são estados distintos e nenhum escreve camada, porque confundir ausência de medição com reprovação torna instável a interface que Silver consome. Os evals rodam num ambiente que tem AO MESMO TEMPO pytest e um leitor de Parquet — medido, hoje nenhum tem: o host não tem pyspark, pyarrow, pandas, duckdb nem java, e o contêiner pda-spark não tem pytest. As ferramentas do HOST são git, bash, python3, pytest e docker: pyspark NÃO entra em required_tools, porque o pré-voo confere o PATH do host com shutil.which e a tarefa que existe PARA montar o ambiente seria impedida de começar por exigir o que ela mesma vai prover — pyspark vive dentro do contêiner, que o docker levanta. Montar esse ambiente é parte desta tarefa e tem caminho declarado — infra/medalhao-evals.sh, que roda os evals num checkout limpo sem instalação manual — e os nove evals das três camadas o INVOCAM, em vez de chamar pytest direto, porque criar o script não muda o ambiente de quem executa e o eval falharia antes de testar Bronze. Sem ele a obrigação existiria sem forma reproduzível de cumpri-la, e um agente que criasse o arquivo mesmo assim receberia path_policy: fail.
 
 The leg names a capability state, not an activity. Each leaf owns one coherent,
 independently provable done-condition.
