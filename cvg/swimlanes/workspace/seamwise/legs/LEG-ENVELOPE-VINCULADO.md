@@ -48,13 +48,18 @@ tasks:
       ADR 0006 permite, vale o mesmo — sem a capacidade computada por quem leu os bytes, o envelope é
       recusado por falta de insumo, nunca aceito por ausência de contraditório
   - id: B-2
-    given: um envelope onde linhas_invalidas diverge da contagem de defeitos do tipo VALOR_ILEGIVEL, e
-      outro com linhas_invalidas=0 e defeitos de truncamento, e outro produzido por um motor que não é
-      o juiz
+    given: um envelope onde linhas_invalidas diverge dos defeitos do tipo VALOR_ILEGIVEL, outro com linhas_invalidas=0
+      e defeitos de truncamento, outro produzido por motor que não é o juiz, outro cujos três controles
+      monetários vêm como número JSON, e outro que OMITE truncamentos que a leitura observou
     when: o envelope é validado
     then: o primeiro é recusado; o segundo é ACEITO — truncamento é defeito numa linha válida, e a competência
       2026-01 tem linhas_invalidas=0 com milhões de truncamentos; o terceiro é aceito sem que o juiz importe
-      nada do motor produtor
+      nada do motor produtor. O quarto é RECUSADO na fronteira, antes de qualquer conversão — os três
+      monetários são contratados como string ou Decimal, e converter com Decimal(str(v)) apagaria a prova
+      de que veio float, então a recusa do agregador local não cobre produtor externo. O quinto é RECUSADO
+      por omissão — os defeitos observados na leitura têm de chegar ao juiz por contagem e por tipo, senão
+      o juiz aprova lista vazia sem violar classificação única, porque o defeito sumiu antes de chegar
+      nele
   evals:
   - id: eval_1
     description: Sha ausente, divergente, ou copiado de outro arquivo lido é recusado
@@ -62,8 +67,9 @@ tasks:
     verifies:
     - B-1
   - id: eval_2
-    description: linhas_invalidas confere com VALOR_ILEGIVEL; truncamento não a incrementa
-    bash: pytest -q tests/test_envelope.py -k "invalidas_por_tipo or truncamento_nao_invalida"
+    description: linhas_invalidas por tipo; float recusado na fronteira; omissão de defeito recusada
+    bash: pytest -q tests/test_envelope.py -k "invalidas_por_tipo or truncamento_nao_invalida or float_no_envelope
+      or defeito_omitido"
     verifies:
     - B-2
   - id: eval_3
@@ -88,7 +94,7 @@ tasks:
   - cvg/docs/adrs
   rollback: Remover o validador de envelope e seus testes.
   observability: envelopes recusados por motivo
-source_seam_sha256: 29b6d98644c70132abfc8175cca43b153e94f4371746ece97d77a3c6d4d1283a
+source_seam_sha256: 4e607967cfb9de1b07664fcc77201e9db1025d11b5bd8027574322953ca355e5
 ---
 # O envelope liga o agregado ao arquivo que o gerou
 

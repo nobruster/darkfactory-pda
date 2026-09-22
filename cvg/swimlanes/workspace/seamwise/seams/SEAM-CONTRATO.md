@@ -57,19 +57,21 @@ swimlane:
         given: um contrato com os cinco controles nomeados, a procedência, o layout posicional e os DOIS
           hashes — o do ZIP publicado e o do CSV extraído sobre o qual a âncora foi medida
         when: o contrato é carregado
-        then: âncora, procedência, layout e os dois hashes saem juntos, cada um dizendo qual artefato
-          cobre; falta o hash do CSV e o resultado é NAO_MEDIDO, porque hoje só o ZIP tem checksum e a
-          âncora foi medida no CSV — sem o par, trocar o CSV extraído não seria detectado; sem aprovador
-          ou sem data também é NAO_MEDIDO
+        then: âncora, procedência, layout, os dois hashes e a POLÍTICA DECIMAL saem juntos — precisão,
+          granularidade e modo de arredondamento são dados carregados do contrato, como o ADR 0003 exige,
+          não escolha privada de quem implementa; contrato sem política decimal é NAO_MEDIDO, senão o
+          agregador local fixa a sua, passa nos exemplos, e um produtor externo escolhe outra sem nada
+          acusar. Falta o hash do CSV e também é NAO_MEDIDO, porque hoje só o ZIP tem checksum e a âncora
+          foi medida no CSV — sem o par, trocar o CSV extraído não seria detectado; sem aprovador ou sem
+          data, idem
       - id: B-2
         given: uma competência sem âncora no contrato
         when: o contrato é carregado
         then: retorna NAO_MEDIDO como valor, sem gravar nem encerrar o processo
       evals:
       - id: eval_1
-        description: Cinco controles com procedência; hash do ZIP e do CSV distintos; sem aprovador vira
-          NAO_MEDIDO
-        bash: pytest -q tests/test_contrato.py -k "ancorada or sem_procedencia or hash_zip_e_csv"
+        description: Controles com procedência; hashes distintos; sem política decimal vira NAO_MEDIDO
+        bash: pytest -q tests/test_contrato.py -k "ancorada or sem_procedencia or hash_zip_e_csv or sem_politica_decimal"
         verifies:
         - B-1
       - id: eval_2

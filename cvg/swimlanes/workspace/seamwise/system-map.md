@@ -233,6 +233,45 @@ objections:
     divergência do agregador sobre arquivo íntegro. As duas provas verificam falhas diferentes e nenhuma
     substitui a outra. B-1 da orquestração passou a exigir as DUAS execuções de recusa — a do centavo
     alterado nos bytes e a do arquivo íntegro com juízo permissivo injetado.
+- id: OBJ-R5-C1
+  status: FIXED
+  summary: A recusa de float estava só no agregador local; o envelope aceita produtor externo, que não
+    passa por ele.
+  owner: Bruno Nunes
+  rationale: Quatro das cinco objeções desta rodada têm a mesma raiz — o ADR 0006 admitiu produtor externo
+    e a fronteira ainda era escrita supondo o agregador local. B-2 da fronteira passou a contratar os
+    três monetários como string ou Decimal, com recusa ANTES de qualquer conversão, porque Decimal(str(v))
+    apagaria a prova de que veio float.
+- id: OBJ-R5-C2
+  status: FIXED
+  summary: Um envelope podia omitir os truncamentos que a leitura observou e passar, com o juiz aprovando
+    lista vazia.
+  owner: Bruno Nunes
+  rationale: A única reconciliação exigida era linhas_invalidas contra VALOR_ILEGIVEL. B-2 da fronteira
+    passou a exigir que os defeitos observados cheguem por contagem e por tipo, e recusa a omissão — o
+    juiz não violaria classificação única porque o defeito sumia antes de chegar nele.
+- id: OBJ-R5-C3
+  status: FIXED
+  summary: A fronteira compara TRÊS hashes e o pacote gravava dois; um RECUSADO legítimo rederivaria ACEITO.
+  owner: Bruno Nunes
+  rationale: Contraexemplo válido — ancorado=observado=A com envelope declarando B é recusado pela fronteira,
+    e sem o declarado no pacote a razão da recusa se perde. B-1 da evidência passou a gravar os três.
+- id: OBJ-R5-C4
+  status: FIXED
+  summary: Execução encerrada por NAO_MEDIDO antes da leitura não tem nenhum dos dois hashes, e a precedência
+    não estava declarada.
+  owner: Bruno Nunes
+  rationale: 'B-1 da evidência passou a declarar a precedência em vez de deixá-la deduzir: falta o ancorado
+    e é ACEITO_SEM_ANCORA, inclusive quando o observado também falta; ERRO exige evento de falha registrado.
+    Implementações independentes deixam de poder discordar.'
+- id: OBJ-R5-C5
+  status: FIXED
+  summary: O ADR 0003 põe precisão e arredondamento no contrato, mas o carregador não os carregava — ficavam
+    escolha privada da implementação.
+  owner: Bruno Nunes
+  rationale: B-1 do contrato passou a carregar a política decimal junto com âncora, layout e hashes, e
+    contrato sem ela é NAO_MEDIDO. A agregação passou a exigir contrato validado entre seus requisitos,
+    para que a política atravesse o grafo em vez de ser fixada dentro do agregador.
 contentions: []
 ---
 # System Map

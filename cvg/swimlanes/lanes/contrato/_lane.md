@@ -2,7 +2,7 @@ FORK: B (task-driven) — rota única desde a v3.4 — o consenso sempre entrega
 
 > Projetado de `LANE-CONTRATO.md` pelo Seamwise.
 > **Não edite aqui** — edite a recipe e rode `seamwise plan`.
-> origem sha256: `834179824670b793d1b94abd8d741dff7acedd7a7c6b69ee25047389d0eabafa`
+> origem sha256: `79e7e5710186c2b5737879a2c92dfa067435402b728851a5680f75e12b00dca8`
 
 ---
 
@@ -14,7 +14,7 @@ id: LANE-CONTRATO
 name: Contrato lane
 owner: contrato
 seam_id: SEAM-CONTRATO
-source_seam_sha256: 172592dfebd03e99a3520522778d804e90e578d09e7f2d9c7299a016421273bd
+source_seam_sha256: 5e888b5f89b816aa6207bcec5a9d1fbea79457e2ebc7ac58373f31a0689b7185
 legs:
 - LEG-CONTRATO-RECUSA-SEM-ANCORA
 ---

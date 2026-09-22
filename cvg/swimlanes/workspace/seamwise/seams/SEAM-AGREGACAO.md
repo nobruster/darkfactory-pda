@@ -10,6 +10,7 @@ evidence:
 responsibility: Somar o valor líquido com precisão declarada e agrupar pelo código.
 consumes:
 - registros lidos
+- contrato validado
 produces:
 - agregado da competência
 owner: agregacao
@@ -35,6 +36,7 @@ swimlane:
       código.
     requires:
     - registros lidos
+    - contrato validado
     produces:
     - agregado da competência
     tasks:

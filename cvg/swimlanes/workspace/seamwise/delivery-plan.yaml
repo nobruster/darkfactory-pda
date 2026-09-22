@@ -1,12 +1,12 @@
 schema_version: 1
 status: DELIVERY_PLAN=READY
-seam_map_sha256: 33e80fc830d64a5a92d370a9ce9ab73f71f3a34cdfff4f8bf67a3cdbe7b94fa0
+seam_map_sha256: 0e806d6c7fef9ff9415f55d3c320ce17baf54d3e68fe15b33f9dcc2290ac496c
 swimlanes:
 - id: LANE-CONTRATO
   seam_id: SEAM-CONTRATO
   owner: contrato
   path: seamwise/swimlanes/LANE-CONTRATO.md
-  sha256: 834179824670b793d1b94abd8d741dff7acedd7a7c6b69ee25047389d0eabafa
+  sha256: 79e7e5710186c2b5737879a2c92dfa067435402b728851a5680f75e12b00dca8
 - id: LANE-LEITURA
   seam_id: SEAM-LEITURA
   owner: leitura
@@ -16,7 +16,7 @@ swimlanes:
   seam_id: SEAM-AGREGACAO
   owner: agregacao
   path: seamwise/swimlanes/LANE-AGREGACAO.md
-  sha256: b70436eec34b55ef3d9fe71359a2a4cfd44e84024e0b17d34049d0d43be82f83
+  sha256: 87baaf59985d6c352498b6e35da2db34482b162a0af815a8c7cb687b2915216d
 - id: LANE-JUIZO
   seam_id: SEAM-JUIZO
   owner: juizo
@@ -26,7 +26,7 @@ swimlanes:
   seam_id: SEAM-EVIDENCIA
   owner: evidencia
   path: seamwise/swimlanes/LANE-EVIDENCIA.md
-  sha256: 6c805f4f8d2c7cf6fa72becbfe87f2fa5789dcebf57117e51962a1c6355a2b96
+  sha256: b64629ae23af40726890631d7ac62fdece74f4bc300138d69a5b4743cf361fab
 - id: LANE-ORQUESTRACAO
   seam_id: SEAM-ORQUESTRACAO
   owner: orquestracao
@@ -36,13 +36,13 @@ swimlanes:
   seam_id: SEAM-FRONTEIRA
   owner: fronteira
   path: seamwise/swimlanes/LANE-FRONTEIRA.md
-  sha256: 68baea2c57a9ed605d6e8a075e1c1d1c12029587aaba968163ffe8c5c5bb06fb
+  sha256: 3673e105d0588a930d42c334470695a31cd637fb0feeea43edda9eccaf096330
 legs:
 - id: LEG-CONTRATO-RECUSA-SEM-ANCORA
   seam_id: SEAM-CONTRATO
   swimlane_id: LANE-CONTRATO
   path: seamwise/legs/LEG-CONTRATO-RECUSA-SEM-ANCORA.md
-  sha256: 4823bc5a32ad28023c51527a45ca182594d7cc46c996e8db6ad88a22acffe451
+  sha256: dcba040fd60fc9f72df482ceef285a5a6293080f9dddca08dde2543bea75d9fe
 - id: LEG-LEITURA-POSICIONAL
   seam_id: SEAM-LEITURA
   swimlane_id: LANE-LEITURA
@@ -52,7 +52,7 @@ legs:
   seam_id: SEAM-AGREGACAO
   swimlane_id: LANE-AGREGACAO
   path: seamwise/legs/LEG-AGREGADO-EXATO.md
-  sha256: 18cfddf0f438ddf65e37f2300263cc74046d26ef787c11361c05105b5ccabfd7
+  sha256: 0c4cd9237a9dbcf2a2a790d0831e2607484f89bc90499953b7d44e091bc8b6c2
 - id: LEG-JUIZO-ACUSA
   seam_id: SEAM-JUIZO
   swimlane_id: LANE-JUIZO
@@ -62,7 +62,7 @@ legs:
   seam_id: SEAM-EVIDENCIA
   swimlane_id: LANE-EVIDENCIA
   path: seamwise/legs/LEG-EVIDENCIA-RECONSTROI.md
-  sha256: ba69f891483f8188c7e28be24bcd3efd2fa45c677f87c622c708fa4a3e01a3a6
+  sha256: dac03dda68d54891be4be0cfd7965e534ee732a196f2c7acee57b989fa75d32e
 - id: LEG-DESFECHO-COM-PACOTE
   seam_id: SEAM-ORQUESTRACAO
   swimlane_id: LANE-ORQUESTRACAO
@@ -72,7 +72,7 @@ legs:
   seam_id: SEAM-FRONTEIRA
   swimlane_id: LANE-FRONTEIRA
   path: seamwise/legs/LEG-ENVELOPE-VINCULADO.md
-  sha256: bb03250c554bf6eff992ab2b1defa8896f2aa3adb4c4864c2dc595e2e44e4a44
+  sha256: ec3771d568c71ab7022055112fd1c3192cd7139a670dcccf93a5cd16c0fd911b
 steel_thread:
 - LEG-CONTRATO-RECUSA-SEM-ANCORA
 - LEG-LEITURA-POSICIONAL
@@ -292,7 +292,46 @@ objections:
     divergência do agregador sobre arquivo íntegro. As duas provas verificam falhas diferentes e nenhuma
     substitui a outra. B-1 da orquestração passou a exigir as DUAS execuções de recusa — a do centavo
     alterado nos bytes e a do arquivo íntegro com juízo permissivo injetado.
+- id: OBJ-R5-C1
+  status: FIXED
+  summary: A recusa de float estava só no agregador local; o envelope aceita produtor externo, que não
+    passa por ele.
+  owner: Bruno Nunes
+  rationale: Quatro das cinco objeções desta rodada têm a mesma raiz — o ADR 0006 admitiu produtor externo
+    e a fronteira ainda era escrita supondo o agregador local. B-2 da fronteira passou a contratar os
+    três monetários como string ou Decimal, com recusa ANTES de qualquer conversão, porque Decimal(str(v))
+    apagaria a prova de que veio float.
+- id: OBJ-R5-C2
+  status: FIXED
+  summary: Um envelope podia omitir os truncamentos que a leitura observou e passar, com o juiz aprovando
+    lista vazia.
+  owner: Bruno Nunes
+  rationale: A única reconciliação exigida era linhas_invalidas contra VALOR_ILEGIVEL. B-2 da fronteira
+    passou a exigir que os defeitos observados cheguem por contagem e por tipo, e recusa a omissão — o
+    juiz não violaria classificação única porque o defeito sumia antes de chegar nele.
+- id: OBJ-R5-C3
+  status: FIXED
+  summary: A fronteira compara TRÊS hashes e o pacote gravava dois; um RECUSADO legítimo rederivaria ACEITO.
+  owner: Bruno Nunes
+  rationale: Contraexemplo válido — ancorado=observado=A com envelope declarando B é recusado pela fronteira,
+    e sem o declarado no pacote a razão da recusa se perde. B-1 da evidência passou a gravar os três.
+- id: OBJ-R5-C4
+  status: FIXED
+  summary: Execução encerrada por NAO_MEDIDO antes da leitura não tem nenhum dos dois hashes, e a precedência
+    não estava declarada.
+  owner: Bruno Nunes
+  rationale: 'B-1 da evidência passou a declarar a precedência em vez de deixá-la deduzir: falta o ancorado
+    e é ACEITO_SEM_ANCORA, inclusive quando o observado também falta; ERRO exige evento de falha registrado.
+    Implementações independentes deixam de poder discordar.'
+- id: OBJ-R5-C5
+  status: FIXED
+  summary: O ADR 0003 põe precisão e arredondamento no contrato, mas o carregador não os carregava — ficavam
+    escolha privada da implementação.
+  owner: Bruno Nunes
+  rationale: B-1 do contrato passou a carregar a política decimal junto com âncora, layout e hashes, e
+    contrato sem ela é NAO_MEDIDO. A agregação passou a exigir contrato validado entre seus requisitos,
+    para que a política atravesse o grafo em vez de ser fixada dentro do agregador.
 contentions: []
 steel_thread_path: seamwise/steel-thread.md
 steel_thread_sha256: ffb28ecb19188999bee9ce19aa55f8f43a0d1e1bd3e01017d7f9ad3a6d47fb7b
-review_authority_sha256: 7e3485b8706c707bc8b3accd377698db2ff4561d44fb18d7029f843461f2f336
+review_authority_sha256: e3052ca9411c3c3bef0129c5950ffe321c32d433b3710ca6c81ebcc4480fb314

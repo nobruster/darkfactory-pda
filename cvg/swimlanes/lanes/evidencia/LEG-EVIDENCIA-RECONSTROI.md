@@ -1,6 +1,6 @@
 > Projetado de `LEG-EVIDENCIA-RECONSTROI.md` pelo Seamwise.
 > **Não edite aqui** — edite a recipe e rode `seamwise plan`.
-> origem sha256: `ba69f891483f8188c7e28be24bcd3efd2fa45c677f87c622c708fa4a3e01a3a6`
+> origem sha256: `dac03dda68d54891be4be0cfd7965e534ee732a196f2c7acee57b989fa75d32e`
 
 ---
 
@@ -44,22 +44,25 @@ tasks:
     when: o pacote é lido de volta
     then: o veredito é REDERIVADO dos cinco controles, da âncora, das classificações de cada diferença
       e dos hashes gravados — nunca lido do rótulo; o pacote adulterado é recusado porque o rótulo discorda
-      do que esses insumos produzem. A ausência de hash não é recusa incondicional — ela decide o veredito,
-      e os dois hashes são distintos. Falta o ANCORADO, que vem do contrato, e o desfecho é ACEITO_SEM_ANCORA
-      com causa NAO_MEDIDO. Falta o OBSERVADO, computado na leitura, e não é falta de âncora e sim execução
-      interrompida — o desfecho é ERRO, com o evento de falha entre os insumos da rederivação, porque
-      controles ausentes depois de uma exceção não determinam ERRO por si. Os dois gravam pacote válido;
-      recusar qualquer um impediria de gravar justamente a execução que precisa de registro. Só é recusado
-      o pacote cujo rótulo não bate com o que os insumos rederivam; campos não percorridos são marcados
-      ausentes, nunca zerados
+      do que esses insumos produzem. São TRÊS os hashes gravados, os mesmos que a fronteira compara —
+      o ANCORADO do contrato, o OBSERVADO computado na leitura e o DECLARADO no envelope; com dois só,
+      um pacote legítimo de RECUSADO por ancorado=observado e declarado divergente rederivaria ACEITO
+      e seria rejeitado. A ausência não é recusa incondicional, ela decide o veredito. Falta o ancorado
+      e o desfecho é ACEITO_SEM_ANCORA com causa NAO_MEDIDO — inclusive quando o observado também falta,
+      porque a execução parou em NAO_MEDIDO antes de ler, e essa precedência é declarada, não deduzida.
+      Falta o observado COM evento de falha registrado e é execução interrompida, desfecho ERRO; sem evento
+      de falha e sem ancorado, o caminho é o sem âncora. Os três casos gravam pacote válido; recusar qualquer
+      um impediria de gravar justamente a execução que precisa de registro. Só é recusado o pacote cujo
+      rótulo não bate com o que os insumos rederivam; campos não percorridos são marcados ausentes, nunca
+      zerados
   - id: B-2
     given: duas execuções da mesma competência
     when: a segunda é gravada
     then: as duas coexistem — a segunda não sobrescreve a primeira
   evals:
   - id: eval_1
-    description: Rederiva com classificações; falta ancorado dá SEM_ANCORA, falta observado dá ERRO
-    bash: pytest -q tests/test_evidencia.py -k "rederiva or rotulo_adulterado or sem_ancorado_vs_sem_observado"
+    description: Rederiva com os três hashes; precedência quando ancorado e observado faltam juntos
+    bash: pytest -q tests/test_evidencia.py -k "rederiva or rotulo_adulterado or tres_hashes or precedencia_sem_ancora"
     verifies:
     - B-1
   - id: eval_2
@@ -88,7 +91,7 @@ tasks:
   - evidence
   rollback: Remover o gravador de evidência e seus testes.
   observability: pacotes gravados por competência
-source_seam_sha256: c40ed800ae4b3871050518bce36577cad0a014e8e2a4e10fa453ae9f4d26288f
+source_seam_sha256: 0fbe3e17ef31afc0e0d1d73282ffb2c8475706bc64a97cf7758e0ad70d85045d
 ---
 # O pacote reconstrói o veredito sem reexecutar
 

@@ -9,6 +9,7 @@ observable_state: O agregado é exato e a chave é o código
 proof: Float recusado; precisão baixa acusa a perda; agrupar por descrição diverge de agrupar por código.
 requires:
 - registros lidos
+- contrato validado
 produces:
 - agregado da competência
 tasks:
@@ -83,7 +84,7 @@ tasks:
   - cvg/docs/adrs
   rollback: Remover o agregador e seus testes.
   observability: total agregado e espécies distintas
-source_seam_sha256: 73663c7301b69f13acaf4b220edecb7c3b20a98d117b5b4f7ca0f6ec2b51909f
+source_seam_sha256: 50ec56f83d5e4da8cc261130ee67ee326d5c5cb077d9aa43380a9a54909e50c8
 ---
 # O agregado é exato e a chave é o código
 
