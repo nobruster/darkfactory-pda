@@ -1,6 +1,6 @@
 > Projetado de `LEG-GOLD-RECONCILIA.md` pelo Seamwise.
 > **Não edite aqui** — edite a recipe e rode `seamwise plan`.
-> origem sha256: `7d22855ef2facbba66cc2cc868e9c56d394f08781d0e6ad88cce2721e66dfcb4`
+> origem sha256: `601bd9eae470fcad7c58d617bceb7503edf77a13a0b5d94ed9b29fd4e5a26ee9`
 
 ---
 
@@ -43,7 +43,7 @@ tasks:
     given: o Silver classificado e o contrato, com a política decimal declarada — HALF_EVEN, escala 2,
       e a precisão DERIVADA conforme o ADR 0009, que nesta competência dá 14
     when: Gold agrega por código
-    then: o arredondamento acontece UMA VEZ, sobre o total, como o ADR 0003 exige, na camada que o 0007
+    then: 'o arredondamento acontece UMA VEZ, sobre o total, como o ADR 0003 exige, na camada que o 0007
       e o 0009 preservaram — arredondar cada código antes de somar dá resultado diferente, e a diferença
       é sistemática, não ruído — 2,345 + 2,345 dá 4,68 por campo e 4,69 no total, ambos meio-para-par.
       O modo é HALF_EVEN, decidido pelo ADR 0003 e preservado pelo 0009, lido do CONTRATO, nunca escolhido
@@ -51,8 +51,13 @@ tasks:
       é a declarada, com localcontext, e não a herdada. Depois de agregar, a soma das linhas de Gold é
       RECONCILIADA com a âncora do contrato e a igualdade é exata ao centavo; Gold que não reconcilia
       devolve DIVERGE e NÃO publica, porque um agregado publicado sem reconciliar é exatamente o que a
-      âncora existe para impedir. A reconciliação é recalculada a partir das linhas publicadas, não herdada
-      de Bronze, senão Gold provaria a conta de outra camada
+      âncora existe para impedir. A reconciliação é recalculada a partir das linhas CANDIDATAS — materializadas
+      em local privado, jamais no caminho que os consumidores leem — e não herdada de Bronze, senão Gold
+      provaria a conta de outra camada. A publicação é um passo POSTERIOR e condicionado ao veredito:
+      se as candidatas fossem escritas no destino para depois serem relidas, o dado divergente já teria
+      ficado exposto antes de qualquer veredito, e remover depois não desfaz a exposição. Um teste que
+      confira só o resultado final ou a ausência de arquivos ao término não vê isso — o eval observa que
+      o caminho de destino permanece inalterado DURANTE a reconciliação'
   - id: B-2
     given: um Silver cujo total não reproduz a âncora, ou uma competência sem âncora no contrato
     when: Gold agrega
@@ -77,7 +82,7 @@ tasks:
     - B-2
   - id: eval_3
     description: DIVERGE e NAO_MEDIDO são estados distintos e nenhum publica
-    bash: pytest -q tests/test_gold.py -k "diverge_nao_publica or sem_ancora_nao_medido"
+    bash: pytest -q tests/test_gold.py -k "diverge_nao_publica or sem_ancora_nao_medido or destino_inalterado_durante"
     verifies:
     - B-2
   anti_patterns:
@@ -96,7 +101,7 @@ tasks:
   - contracts
   rollback: Remover a camada Gold e seus testes.
   observability: agregados recusados por não reconciliar
-source_seam_sha256: 426a2569ca85a11a01b5550cabcfc7c42786a4edc6b3b47e00c3ba80f235e326
+source_seam_sha256: faece8cfa061d6a3a849d2e9dd62a23e6139086b5ae45f5bb237850890e9fc37
 ---
 # Gold só publica quando reconcilia com a âncora
 

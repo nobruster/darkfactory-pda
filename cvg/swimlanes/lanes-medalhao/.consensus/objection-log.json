@@ -1,0 +1,162 @@
+{
+  "schema_version": "1.0",
+  "pass": "4-consensus",
+  "adversary": {
+    "engine_id": "codex",
+    "model": "codex",
+    "family": "openai",
+    "engine_version": "codex-cli 0.155.0",
+    "sandbox_mode": "read-only"
+  },
+  "author": {
+    "model": "claude",
+    "family": "anthropic"
+  },
+  "verdict": "REVISE",
+  "prompt_sha256": "841a28dd21e1c17e745f2f8db18bfcc583d93255ca7a8fdfafef85803665595d",
+  "inputs": [
+    {
+      "path": "bronze/LEG-BRONZE-REPRODUZ-ANCORA.md",
+      "sha256": "1451caa6589cb1dd1ce825a02bd3fdfd1dbace8330053958282a2d231395a813"
+    },
+    {
+      "path": "bronze/_lane.md",
+      "sha256": "b9b0dea1ff26828ecc6297d3f36a9db5be31ff3085fbc2d86f650c38934874a4"
+    },
+    {
+      "path": "gold/LEG-GOLD-RECONCILIA.md",
+      "sha256": "f0f1e8ee72e911f1afcfcbe561ea199079fae8f8828fb0823a252f9bf85cd911"
+    },
+    {
+      "path": "gold/_lane.md",
+      "sha256": "551c741782577f3e0b3316c8689abac845362ab1ab01328ab69ad0880110dcdd"
+    },
+    {
+      "path": "silver/LEG-SILVER-PRESERVA-DEFEITO.md",
+      "sha256": "3760aa609abdd8786fbf4ac42130d07779d85457726d12e36129a78c0e2b1f49"
+    },
+    {
+      "path": "silver/_lane.md",
+      "sha256": "8618699bd912335423ff2c8d618addcb57819613b56e919160a835e9baa6d08e"
+    }
+  ],
+  "objections": [
+    {
+      "id": "C1",
+      "severity": "high",
+      "rank": 1,
+      "attack_class": "drift",
+      "swimlane": "LANE-BRONZE",
+      "leg": "LEG-BRONZE-REPRODUZ-ANCORA",
+      "title": "Dois controles n\u00e3o cumprem a compara\u00e7\u00e3o obrigat\u00f3ria dos cinco",
+      "location": {
+        "plan_file": "cvg/swimlanes/lanes-medalhao/bronze/LEG-BRONZE-REPRODUZ-ANCORA.md",
+        "section": "tasks[0].done_condition; behavior B-1; eval_1 e eval_3"
+      },
+      "evidence": "O plano exige que 'Os DOIS controles precisam bater'. R-5 exige comparar individualmente count_linhas, sum_vl_liquido, min_vl_liquido, max_vl_liquido e linhas_invalidas.",
+      "body": "Uma altera\u00e7\u00e3o compensada entre duas linhas preserva contagem e soma, mas pode aumentar o m\u00e1ximo acima de 183725.76. Os valores continuam finitos, n\u00e3o negativos e na escala permitida, satisfazendo o dom\u00ednio descrito em B-1. Bronze pode produzir 'bronze conferido' apesar de violar R-5. Silver preserva a soma e Gold volta a comparar soma e cardinalidade; nenhuma dessas verifica\u00e7\u00f5es garante detectar essa altera\u00e7\u00e3o. N\u00e3o est\u00e1 identificado um gate obrigat\u00f3rio dos tr\u00eas controles restantes antes da publica\u00e7\u00e3o.",
+      "cites": [
+        "cvg/docs/tech-spec/tech-spec-pda-beneficios.md \u00a7 Requirements, R-5",
+        "contracts/competencia-202601.yaml \u00a7 ancora",
+        "cvg/swimlanes/lanes-medalhao/gold/LEG-GOLD-RECONCILIA.md \u00a7 behavior B-1 e B-2"
+      ]
+    },
+    {
+      "id": "C2",
+      "severity": "high",
+      "rank": 2,
+      "attack_class": "unverified-assumption",
+      "swimlane": "LANE-SILVER",
+      "leg": "LEG-SILVER-PRESERVA-DEFEITO",
+      "title": "Silver depende de um mapa de identidade ausente do contrato",
+      "location": {
+        "plan_file": "cvg/swimlanes/lanes-medalhao/silver/LEG-SILVER-PRESERVA-DEFEITO.md",
+        "section": "behavior B-1 e B-2"
+      },
+      "evidence": "B-2 pressup\u00f5e 'um c\u00f3digo cuja descri\u00e7\u00e3o diverge do contrato, ou um colapso n\u00e3o declarado'. O contrato cont\u00e9m cardinalidades e uma classifica\u00e7\u00e3o global de 11 colapsos, mas nenhum mapa c\u00f3digo\u2192descri\u00e7\u00e3o nem lista dos grupos aprovados.",
+      "body": "A compara\u00e7\u00e3o individual prometida n\u00e3o tem referencial dispon\u00edvel. Trocar a descri\u00e7\u00e3o de um c\u00f3digo pode manter 65 c\u00f3digos, 52 descri\u00e7\u00f5es, 11 colapsos, 24 c\u00f3digos colapsados e o total monet\u00e1rio. Essas cardinalidades n\u00e3o distinguem o defeito aprovado de outro agrupamento. A implementa\u00e7\u00e3o ter\u00e1 de inventar um referencial, aceitar automaticamente o novo grupo ou bloquear dados sem conseguir executar a compara\u00e7\u00e3o especificada. A origem autorizada desse referencial \u00e9 uma quest\u00e3o aberta para os passes anteriores.",
+      "cites": [
+        "contracts/competencia-202601.yaml \u00a7 cardinalidade e defeitos_conhecidos",
+        "cvg/docs/adrs/0008-the-description-defect-is-collapsed-identity-not-field-width.md \u00a7 Decision",
+        "cvg/docs/tech-spec/tech-spec-pda-beneficios.md \u00a7 Requirements, R-3 e R-6"
+      ]
+    },
+    {
+      "id": "C3",
+      "severity": "high",
+      "rank": 3,
+      "attack_class": "cross-lane-interface",
+      "swimlane": "LANE-BRONZE",
+      "leg": "LEG-BRONZE-REPRODUZ-ANCORA",
+      "title": "Aus\u00eancia do v\u00ednculo de proced\u00eancia n\u00e3o tem consequ\u00eancia definida na cadeia",
+      "location": {
+        "plan_file": "cvg/swimlanes/lanes-medalhao/bronze/LEG-BRONZE-REPRODUZ-ANCORA.md",
+        "section": "behavior B-1, proced\u00eancia apresentada e limita\u00e7\u00e3o declarada; produces"
+      },
+      "evidence": "O hash \u00e9 comparado 'Quando apresentada' a proced\u00eancia; sem v\u00ednculo, Bronze registra uma 'limita\u00e7\u00e3o declarada da camada'. O plano tamb\u00e9m reconhece que os dois controles n\u00e3o distinguem arquivos com os mesmos totais.",
+      "body": "N\u00e3o est\u00e1 definido se a aus\u00eancia da proced\u00eancia impede produzir 'bronze conferido', nem como essa limita\u00e7\u00e3o chega a Silver e Gold. Um pacote com o hash correto, mas sem v\u00ednculo verific\u00e1vel com a parti\u00e7\u00e3o lida, tamb\u00e9m satisfaz a compara\u00e7\u00e3o textual do hash. Assim, a cadeia pode publicar uma parti\u00e7\u00e3o diferente da ancorada enquanto registra apenas uma ressalva. A obje\u00e7\u00e3o \u00e9 sobre a validade da prova e sua propaga\u00e7\u00e3o; n\u00e3o pressup\u00f5e adicionar uma coluna ao Parquet.",
+      "cites": [
+        "contracts/competencia-202601.yaml \u00a7 procedencia",
+        "cvg/docs/tech-spec/tech-spec-pda-beneficios.md \u00a7 Problem restated e Success metrics",
+        "cvg/swimlanes/lanes-medalhao/silver/LEG-SILVER-PRESERVA-DEFEITO.md \u00a7 requires",
+        "cvg/swimlanes/lanes-medalhao/gold/LEG-GOLD-RECONCILIA.md \u00a7 requires e behavior B-1"
+      ]
+    },
+    {
+      "id": "C4",
+      "severity": "high",
+      "rank": 4,
+      "attack_class": "cross-lane-interface",
+      "swimlane": "LANE-GOLD",
+      "leg": "LEG-GOLD-RECONCILIA",
+      "title": "A reconcilia\u00e7\u00e3o n\u00e3o define uma fronteira inequ\u00edvoca anterior \u00e0 publica\u00e7\u00e3o",
+      "location": {
+        "plan_file": "cvg/swimlanes/lanes-medalhao/gold/LEG-GOLD-RECONCILIA.md",
+        "section": "behavior B-1; anti_patterns[1]"
+      },
+      "evidence": "B-1 manda reconciliar 'a partir das linhas publicadas', enquanto exige que Gold divergente 'N\u00c3O publica'. O anti-pattern refor\u00e7a 'linhas efetivamente publicadas'.",
+      "body": "A ordem observ\u00e1vel est\u00e1 amb\u00edgua: se as linhas precisam estar publicadas para serem relidas e reconciliadas, o dado divergente j\u00e1 ficou exposto antes do veredito. Se 'publicadas' significa somente candidatas privadas, essa distin\u00e7\u00e3o n\u00e3o est\u00e1 expressa no contrato da tarefa. Um teste que verifica apenas o resultado final DIVERGE ou a aus\u00eancia de arquivos ao t\u00e9rmino pode deixar passar exposi\u00e7\u00e3o anterior seguida de remo\u00e7\u00e3o. A ambiguidade atinge diretamente a garantia de recusa antes de publicar.",
+      "cites": [
+        "cvg/docs/tech-spec/tech-spec-pda-beneficios.md \u00a7 Problem restated",
+        "cvg/docs/tech-spec/tech-spec-pda-beneficios.md \u00a7 Requirements, R-7",
+        "cvg/swimlanes/lanes-medalhao/gold/LEG-GOLD-RECONCILIA.md \u00a7 eval_3"
+      ]
+    },
+    {
+      "id": "C5",
+      "severity": "medium",
+      "rank": 5,
+      "attack_class": "other",
+      "swimlane": "LANE-BRONZE",
+      "leg": "LEG-BRONZE-REPRODUZ-ANCORA",
+      "title": "A condi\u00e7\u00e3o de conclus\u00e3o contradiz o comportamento para diverg\u00eancia",
+      "location": {
+        "plan_file": "cvg/swimlanes/lanes-medalhao/bronze/LEG-BRONZE-REPRODUZ-ANCORA.md",
+        "section": "proof; done_condition; behavior B-1 e B-2; Observable proof"
+      },
+      "evidence": "proof afirma que parti\u00e7\u00e3o 'divergente devolve NAO_MEDIDO'; done_condition exige NAO_MEDIDO para 'qualquer outro caso'. B-1 afirma 'Parti\u00e7\u00e3o que diverge \u00e9 DIVERGE', e B-2 tamb\u00e9m usa DIVERGE quando as contagens n\u00e3o fecham.",
+      "body": "Duas implementa\u00e7\u00f5es incompat\u00edveis podem reivindicar conformidade: uma retorna NAO_MEDIDO para uma parti\u00e7\u00e3o medida e incorreta; outra retorna DIVERGE e viola a condi\u00e7\u00e3o literal de conclus\u00e3o. Isso confunde aus\u00eancia de medi\u00e7\u00e3o com reprova\u00e7\u00e3o e torna inst\u00e1vel a interface consumida pela pr\u00f3xima camada. Os evals n\u00e3o declaram explicitamente a distin\u00e7\u00e3o de estados para Bronze, ao contr\u00e1rio dos de Gold.",
+      "cites": [
+        "cvg/swimlanes/lanes-medalhao/bronze/LEG-BRONZE-REPRODUZ-ANCORA.md \u00a7 proof, done_condition e behavior",
+        "cvg/swimlanes/lanes-medalhao/gold/LEG-GOLD-RECONCILIA.md \u00a7 behavior B-2"
+      ]
+    }
+  ],
+  "cross_lane_interfaces": [],
+  "fork": {
+    "choice": "B",
+    "reason": "Registrado conforme os tr\u00eas arquivos _lane.md; nenhuma escolha nova feita pelo advers\u00e1rio.",
+    "per_plan_declared": true
+  },
+  "open_questions": [
+    {
+      "q": "Qual \u00e9 o referencial autorizado para distinguir, por identidade, os colapsos aprovados e as descri\u00e7\u00f5es divergentes exigidos por Silver?",
+      "blocks_build": true
+    },
+    {
+      "q": "O schema exige resolution com decis\u00e3o humana em toda obje\u00e7\u00e3o, mas esta etapa pro\u00edbe o advers\u00e1rio de decidir. As cinco obje\u00e7\u00f5es permanecem sem resolution, conforme o comportamento do dispatcher: este \u00e9 um log de ataque aberto, n\u00e3o um registro final valid\u00e1vel pelo schema de consenso resolvido.",
+      "blocks_build": true
+    }
+  ],
+  "rounds_run": 1
+}

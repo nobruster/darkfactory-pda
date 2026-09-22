@@ -1,6 +1,6 @@
 > Projetado de `LEG-BRONZE-REPRODUZ-ANCORA.md` pelo Seamwise.
 > **Não edite aqui** — edite a recipe e rode `seamwise plan`.
-> origem sha256: `42a6d5a0cb7f7fa5ca2273a7dbc7554f542547d634bb79ef13bdd498b4ed479b`
+> origem sha256: `bb84a6d626861989a5b8ca947eeb26a1972e399abf49cbdfbbef70ae11fa4172`
 
 ---
 
@@ -12,8 +12,8 @@ id: LEG-BRONZE-REPRODUZ-ANCORA
 seam_id: SEAM-BRONZE
 swimlane_id: LANE-BRONZE
 observable_state: Bronze só existe quando reproduz a âncora do contrato
-proof: A partição lida devolve as linhas e a soma ancoradas; partição ausente, vazia ou divergente devolve
-  NAO_MEDIDO.
+proof: A partição lida reproduz os cinco controles ancorados; ausente ou vazia devolve NAO_MEDIDO, e medida-e-divergente
+  devolve DIVERGE — estados distintos, nunca colapsados.
 requires: []
 produces:
 - bronze conferido
@@ -21,10 +21,13 @@ tasks:
 - id: T-20260922-bronze-confere-ancora
   title: Ler a partição do lago e conferi-la contra a âncora
   goal: Fazer a camada recusar nascer sobre dado que não bate.
-  done_condition: 'Os dois controles da partição real batem com o contrato; qualquer outro caso devolve
-    NAO_MEDIDO como valor. Os evals rodam num ambiente que tem AO MESMO TEMPO pytest e um leitor de Parquet
-    — medido, hoje nenhum tem: o host não tem pyspark, pyarrow, pandas, duckdb nem java, e o contêiner
-    pda-spark não tem pytest. Montar esse ambiente é parte desta tarefa, não pressuposto dela.'
+  done_condition: 'Os cinco controles da partição real batem com o contrato. Partição AUSENTE ou VAZIA
+    devolve NAO_MEDIDO; partição MEDIDA que diverge em qualquer controle devolve DIVERGE — os dois são
+    estados distintos e nenhum escreve camada, porque confundir ausência de medição com reprovação torna
+    instável a interface que Silver consome. Os evals rodam num ambiente que tem AO MESMO TEMPO pytest
+    e um leitor de Parquet — medido, hoje nenhum tem: o host não tem pyspark, pyarrow, pandas, duckdb
+    nem java, e o contêiner pda-spark não tem pytest. Montar esse ambiente é parte desta tarefa, não pressuposto
+    dela.'
   effort: S
   profile: standard
   execution_backend: any
@@ -45,33 +48,41 @@ tasks:
     given: uma partição do lago e o contrato da competência, com a âncora de linhas e de soma medidas
       na fonte
     when: Bronze lê a partição
-    then: a contagem e a soma são recalculadas SOBRE A PARTIÇÃO, nunca sobre a união das partições — um
-      agregado sem GROUP BY na coluna de partição não mede partição nenhuma, e foi assim que a leitura
+    then: 'a contagem e a soma são recalculadas SOBRE A PARTIÇÃO, nunca sobre a união das partições —
+      um agregado sem GROUP BY na coluna de partição não mede partição nenhuma, e foi assim que a leitura
       da união deu 41.622.553 contra a âncora de 41.572.553 e uma contaminação inexistente foi reportada,
       quando a partição real batia exato e as 50.000 linhas estavam em competencia=fatia-teste, isolada.
       A soma é feita com a precisão DECLARADA no contrato, jamais herdada do contexto global, como o ADR
       0009 exige, porque qualquer biblioteca importada pode alterar o contexto e o acumulador passaria
-      a perder centavos sem que uma linha deste código mude. Os DOIS controles precisam bater — contagem
-      sozinha aprovaria uma partição com o mesmo número de linhas e valores trocados, e soma sozinha aprovaria
-      uma partição com linhas a mais que se cancelam. A comparação monetária é entre Decimal e Decimal,
-      nunca float, e a igualdade é exata — tolerância aqui seria a Regra 3 pelo avesso, afrouxar o oráculo
-      para a camada passar. Todo valor lido é conferido contra o domínio monetário do contrato antes de
-      entrar no acumulador — finito, NÃO NEGATIVO e dentro da escala declarada. A não-negatividade não
-      é preferência, e sim a premissa de soma MONOTÔNICA sob a qual o ADR 0009 deriva a precisão 14 —
-      um valor negativo quebra a premissa e a perda de centavo passa a acontecer DURANTE a soma, onde
-      a comparação final não a enxerga. Bronze lê Parquet, que não passa nem pela gramática do CSV nem
-      pela fronteira do envelope, e por isso é uma TERCEIRA porta de entrada para valores; fechá-la é
-      obrigação desta camada. Valor fora do domínio é defeito classificado com identidade, valor original
-      e posição, nunca somado em silêncio. A procedência do arquivo que originou a partição é APRESENTADA
-      a Bronze junto da leitura — hoje pelo pacote que a gravação emite, não por coluna do Parquet, porque
-      MEDIDO em gravar_lago.py a partição tem três colunas mais a de partição e nenhuma é procedência;
-      exigir que ela viesse do Parquet faria Bronze devolver NAO_MEDIDO na partição CORRETA, que é o defeito
-      da Regra 9 pelo avesso. Quando apresentada, o hash_csv_sha256 é comparado com o ancorado e divergência
-      é DIVERGE, porque reproduzir os dois controles não distingue o arquivo ancorado de outro com os
-      mesmos totais, e a âncora vale para UM arquivo. Fazer a partição carregar a procedência é melhoria
-      desejável e exige tarefa própria, por tocar em gravar_lago.py, que está sem Task-Spec (Regra 11)
-      — enquanto não existir, Bronze registra a ausência do vínculo como limitação declarada da camada,
-      nunca como aprovação silenciosa. Partição que diverge é DIVERGE, e Bronze não escreve nada
+      a perder centavos sem que uma linha deste código mude. Os CINCO controles da âncora são comparados
+      INDIVIDUALMENTE, como a R-5 da tech-spec exige — count_linhas, sum_vl_liquido, min_vl_liquido, max_vl_liquido
+      e linhas_invalidas. Contagem e soma sozinhas não bastam, e não bastam nem juntas: uma alteração
+      COMPENSADA entre duas linhas preserva as duas e ainda assim empurra o máximo acima dos 183.725,76
+      ancorados, com todos os valores finitos, não negativos e na escala permitida. Silver preservaria
+      a soma e Gold compararia soma e cardinalidade; nenhuma das três veria. Cada controle que diverge
+      é nomeado na saída, porque saber QUAL falhou é o que separa investigar de adivinhar. A comparação
+      monetária é entre Decimal e Decimal, nunca float, e a igualdade é exata — tolerância aqui seria
+      a Regra 3 pelo avesso, afrouxar o oráculo para a camada passar. Todo valor lido é conferido contra
+      o domínio monetário do contrato antes de entrar no acumulador — finito, NÃO NEGATIVO e dentro da
+      escala declarada. A não-negatividade não é preferência, e sim a premissa de soma MONOTÔNICA sob
+      a qual o ADR 0009 deriva a precisão 14 — um valor negativo quebra a premissa e a perda de centavo
+      passa a acontecer DURANTE a soma, onde a comparação final não a enxerga. Bronze lê Parquet, que
+      não passa nem pela gramática do CSV nem pela fronteira do envelope, e por isso é uma TERCEIRA porta
+      de entrada para valores; fechá-la é obrigação desta camada. Valor fora do domínio é defeito classificado
+      com identidade, valor original e posição, nunca somado em silêncio. A procedência do arquivo que
+      originou a partição é APRESENTADA a Bronze junto da leitura — hoje pelo pacote que a gravação emite,
+      não por coluna do Parquet, porque MEDIDO em gravar_lago.py a partição tem três colunas mais a de
+      partição e nenhuma é procedência; exigir que ela viesse do Parquet faria Bronze devolver NAO_MEDIDO
+      na partição CORRETA, que é o defeito da Regra 9 pelo avesso. Quando apresentada, o hash_csv_sha256
+      é comparado com o ancorado e divergência é DIVERGE, porque reproduzir os dois controles não distingue
+      o arquivo ancorado de outro com os mesmos totais, e a âncora vale para UM arquivo. Fazer a partição
+      carregar a procedência é melhoria desejável e exige tarefa própria, por tocar em gravar_lago.py,
+      que está sem Task-Spec (Regra 11) — enquanto não existir, a ausência do vínculo tem CONSEQUÊNCIA
+      definida e propagada — ''bronze conferido'' sai marcado PROCEDENCIA_NAO_VINCULADA, Silver e Gold
+      propagam a marca sem removê-la, e Gold NÃO PUBLICA sob ela. Registrar só uma ressalva deixaria a
+      cadeia publicar partição diferente da ancorada, porque o hash correto num pacote sem vínculo verificável
+      com a partição lida satisfaz a comparação textual e não prova nada. Partição que diverge é DIVERGE,
+      e Bronze não escreve nada'
   - id: B-2
     given: uma competência cuja partição não existe no lago, ou existe com zero linhas
     when: Bronze lê a partição
@@ -85,25 +96,26 @@ tasks:
       partição nenhuma é contaminação, e foi para vê-la que este controle existe
   evals:
   - id: eval_1
-    description: Os dois controles batem e a partição é medida isoladamente
-    bash: pytest -q tests/test_bronze.py -k "dois_controles or isola_particao or nao_soma_uniao or precisao_declarada"
+    description: Os cinco controles comparados individualmente, e a partição medida isoladamente
+    bash: pytest -q tests/test_bronze.py -k "cinco_controles or alteracao_compensada or isola_particao
+      or nao_soma_uniao or precisao_declarada"
     verifies:
     - B-1
   - id: eval_2
-    description: Partição ausente e partição vazia devolvem NAO_MEDIDO
-    bash: pytest -q tests/test_bronze.py -k "particao_ausente or particao_vazia"
+    description: Ausente e vazia devolvem NAO_MEDIDO; medida e divergente devolve DIVERGE
+    bash: pytest -q tests/test_bronze.py -k "particao_ausente or particao_vazia or diverge_nao_e_nao_medido"
     verifies:
     - B-2
   - id: eval_3
     description: Um centavo a mais reprova, e os dois controles juntos são necessários
-    bash: pytest -q tests/test_bronze.py -k "centavo_a_mais or dois_controles or diverge_nao_escreve"
+    bash: pytest -q tests/test_bronze.py -k "centavo_a_mais or maximo_acima_do_ancorado or diverge_nao_escreve"
     verifies:
     - B-1
   anti_patterns:
-  - action: somar todas as partições e comparar o total com a âncora
-    reason: mede a união e culpa a parte; foi o erro que reportou contaminação onde a partição real batia
-      exato
-    instead: agrupar pela coluna de partição e conferir só a partição da competência
+  - action: conferir só contagem e soma, deixando min, max e linhas_invalidas de fora
+    reason: a R-5 exige os cinco individualmente, e uma alteração compensada entre duas linhas preserva
+      contagem e soma enquanto empurra o máximo acima do ancorado
+    instead: comparar os cinco, nomeando na saída qual deles divergiu
   - action: aceitar diferença de centavos como arredondamento
     reason: afrouxar a tolerância é editar o oráculo pelo avesso
     instead: exigir igualdade exata entre Decimal e Decimal
@@ -118,17 +130,17 @@ tasks:
   - contracts
   rollback: Remover o leitor Bronze e seus testes.
   observability: partições recusadas por controle divergente
-source_seam_sha256: 71120a0fe6435c93122bbadd509f883a70f8056657c586befd03faaf3310a408
+source_seam_sha256: 2e3bc81e4d7f88eb418c28503dccbfe0ac6bc1a767ae0d468960b26f771f1deb
 ---
 # Bronze só existe quando reproduz a âncora do contrato
 
 ## Observable proof
 
-A partição lida devolve as linhas e a soma ancoradas; partição ausente, vazia ou divergente devolve NAO_MEDIDO.
+A partição lida reproduz os cinco controles ancorados; ausente ou vazia devolve NAO_MEDIDO, e medida-e-divergente devolve DIVERGE — estados distintos, nunca colapsados.
 
 ## Runnable leaves
 
-- `T-20260922-bronze-confere-ancora` — Ler a partição do lago e conferi-la contra a âncora: Os dois controles da partição real batem com o contrato; qualquer outro caso devolve NAO_MEDIDO como valor. Os evals rodam num ambiente que tem AO MESMO TEMPO pytest e um leitor de Parquet — medido, hoje nenhum tem: o host não tem pyspark, pyarrow, pandas, duckdb nem java, e o contêiner pda-spark não tem pytest. Montar esse ambiente é parte desta tarefa, não pressuposto dela.
+- `T-20260922-bronze-confere-ancora` — Ler a partição do lago e conferi-la contra a âncora: Os cinco controles da partição real batem com o contrato. Partição AUSENTE ou VAZIA devolve NAO_MEDIDO; partição MEDIDA que diverge em qualquer controle devolve DIVERGE — os dois são estados distintos e nenhum escreve camada, porque confundir ausência de medição com reprovação torna instável a interface que Silver consome. Os evals rodam num ambiente que tem AO MESMO TEMPO pytest e um leitor de Parquet — medido, hoje nenhum tem: o host não tem pyspark, pyarrow, pandas, duckdb nem java, e o contêiner pda-spark não tem pytest. Montar esse ambiente é parte desta tarefa, não pressuposto dela.
 
 The leg names a capability state, not an activity. Each leaf owns one coherent,
 independently provable done-condition.

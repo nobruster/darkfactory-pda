@@ -1,6 +1,6 @@
 > Projetado de `LEG-SILVER-PRESERVA-DEFEITO.md` pelo Seamwise.
 > **Não edite aqui** — edite a recipe e rode `seamwise plan`.
-> origem sha256: `206a9eab797241c1e021667f322d9f3dc58e02688b1866d491c59eb2ee4f573d`
+> origem sha256: `5bfde0b7d71020ede7cb04ed5c909663a68dde91a602ab70b4262f7d7dcf0580`
 
 ---
 
@@ -56,11 +56,17 @@ tasks:
   - id: B-2
     given: um código cuja descrição diverge do contrato, ou um colapso não declarado
     when: Silver normaliza
-    then: a linha atravessa com o VALOR intacto e o defeito registrado, nunca descartada nem corrigida
+    then: 'a linha atravessa com o VALOR intacto e o defeito registrado, nunca descartada nem corrigida
       — descartar mudaria o total e corrigir destruiria a prova. Defeito não classificado BLOQUEIA a camada,
       porque a classificação é o que transforma um erro da origem em cobrança rastreável; e nenhuma classificação
       é inferida em silêncio, já que atribuir CONFIRMED_SOURCE_DEFECT sem aprovador transformaria juízo
-      em default
+      em default. MEDIDO no contrato: existem as cardinalidades 65/52/11/24 e a classificação global,
+      mas NÃO existe mapa código→descrição nem a lista dos 11 grupos aprovados — e sem esse referencial
+      ''descrição que diverge do contrato'' não é verificável, porque trocar a descrição de um código
+      mantém todas as quatro cardinalidades. Silver então NÃO INVENTA referencial e NÃO aceita o grupo
+      novo por default: sem o mapa declarado no contrato, a comparação por identidade devolve NAO_MEDIDO,
+      distinto de bloquear por defeito. Declarar esse mapa é trabalho do contrato, com aprovador e data,
+      não desta camada.'
   evals:
   - id: eval_1
     description: A chave é o código e a soma não muda entre camadas
@@ -93,7 +99,7 @@ tasks:
   - contracts
   rollback: Remover a camada Silver e seus testes.
   observability: colapsos classificados por competência
-source_seam_sha256: 7d633fa92692d2a7fa11111af87da73dbd3c880f8bd3b8c64b0afe56737caa95
+source_seam_sha256: 4c55503baf64a5589aabc46d29d0c53b5ad50ab32083765076124fe2e7de05fe
 ---
 # Silver classifica o defeito e conserva o total
 
