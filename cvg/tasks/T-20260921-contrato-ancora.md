@@ -28,10 +28,14 @@ execution_backend: any
 signed_off: true
 signed_off_by: nobru
 signed_off_at: 2026-09-22T02:47:11Z
-accepted: false
-accepted_by: (none)
-accepted_at: (none)
+accepted: true
+accepted_by: converge-loop
+accepted_at: 2026-09-22T02:59:09Z
 signed_off_sig: hmac-sha256-v3:85d3c104:869bb3599bdb68b0bb75b9387cb5656b6a5de167401af48d0afc247a23ec43ba
+accepted_tier: 1
+accepted_attempt_id: 1709086a-867c-44bb-af4c-302bead0fe89
+accepted_authorization_ref: hmac-sha256-v3:85d3c104:869bb3599bdb68b0bb75b9387cb5656b6a5de167401af48d0afc247a23ec43ba
+acceptance_record_digest: sha256:027f69bd9dbb2ad23c0de94e879ee57fcb8a3bc2bdd061625aa61338b20d55be
 ---
 
 # Carregar contrato, âncora e layout posicional
