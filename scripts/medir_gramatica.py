@@ -13,7 +13,11 @@ import sys
 import time
 from decimal import Decimal
 
-CSV = "_raw/D.SDA.PDA.003.EMI.202601.csv"
+# O caminho do CSV vem por argumento; o default é a competência ancorada.
+# Antes isto era uma constante fixa, e os medidores devolviam MEDIDO tendo
+# varrido o arquivo ERRADO quando chamados para outra competência.
+_PADRAO = "_raw/D.SDA.PDA.003.EMI.202601.csv"
+CSV = sys.argv[1] if len(sys.argv) > 1 else _PADRAO
 IDX_VALOR = 9
 
 # formato brasileiro: milhar com ponto, decimal com vírgula, 2 casas
