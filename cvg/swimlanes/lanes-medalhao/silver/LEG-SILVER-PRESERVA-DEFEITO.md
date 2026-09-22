@@ -1,6 +1,6 @@
 > Projetado de `LEG-SILVER-PRESERVA-DEFEITO.md` pelo Seamwise.
 > **Não edite aqui** — edite a recipe e rode `seamwise plan`.
-> origem sha256: `aa26f8d170832f2e9e4dc8281974c02902433bc91282c8a7523e124e3793e1b0`
+> origem sha256: `9317e26cb757255d4021e7f58f70704a189e9c28dc8c614150b3cca8fa2f1c32`
 
 ---
 
@@ -65,14 +65,18 @@ tasks:
       é só a soma global: o mapa de Silver é comparado com o de Bronze CÓDIGO A CÓDIGO, porque trocar
       os valores de dois códigos preserva soma, chaves, cardinalidades e grupos — {''01'': 10.00, ''03'':
       20.00} virando {''01'': 20.00, ''03'': 10.00} passa em toda prova global e altera o resultado por
-      espécie. A CONTAGEM DE LINHAS de Silver é idêntica à de Bronze, linha a linha conservada — soma
-      e mapa por código não bastam: remover uma linha de valor ZERO cuja combinação código/descrição continue
-      presente preserva a soma, o mapa, as cardinalidades e os colapsos, e a perda passaria em toda prova
-      declarada. A soma de Silver também é comparada com a de Bronze e precisa ser IDÊNTICA — um pipeline
-      que altera o total ao normalizar texto tem um defeito, não uma melhoria. Cada colapso recebe EXATAMENTE
-      UMA das seis classificações e a contagem medida é conferida contra a do contrato — encontrar número
-      diferente de 11 é DIVERGE, porque o contrato mediu na competência inteira e a divergência significa
-      fonte diferente da ancorada, não permissão para ajustar o número'
+      espécie. O MULTICONJUNTO de linhas de Silver é idêntico ao de Bronze no que toca código e valor
+      — igualdade linha a linha, não agregada: duas linhas do MESMO código e MESMA descrição, 10.00 e
+      20.00, virando 11.00 e 19.00 preservam contagem, soma E o mapa por código, porque o mapa agrega
+      justamente por código e não separa linhas irmãs. Por isso a prova é sobre o multiconjunto, e a contagem
+      de linhas de Silver é idêntica à de Bronze — soma e mapa por código não bastam: remover uma linha
+      de valor ZERO cuja combinação código/descrição continue presente preserva a soma, o mapa, as cardinalidades
+      e os colapsos, e a perda passaria em toda prova declarada. A soma de Silver também é comparada com
+      a de Bronze e precisa ser IDÊNTICA — um pipeline que altera o total ao normalizar texto tem um defeito,
+      não uma melhoria. Cada colapso recebe EXATAMENTE UMA das seis classificações e a contagem medida
+      é conferida contra a do contrato — encontrar número diferente de 11 é DIVERGE, porque o contrato
+      mediu na competência inteira e a divergência significa fonte diferente da ancorada, não permissão
+      para ajustar o número'
   - id: B-2
     given: um código cuja descrição diverge do contrato, ou um colapso não declarado
     when: Silver normaliza
@@ -99,8 +103,8 @@ tasks:
   evals:
   - id: eval_1
     description: Chave é o código; contagem, mapa e soma preservados, inclusive linha de valor zero
-    bash: bash infra/medalhao-evals.sh tests/test_silver.py -k "chave_e_codigo or soma_identica or contagem_de_linhas_identica
-      or linha_de_valor_zero_nao_some or mapa_por_codigo_preservado"
+    bash: bash infra/medalhao-evals.sh tests/test_silver.py -k "chave_e_codigo or multiconjunto_identico
+      or linhas_irmas_com_valores_trocados or linha_de_valor_zero_nao_some or mapa_por_codigo_preservado"
     verifies:
     - B-1
   - id: eval_2
@@ -123,17 +127,17 @@ tasks:
   - action: agrupar por descrição em vez de código
     reason: funde os 24 colapsados; o total continua batendo e os mapas por código saem errados
     instead: usar o código como chave, sempre
-  - action: provar a conservação sem comparar a CONTAGEM de linhas
-    reason: remover uma linha de valor zero cuja combinação código/descrição continue presente preserva
-      soma, mapa por código, cardinalidades e colapsos
-    instead: exigir contagem de linhas idêntica entre Bronze e Silver, além da soma e do mapa
+  - action: provar a conservação só com contagem, soma e mapa por código
+    reason: duas linhas do mesmo código e descrição com valores trocados — 10.00 e 20.00 virando 11.00
+      e 19.00 — preservam os três, porque o mapa agrega por código
+    instead: comparar o multiconjunto de (código, valor) entre Bronze e Silver, linha a linha
   do_not_touch:
   - _raw
   - cvg/docs/adrs
   - contracts
   rollback: Remover a camada Silver e seus testes.
   observability: colapsos classificados por competência
-source_seam_sha256: 8a2949ba52e4fd4c756aa152be3bfcbef43ccc5a2d5e80759c95fb045c331343
+source_seam_sha256: a5636ca91354e032c70b8af37b8fb11d40420b1989006b5ec8ae2b0ee1a6e9b4
 ---
 # Silver classifica o defeito e conserva o total
 
