@@ -1,0 +1,112 @@
+> Projetado de `LEG-GOLD-RECONCILIA.md` pelo Seamwise.
+> **Não edite aqui** — edite a recipe e rode `seamwise plan`.
+> origem sha256: `7d22855ef2facbba66cc2cc868e9c56d394f08781d0e6ad88cce2721e66dfcb4`
+
+---
+
+---
+schema_version: 1
+kind: capability-leg
+claim: derived
+id: LEG-GOLD-RECONCILIA
+seam_id: SEAM-GOLD
+swimlane_id: LANE-GOLD
+observable_state: Gold só publica quando reconcilia com a âncora
+proof: A soma das linhas agregadas reproduz a âncora ao centavo; um centavo de diferença devolve DIVERGE.
+requires:
+- silver classificado
+produces:
+- gold reconciliado
+tasks:
+- id: T-20260922-gold-reconcilia-ancora
+  title: Agregar por código e reconciliar com a âncora
+  goal: Fazer o agregado provar que fecha, em vez de afirmar.
+  done_condition: A soma das linhas de Gold é igual à âncora ao centavo, com arredondamento único no total.
+  effort: S
+  profile: standard
+  execution_backend: any
+  required_tools:
+  - git
+  - bash
+  - python3
+  - pytest
+  - docker
+  - pyspark
+  depends_on:
+  - T-20260922-silver-classifica-colapso
+  touches_paths: []
+  creates_paths:
+  - src/medalhao/gold.py
+  - tests/test_gold.py
+  behavior:
+  - id: B-1
+    given: o Silver classificado e o contrato, com a política decimal declarada — HALF_EVEN, escala 2,
+      e a precisão DERIVADA conforme o ADR 0009, que nesta competência dá 14
+    when: Gold agrega por código
+    then: o arredondamento acontece UMA VEZ, sobre o total, como o ADR 0003 exige, na camada que o 0007
+      e o 0009 preservaram — arredondar cada código antes de somar dá resultado diferente, e a diferença
+      é sistemática, não ruído — 2,345 + 2,345 dá 4,68 por campo e 4,69 no total, ambos meio-para-par.
+      O modo é HALF_EVEN, decidido pelo ADR 0003 e preservado pelo 0009, lido do CONTRATO, nunca escolhido
+      aqui, porque meio-para-cima empurra todo empate na mesma direção e vira tendência em volume. A precisão
+      é a declarada, com localcontext, e não a herdada. Depois de agregar, a soma das linhas de Gold é
+      RECONCILIADA com a âncora do contrato e a igualdade é exata ao centavo; Gold que não reconcilia
+      devolve DIVERGE e NÃO publica, porque um agregado publicado sem reconciliar é exatamente o que a
+      âncora existe para impedir. A reconciliação é recalculada a partir das linhas publicadas, não herdada
+      de Bronze, senão Gold provaria a conta de outra camada
+  - id: B-2
+    given: um Silver cujo total não reproduz a âncora, ou uma competência sem âncora no contrato
+    when: Gold agrega
+    then: devolve DIVERGE quando o total não bate e NAO_MEDIDO quando não há âncora, dois estados distintos
+      que nunca colapsam num só — sem âncora não é divergência, é ausência de referencial, e tratá-los
+      igual faria a fábrica parecer que mediu quando não tinha contra o que medir. Nenhum dos dois publica,
+      e o motivo sai nomeado; a contagem de códigos de Gold é conferida contra os 65 do contrato, porque
+      um agregado com menos códigos que a fonte pode somar o mesmo total e ainda assim ter perdido uma
+      categoria inteira
+  evals:
+  - id: eval_1
+    description: Arredondamento único no total, HALF_EVEN lido do contrato
+    bash: pytest -q tests/test_gold.py -k "arredonda_uma_vez or half_even_do_contrato or nao_arredonda_por_campo
+      or precisao_declarada"
+    verifies:
+    - B-1
+  - id: eval_2
+    description: Gold reconcilia com a âncora ao centavo e confere os 65 códigos
+    bash: pytest -q tests/test_gold.py -k "reconcilia_recalculando or contagem_de_codigos"
+    verifies:
+    - B-1
+    - B-2
+  - id: eval_3
+    description: DIVERGE e NAO_MEDIDO são estados distintos e nenhum publica
+    bash: pytest -q tests/test_gold.py -k "diverge_nao_publica or sem_ancora_nao_medido"
+    verifies:
+    - B-2
+  anti_patterns:
+  - action: arredondar cada código antes de somar
+    reason: dá total diferente de somar e arredondar uma vez, com erro sistemático que cresce com o volume
+    instead: somar em precisão declarada e arredondar uma única vez no total
+  - action: herdar a reconciliação de Bronze
+    reason: Gold provaria a conta de outra camada, não a sua
+    instead: recalcular a partir das linhas efetivamente publicadas
+  - action: tratar falta de âncora como divergência
+    reason: ausência de referencial vira medição com resultado ruim, e a fábrica parece ter medido
+    instead: devolver NAO_MEDIDO, distinto de DIVERGE
+  do_not_touch:
+  - _raw
+  - cvg/docs/adrs
+  - contracts
+  rollback: Remover a camada Gold e seus testes.
+  observability: agregados recusados por não reconciliar
+source_seam_sha256: 426a2569ca85a11a01b5550cabcfc7c42786a4edc6b3b47e00c3ba80f235e326
+---
+# Gold só publica quando reconcilia com a âncora
+
+## Observable proof
+
+A soma das linhas agregadas reproduz a âncora ao centavo; um centavo de diferença devolve DIVERGE.
+
+## Runnable leaves
+
+- `T-20260922-gold-reconcilia-ancora` — Agregar por código e reconciliar com a âncora: A soma das linhas de Gold é igual à âncora ao centavo, com arredondamento único no total.
+
+The leg names a capability state, not an activity. Each leaf owns one coherent,
+independently provable done-condition.
