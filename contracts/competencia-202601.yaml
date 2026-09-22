@@ -1,0 +1,75 @@
+# Contrato da competência 2026-01 — INSS, benefícios emitidos.
+#
+# TODO valor aqui foi MEDIDO no arquivo inteiro, nunca amostrado. Os scripts
+# que mediram estão em scripts/, cada um com seu token:
+#   medir_ancora.py          ANCORA=MEDIDA
+#   medir_codigos.py         CODIGOS=MEDIDO      (65 códigos, não os 51 da amostra)
+#   medir_colapso.py         COLAPSO=MEDIDO      (11 descrições cobrem 24 códigos)
+#   medir_gramatica.py       GRAMATICA=MEDIDA    (41.572.553 aceitos, 0 recusados)
+#   medir_sinal.py           SINAL=MEDIDO        (0 negativos → soma monotônica)
+#   medir_layout.py          LAYOUT=MEDIDO       (14 campos em toda linha)
+#   medir_formato_especie.py FORMATO=MEDIDO      (índice 12 dígitos, 13 textual)
+#
+# ⚠ Editar qualquer número aqui para um gate passar é a Regra 3.
+
+competencia: "2026-01"
+
+ancora:
+  count_linhas: 41572553
+  sum_vl_liquido: "78521752562.12"
+  min_vl_liquido: "0.00"
+  max_vl_liquido: "183725.76"
+  linhas_invalidas: 0
+  aprovado_por: "Bruno Nunes"
+  aprovado_em: "2026-09-21"
+
+procedencia:
+  fonte: "_raw/D.SDA.PDA.003.EMI.202601.csv"
+  hash_zip_sha256: "428626857daf30a3674d10b11bdd3f1ebd4a31d773de7c7ce5e3457f096f82e8"
+  hash_csv_sha256: "505725d95ad6e9d825579b10012341f1cf87566ad6004eefbdd73154e9e7056f"
+  publicado_em: "2026-01"
+
+# ADR 0009 — precisão DERIVADA, não constante:
+#   dígitos inteiros da âncora (11) + escala máxima dos intermediários (3) = 14
+# Vale sob soma monotônica, e a não-negatividade foi MEDIDA: 0 negativos
+# em 41.572.553 valores (SINAL=MEDIDO).
+politica_decimal:
+  modo: "HALF_EVEN"
+  granularidade: "total"
+  precisao: 14
+  escala: 2
+  escala_maxima_intermediarios: 3
+  nao_negativo: true
+
+# ADR 0002 — as duas colunas Espécie têm cabeçalho IDÊNTICO; só a posição
+# distingue. Medido: índice 12 é sempre 2 dígitos, 13 é sempre textual,
+# e nenhuma linha em que o formato não distinga os dois.
+layout:
+  total_colunas: 14
+  separador: ";"
+  encoding: "latin-1"
+  posicoes:
+    especie: 12
+    descricao_especie: 13
+    vl_liquido: 9
+
+# ADR 0008 — o defeito é IDENTIDADE COLAPSADA, não largura de campo.
+# Todas as 41.572.553 descrições têm 20 caracteres brutos, então largura
+# marcaria toda linha e não classificaria nada.
+cardinalidade:
+  codigos_distintos: 65
+  descricoes_distintas: 52
+  colapsos: 11
+  codigos_colapsados: 24
+
+# Regra 4 — a fábrica classifica, nunca corrige. Defeito conhecido entra
+# pré-classificado e APROVADO; defeito FORA desta lista bloqueia, e o juízo
+# não inventa classificação (decisão de negócio que ele não tem autoridade
+# para tomar).
+defeitos_conhecidos:
+  - tipo: "IDENTIDADE_COLAPSADA"
+    descricao: "11 descricoes cobrem 24 codigos — medido na competencia inteira"
+    quantidade: 11
+    classificacao: "CONFIRMED_SOURCE_DEFECT"
+    aprovador: "Bruno Nunes"
+    aprovado_em: "2026-09-21"
