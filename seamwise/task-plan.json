@@ -1,0 +1,612 @@
+{
+  "api_version": "taskspec.dev/v1",
+  "approved": true,
+  "kind": "TaskPlan",
+  "metadata": {
+    "delivery_plan_review_sha256": "5ec9b75aeedc82372e8fdb62ed24056fd783eed4195edbc4d2ea2a51645aca9f",
+    "delivery_plan_sha256": "e1684b55ec0750c1e54969fb858762e96b7c4e1faf720f7b482439ce6a5c997a",
+    "name": "DI-PDA-BENEFICIOS",
+    "producer": "seamwise",
+    "producer_version": "0.2.0",
+    "seamwise_plan_status": "DELIVERY_PLAN=READY",
+    "source": "seamwise/task-plan.json"
+  },
+  "units": [
+    {
+      "agent": "any",
+      "anti_patterns": [
+        "Do not herdar o arredondamento padrão da linguagem: defaults divergem e o erro fica estruturalmente verde; instead declarar precisão, granularidade e regra.",
+        "Do not agrupar por descricao_especie: quatro espécies virariam uma linha e o total bateria; instead agrupar pelo código da posição 12.",
+        "Do not arredondar a cada soma parcial: o erro de arredondamento acumula linha a linha; instead somar exato e arredondar uma vez no final."
+      ],
+      "behaviors": [
+        {
+          "given": "um valor de ponto flutuante em campo monetário, e um lote com registros ilegíveis misturados aos válidos",
+          "id": "B-1",
+          "then": "o float é recusado com erro explícito; os cinco controles são DOIS de contagem e TRÊS monetários, e só sum_vl_liquido é soma — count_linhas conta todo registro lido, linhas_invalidas conta só os ilegíveis, e sum, min e max ignoram o ilegível em vez de tratá-lo como 0.00; o teste prova que o ilegível foi EXCLUÍDO, nunca comparando totais, porque preencher com 0.00 não muda a soma, não muda max e não muda min — min já é 0.00 na fonte — e passaria despercebido pelos três. No limite em que NENHUM registro é legível, min e max não têm valor e o agregado os marca AUSENTES, com sum=0.00 e a contagem de inválidos igual à de lidos — zero inventaria extremos que não existem, e levantar exceção decidiria por conta própria que defeito de fonte interrompe o processamento, coisa que nem a tech-spec nem o juízo pediram; a ausência é representada e atravessa a fronteira e a evidência, que já marcam campo não percorrido como ausente",
+          "when": "o agregado é calculado"
+        },
+        {
+          "given": "um contexto decimal de precisão baixa, valores em empate exato, e a alternativa meio-para-cima",
+          "id": "B-2",
+          "then": "o resultado é o de HALF_EVEN a duas casas — comparado contra o valor que HALF_UP produziria, e RECUSANDO-o; declarar um modo não basta, o teste falha se a implementação usar meio-para-cima. O contexto do agregador é PRÓPRIO e COMPLETO como o da leitura — precisão, arredondamento, Emax, Emin e traps declarados, com teste sob global adverso nos três eixos; declarar só precisão e modo deixaria uma biblioteca externa transformar execução válida em ERRO, e a exigência de contexto completo escrita só na leitura protege o mapa de referência, não quem soma. A perda por precisão baixa também é acusada, e arredondar por campo difere de arredondar no total. E a SAÍDA do agregador preserva os códigos distintos — tantos quantos a competência tiver, conferidos contra a cardinalidade ancorada no contrato e NÃO contra os 51 do ADR 0004, que foram medidos em ~3 milhões de linhas; na competência inteira são 65, e fixar 51 recusaria o arquivo correto. Cada VALOR por código é conferido contra os totais por código da leitura, não só a chave presente — um agregador que somasse por descrição, atribuísse o total ao primeiro código e emitisse zero nos demais conservaria todas as chaves e todos os controles globais, e a demonstração de que descrição e código têm cardinalidades diferentes continuaria verdadeira; se esse agregador fornecesse a referência da fronteira, o defeito contaminaria a conferência também",
+          "when": "o total é calculado"
+        }
+      ],
+      "context": "Intent DI-PDA-BENEFICIOS; seam SEAM-AGREGACAO; swimlane LANE-AGREGACAO; capability leg LEG-AGREGADO-EXATO. Done condition: Float recusado na entrada; os cinco controles saem nomeados; agrupar por descrição diverge de agrupar por código.",
+      "creates_paths": [
+        "src/pda/agregacao.py",
+        "tests/test_agregacao.py"
+      ],
+      "depends_on": [
+        "T-20260921-leitura-posicional"
+      ],
+      "do_not_touch": [
+        "_raw",
+        "cvg/docs/adrs"
+      ],
+      "done_condition": "Float recusado na entrada; os cinco controles saem nomeados; agrupar por descrição diverge de agrupar por código.",
+      "effort": "M",
+      "evals": [
+        {
+          "command": "pytest -q tests/test_agregacao.py -k \"recusa_float or ilegivel_excluido_nao_zerado or nenhum_legivel_extremos_ausentes\"",
+          "description": "Float recusado; ilegível excluído e não zerado; nenhum legível marca extremos ausentes",
+          "expected_duration_sec": 10,
+          "id": "eval_1",
+          "terminal": false,
+          "verifies": [
+            "B-1"
+          ]
+        },
+        {
+          "command": "pytest -q tests/test_agregacao.py -k \"recusa_half_up or precisao_declarada or granularidade\"",
+          "description": "HALF_EVEN recusa o valor que HALF_UP daria; precisão e granularidade",
+          "expected_duration_sec": 10,
+          "id": "eval_2",
+          "terminal": false,
+          "verifies": [
+            "B-2"
+          ]
+        },
+        {
+          "command": "pytest -q tests/test_agregacao.py -k \"chave_e_codigo or cardinalidade_ancorada\"",
+          "description": "A saída preserva a cardinalidade ancorada; chave por descrição faz falhar",
+          "expected_duration_sec": 10,
+          "id": "eval_3",
+          "terminal": true,
+          "verifies": [
+            "B-1",
+            "B-2"
+          ]
+        }
+      ],
+      "execution_backend": "any",
+      "goal": "Tornar as três decisões de decimal explícitas e verificáveis.",
+      "id": "T-20260921-agregacao-exata",
+      "observability": "total agregado e espécies distintas",
+      "profile": "standard",
+      "required_tools": [
+        "git",
+        "bash",
+        "python3",
+        "pytest"
+      ],
+      "rollback": "Remover o agregador e seus testes.",
+      "source_note": "seamwise/legs/LEG-AGREGADO-EXATO.md#T-20260921-agregacao-exata",
+      "title": "Somar com precisão declarada e agrupar pelo código",
+      "touches_paths": [],
+      "why": "Tornar as três decisões de decimal explícitas e verificáveis."
+    },
+    {
+      "agent": "any",
+      "anti_patterns": [
+        "Do not gerar a âncora quando ela falta: um número que ninguém viu medir é um palpite; instead retornar NAO_MEDIDO.",
+        "Do not editar a âncora para um veredito passar: falsifica a verdade contra a qual tudo é medido; instead investigar; âncora revista exige nova aprovação.",
+        "Do not declarar colunas por nome no contrato: Espécie aparece duas vezes e o nome não decide qual; instead declarar o índice posicional."
+      ],
+      "behaviors": [
+        {
+          "given": "um contrato com os cinco controles nomeados, a procedência, o layout posicional e os DOIS hashes — o do ZIP publicado e o do CSV extraído sobre o qual a âncora foi medida",
+          "id": "B-1",
+          "then": "os controles monetários da ÂNCORA são recusados se vierem como float no YAML — um sum_vl_liquido sem aspas é float, e Decimal(str(v)) apagaria a origem enquanto Decimal(v) traria a aproximação binária; a recusa é do carregamento, antes de qualquer conversão, porque as recusas do agregador e do envelope não protegem o próprio referencial. Âncora, procedência, layout, os dois hashes, a CARDINALIDADE de códigos medida na competência inteira — 65 nesta, não os 51 amostrados pelo ADR 0004 — a CONTAGEM MEDIDA DE COLAPSOS que o ADR 0008 exige junto dela, 11 descrições cobrindo 24 códigos, os DEFEITOS CONHECIDOS pré-classificados com aprovador e data — os 11 colapsos como CONFIRMED_SOURCE_DEFECT — e a POLÍTICA DECIMAL com escala e não-negatividade saem juntas. Os controles da âncora são recusados se vierem não finitos, e as duas CONTAGENS se não forem inteiros não negativos, porque 'Infinity' alcançaria a derivação de precisão e False passaria por igualdade contra um inteiro legítimo — precisão, granularidade e modo de arredondamento são dados carregados do contrato, como o ADR 0003 exige, não escolha privada de quem implementa. Contrato SEM política decimal é NAO_MEDIDO, senão o agregador local fixa a sua, passa nos exemplos, e um produtor externo escolhe outra sem nada acusar. E contrato COM política que contradiz o ADR — HALF_UP, ou granularidade por campo — é RECUSADO no carregamento, não validado, porque um contrato contraditório deixaria o agregador entre obedecer ao contrato e obedecer à decisão vinculante; a validação confere a política contra o ADR, e nunca o contrário. A precisão é conferida por SUFICIÊNCIA e é DERIVADA, como manda o ADR 0009 — dígitos inteiros da âncora mais a escala máxima declarada para os intermediários, 11 + 3 = 14 nesta competência, sob a premissa DECLARADA de soma monotônica; o contrato declara a escala e a NÃO-NEGATIVIDADE do domínio, medidas na fonte, em vez de assumir um padrão, porque um acumulador que exceda o total quebraria a fórmula e 14 perderia o centavo. A escala declarada é verificada por QUEM RECEBE O VALOR, não pelo carregador, que roda antes da leitura e não vê registro nenhum — a leitura confere cada valor da fonte, e a fronteira confere cada monetário do envelope externo, ambos contra a escala do contrato; um valor que a exceda é defeito classificado, nunca somado em silêncio. Escala finita não é escala menor ou igual a 3, e sem essa verificação na etapa consumidora a precisão validada perderia informação durante a soma e ainda devolveria o mesmo total global arredondado, com os mapas por código errados. Precisão 6 com HALF_EVEN e arredondamento final satisfaz presença, modo e granularidade e devolve 7.85218E+10 no lugar de 78.521.752.562,12; prec=13 representa o total e ainda assim perde o centavo ao SOMAR 78521752562,12 + 0,005 + 0,005, porque a perda acontece durante a soma e não na quantização. Contrato com precisão insuficiente é RECUSADO no carregamento, não descoberto durante a agregação. Falta o hash do CSV e também é NAO_MEDIDO, porque hoje só o ZIP tem checksum e a âncora foi medida no CSV — sem o par, trocar o CSV extraído não seria detectado; sem aprovador ou sem data, idem",
+          "when": "o contrato é carregado"
+        },
+        {
+          "given": "uma competência sem âncora no contrato",
+          "id": "B-2",
+          "then": "retorna NAO_MEDIDO como valor, sem gravar nem encerrar o processo",
+          "when": "o contrato é carregado"
+        }
+      ],
+      "context": "Intent DI-PDA-BENEFICIOS; seam SEAM-CONTRATO; swimlane LANE-CONTRATO; capability leg LEG-CONTRATO-RECUSA-SEM-ANCORA. Done condition: Os cinco controles e o layout saem com procedência; sem âncora, ou sem aprovador, retorna NAO_MEDIDO como valor.",
+      "creates_paths": [
+        "src/pda/contrato.py",
+        "tests/test_contrato.py",
+        "contracts/competencia-202601.yaml"
+      ],
+      "depends_on": [],
+      "do_not_touch": [
+        "_raw",
+        "cvg/docs/adrs"
+      ],
+      "done_condition": "Os cinco controles e o layout saem com procedência; sem âncora, ou sem aprovador, retorna NAO_MEDIDO como valor.",
+      "effort": "M",
+      "evals": [
+        {
+          "command": "pytest -q tests/test_contrato.py -k \"ancorada or hash_zip_e_csv or sem_politica_decimal or politica_contradiz_adr\"",
+          "description": "Hashes distintos; política ausente vira NAO_MEDIDO e política HALF_UP é recusada",
+          "expected_duration_sec": 10,
+          "id": "eval_1",
+          "terminal": false,
+          "verifies": [
+            "B-1"
+          ]
+        },
+        {
+          "command": "pytest -q tests/test_contrato.py -k nao_medido",
+          "description": "Sem âncora retorna NAO_MEDIDO sem escrever em disco",
+          "expected_duration_sec": 10,
+          "id": "eval_2",
+          "terminal": false,
+          "verifies": [
+            "B-2"
+          ]
+        },
+        {
+          "command": "pytest -q tests/test_contrato.py -k layout",
+          "description": "O layout declara as 14 posições, com Espécie em 12 e 13",
+          "expected_duration_sec": 10,
+          "id": "eval_3",
+          "terminal": true,
+          "verifies": [
+            "B-1",
+            "B-2"
+          ]
+        }
+      ],
+      "execution_backend": "any",
+      "goal": "Fazer a ausência de prova bloquear em vez de virar verde.",
+      "id": "T-20260921-contrato-ancora",
+      "observability": "competências ancoradas no contrato",
+      "profile": "standard",
+      "required_tools": [
+        "git",
+        "bash",
+        "python3",
+        "pytest"
+      ],
+      "rollback": "Remover o carregador de contrato e seus testes.",
+      "source_note": "seamwise/legs/LEG-CONTRATO-RECUSA-SEM-ANCORA.md#T-20260921-contrato-ancora",
+      "title": "Carregar contrato, âncora e layout posicional",
+      "touches_paths": [],
+      "why": "Fazer a ausência de prova bloquear em vez de virar verde."
+    },
+    {
+      "agent": "any",
+      "anti_patterns": [
+        "Do not aceitar envelope sem o sha256 do arquivo lido: a âncora vale para um arquivo; sem o vínculo, outra publicação da mesma competência passaria; instead exigir o sha256 e compará-lo com o ancorado.",
+        "Do not importar o motor produtor dentro do validador: o juiz voltaria a depender de quem ele julga; instead validar o envelope como dado, seja qual for a origem.",
+        "Do not somar todo defeito em linhas_invalidas: identidade colapsada é defeito numa linha VÁLIDA; a competência 2026-01 tem linhas_invalidas=0 com os 11 colapsos do ADR 0008, e a regra recusaria o dado correto; instead conferir linhas_invalidas só contra defeitos do tipo VALOR_ILEGIVEL."
+      ],
+      "behaviors": [
+        {
+          "given": "um envelope sem o sha256 do arquivo lido, outro cujo sha256 difere do ancorado, e um terceiro que COPIOU o sha256 ancorado mas foi produzido lendo outro arquivo",
+          "id": "B-1",
+          "then": "os três são recusados. O hash computado chega ao validador como capacidade própria, sha256 computado na leitura, que a leitura declara entre seus produtos e a fronteira exige entre seus requisitos — não como mais um campo do envelope, senão os dois campos viriam da mesma mão e repetir o ancorado bastaria. O terceiro é recusado porque o hash que a leitura computou discorda do que o envelope declara, e é esse caso, não a mera igualdade, que prova o vínculo. Para produtor externo, que o ADR 0006 permite, vale o mesmo — sem a capacidade computada por quem leu os bytes, o envelope é recusado por falta de insumo, nunca aceito por ausência de contraditório",
+          "when": "o envelope é validado"
+        },
+        {
+          "given": "um envelope onde linhas_invalidas diverge dos defeitos do tipo VALOR_ILEGIVEL, outro com linhas_invalidas=0 e defeitos de truncamento, outro produzido por motor que não é o juiz, outro cujos três controles monetários vêm como número JSON, e outro que OMITE truncamentos que a leitura observou",
+          "id": "B-2",
+          "then": "o primeiro é recusado; o segundo é ACEITO — identidade colapsada é defeito numa linha VÁLIDA, e a competência 2026-01 tem linhas_invalidas=0 com os 11 defeitos de colapso que o ADR 0008 contratou, um por descrição, não um por ocorrência; os dois controles de CONTAGEM são inteiros não negativos, recusando float e booleano, porque em Python 41572553.0 == 41572553 e False == 0, e um envelope com contagem fracionária ou booleana satisfaria a comparação dos cinco controles; o terceiro é aceito sem que o juiz importe nada do motor produtor. O quarto é RECUSADO na fronteira, antes de qualquer conversão — TODO campo monetário do envelope é contratado como string ou Decimal FINITO, NÃO NEGATIVO e dentro da escala do contrato — 'NaN', 'sNaN', 'Infinity' e Decimal não finito satisfazem o tipo e são RECUSADOS pelo domínio, e '-0.01' também, porque a não-negatividade do ADR 0009 vale para o produtor externo e carregá-la no contrato não demonstra que a fronteira a aplica; recusar alguns negativos por divergência numérica depois não cobre a classificação do domínio. O valor original fica preservado na evidência, porque a gramática brasileira roda sobre o CSV e não alcança produtor externo; a recusa é do envelope, nunca uma InvalidOperation levantada ao comparar. Há UMA representação de ausência declarada no schema, o literal JSON null, para o caso em que nenhum registro é legível e min e max não têm valor; campo omitido ou marcador textual é recusado, senão o caso que a agregação prevê morreria na validação antes de o juízo comparar, os três controles globais e também cada total por código, porque R-4 e o ADR 0003 valem para todo dinheiro e não só para os três; um envelope com controles em string e totais por espécie como número JSON satisfaria uma recusa escrita só para os três. Converter com Decimal(str(v)) apagaria a prova de que veio float, então a recusa do agregador local não cobre produtor externo. O quinto é RECUSADO por omissão — e a conferência é POR IDENTIDADE de cada defeito, a que a leitura produz com valor original e posição, não por contagem e tipo — dois defeitos A e B do mesmo tipo, com A duplicado e B omitido, preservam contagem e tipo, cada entrada declarada recebe sua classificação única, e B nunca é classificado, violando R-6 com juízo e rederivação concordando entre si. Conferir por contagem deixaria a substituição passar, e só a omissão seria vista. E o envelope declara o agregado POR CÓDIGO de espécie, com as chaves conferidas contra a cardinalidade ANCORADA no contrato — medida na competência inteira, nunca os 51 do ADR 0004, que saíram de ~3 milhões de linhas; exigir 51 recusaria esta competência, que tem 65 códigos, entre eles o '60' com 1.395 ocorrências em 41,5 milhões. E cada total por código do envelope é CONFERIDO contra os totais por código DA LEITURA, capacidade própria que a leitura produz e a fronteira exige — dois valores de origens distintas, o declarado pelo produtor e o de referência; com um mapa só, deslocar valores entre códigos seria aprovado por comparação consigo mesmo. Os dois mapas trafegam como soma EXATA, não quantizada, e a comparação é exata — um código cuja soma é 2,345 chega 2,345 dos dois lados, e quantizar um só faria a fronteira recusar dois lados corretos. Um código que existe na fonte com TODOS os valores inválidos aparece nos dois mapas com a chave PRESENTE e soma ausente, nunca com chave omitida nem com zero — zero inventaria dinheiro que ninguém recebeu, e omitir faria leitura e produtor emitirem mapas diferentes cumprindo cada um o seu texto, recusando uma competência legitimamente ancorada antes de o juízo comparar os cinco controles. A soma global vem dos valores originais, NUNCA dos totais por código já arredondados, porque arredondar uma vez no total é camada do ADR 0007 herdada do 0003 — dois códigos de 2,345 dão 4,69 no total e 4,68 somando grupos arredondados. Um produtor que agrupasse por descrição e atribuísse o total ao primeiro código, zerando os demais, manteria todas as chaves, os cinco controles, hashes e defeitos idênticos, e só a comparação por valor o pega; R-3 prova-se por valor, não por forma, e a referência não vem do agregador julgado, pelo mesmo motivo do ADR 0005",
+          "when": "o envelope é validado"
+        }
+      ],
+      "context": "Intent DI-PDA-BENEFICIOS; seam SEAM-FRONTEIRA; swimlane LANE-FRONTEIRA; capability leg LEG-ENVELOPE-VINCULADO. Done condition: O envelope declara os cinco controles, o sha256 do arquivo lido e os defeitos; validação recusa sha256 ausente, divergente, ou linhas_invalidas incoerente.",
+      "creates_paths": [
+        "src/pda/envelope.py",
+        "tests/test_envelope.py",
+        "contracts/envelope-produtor.schema.json"
+      ],
+      "depends_on": [
+        "T-20260921-agregacao-exata"
+      ],
+      "do_not_touch": [
+        "_raw",
+        "cvg/docs/adrs"
+      ],
+      "done_condition": "O envelope declara os cinco controles, o sha256 do arquivo lido e os defeitos; validação recusa sha256 ausente, divergente, ou linhas_invalidas incoerente.",
+      "effort": "M",
+      "evals": [
+        {
+          "command": "pytest -q tests/test_envelope.py -k \"sha_ausente or sha_divergente or sha_copiado_outro_arquivo\"",
+          "description": "Sha ausente, divergente, ou copiado de outro arquivo lido é recusado",
+          "expected_duration_sec": 10,
+          "id": "eval_1",
+          "terminal": false,
+          "verifies": [
+            "B-1"
+          ]
+        },
+        {
+          "command": "pytest -q tests/test_envelope.py -k \"invalidas_por_tipo or float_em_todo_monetario or defeito_por_identidade or total_por_codigo\"",
+          "description": "Float em todo campo monetário; defeito por identidade; total por código conferido",
+          "expected_duration_sec": 10,
+          "id": "eval_2",
+          "terminal": false,
+          "verifies": [
+            "B-2"
+          ]
+        },
+        {
+          "command": "pytest -q tests/test_envelope.py -k produtor_agnostico",
+          "description": "O schema aceita envelope de qualquer produtor, sem importar o motor",
+          "expected_duration_sec": 10,
+          "id": "eval_3",
+          "terminal": true,
+          "verifies": [
+            "B-1",
+            "B-2"
+          ]
+        }
+      ],
+      "execution_backend": "any",
+      "goal": "Fazer a fronteira ser um contrato escrito, não o que o juiz por acaso aceita.",
+      "id": "T-20260921-envelope-fronteira",
+      "observability": "envelopes recusados por motivo",
+      "profile": "standard",
+      "required_tools": [
+        "git",
+        "bash",
+        "python3",
+        "pytest"
+      ],
+      "rollback": "Remover o validador de envelope e seus testes.",
+      "source_note": "seamwise/legs/LEG-ENVELOPE-VINCULADO.md#T-20260921-envelope-fronteira",
+      "title": "Declarar e validar o envelope entre produtor e juiz",
+      "touches_paths": [],
+      "why": "Fazer a fronteira ser um contrato escrito, não o que o juiz por acaso aceita."
+    },
+    {
+      "agent": "any",
+      "anti_patterns": [
+        "Do not gravar com mode overwrite: e o defeito do carregamento atual — destrói a prova; instead gravar um pacote por execução.",
+        "Do not editar um pacote antigo para corrigir o histórico: falsifica evidência; instead gravar evidência nova e manter a antiga.",
+        "Do not ler o veredito do rótulo gravado no pacote: o rótulo é conclusão, não prova — trocá-lo basta para mentir; instead rederivar dos controles, da âncora e dos hashes."
+      ],
+      "behaviors": [
+        {
+          "given": "uma execução com âncora, outra que terminou antes da leitura, e um pacote adulterado onde só o rótulo do veredito foi trocado",
+          "id": "B-1",
+          "then": "o veredito é REDERIVADO dos cinco controles, da âncora, das classificações de cada diferença, dos hashes, da COMPETÊNCIA SOLICITADA gravada ao lado das recebidas do contrato e do envelope — sem ela a execução de 2026-02 recusada por trazer artefatos coerentes de 2026-01 é indistinguível de uma execução legítima de janeiro, e rederivaria ACEITO, rejeitando o pacote legítimo de RECUSADO — e dos PARES de origens distintas que motivaram cada comparação — as duas listas de defeitos, a observada na leitura e a declarada no envelope, e os dois mapas de totais por código, o da leitura e o do envelope, todos gravados separadamente; sem eles, um RECUSADO legítimo rederivaria ACEITO, seja por omissão de defeito, seja por um envelope que transfere 1,00 do código A para o B mantendo chaves, controles globais, hashes e defeitos idênticos — casos em que só a divergência entre os dois lados explica a recusa. E o pacote preserva o TIPO original de cada campo monetário recebido, sem normalizar — serializar tudo como string faria 0.0 e '0.00' virarem insumos numericamente iguais, e a recusa legítima por número JSON deixaria de ser rederivável embora controles e hashes coincidam. Como JSON não tem Decimal, cada monetário é gravado como um par declarado — o tipo recebido e o texto exato dos bytes originais — de modo que Decimal('0.00'), a string '0.00' e o número 0.0 fiquem distinguíveis, e um Decimal('sNaN') recebido e recusado seja gravado sem que o próprio gravador falhe ao registrar a recusa; o pacote adulterado é recusado porque o rótulo discorda do que esses insumos produzem. São TRÊS os hashes gravados, os mesmos que a fronteira compara — o ANCORADO do contrato, o OBSERVADO computado na leitura e o DECLARADO no envelope; com dois só, um pacote legítimo de RECUSADO por ancorado=observado e declarado divergente rederivaria ACEITO e seria rejeitado. A ausência não é recusa incondicional, ela decide o veredito — e quem decide é a CAUSA registrada, não a falta de um hash. Contrato que devolveu NAO_MEDIDO por qualquer motivo — sem âncora, sem aprovador, sem data ou sem política decimal — dá ACEITO_SEM_ANCORA, mesmo que o hash ancorado exista e nenhum observado tenha sido produzido; e o pacote grava TODOS os campos que determinam a validade do contrato como foram lidos — aprovador, data, política decimal e a escala declarada que deriva a precisão — cada um distinguindo CHAVE AUSENTE de valor null, porque montar o pacote com get() tornaria os dois indistinguíveis e a fronteira trata um como estrutura recusada e o outro como ausência aceita; numa competência ancorada sem registros legíveis essa perda mudaria o próprio veredito rederivado. Grava os campos, não só a causa, porque dois contratos em estados de aprovação diferentes produziriam os mesmos dados auditáveis e o leitor apenas confiaria no rótulo da causa — trocar a confiança no rótulo do veredito pela confiança noutro rótulo não é rederivar, e uma causa incorreta passaria sem ninguém ver; ler a falta do hash como se fosse a causa recusaria justamente o pacote que a orquestração deve gravar. Falta o observado COM evento de falha registrado e é execução interrompida, desfecho ERRO. Contrato RECUSADO no carregamento, por política que contradiz o ADR, é um terceiro caminho antecipado — termina sem hash observado, sem agregado e sem envelope, não é NAO_MEDIDO nem exceção, e o pacote grava a política recusada e a cláusula do ADR violada, que é o que a rederivação precisa para reconstruir esse RECUSADO sem depender do rótulo. A precedência é declarada, não deduzida — NAO_MEDIDO decide antes, RECUSADO por contrato exige a política gravada, e ERRO exige o evento. Os três casos gravam pacote válido; recusar qualquer um impediria de gravar justamente a execução que precisa de registro. Só é recusado o pacote cujo rótulo não bate com o que os insumos rederivam; campos não percorridos são marcados ausentes, nunca zerados",
+          "when": "o pacote é lido de volta"
+        },
+        {
+          "given": "duas execuções da mesma competência",
+          "id": "B-2",
+          "then": "as duas coexistem — a segunda não sobrescreve a primeira",
+          "when": "a segunda é gravada"
+        }
+      ],
+      "context": "Intent DI-PDA-BENEFICIOS; seam SEAM-EVIDENCIA; swimlane LANE-EVIDENCIA; capability leg LEG-EVIDENCIA-RECONSTROI. Done condition: O pacote traz veredito, causa, âncora, agregado, duração e classificações; duas execuções coexistem.",
+      "creates_paths": [
+        "src/pda/evidencia.py",
+        "tests/test_evidencia.py"
+      ],
+      "depends_on": [
+        "T-20260921-juizo-classifica"
+      ],
+      "do_not_touch": [
+        "_raw",
+        "evidence"
+      ],
+      "done_condition": "O pacote traz veredito, causa, âncora, agregado, duração e classificações; duas execuções coexistem.",
+      "effort": "S",
+      "evals": [
+        {
+          "command": "pytest -q tests/test_evidencia.py -k \"rederiva or rotulo_adulterado or tres_hashes or precedencia_sem_ancora\"",
+          "description": "Rederiva com os três hashes; precedência quando ancorado e observado faltam juntos",
+          "expected_duration_sec": 10,
+          "id": "eval_1",
+          "terminal": false,
+          "verifies": [
+            "B-1"
+          ]
+        },
+        {
+          "command": "pytest -q tests/test_evidencia.py -k nao_sobrescreve",
+          "description": "Duas execuções coexistem, sem overwrite",
+          "expected_duration_sec": 10,
+          "id": "eval_2",
+          "terminal": false,
+          "verifies": [
+            "B-2"
+          ]
+        },
+        {
+          "command": "pytest -q tests/test_evidencia.py -k vereditos",
+          "description": "Os quatro vereditos terminais são distinguíveis",
+          "expected_duration_sec": 10,
+          "id": "eval_3",
+          "terminal": true,
+          "verifies": [
+            "B-1",
+            "B-2"
+          ]
+        }
+      ],
+      "execution_backend": "any",
+      "goal": "Tornar o veredito auditável sem reexecutar o pipeline.",
+      "id": "T-20260921-evidencia-packet",
+      "observability": "pacotes gravados por competência",
+      "profile": "standard",
+      "required_tools": [
+        "git",
+        "bash",
+        "python3",
+        "pytest"
+      ],
+      "rollback": "Remover o gravador de evidência e seus testes.",
+      "source_note": "seamwise/legs/LEG-EVIDENCIA-RECONSTROI.md#T-20260921-evidencia-packet",
+      "title": "Gravar o pacote por execução, sem sobrescrever",
+      "touches_paths": [],
+      "why": "Tornar o veredito auditável sem reexecutar o pipeline."
+    },
+    {
+      "agent": "any",
+      "anti_patterns": [
+        "Do not introduzir parâmetro de tolerância: um centavo inexplicado viraria um centavo aceito; instead classificar a diferença ou consertar o pipeline.",
+        "Do not editar a âncora para o veredito passar: falsifica a prova em vez de investigar; instead investigar; âncora revista exige nova aprovação.",
+        "Do not deixar a classificação autorizar publicação: CONFIRMED explica a diferença, não a aprova; instead divergência em controle recusa, classificada ou não."
+      ],
+      "behaviors": [
+        {
+          "given": "um agregado com uma linha a menos, e outro que redistribui valores mantendo soma e contagem",
+          "id": "B-1",
+          "then": "os cinco controles são comparados individualmente e qualquer divergência recusa — soma e contagem iguais não bastam",
+          "when": "o juízo compara contra a âncora"
+        },
+        {
+          "given": "uma diferença de cada uma das seis classificações, uma sem classificação nenhuma, uma marcada com DUAS ao mesmo tempo, e os 11 colapsos que a competência realmente tem",
+          "id": "B-2",
+          "then": "a classificação vem do CONTRATO, não do juízo — os defeitos conhecidos da fonte entram pré-classificados e aprovados junto da âncora, com os 11 colapsos como CONFIRMED_SOURCE_DEFECT, e defeito FORA dessa lista bloqueia em vez de o juízo inventar uma; inventar seria tomar decisão de negócio sem autoridade, e bloquear com os cinco controles corretos seria travar a fábrica no dado certo. Cada diferença carrega exatamente uma classificação — zero bloqueia e duas também, porque duas permitem escolher a mais branda na hora de ler; divergência em qualquer controle RECUSA mesmo classificada; fora dos controles, MODERN_DEFECT, CONTRACT_AMBIGUITY e UNRESOLVED bloqueiam e as três CONFIRMED/APPROVED apenas registram",
+          "when": "o veredito é calculado"
+        }
+      ],
+      "context": "Intent DI-PDA-BENEFICIOS; seam SEAM-JUIZO; swimlane LANE-JUIZO; capability leg LEG-JUIZO-ACUSA. Done condition: Os cinco controles comparados individualmente; divergência recusa mesmo classificada; defeito sem classificação bloqueia.",
+      "creates_paths": [
+        "src/pda/juizo.py",
+        "tests/test_juizo.py"
+      ],
+      "depends_on": [
+        "T-20260921-envelope-fronteira"
+      ],
+      "do_not_touch": [
+        "_raw",
+        "cvg/docs/adrs",
+        "contracts"
+      ],
+      "done_condition": "Os cinco controles comparados individualmente; divergência recusa mesmo classificada; defeito sem classificação bloqueia.",
+      "effort": "M",
+      "evals": [
+        {
+          "command": "pytest -q tests/test_juizo.py -k \"linha_a_menos or cinco_controles\"",
+          "description": "Linha a menos recusa; extremos alterados com soma igual também",
+          "expected_duration_sec": 10,
+          "id": "eval_1",
+          "terminal": false,
+          "verifies": [
+            "B-1"
+          ]
+        },
+        {
+          "command": "pytest -q tests/test_juizo.py -k precedencia",
+          "description": "Precedência — controle divergente recusa mesmo classificado",
+          "expected_duration_sec": 10,
+          "id": "eval_2",
+          "terminal": false,
+          "verifies": [
+            "B-2"
+          ]
+        },
+        {
+          "command": "pytest -q tests/test_juizo.py -k \"defeito_sem_classe or classificacao_unica\"",
+          "description": "Sem classificação bloqueia; DUAS classificações também",
+          "expected_duration_sec": 10,
+          "id": "eval_3",
+          "terminal": true,
+          "verifies": [
+            "B-1",
+            "B-2"
+          ]
+        }
+      ],
+      "execution_backend": "any",
+      "goal": "Fazer o juiz acusar, não apenas aprovar.",
+      "id": "T-20260921-juizo-classifica",
+      "observability": "vereditos por classificação",
+      "profile": "standard",
+      "required_tools": [
+        "git",
+        "bash",
+        "python3",
+        "pytest"
+      ],
+      "rollback": "Remover o juízo e seus testes.",
+      "source_note": "seamwise/legs/LEG-JUIZO-ACUSA.md#T-20260921-juizo-classifica",
+      "title": "Comparar os cinco controles e classificar a diferença",
+      "touches_paths": [],
+      "why": "Fazer o juiz acusar, não apenas aprovar."
+    },
+    {
+      "agent": "any",
+      "anti_patterns": [
+        "Do not escrever no arquivo de origem: destrói a prova de que a origem publicou aquilo; instead tratar _raw/ como somente leitura.",
+        "Do not ler colunas por nome de cabeçalho: Espécie repetida faz perder uma das duas em silêncio; instead ler por posição declarada no contrato.",
+        "Do not corrigir valor malformado durante a leitura: apaga o defeito antes da classificação; instead preservar e contar como linha inválida."
+      ],
+      "behaviors": [
+        {
+          "given": "um arquivo com Espécie repetida e o layout declarado, e outro em que as DUAS colunas de cabeçalho idêntico Espécie — índices 12 e 13 — tiveram os valores trocados entre si, deixando o cabeçalho byte a byte igual",
+          "id": "B-1",
+          "then": "no primeiro o sha256 fica idêntico E a proteção de escrita é conferida antes de ler — W-1 exige chmod 444 nos bytes de origem, e hash antes/depois não prova proteção, porque um arquivo em 0666 passa nesse teste quando ninguém escreve durante ele; a leitura recusa começar se _raw não estiver protegido. Código e descrição vêm dos índices 12 e 13; os totais por código que a leitura produz são somados em contexto decimal PRÓPRIO e COMPLETO — precisão derivada, arredondamento, Emax, Emin e traps, todos declarados, porque localcontext() herda do global tudo que não for dito — com Emax=5 a soma do total ancorado levanta Overflow, e com o trap Inexact ativo quantizar um intermediário legítimo de três casas levanta Inexact, transformando execução VÁLIDA em ERRO por alteração externa. O teste força um contexto global adverso nos três eixos e exige exatidão mesmo assim — a proteção escrita para a agregação não alcança a leitura, e uma referência corrompida faria a fronteira recusar um produtor correto com os testes da leitura verdes. No segundo a leitura BLOQUEIA, e o gate NÃO pode ser conferência de cabeçalho — cabeçalho idêntico não distingue as duas — e sim o formato de cada posição, MEDIDO nas 41.572.553 linhas — o índice 12 é sempre só dígitos, largura 2 após strip, alinhado à direita, e o 13 é sempre textual, alinhado à esquerda, sem uma única linha em que os dois sejam indistinguíveis; o teste falha se for satisfeito trocando colunas de nomes diferentes, porque é esta troca, de nomes iguais, que motivou o ADR 0002 e que os cinco controles preservam",
+          "when": "a leitura começa"
+        },
+        {
+          "given": "um registro cujo campo monetário é ilegível, os valores 'NaN', 'Infinity', '1_000' e '1e3', e os quatro exemplos do ADR 0004 — entre eles 'Pensão por Morte de ' com 20 caracteres brutos e 19 após strip",
+          "id": "B-2",
+          "then": "o primeiro entra em linhas_invalidas com identidade, valor original e posição. Os quatro valores especiais TAMBÉM entram como inválidos, porque legível é o que casa a gramática monetária MEDIDA NA FONTE, e não o que Decimal() aceita. A fonte publica no formato brasileiro com preenchimento à esquerda — '        1.621,00', ponto de milhar e vírgula decimal, escala 2 nas 41.572.553 linhas, zero recusas — de modo que Decimal(bruto) RECUSA toda linha legítima e a normalização é parte da gramática, não um passo implícito — retira o preenchimento, exige o padrão e só então converte. E cada valor convertido é conferido contra a ESCALA CARREGADA do contrato, não contra duas casas fixas, antes de entrar nos mapas de referência — é a verificação que o carregador delega a quem recebe o valor; fixar duas casas recusaria uma fonte futura com escala maior legitimamente declarada, e não conferir deixaria um contrato de escala 1 aceitar '1,23' com a precisão validada para outro domínio. Valor fora da escala contratada é defeito classificado, e valor NEGATIVO também, porque o ADR 0009 derivou a precisão sob soma monotônica — e os dois têm o MESMO destino que o ilegível — tipo VALOR_ILEGIVEL, incrementam linhas_invalidas, ficam fora da soma e fora dos extremos. Um destino só, porque a fronteira confere linhas_invalidas contra defeitos do tipo VALOR_ILEGIVEL, e dar-lhes tipo próprio faria a leitura incrementar inválidos enquanto a fronteira exige zero — dois implementadores cumprindo seus textos e discordando. Uma gramática de ponto decimal recusaria a competência inteira — os quatro passam pelo construtor, e um NaN chegaria vivo aos extremos, onde min levanta InvalidOperation e transformaria defeito de UMA linha em ERRO da execução inteira. E a descrição emite defeito de IDENTIDADE COLAPSADA, sem tornar a linha inválida, quando cobre mais de um código — critério do ADR 0008, medido na competência inteira — 11 descrições cobrem 24 códigos, entre elas 'Pensão por Morte de ' fundindo 01, 03, 23 e 59. A unidade do defeito é a DESCRIÇÃO, não a ocorrência, ele só é emitido ao fim da varredura, porque colapso é propriedade do conjunto, e a contagem observada é conferida contra a CONTAGEM MEDIDA que o contrato carrega — senão a leitura poderia omitir um colapso, o envelope local reproduzir a mesma lista, e a comparação por identidade concordar com cardinalidade, mapas e controles todos corretos — um leitor incremental que emitisse a partir do segundo código deixaria sem registro todas as ocorrências anteriores, e a fronteira concordaria com a lista incompleta por ter a própria leitura como referência. Largura NÃO é critério — as 41.572.553 descrições têm 20 caracteres brutos, então bruto==20 acusaria toda linha, e strip==20 deixaria de fora justamente esse colapso de quatro códigos, cujo strip é 19",
+          "when": "os registros são contados"
+        }
+      ],
+      "context": "Intent DI-PDA-BENEFICIOS; seam SEAM-LEITURA; swimlane LANE-LEITURA; capability leg LEG-LEITURA-POSICIONAL. Done condition: sha256 idêntico antes e depois; código e descrição saem de posições distintas; registro ilegível entra em linhas_invalidas.",
+      "creates_paths": [
+        "src/pda/leitura.py",
+        "tests/test_leitura.py",
+        "tests/fixtures/competencia-min.csv"
+      ],
+      "depends_on": [
+        "T-20260921-contrato-ancora"
+      ],
+      "do_not_touch": [
+        "_raw"
+      ],
+      "done_condition": "sha256 idêntico antes e depois; código e descrição saem de posições distintas; registro ilegível entra em linhas_invalidas.",
+      "effort": "M",
+      "evals": [
+        {
+          "command": "pytest -q tests/test_leitura.py -k \"sha256 or w1_protecao or especie_12_13_trocadas\"",
+          "description": "Leitura posicional; _raw sem 444 bloqueia; Espécie 12 e 13 trocadas bloqueiam",
+          "expected_duration_sec": 10,
+          "id": "eval_1",
+          "terminal": false,
+          "verifies": [
+            "B-1"
+          ]
+        },
+        {
+          "command": "pytest -q tests/test_leitura.py -k \"invalida or gramatica_monetaria or identidade_colapsada\"",
+          "description": "Ilegível vira inválida; NaN também; descrição que colapsa códigos acusa",
+          "expected_duration_sec": 10,
+          "id": "eval_2",
+          "terminal": false,
+          "verifies": [
+            "B-2"
+          ]
+        },
+        {
+          "command": "pytest -q tests/test_leitura.py -k duracao",
+          "description": "A leitura reporta sua duração para a orquestração medir o total",
+          "expected_duration_sec": 10,
+          "id": "eval_3",
+          "terminal": true,
+          "verifies": [
+            "B-1",
+            "B-2"
+          ]
+        }
+      ],
+      "execution_backend": "any",
+      "goal": "Extrair registros preservando os bytes e o defeito de origem.",
+      "id": "T-20260921-leitura-posicional",
+      "observability": "registros lidos e defeitos por tipo",
+      "profile": "standard",
+      "required_tools": [
+        "git",
+        "bash",
+        "python3",
+        "pytest"
+      ],
+      "rollback": "Remover o leitor e seus testes.",
+      "source_note": "seamwise/legs/LEG-LEITURA-POSICIONAL.md#T-20260921-leitura-posicional",
+      "title": "Ler a competência por posição, sem alterar a fonte",
+      "touches_paths": [],
+      "why": "Extrair registros preservando os bytes e o defeito de origem."
+    },
+    {
+      "agent": "any",
+      "anti_patterns": [
+        "Do not encerrar o processo dentro de uma etapa: o pacote prometido nunca é gravado; instead retornar o veredito e deixar a orquestração decidir.",
+        "Do not medir o tempo por etapa: etapa rápida com o resto lento passaria; instead medir do início da leitura ao veredito.",
+        "Do not tratar ACEITO_SEM_ANCORA como autorização: a palavra aceito nomeia o término, não a prova; instead só ACEITO autoriza, com os cinco controles conferidos."
+      ],
+      "behaviors": [
+        {
+          "given": "execução sem âncora, execução que bate, e a execução de R-7 — um centavo alterado nos bytes do arquivo, com o sha256 do arquivo ALTERADO reancorado no contrato, de modo que a fronteira passe e o juízo seja quem decide",
+          "id": "B-1",
+          "then": "as três gravam pacote, com ACEITO_SEM_ANCORA, ACEITO e RECUSADO de códigos de saída distintos, e só ACEITO autoriza publicar — e a autorização declara a competência SOLICITADA, recusando quando contrato, arquivo ou envelope trazem outra — uma execução pedida para 2026-02 que receba por engano os artefatos coerentes de 2026-01 passaria por hashes, totais e defeitos, todos concordando entre si, e devolveria como resultado de 2026-02 o que é de 2026-01. O caso de R-7 é UMA prova conjunta, não duas separadas — a alteração é real nos bytes, a recusa vem do JUÍZO comparando contra a âncora monetária original, e o teste FALHA se um juízo permissivo for injetado. Sem reancorar, a fronteira recusaria pelo sha256 antes do juízo comparar, e o teste ficaria verde com juízo permissivo — provando metade do que R-7 escreveu",
+          "when": "a orquestração conduz o fluxo inteiro"
+        },
+        {
+          "given": "uma exceção real levantada dentro da leitura, uma execução com contrato de política HALF_UP, e uma execução cujo tempo total é medido",
+          "id": "B-2",
+          "then": "o contrato HALF_UP termina em RECUSADO com pacote gravado, sem chegar à leitura — caminho exercido aqui, não só declarado no contrato; a exceção vira ERRO com pacote gravado, e o tempo do início da leitura ao veredito é medido e REGISTRADO no pacote, sem virar recusa — R-9 é should, e o pacote passa a carregar o número para que a cobertura de R-9 seja decidida contra competência real, não contra relógio simulado. Se o PRÓPRIO gravador falhar — permissão negada, disco cheio — o desfecho é ERRO com código próprio e a falha vai para a saída de erro; nunca se devolve ACEITO sem pacote, porque autorização sem evidência é o que esta fábrica existe para impedir",
+          "when": "a orquestração conduz a execução"
+        }
+      ],
+      "context": "Intent DI-PDA-BENEFICIOS; seam SEAM-ORQUESTRACAO; swimlane LANE-ORQUESTRACAO; capability leg LEG-DESFECHO-COM-PACOTE. Done condition: Os quatro desfechos gravam pacote com código próprio; exceção real vira ERRO; o tempo total é medido e registrado no pacote. R-9 é should e NÃO é declarado coberto aqui — medir com relógio simulado não demonstra orçamento de competência completa, e inventar recusa por timeout seria afrouxar o que a tech-spec não pediu.",
+      "creates_paths": [
+        "src/pda/orquestracao.py",
+        "tests/test_orquestracao.py"
+      ],
+      "depends_on": [
+        "T-20260921-evidencia-packet"
+      ],
+      "do_not_touch": [
+        "_raw",
+        "cvg/docs/adrs"
+      ],
+      "done_condition": "Os quatro desfechos gravam pacote com código próprio; exceção real vira ERRO; o tempo total é medido e registrado no pacote. R-9 é should e NÃO é declarado coberto aqui — medir com relógio simulado não demonstra orçamento de competência completa, e inventar recusa por timeout seria afrouxar o que a tech-spec não pediu.",
+      "effort": "M",
+      "evals": [
+        {
+          "command": "pytest -q tests/test_orquestracao.py -k \"desfechos or r7_centavo_reancorado or competencia_divergente\"",
+          "description": "R-7 numa prova só; competência solicitada diverge da entregue recusa",
+          "expected_duration_sec": 10,
+          "id": "eval_1",
+          "terminal": false,
+          "verifies": [
+            "B-1"
+          ]
+        },
+        {
+          "command": "pytest -q tests/test_orquestracao.py -k \"excecao or tempo_total\"",
+          "description": "Exceção real vira ERRO; o tempo é medido no total",
+          "expected_duration_sec": 10,
+          "id": "eval_2",
+          "terminal": false,
+          "verifies": [
+            "B-2"
+          ]
+        },
+        {
+          "command": "pytest -q tests/test_orquestracao.py -k autoriza",
+          "description": "Só ACEITO autoriza publicar",
+          "expected_duration_sec": 10,
+          "id": "eval_3",
+          "terminal": true,
+          "verifies": [
+            "B-1",
+            "B-2"
+          ]
+        }
+      ],
+      "execution_backend": "any",
+      "goal": "Dar dono ao fluxo — sem ele a lacuna migra de etapa em etapa.",
+      "id": "T-20260921-orquestra-desfecho",
+      "observability": "desfechos por tipo e segundos até o veredito",
+      "profile": "standard",
+      "required_tools": [
+        "git",
+        "bash",
+        "python3",
+        "pytest"
+      ],
+      "rollback": "Remover a orquestração e seus testes.",
+      "source_note": "seamwise/legs/LEG-DESFECHO-COM-PACOTE.md#T-20260921-orquestra-desfecho",
+      "title": "Decidir o desfecho e garantir o pacote em todo caminho",
+      "touches_paths": [],
+      "why": "Dar dono ao fluxo — sem ele a lacuna migra de etapa em etapa."
+    }
+  ]
+}

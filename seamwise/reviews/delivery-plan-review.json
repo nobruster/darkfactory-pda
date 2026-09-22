@@ -1,0 +1,10 @@
+{
+  "disposition": "accepted",
+  "draft_sha256": "b87916a862c9e4315088e96d167f3e27f06f9aa7113d98379d599c279a9e2c5f",
+  "fixture": false,
+  "plan_sha256": "e1684b55ec0750c1e54969fb858762e96b7c4e1faf720f7b482439ce6a5c997a",
+  "reason": "Pass 4 fechado com CHECK_CONSENSUS=OK apos 15 rodadas de adversario cross-family e dois agentes de auditoria; 86 objecoes decididas, 10 ADRs com 4 superseded, ancora re-medida com script endurecido e as duas cercas conferidas",
+  "reviewed_at": "2026-09-22T02:43:14.060546+00:00",
+  "reviewer": "Bruno Nunes",
+  "schema_version": 1
+}

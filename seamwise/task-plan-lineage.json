@@ -1,0 +1,79 @@
+{
+  "contract": "SeamwiseTaskPlanLineage/v1",
+  "delivery_plan_sha256": "e1684b55ec0750c1e54969fb858762e96b7c4e1faf720f7b482439ce6a5c997a",
+  "engine_version": "0.2.0",
+  "intent": {
+    "id": "DI-PDA-BENEFICIOS",
+    "sha256": "836a967d4deb3fe9260e1362fa94bcaf829e9b9268be0dd9fbcc6f06155050d6"
+  },
+  "review": {
+    "fixture": false,
+    "plan_sha256": "e1684b55ec0750c1e54969fb858762e96b7c4e1faf720f7b482439ce6a5c997a",
+    "reviewed_at": "2026-09-22T02:43:14.060546+00:00",
+    "reviewer": "Bruno Nunes",
+    "sha256": "5ec9b75aeedc82372e8fdb62ed24056fd783eed4195edbc4d2ea2a51645aca9f"
+  },
+  "task_plan": {
+    "contract": "TaskPlan/v1",
+    "digest": "c06d5c3d93408102b0704c7bfd42860d90a559291f4ce412ae377fe55cc10847",
+    "path": "seamwise/task-plan.json"
+  },
+  "units": {
+    "T-20260921-agregacao-exata": {
+      "intent": "DI-PDA-BENEFICIOS",
+      "leg": "LEG-AGREGADO-EXATO",
+      "seam": "SEAM-AGREGACAO",
+      "source_sha256": "ff8a7077f121e3f8c6d7474ecd5b1a29b61223d485227d26872025f70e4b63ca",
+      "swimlane": "LANE-AGREGACAO",
+      "unit_id": "T-20260921-agregacao-exata"
+    },
+    "T-20260921-contrato-ancora": {
+      "intent": "DI-PDA-BENEFICIOS",
+      "leg": "LEG-CONTRATO-RECUSA-SEM-ANCORA",
+      "seam": "SEAM-CONTRATO",
+      "source_sha256": "de5cf2c0834888f7b1420c2b9283c77d04139100daddcea08d6d41f9f1a4e38e",
+      "swimlane": "LANE-CONTRATO",
+      "unit_id": "T-20260921-contrato-ancora"
+    },
+    "T-20260921-envelope-fronteira": {
+      "intent": "DI-PDA-BENEFICIOS",
+      "leg": "LEG-ENVELOPE-VINCULADO",
+      "seam": "SEAM-FRONTEIRA",
+      "source_sha256": "4b865b22c065523b916db65c3001d2f22598c6c146adb9e845734299b21bcab7",
+      "swimlane": "LANE-FRONTEIRA",
+      "unit_id": "T-20260921-envelope-fronteira"
+    },
+    "T-20260921-evidencia-packet": {
+      "intent": "DI-PDA-BENEFICIOS",
+      "leg": "LEG-EVIDENCIA-RECONSTROI",
+      "seam": "SEAM-EVIDENCIA",
+      "source_sha256": "433d4defc26947f10ce56f15eaa24e600ee17da629bbf28e78f714674ee4ec0b",
+      "swimlane": "LANE-EVIDENCIA",
+      "unit_id": "T-20260921-evidencia-packet"
+    },
+    "T-20260921-juizo-classifica": {
+      "intent": "DI-PDA-BENEFICIOS",
+      "leg": "LEG-JUIZO-ACUSA",
+      "seam": "SEAM-JUIZO",
+      "source_sha256": "19f785cec9929408ec5b3698add06ab73eaa1f37539a02e07fc0db31e3c84eab",
+      "swimlane": "LANE-JUIZO",
+      "unit_id": "T-20260921-juizo-classifica"
+    },
+    "T-20260921-leitura-posicional": {
+      "intent": "DI-PDA-BENEFICIOS",
+      "leg": "LEG-LEITURA-POSICIONAL",
+      "seam": "SEAM-LEITURA",
+      "source_sha256": "e73f52c58af168c1f09991d7df68ea99a607eae33bc292335f359617936f4a52",
+      "swimlane": "LANE-LEITURA",
+      "unit_id": "T-20260921-leitura-posicional"
+    },
+    "T-20260921-orquestra-desfecho": {
+      "intent": "DI-PDA-BENEFICIOS",
+      "leg": "LEG-DESFECHO-COM-PACOTE",
+      "seam": "SEAM-ORQUESTRACAO",
+      "source_sha256": "43c6a4c7a2547fd6e3c93689278af6ddda6aa89ee884e6336a1d8b4ab058b33f",
+      "swimlane": "LANE-ORQUESTRACAO",
+      "unit_id": "T-20260921-orquestra-desfecho"
+    }
+  }
+}
