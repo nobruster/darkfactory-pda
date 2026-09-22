@@ -14,7 +14,39 @@ Atualizado em 21/09/2026.
 | 4 · Consensus | `cvg review` | 🟢 `CHECK_CONSENSUS=OK` — 86 objeções |
 | 5 · Tasking | `taskspec gate --stamp` | 🟢 `TIER=1` ×7 — HMAC v3 |
 | 7 · Bind | `cvg bind` | 🟢 `CHECK_RUNTIME_CONTRACT=PASS` ×7 |
-| 8 · Loop | `cvg loop` | 🟡 em curso — `contrato-ancora` primeiro |
+| 8 · Loop | `cvg loop` | 🟡 **5 de 7** — faltam evidência e orquestração |
+
+### 📍 Onde parar e retomar — 22/09/2026
+
+Cinco tarefas entregues, cada uma numa branch `task/*`, todas `LOCAL_SETTLED`
+com `path_policy=pass`. Nada mesclado, nada publicado (`external_writes=deny`).
+
+| Tarefa | Tentativas | Tempo | Linhas |
+|---|---|---|---|
+| `contrato-ancora` | 1 | 516s | 569 |
+| `leitura-posicional` | 1 (após 1 bloqueio) | 604s | — |
+| `agregacao-exata` | 1 | 441s | 434 |
+| `envelope-fronteira` | **2** | 1204s | 729 |
+| `juizo-classifica` | 1 | 287s | 465 |
+| `evidencia-packet` | ⬜ bloqueou 2× | — | 756 escritas |
+| `orquestra-desfecho` | ⬜ não começou | — | — |
+
+**Para continuar**, de dentro do WSL:
+
+```bash
+bash ~/limpar_wt.sh     # remove worktrees órfãs de /tmp
+bash ~/pass8_fim.sh     # roda evidencia-packet e orquestra-desfecho
+```
+
+⚠️ **A `evidencia-packet` bloqueou duas vezes por `path_policy=fail`** — e nas
+duas o código estava **certo**, com 21 testes passando. O agente criou um
+arquivo auxiliar fora do `creates_paths` (`t.py` na segunda vez; a
+`leitura-posicional` tinha criado `run_evals.sh`). **Re-rodar resolve; ampliar
+o escopo, não** — seria afrouxar a cerca para o gate passar, e obrigaria a
+re-selar a folha no Pass 5. Ver Regra 10 no `AGENTS.md` do template.
+
+⚠️ Ela entra na lane **effort S** — 450s por tentativa, não 600s — porque tem
+2 caminhos no escopo em vez de 3. É menos tempo para uma spec pesada.
 
 ⚠️ **O Pass 4 fecha por decisão, não por zerar objeções.** O gate exige que o
 texto revisado seja o texto selado — corrigir depois da review move os hashes
