@@ -28,10 +28,14 @@ execution_backend: any
 signed_off: true
 signed_off_by: nobru
 signed_off_at: 2026-09-22T02:47:10Z
-accepted: false
-accepted_by: (none)
-accepted_at: (none)
+accepted: true
+accepted_by: converge-loop
+accepted_at: 2026-09-22T03:29:54Z
 signed_off_sig: hmac-sha256-v3:85d3c104:5c0efa2c69265cfdeaf29cc52008908b3d2299740427fdf7fb471e2397054e53
+accepted_tier: 1
+accepted_attempt_id: 2ae26144-ee64-47e1-acf5-b571df0efeaa
+accepted_authorization_ref: hmac-sha256-v3:85d3c104:5c0efa2c69265cfdeaf29cc52008908b3d2299740427fdf7fb471e2397054e53
+acceptance_record_digest: sha256:11895184cdf4a28c04f216b697ce268c8fe95178c01f70e2f075361455047c59
 ---
 
 # Somar com precisão declarada e agrupar pelo código
