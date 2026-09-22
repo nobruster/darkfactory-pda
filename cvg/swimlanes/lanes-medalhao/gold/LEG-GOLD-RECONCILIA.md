@@ -1,6 +1,6 @@
 > Projetado de `LEG-GOLD-RECONCILIA.md` pelo Seamwise.
 > **Não edite aqui** — edite a recipe e rode `seamwise plan`.
-> origem sha256: `601bd9eae470fcad7c58d617bceb7503edf77a13a0b5d94ed9b29fd4e5a26ee9`
+> origem sha256: `ea69a57699266d37fba23ac687e29fc3e9cca9e3a717843e733b188ed9c4cf10`
 
 ---
 
@@ -49,15 +49,23 @@ tasks:
       O modo é HALF_EVEN, decidido pelo ADR 0003 e preservado pelo 0009, lido do CONTRATO, nunca escolhido
       aqui, porque meio-para-cima empurra todo empate na mesma direção e vira tendência em volume. A precisão
       é a declarada, com localcontext, e não a herdada. Depois de agregar, a soma das linhas de Gold é
-      RECONCILIADA com a âncora do contrato e a igualdade é exata ao centavo; Gold que não reconcilia
-      devolve DIVERGE e NÃO publica, porque um agregado publicado sem reconciliar é exatamente o que a
-      âncora existe para impedir. A reconciliação é recalculada a partir das linhas CANDIDATAS — materializadas
-      em local privado, jamais no caminho que os consumidores leem — e não herdada de Bronze, senão Gold
-      provaria a conta de outra camada. A publicação é um passo POSTERIOR e condicionado ao veredito:
-      se as candidatas fossem escritas no destino para depois serem relidas, o dado divergente já teria
-      ficado exposto antes de qualquer veredito, e remover depois não desfaz a exposição. Um teste que
-      confira só o resultado final ou a ausência de arquivos ao término não vê isso — o eval observa que
-      o caminho de destino permanece inalterado DURANTE a reconciliação'
+      RECONCILIADA com a âncora do contrato e a igualdade é exata ao centavo. Soma e cardinalidade NÃO
+      BASTAM: uma redistribuição compensada entre códigos preserva as duas e troca os valores de lugar
+      — {''01'': 10.00, ''03'': 20.00} e {''01'': 11.00, ''03'': 19.00} têm a mesma soma e as mesmas chaves,
+      e acrescentar os outros 63 códigos idênticos aos dois mantém o contraexemplo com os 65. Por isso
+      o MAPA total_por_codigo de Gold é comparado, código a código, contra o mapa que a camada anterior
+      produziu, em soma EXATA não quantizada; com um mapa só, deslocar valor entre códigos seria aprovado
+      por comparação consigo mesmo; Gold que não reconcilia devolve DIVERGE e NÃO publica, porque um agregado
+      publicado sem reconciliar é exatamente o que a âncora existe para impedir. A reconciliação é recalculada
+      a partir das linhas CANDIDATAS — materializadas em local privado, jamais no caminho que os consumidores
+      leem — e não herdada de Bronze, senão Gold provaria a conta de outra camada. A publicação é um passo
+      POSTERIOR e condicionado ao veredito, e o veredito CONSOME a marca PROCEDENCIA_NAO_VINCULADA que
+      Bronze emite e Silver preserva — Gold recusa publicar sob ela, e a recusa tem eval próprio, senão
+      cada camada cumpre o seu e a marca se perde na transformação: se as candidatas fossem escritas no
+      destino para depois serem relidas, o dado divergente já teria ficado exposto antes de qualquer veredito,
+      e remover depois não desfaz a exposição. Um teste que confira só o resultado final ou a ausência
+      de arquivos ao término não vê isso — o eval observa que o caminho de destino permanece inalterado
+      DURANTE a reconciliação'
   - id: B-2
     given: um Silver cujo total não reproduz a âncora, ou uma competência sem âncora no contrato
     when: Gold agrega
@@ -75,23 +83,27 @@ tasks:
     verifies:
     - B-1
   - id: eval_2
-    description: Gold reconcilia com a âncora ao centavo e confere os 65 códigos
-    bash: pytest -q tests/test_gold.py -k "reconcilia_recalculando or contagem_de_codigos"
+    description: Reconcilia recalculando, compara o mapa por código e confere os 65
+    bash: pytest -q tests/test_gold.py -k "reconcilia_recalculando or mapa_por_codigo or redistribuicao_compensada
+      or contagem_de_codigos"
     verifies:
     - B-1
     - B-2
   - id: eval_3
     description: DIVERGE e NAO_MEDIDO são estados distintos e nenhum publica
-    bash: pytest -q tests/test_gold.py -k "diverge_nao_publica or sem_ancora_nao_medido or destino_inalterado_durante"
+    bash: pytest -q tests/test_gold.py -k "diverge_nao_publica or sem_ancora_nao_medido or destino_inalterado_durante
+      or recusa_sob_procedencia_nao_vinculada"
     verifies:
     - B-2
   anti_patterns:
   - action: arredondar cada código antes de somar
     reason: dá total diferente de somar e arredondar uma vez, com erro sistemático que cresce com o volume
     instead: somar em precisão declarada e arredondar uma única vez no total
-  - action: herdar a reconciliação de Bronze
-    reason: Gold provaria a conta de outra camada, não a sua
-    instead: recalcular a partir das linhas efetivamente publicadas
+  - action: provar a agregação só com a soma total e a contagem de códigos
+    reason: 'uma redistribuição compensada entre códigos preserva as duas e troca os valores de lugar
+      — contraexemplo executado com {''01'': 10.00, ''03'': 20.00} contra {''01'': 11.00, ''03'': 19.00}'
+    instead: comparar o mapa total_por_codigo código a código contra o da camada anterior, em soma exata
+      não quantizada
   - action: tratar falta de âncora como divergência
     reason: ausência de referencial vira medição com resultado ruim, e a fábrica parece ter medido
     instead: devolver NAO_MEDIDO, distinto de DIVERGE
@@ -101,7 +113,7 @@ tasks:
   - contracts
   rollback: Remover a camada Gold e seus testes.
   observability: agregados recusados por não reconciliar
-source_seam_sha256: faece8cfa061d6a3a849d2e9dd62a23e6139086b5ae45f5bb237850890e9fc37
+source_seam_sha256: dc55e8557363f96f6468af70fe3d0f532b939bc5fe6a85a350d815fe58cc36a5
 ---
 # Gold só publica quando reconcilia com a âncora
 

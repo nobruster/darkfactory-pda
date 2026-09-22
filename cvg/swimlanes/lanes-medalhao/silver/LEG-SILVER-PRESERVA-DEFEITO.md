@@ -1,6 +1,6 @@
 > Projetado de `LEG-SILVER-PRESERVA-DEFEITO.md` pelo Seamwise.
 > **Não edite aqui** — edite a recipe e rode `seamwise plan`.
-> origem sha256: `5bfde0b7d71020ede7cb04ed5c909663a68dde91a602ab70b4262f7d7dcf0580`
+> origem sha256: `d34fa9a8233891687a5dbb27a14a4dfc721986410f472058540eb38173b5a2a4`
 
 ---
 
@@ -44,15 +44,21 @@ tasks:
     given: o Bronze conferido e o contrato, que declara 65 códigos, 52 descrições e 11 colapsos cobrindo
       24 códigos, pré-classificados como CONFIRMED_SOURCE_DEFECT com aprovador e data
     when: Silver normaliza
-    then: a CHAVE é o código, nunca a descrição, como o ADR 0008 exige — agrupar por descrição fundiria
+    then: 'a CHAVE é o código, nunca a descrição, como o ADR 0008 exige — agrupar por descrição fundiria
       os 24 códigos colapsados em 11 linhas e o total continuaria batendo, com os mapas por código errados
       e nada acusando. A normalização é de FORMA e não de conteúdo — espaços à borda e caixa da descrição,
-      jamais o valor monetário, que atravessa como Decimal com a precisão declarada. A soma de Silver
-      é comparada com a de Bronze e precisa ser IDÊNTICA — um pipeline que altera o total ao normalizar
-      texto tem um defeito, não uma melhoria. Cada colapso recebe EXATAMENTE UMA das seis classificações
-      e a contagem medida é conferida contra a do contrato — encontrar número diferente de 11 é DIVERGE,
-      porque o contrato mediu na competência inteira e a divergência significa fonte diferente da ancorada,
-      não permissão para ajustar o número
+      jamais o valor monetário. E a CONTAGEM DE COLAPSOS é medida sobre a descrição ORIGINAL, nunca sobre
+      a normalizada, porque a normalização pode FUNDIR descrições que a fonte publica distintas: ''ABC''
+      e ''abc'' de códigos diferentes viram um grupo só depois de igualar a caixa, e o colapso criado
+      pela camada seria atribuído à fonte, ou uma partição correta receberia DIVERGE. Se as duas contagens
+      diferirem, a diferença é da normalização e sai nomeada, não somada aos 11 do contrato, que atravessa
+      como Decimal com a precisão declarada. A marca PROCEDENCIA_NAO_VINCULADA, quando Bronze a emite,
+      atravessa Silver SEM ser removida e segue em ''silver classificado'' — remover uma marca de limitação
+      é apagar prova, não normalizar. A soma de Silver é comparada com a de Bronze e precisa ser IDÊNTICA
+      — um pipeline que altera o total ao normalizar texto tem um defeito, não uma melhoria. Cada colapso
+      recebe EXATAMENTE UMA das seis classificações e a contagem medida é conferida contra a do contrato
+      — encontrar número diferente de 11 é DIVERGE, porque o contrato mediu na competência inteira e a
+      divergência significa fonte diferente da ancorada, não permissão para ajustar o número'
   - id: B-2
     given: um código cuja descrição diverge do contrato, ou um colapso não declarado
     when: Silver normaliza
@@ -65,8 +71,10 @@ tasks:
       ''descrição que diverge do contrato'' não é verificável, porque trocar a descrição de um código
       mantém todas as quatro cardinalidades. Silver então NÃO INVENTA referencial e NÃO aceita o grupo
       novo por default: sem o mapa declarado no contrato, a comparação por identidade devolve NAO_MEDIDO,
-      distinto de bloquear por defeito. Declarar esse mapa é trabalho do contrato, com aprovador e data,
-      não desta camada.'
+      distinto de bloquear por defeito — e esse NAO_MEDIDO IMPEDE produzir ''silver classificado'', porque
+      uma capacidade chamada ''classificado'' que sai com a identidade não medida mente no próprio nome.
+      A cadeia para aqui com o motivo nomeado, em vez de seguir e publicar com a identidade em aberto.
+      Declarar esse mapa é trabalho do contrato, com aprovador e data, não desta camada.'
   evals:
   - id: eval_1
     description: A chave é o código e a soma não muda entre camadas
@@ -75,12 +83,14 @@ tasks:
     - B-1
   - id: eval_2
     description: Os 11 colapsos saem classificados e a contagem confere
-    bash: pytest -q tests/test_silver.py -k "colapso_classificado or contagem_de_colapsos or classificacao_unica"
+    bash: pytest -q tests/test_silver.py -k "colapso_classificado or contagem_de_colapsos or classificacao_unica
+      or colapsos_na_descricao_original"
     verifies:
     - B-1
   - id: eval_3
     description: Defeito não classificado bloqueia em vez de passar
-    bash: pytest -q tests/test_silver.py -k "nao_classificado_bloqueia or valor_intacto or atravessa_sem_descartar"
+    bash: pytest -q tests/test_silver.py -k "nao_classificado_bloqueia or valor_intacto or atravessa_sem_descartar
+      or sem_mapa_nao_produz_capacidade or marca_atravessa"
     verifies:
     - B-2
   anti_patterns:
@@ -99,7 +109,7 @@ tasks:
   - contracts
   rollback: Remover a camada Silver e seus testes.
   observability: colapsos classificados por competência
-source_seam_sha256: 4c55503baf64a5589aabc46d29d0c53b5ad50ab32083765076124fe2e7de05fe
+source_seam_sha256: 97fccd19f40133f97f0ef421d33ad21746f9005268f95eec00d3e51daceb0797
 ---
 # Silver classifica o defeito e conserva o total
 
