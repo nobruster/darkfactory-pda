@@ -33,18 +33,21 @@ tasks:
   - tests/test_evidencia.py
   behavior:
   - id: B-1
-    given: uma execução com âncora, e outra que terminou antes da leitura
+    given: uma execução com âncora, outra que terminou antes da leitura, e um pacote adulterado onde só
+      o rótulo do veredito foi trocado
     when: o pacote é lido de volta
-    then: o veredito é reconstruído sem reexecutar, com duração e limite aplicados; campos não percorridos
-      são marcados ausentes, nunca zerados
+    then: o veredito é REDERIVADO dos cinco controles, da âncora e dos dois hashes gravados — nunca lido
+      do rótulo; o pacote adulterado é recusado porque o rótulo discorda do que os controles produzem,
+      e um pacote sem os hashes do ZIP e do CSV é recusado antes disso, já que sem eles o veredito não
+      se prende a arquivo nenhum; campos não percorridos são marcados ausentes, nunca zerados
   - id: B-2
     given: duas execuções da mesma competência
     when: a segunda é gravada
     then: as duas coexistem — a segunda não sobrescreve a primeira
   evals:
   - id: eval_1
-    description: O pacote reconstrói o veredito e marca ausências
-    bash: pytest -q tests/test_evidencia.py -k "reconstroi or ausente"
+    description: Veredito rederivado; rótulo trocado e pacote sem hashes são recusados
+    bash: pytest -q tests/test_evidencia.py -k "rederiva or ausente or rotulo_adulterado or sem_hashes"
     verifies:
     - B-1
   - id: eval_2
@@ -65,15 +68,15 @@ tasks:
   - action: editar um pacote antigo para corrigir o histórico
     reason: falsifica evidência
     instead: gravar evidência nova e manter a antiga
-  - action: preencher campo ausente com zero
-    reason: a reconstrução passa a mentir
-    instead: marcar como ausente
+  - action: ler o veredito do rótulo gravado no pacote
+    reason: o rótulo é conclusão, não prova — trocá-lo basta para mentir
+    instead: rederivar dos controles, da âncora e dos hashes
   do_not_touch:
   - _raw
   - evidence
   rollback: Remover o gravador de evidência e seus testes.
   observability: pacotes gravados por competência
-source_seam_sha256: 48a15b65b4f77d276fea2384cf73e52e654c58035edb9422ba3ada95f7c9b7f2
+source_seam_sha256: b6bdd94507d5133732e25d6b0c385f61906f04f3cb5bcf5fbbce988d9afc3502
 ---
 # O pacote reconstrói o veredito sem reexecutar
 

@@ -59,10 +59,13 @@ swimlane:
       - tests/test_agregacao.py
       behavior:
       - id: B-1
-        given: um valor de ponto flutuante em campo monetário
+        given: um valor de ponto flutuante em campo monetário, e um lote com registros ilegíveis misturados
+          aos válidos
         when: o agregado é calculado
-        then: a entrada é recusada com erro explícito, e o agregado devolvido traz os cinco controles
-          nomeados
+        then: o float é recusado com erro explícito; o agregado traz os cinco controles nomeados e cada
+          um declara se conta o ilegível — count_linhas conta TODO registro lido, os quatro monetários
+          somam só os legíveis, e o ilegível aparece em linhas_invalidas; contar o ilegível no monetário
+          somaria zero e faria a âncora medida deixar de bater
       - id: B-2
         given: um contexto decimal de precisão baixa, valores em empate exato, e a alternativa meio-para-cima
         when: o total é calculado
@@ -72,8 +75,8 @@ swimlane:
           total
       evals:
       - id: eval_1
-        description: Float recusado; cinco controles nomeados no agregado
-        bash: pytest -q tests/test_agregacao.py -k "recusa_float or cinco_controles"
+        description: Float recusado; cinco controles nomeados e ilegível declarado em cada um
+        bash: pytest -q tests/test_agregacao.py -k "recusa_float or cinco_controles or ilegivel_conta_em_linhas"
         verifies:
         - B-1
       - id: eval_2

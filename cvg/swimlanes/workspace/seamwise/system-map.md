@@ -72,6 +72,67 @@ objections:
   owner: Bruno Nunes
   rationale: 'B-2 da orquestração declara o desfecho quando o gravador falha: ERRO com código próprio,
     nunca ACEITO sem pacote — autorização sem evidência é o que a fábrica existe para impedir.'
+- id: OBJ-R2-C1
+  status: ACCEPTED
+  summary: O fluxo não construiria o produtor Spark nem a infraestrutura que o ADR 0005 menciona — dava
+    para fechar a cadeia com Python e envelope sintético, sem produtor real.
+  owner: Bruno Nunes
+  rationale: 'ACCEPTED aqui significa RECEBIDA E DECIDIDA SEM MUDANÇA — o schema do seamwise só admite
+    FIXED, ACCEPTED e OPEN, e esta objeção foi REFUTADA, não corrigida. A objeção lê o ADR 0005 como se
+    ele encomendasse o produtor; ele decide QUAL motor julga — Spark grava, Python puro confere — e existe
+    justamente para que o juiz não herde os defeitos de quem ele julga. O carregamento em Spark e MinIO
+    já está em out_of_scope desta receita, com o motivo escrito: o juízo precisa existir antes de haver
+    o que julgar, e entra como plano próprio depois deste. A tensão com a tech-spec que a objeção aponta
+    é a mesma exclusão, vista do outro lado — não há contradição a resolver. Construir o produtor aqui
+    apagaria a separação de motores que o ADR 0005 estabelece. Segunda vez que esta objeção aparece; a
+    primeira virou a sétima costura, e a reincidência mostra que o que faltava não era mais uma correção,
+    e sim esta decisão explícita.'
+- id: OBJ-R2-C2
+  status: FIXED
+  summary: A regra que EU escrevi na rodada 1 confundia contagem de defeitos com linhas inválidas, e recusaria
+    a competência 2026-01, que está correta.
+  owner: Bruno Nunes
+  rationale: 'Verificado contra a âncora medida: linhas_invalidas=0 com milhões de truncamentos válidos.
+    B-2 da fronteira passou a confrontar linhas_invalidas só com defeitos do tipo VALOR_ILEGIVEL — truncamento
+    é defeito numa linha válida.'
+- id: OBJ-R2-C3
+  status: FIXED
+  summary: O hash ancorado não dizia se cobria o ZIP publicado ou o CSV extraído sobre o qual a âncora
+    foi medida.
+  owner: Bruno Nunes
+  rationale: 'Verificado no repositório: CHECKSUMS.txt traz só o sha256 do ZIP, e a âncora foi medida
+    no CSV, que não tem hash nenhum — trocar o CSV extraído não seria detectado. B-1 do contrato passou
+    a exigir os dois hashes, cada um declarando qual artefato cobre.'
+- id: OBJ-R2-C4
+  status: FIXED
+  summary: O juízo provava ausência de classificação, não classificação única — duas classificações na
+    mesma diferença passariam.
+  owner: Bruno Nunes
+  rationale: 'B-2 do juízo passou a exigir exatamente uma classificação por diferença: zero bloqueia e
+    duas também, porque duas permitem escolher a mais branda na hora de ler.'
+- id: OBJ-R2-C5
+  status: FIXED
+  summary: O pacote podia reproduzir o rótulo do veredito sem preservar a prova que o prende ao arquivo
+    julgado.
+  owner: Bruno Nunes
+  rationale: B-1 da evidência passou a exigir veredito REDERIVADO dos controles, da âncora e dos dois
+    hashes; pacote com rótulo trocado é recusado, e pacote sem os hashes é recusado antes disso.
+- id: OBJ-R2-C6
+  status: FIXED
+  summary: A regra que EU escrevi na rodada 1 — descrição com exatamente 20 caracteres — deixava de fora
+    o exemplo principal do ADR 0004.
+  owner: Bruno Nunes
+  rationale: 'Verificado: ''Pensão por Morte de '' tem bruto=20 e strip=19; medindo após strip, os códigos
+    01, 03, 23 e 59 não emitiriam defeito. B-2 da leitura passou a medir o campo BRUTO ocupando os 20
+    caracteres do layout.'
+- id: OBJ-R2-C7
+  status: FIXED
+  summary: Os cinco controles não tinham semântica para registros ilegíveis — cada implementação decidiria
+    se contá-los.
+  owner: Bruno Nunes
+  rationale: 'B-1 da agregação passou a exigir que cada controle declare se conta o ilegível: count_linhas
+    conta todo registro lido, os quatro monetários somam só os legíveis. Contar o ilegível no monetário
+    somaria zero e faria a âncora medida deixar de bater.'
 contentions: []
 ---
 # System Map

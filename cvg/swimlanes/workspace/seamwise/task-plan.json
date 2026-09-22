@@ -3,8 +3,8 @@
   "approved": true,
   "kind": "TaskPlan",
   "metadata": {
-    "delivery_plan_review_sha256": "39dc9a512abfc06da02bfb89c975ead03fed32199c1f7e8cd5c3cf25e8a8af42",
-    "delivery_plan_sha256": "9ab53354183261a6286a770d586ebc525f69a028b78a1cf0eb63ccc99115682a",
+    "delivery_plan_review_sha256": "ef77b0bb8be97343cb4ea6d446ada1600259af64f64f129190ac1aac2e6ff9d0",
+    "delivery_plan_sha256": "14435ef5936bbb9210dc51790756b9e83c3e9970a120ee041ff66e0e6a0cb7a5",
     "name": "DI-PDA-BENEFICIOS",
     "producer": "seamwise",
     "producer_version": "0.2.0",
@@ -21,9 +21,9 @@
       ],
       "behaviors": [
         {
-          "given": "um valor de ponto flutuante em campo monetário",
+          "given": "um valor de ponto flutuante em campo monetário, e um lote com registros ilegíveis misturados aos válidos",
           "id": "B-1",
-          "then": "a entrada é recusada com erro explícito, e o agregado devolvido traz os cinco controles nomeados",
+          "then": "o float é recusado com erro explícito; o agregado traz os cinco controles nomeados e cada um declara se conta o ilegível — count_linhas conta TODO registro lido, os quatro monetários somam só os legíveis, e o ilegível aparece em linhas_invalidas; contar o ilegível no monetário somaria zero e faria a âncora medida deixar de bater",
           "when": "o agregado é calculado"
         },
         {
@@ -49,8 +49,8 @@
       "effort": "M",
       "evals": [
         {
-          "command": "pytest -q tests/test_agregacao.py -k \"recusa_float or cinco_controles\"",
-          "description": "Float recusado; cinco controles nomeados no agregado",
+          "command": "pytest -q tests/test_agregacao.py -k \"recusa_float or cinco_controles or ilegivel_conta_em_linhas\"",
+          "description": "Float recusado; cinco controles nomeados e ilegível declarado em cada um",
           "expected_duration_sec": 10,
           "id": "eval_1",
           "terminal": false,
@@ -106,9 +106,9 @@
       ],
       "behaviors": [
         {
-          "given": "um contrato com os cinco controles nomeados, a procedência e o layout posicional",
+          "given": "um contrato com os cinco controles nomeados, a procedência, o layout posicional e os DOIS hashes — o do ZIP publicado e o do CSV extraído sobre o qual a âncora foi medida",
           "id": "B-1",
-          "then": "âncora, procedência e layout saem juntos; a mesma âncora sem aprovador ou sem data de medição resulta em NAO_MEDIDO",
+          "then": "âncora, procedência, layout e os dois hashes saem juntos, cada um dizendo qual artefato cobre; falta o hash do CSV e o resultado é NAO_MEDIDO, porque hoje só o ZIP tem checksum e a âncora foi medida no CSV — sem o par, trocar o CSV extraído não seria detectado; sem aprovador ou sem data também é NAO_MEDIDO",
           "when": "o contrato é carregado"
         },
         {
@@ -133,8 +133,8 @@
       "effort": "M",
       "evals": [
         {
-          "command": "pytest -q tests/test_contrato.py -k \"ancorada or sem_procedencia\"",
-          "description": "Cinco controles com procedência; sem aprovador vira NAO_MEDIDO",
+          "command": "pytest -q tests/test_contrato.py -k \"ancorada or sem_procedencia or hash_zip_e_csv\"",
+          "description": "Cinco controles com procedência; hash do ZIP e do CSV distintos; sem aprovador vira NAO_MEDIDO",
           "expected_duration_sec": 10,
           "id": "eval_1",
           "terminal": false,
@@ -186,7 +186,7 @@
       "anti_patterns": [
         "Do not aceitar envelope sem o sha256 do arquivo lido: a âncora vale para um arquivo; sem o vínculo, outra publicação da mesma competência passaria; instead exigir o sha256 e compará-lo com o ancorado.",
         "Do not importar o motor produtor dentro do validador: o juiz voltaria a depender de quem ele julga; instead validar o envelope como dado, seja qual for a origem.",
-        "Do not aceitar linhas_invalidas sem conferir contra os defeitos: um produtor que conte só as válidas devolveria zero e ninguém acusaria; instead exigir coerência entre o controle e os defeitos observados."
+        "Do not somar todo defeito em linhas_invalidas: truncamento é defeito numa linha VÁLIDA; a competência 2026-01 tem linhas_invalidas=0 com milhões de truncamentos, e a regra recusaria o dado correto; instead conferir linhas_invalidas só contra defeitos do tipo VALOR_ILEGIVEL."
       ],
       "behaviors": [
         {
@@ -196,9 +196,9 @@
           "when": "o envelope é validado"
         },
         {
-          "given": "um envelope com linhas_invalidas menor que a contagem de defeitos observados, e outro produzido por um motor que não é o juiz",
+          "given": "um envelope onde linhas_invalidas diverge da contagem de defeitos do tipo VALOR_ILEGIVEL, e outro com linhas_invalidas=0 e defeitos de truncamento, e outro produzido por um motor que não é o juiz",
           "id": "B-2",
-          "then": "o primeiro é recusado por incoerência interna; o segundo é aceito sem que o juiz importe nada do motor produtor",
+          "then": "o primeiro é recusado; o segundo é ACEITO — truncamento é defeito numa linha válida, e a competência 2026-01 tem linhas_invalidas=0 com milhões de truncamentos; o terceiro é aceito sem que o juiz importe nada do motor produtor",
           "when": "o envelope é validado"
         }
       ],
@@ -229,8 +229,8 @@
           ]
         },
         {
-          "command": "pytest -q tests/test_envelope.py -k invalidas_coerentes",
-          "description": "linhas_invalidas incoerente com os defeitos é recusado",
+          "command": "pytest -q tests/test_envelope.py -k \"invalidas_por_tipo or truncamento_nao_invalida\"",
+          "description": "linhas_invalidas confere com VALOR_ILEGIVEL; truncamento não a incrementa",
           "expected_duration_sec": 10,
           "id": "eval_2",
           "terminal": false,
@@ -272,13 +272,13 @@
       "anti_patterns": [
         "Do not gravar com mode overwrite: e o defeito do carregamento atual — destrói a prova; instead gravar um pacote por execução.",
         "Do not editar um pacote antigo para corrigir o histórico: falsifica evidência; instead gravar evidência nova e manter a antiga.",
-        "Do not preencher campo ausente com zero: a reconstrução passa a mentir; instead marcar como ausente."
+        "Do not ler o veredito do rótulo gravado no pacote: o rótulo é conclusão, não prova — trocá-lo basta para mentir; instead rederivar dos controles, da âncora e dos hashes."
       ],
       "behaviors": [
         {
-          "given": "uma execução com âncora, e outra que terminou antes da leitura",
+          "given": "uma execução com âncora, outra que terminou antes da leitura, e um pacote adulterado onde só o rótulo do veredito foi trocado",
           "id": "B-1",
-          "then": "o veredito é reconstruído sem reexecutar, com duração e limite aplicados; campos não percorridos são marcados ausentes, nunca zerados",
+          "then": "o veredito é REDERIVADO dos cinco controles, da âncora e dos dois hashes gravados — nunca lido do rótulo; o pacote adulterado é recusado porque o rótulo discorda do que os controles produzem, e um pacote sem os hashes do ZIP e do CSV é recusado antes disso, já que sem eles o veredito não se prende a arquivo nenhum; campos não percorridos são marcados ausentes, nunca zerados",
           "when": "o pacote é lido de volta"
         },
         {
@@ -304,8 +304,8 @@
       "effort": "S",
       "evals": [
         {
-          "command": "pytest -q tests/test_evidencia.py -k \"reconstroi or ausente\"",
-          "description": "O pacote reconstrói o veredito e marca ausências",
+          "command": "pytest -q tests/test_evidencia.py -k \"rederiva or ausente or rotulo_adulterado or sem_hashes\"",
+          "description": "Veredito rederivado; rótulo trocado e pacote sem hashes são recusados",
           "expected_duration_sec": 10,
           "id": "eval_1",
           "terminal": false,
@@ -367,9 +367,9 @@
           "when": "o juízo compara contra a âncora"
         },
         {
-          "given": "uma diferença de cada uma das seis classificações, incluindo um controle divergente marcado CONFIRMED",
+          "given": "uma diferença de cada uma das seis classificações, uma sem classificação nenhuma, e uma marcada com DUAS ao mesmo tempo",
           "id": "B-2",
-          "then": "divergência em qualquer controle RECUSA mesmo classificada; fora dos controles, MODERN_DEFECT, CONTRACT_AMBIGUITY e UNRESOLVED bloqueiam e as três CONFIRMED/APPROVED apenas registram",
+          "then": "cada diferença carrega exatamente uma classificação — zero bloqueia e duas também, porque duas permitem escolher a mais branda na hora de ler; divergência em qualquer controle RECUSA mesmo classificada; fora dos controles, MODERN_DEFECT, CONTRACT_AMBIGUITY e UNRESOLVED bloqueiam e as três CONFIRMED/APPROVED apenas registram",
           "when": "o veredito é calculado"
         }
       ],
@@ -410,8 +410,8 @@
           ]
         },
         {
-          "command": "pytest -q tests/test_juizo.py -k defeito_sem_classe",
-          "description": "Defeito observado sem classificação bloqueia",
+          "command": "pytest -q tests/test_juizo.py -k \"defeito_sem_classe or classificacao_unica\"",
+          "description": "Sem classificação bloqueia; DUAS classificações também",
           "expected_duration_sec": 10,
           "id": "eval_3",
           "terminal": true,
@@ -453,9 +453,9 @@
           "when": "a leitura começa"
         },
         {
-          "given": "um registro cujo campo monetário é ilegível, e outro cuja descrição tem exatamente 20 caracteres com dinheiro válido",
+          "given": "um registro cujo campo monetário é ilegível, e os quatro exemplos do ADR 0004 — entre eles 'Pensão por Morte de ' com 20 caracteres brutos e 19 após strip",
           "id": "B-2",
-          "then": "o primeiro entra em linhas_invalidas com identidade, valor original e posição; o segundo NÃO é inválido mas emite defeito de truncamento — o defeito do ADR 0004 tem de chegar ao juízo, não ficar só documentado",
+          "then": "o primeiro entra em linhas_invalidas com identidade, valor original e posição; os quatro emitem defeito de truncamento sem serem inválidos, porque o critério é o campo BRUTO ocupar os 20 caracteres do layout — medir após strip deixaria o exemplo principal do ADR de fora",
           "when": "os registros são contados"
         }
       ],

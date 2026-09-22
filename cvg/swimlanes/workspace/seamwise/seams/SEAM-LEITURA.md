@@ -66,12 +66,12 @@ swimlane:
           a leitura BLOQUEIA antes de ler qualquer registro — trocar colunas não monetárias preserva os
           cinco controles, então o juiz monetário não supriria este gate
       - id: B-2
-        given: um registro cujo campo monetário é ilegível, e outro cuja descrição tem exatamente 20 caracteres
-          com dinheiro válido
+        given: um registro cujo campo monetário é ilegível, e os quatro exemplos do ADR 0004 — entre eles
+          'Pensão por Morte de ' com 20 caracteres brutos e 19 após strip
         when: os registros são contados
-        then: o primeiro entra em linhas_invalidas com identidade, valor original e posição; o segundo
-          NÃO é inválido mas emite defeito de truncamento — o defeito do ADR 0004 tem de chegar ao juízo,
-          não ficar só documentado
+        then: o primeiro entra em linhas_invalidas com identidade, valor original e posição; os quatro
+          emitem defeito de truncamento sem serem inválidos, porque o critério é o campo BRUTO ocupar
+          os 20 caracteres do layout — medir após strip deixaria o exemplo principal do ADR de fora
       evals:
       - id: eval_1
         description: Leitura posicional; cabeçalho fora de ordem bloqueia antes de ler

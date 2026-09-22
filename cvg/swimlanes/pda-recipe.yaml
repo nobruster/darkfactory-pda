@@ -137,17 +137,17 @@ seams:
                 - contracts/competencia-202601.yaml
               behavior:
                 - id: B-1
-                  given: um contrato com os cinco controles nomeados, a procedência e o layout posicional
+                  given: um contrato com os cinco controles nomeados, a procedência, o layout posicional e os DOIS hashes — o do ZIP publicado e o do CSV extraído sobre o qual a âncora foi medida
                   when: o contrato é carregado
-                  then: âncora, procedência e layout saem juntos; a mesma âncora sem aprovador ou sem data de medição resulta em NAO_MEDIDO
+                  then: âncora, procedência, layout e os dois hashes saem juntos, cada um dizendo qual artefato cobre; falta o hash do CSV e o resultado é NAO_MEDIDO, porque hoje só o ZIP tem checksum e a âncora foi medida no CSV — sem o par, trocar o CSV extraído não seria detectado; sem aprovador ou sem data também é NAO_MEDIDO
                 - id: B-2
                   given: uma competência sem âncora no contrato
                   when: o contrato é carregado
                   then: retorna NAO_MEDIDO como valor, sem gravar nem encerrar o processo
               evals:
                 - id: eval_1
-                  description: Cinco controles com procedência; sem aprovador vira NAO_MEDIDO
-                  bash: pytest -q tests/test_contrato.py -k "ancorada or sem_procedencia"
+                  description: Cinco controles com procedência; hash do ZIP e do CSV distintos; sem aprovador vira NAO_MEDIDO
+                  bash: pytest -q tests/test_contrato.py -k "ancorada or sem_procedencia or hash_zip_e_csv"
                   verifies: [B-1]
                 - id: eval_2
                   description: Sem âncora retorna NAO_MEDIDO sem escrever em disco
@@ -224,9 +224,9 @@ seams:
                   when: a leitura começa
                   then: no primeiro o sha256 fica idêntico e código e descrição vêm das posições 12 e 13; no segundo a leitura BLOQUEIA antes de ler qualquer registro — trocar colunas não monetárias preserva os cinco controles, então o juiz monetário não supriria este gate
                 - id: B-2
-                  given: um registro cujo campo monetário é ilegível, e outro cuja descrição tem exatamente 20 caracteres com dinheiro válido
+                  given: um registro cujo campo monetário é ilegível, e os quatro exemplos do ADR 0004 — entre eles 'Pensão por Morte de ' com 20 caracteres brutos e 19 após strip
                   when: os registros são contados
-                  then: o primeiro entra em linhas_invalidas com identidade, valor original e posição; o segundo NÃO é inválido mas emite defeito de truncamento — o defeito do ADR 0004 tem de chegar ao juízo, não ficar só documentado
+                  then: o primeiro entra em linhas_invalidas com identidade, valor original e posição; os quatro emitem defeito de truncamento sem serem inválidos, porque o critério é o campo BRUTO ocupar os 20 caracteres do layout — medir após strip deixaria o exemplo principal do ADR de fora
               evals:
                 - id: eval_1
                   description: Leitura posicional; cabeçalho fora de ordem bloqueia antes de ler
@@ -303,17 +303,17 @@ seams:
                 - tests/test_agregacao.py
               behavior:
                 - id: B-1
-                  given: um valor de ponto flutuante em campo monetário
+                  given: um valor de ponto flutuante em campo monetário, e um lote com registros ilegíveis misturados aos válidos
                   when: o agregado é calculado
-                  then: a entrada é recusada com erro explícito, e o agregado devolvido traz os cinco controles nomeados
+                  then: o float é recusado com erro explícito; o agregado traz os cinco controles nomeados e cada um declara se conta o ilegível — count_linhas conta TODO registro lido, os quatro monetários somam só os legíveis, e o ilegível aparece em linhas_invalidas; contar o ilegível no monetário somaria zero e faria a âncora medida deixar de bater
                 - id: B-2
                   given: um contexto decimal de precisão baixa, valores em empate exato, e a alternativa meio-para-cima
                   when: o total é calculado
                   then: o resultado é o de HALF_EVEN a duas casas — comparado contra o valor que HALF_UP produziria, e RECUSANDO-o; declarar um modo não basta, o teste falha se a implementação usar meio-para-cima. A perda por precisão baixa também é acusada, e arredondar por campo difere de arredondar no total
               evals:
                 - id: eval_1
-                  description: Float recusado; cinco controles nomeados no agregado
-                  bash: pytest -q tests/test_agregacao.py -k "recusa_float or cinco_controles"
+                  description: Float recusado; cinco controles nomeados e ilegível declarado em cada um
+                  bash: pytest -q tests/test_agregacao.py -k "recusa_float or cinco_controles or ilegivel_conta_em_linhas"
                   verifies: [B-1]
                 - id: eval_2
                   description: HALF_EVEN recusa o valor que HALF_UP daria; precisão e granularidade
@@ -389,9 +389,9 @@ seams:
                   when: o juízo compara contra a âncora
                   then: os cinco controles são comparados individualmente e qualquer divergência recusa — soma e contagem iguais não bastam
                 - id: B-2
-                  given: uma diferença de cada uma das seis classificações, incluindo um controle divergente marcado CONFIRMED
+                  given: uma diferença de cada uma das seis classificações, uma sem classificação nenhuma, e uma marcada com DUAS ao mesmo tempo
                   when: o veredito é calculado
-                  then: divergência em qualquer controle RECUSA mesmo classificada; fora dos controles, MODERN_DEFECT, CONTRACT_AMBIGUITY e UNRESOLVED bloqueiam e as três CONFIRMED/APPROVED apenas registram
+                  then: cada diferença carrega exatamente uma classificação — zero bloqueia e duas também, porque duas permitem escolher a mais branda na hora de ler; divergência em qualquer controle RECUSA mesmo classificada; fora dos controles, MODERN_DEFECT, CONTRACT_AMBIGUITY e UNRESOLVED bloqueiam e as três CONFIRMED/APPROVED apenas registram
               evals:
                 - id: eval_1
                   description: Linha a menos recusa; extremos alterados com soma igual também
@@ -402,8 +402,8 @@ seams:
                   bash: pytest -q tests/test_juizo.py -k precedencia
                   verifies: [B-2]
                 - id: eval_3
-                  description: Defeito observado sem classificação bloqueia
-                  bash: pytest -q tests/test_juizo.py -k defeito_sem_classe
+                  description: Sem classificação bloqueia; DUAS classificações também
+                  bash: pytest -q tests/test_juizo.py -k "defeito_sem_classe or classificacao_unica"
                   verifies: [B-1, B-2]
               anti_patterns:
                 - action: introduzir parâmetro de tolerância
@@ -465,17 +465,17 @@ seams:
                 - tests/test_evidencia.py
               behavior:
                 - id: B-1
-                  given: uma execução com âncora, e outra que terminou antes da leitura
+                  given: uma execução com âncora, outra que terminou antes da leitura, e um pacote adulterado onde só o rótulo do veredito foi trocado
                   when: o pacote é lido de volta
-                  then: o veredito é reconstruído sem reexecutar, com duração e limite aplicados; campos não percorridos são marcados ausentes, nunca zerados
+                  then: o veredito é REDERIVADO dos cinco controles, da âncora e dos dois hashes gravados — nunca lido do rótulo; o pacote adulterado é recusado porque o rótulo discorda do que os controles produzem, e um pacote sem os hashes do ZIP e do CSV é recusado antes disso, já que sem eles o veredito não se prende a arquivo nenhum; campos não percorridos são marcados ausentes, nunca zerados
                 - id: B-2
                   given: duas execuções da mesma competência
                   when: a segunda é gravada
                   then: as duas coexistem — a segunda não sobrescreve a primeira
               evals:
                 - id: eval_1
-                  description: O pacote reconstrói o veredito e marca ausências
-                  bash: pytest -q tests/test_evidencia.py -k "reconstroi or ausente"
+                  description: Veredito rederivado; rótulo trocado e pacote sem hashes são recusados
+                  bash: pytest -q tests/test_evidencia.py -k "rederiva or ausente or rotulo_adulterado or sem_hashes"
                   verifies: [B-1]
                 - id: eval_2
                   description: Duas execuções coexistem, sem overwrite
@@ -492,9 +492,9 @@ seams:
                 - action: editar um pacote antigo para corrigir o histórico
                   reason: falsifica evidência
                   instead: gravar evidência nova e manter a antiga
-                - action: preencher campo ausente com zero
-                  reason: a reconstrução passa a mentir
-                  instead: marcar como ausente
+                - action: ler o veredito do rótulo gravado no pacote
+                  reason: o rótulo é conclusão, não prova — trocá-lo basta para mentir
+                  instead: rederivar dos controles, da âncora e dos hashes
               do_not_touch: [_raw, evidence]
               rollback: Remover o gravador de evidência e seus testes.
               observability: pacotes gravados por competência
@@ -648,17 +648,17 @@ seams:
                   when: o envelope é validado
                   then: ambos são recusados — a âncora vale para UM arquivo, e sem esse vínculo uma republicação com os mesmos cinco controles passaria despercebida
                 - id: B-2
-                  given: um envelope com linhas_invalidas menor que a contagem de defeitos observados, e outro produzido por um motor que não é o juiz
+                  given: um envelope onde linhas_invalidas diverge da contagem de defeitos do tipo VALOR_ILEGIVEL, e outro com linhas_invalidas=0 e defeitos de truncamento, e outro produzido por um motor que não é o juiz
                   when: o envelope é validado
-                  then: o primeiro é recusado por incoerência interna; o segundo é aceito sem que o juiz importe nada do motor produtor
+                  then: o primeiro é recusado; o segundo é ACEITO — truncamento é defeito numa linha válida, e a competência 2026-01 tem linhas_invalidas=0 com milhões de truncamentos; o terceiro é aceito sem que o juiz importe nada do motor produtor
               evals:
                 - id: eval_1
                   description: Sha256 ausente ou divergente do ancorado é recusado
                   bash: pytest -q tests/test_envelope.py -k "sha_ausente or sha_divergente"
                   verifies: [B-1]
                 - id: eval_2
-                  description: linhas_invalidas incoerente com os defeitos é recusado
-                  bash: pytest -q tests/test_envelope.py -k invalidas_coerentes
+                  description: linhas_invalidas confere com VALOR_ILEGIVEL; truncamento não a incrementa
+                  bash: pytest -q tests/test_envelope.py -k "invalidas_por_tipo or truncamento_nao_invalida"
                   verifies: [B-2]
                 - id: eval_3
                   description: O schema aceita envelope de qualquer produtor, sem importar o motor
@@ -671,9 +671,9 @@ seams:
                 - action: importar o motor produtor dentro do validador
                   reason: o juiz voltaria a depender de quem ele julga
                   instead: validar o envelope como dado, seja qual for a origem
-                - action: aceitar linhas_invalidas sem conferir contra os defeitos
-                  reason: um produtor que conte só as válidas devolveria zero e ninguém acusaria
-                  instead: exigir coerência entre o controle e os defeitos observados
+                - action: somar todo defeito em linhas_invalidas
+                  reason: truncamento é defeito numa linha VÁLIDA; a competência 2026-01 tem linhas_invalidas=0 com milhões de truncamentos, e a regra recusaria o dado correto
+                  instead: conferir linhas_invalidas só contra defeitos do tipo VALOR_ILEGIVEL
               do_not_touch: [_raw, cvg/docs/adrs]
               rollback: Remover o validador de envelope e seus testes.
               observability: envelopes recusados por motivo
@@ -754,4 +754,90 @@ objections:
       B-2 da orquestração declara o desfecho quando o gravador falha: ERRO
       com código próprio, nunca ACEITO sem pacote — autorização sem
       evidência é o que a fábrica existe para impedir.
+  - id: OBJ-R2-C1
+    status: ACCEPTED
+    summary: >-
+      O fluxo não construiria o produtor Spark nem a infraestrutura que o
+      ADR 0005 menciona — dava para fechar a cadeia com Python e envelope
+      sintético, sem produtor real.
+    owner: Bruno Nunes
+    rationale: >-
+      ACCEPTED aqui significa RECEBIDA E DECIDIDA SEM MUDANÇA — o schema do
+      seamwise só admite FIXED, ACCEPTED e OPEN, e esta objeção foi
+      REFUTADA, não corrigida. A objeção lê o ADR 0005 como se ele
+      encomendasse o produtor; ele decide QUAL motor julga — Spark grava,
+      Python puro confere — e existe justamente para que o juiz não herde
+      os defeitos de quem ele julga. O carregamento em Spark e MinIO já
+      está em out_of_scope desta receita, com o motivo escrito: o juízo
+      precisa existir antes de haver o que julgar, e entra como plano
+      próprio depois deste. A tensão com a tech-spec que a objeção aponta
+      é a mesma exclusão, vista do outro lado — não há contradição a
+      resolver. Construir o produtor aqui apagaria a separação de motores
+      que o ADR 0005 estabelece. Segunda vez que esta objeção aparece; a
+      primeira virou a sétima costura, e a reincidência mostra que o que
+      faltava não era mais uma correção, e sim esta decisão explícita.
+  - id: OBJ-R2-C2
+    status: FIXED
+    summary: >-
+      A regra que EU escrevi na rodada 1 confundia contagem de defeitos com
+      linhas inválidas, e recusaria a competência 2026-01, que está correta.
+    owner: Bruno Nunes
+    rationale: >-
+      Verificado contra a âncora medida: linhas_invalidas=0 com milhões de
+      truncamentos válidos. B-2 da fronteira passou a confrontar
+      linhas_invalidas só com defeitos do tipo VALOR_ILEGIVEL — truncamento
+      é defeito numa linha válida.
+  - id: OBJ-R2-C3
+    status: FIXED
+    summary: >-
+      O hash ancorado não dizia se cobria o ZIP publicado ou o CSV extraído
+      sobre o qual a âncora foi medida.
+    owner: Bruno Nunes
+    rationale: >-
+      Verificado no repositório: CHECKSUMS.txt traz só o sha256 do ZIP, e a
+      âncora foi medida no CSV, que não tem hash nenhum — trocar o CSV
+      extraído não seria detectado. B-1 do contrato passou a exigir os dois
+      hashes, cada um declarando qual artefato cobre.
+  - id: OBJ-R2-C4
+    status: FIXED
+    summary: >-
+      O juízo provava ausência de classificação, não classificação única —
+      duas classificações na mesma diferença passariam.
+    owner: Bruno Nunes
+    rationale: >-
+      B-2 do juízo passou a exigir exatamente uma classificação por
+      diferença: zero bloqueia e duas também, porque duas permitem escolher
+      a mais branda na hora de ler.
+  - id: OBJ-R2-C5
+    status: FIXED
+    summary: >-
+      O pacote podia reproduzir o rótulo do veredito sem preservar a prova
+      que o prende ao arquivo julgado.
+    owner: Bruno Nunes
+    rationale: >-
+      B-1 da evidência passou a exigir veredito REDERIVADO dos controles, da
+      âncora e dos dois hashes; pacote com rótulo trocado é recusado, e
+      pacote sem os hashes é recusado antes disso.
+  - id: OBJ-R2-C6
+    status: FIXED
+    summary: >-
+      A regra que EU escrevi na rodada 1 — descrição com exatamente 20
+      caracteres — deixava de fora o exemplo principal do ADR 0004.
+    owner: Bruno Nunes
+    rationale: >-
+      Verificado: 'Pensão por Morte de ' tem bruto=20 e strip=19; medindo
+      após strip, os códigos 01, 03, 23 e 59 não emitiriam defeito. B-2 da
+      leitura passou a medir o campo BRUTO ocupando os 20 caracteres do
+      layout.
+  - id: OBJ-R2-C7
+    status: FIXED
+    summary: >-
+      Os cinco controles não tinham semântica para registros ilegíveis —
+      cada implementação decidiria se contá-los.
+    owner: Bruno Nunes
+    rationale: >-
+      B-1 da agregação passou a exigir que cada controle declare se conta o
+      ilegível: count_linhas conta todo registro lido, os quatro monetários
+      somam só os legíveis. Contar o ilegível no monetário somaria zero e
+      faria a âncora medida deixar de bater.
 contentions: []

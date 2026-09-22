@@ -72,11 +72,13 @@ swimlane:
         then: ambos são recusados — a âncora vale para UM arquivo, e sem esse vínculo uma republicação
           com os mesmos cinco controles passaria despercebida
       - id: B-2
-        given: um envelope com linhas_invalidas menor que a contagem de defeitos observados, e outro produzido
-          por um motor que não é o juiz
+        given: um envelope onde linhas_invalidas diverge da contagem de defeitos do tipo VALOR_ILEGIVEL,
+          e outro com linhas_invalidas=0 e defeitos de truncamento, e outro produzido por um motor que
+          não é o juiz
         when: o envelope é validado
-        then: o primeiro é recusado por incoerência interna; o segundo é aceito sem que o juiz importe
-          nada do motor produtor
+        then: o primeiro é recusado; o segundo é ACEITO — truncamento é defeito numa linha válida, e a
+          competência 2026-01 tem linhas_invalidas=0 com milhões de truncamentos; o terceiro é aceito
+          sem que o juiz importe nada do motor produtor
       evals:
       - id: eval_1
         description: Sha256 ausente ou divergente do ancorado é recusado
@@ -84,8 +86,8 @@ swimlane:
         verifies:
         - B-1
       - id: eval_2
-        description: linhas_invalidas incoerente com os defeitos é recusado
-        bash: pytest -q tests/test_envelope.py -k invalidas_coerentes
+        description: linhas_invalidas confere com VALOR_ILEGIVEL; truncamento não a incrementa
+        bash: pytest -q tests/test_envelope.py -k "invalidas_por_tipo or truncamento_nao_invalida"
         verifies:
         - B-2
       - id: eval_3
@@ -101,9 +103,10 @@ swimlane:
       - action: importar o motor produtor dentro do validador
         reason: o juiz voltaria a depender de quem ele julga
         instead: validar o envelope como dado, seja qual for a origem
-      - action: aceitar linhas_invalidas sem conferir contra os defeitos
-        reason: um produtor que conte só as válidas devolveria zero e ninguém acusaria
-        instead: exigir coerência entre o controle e os defeitos observados
+      - action: somar todo defeito em linhas_invalidas
+        reason: truncamento é defeito numa linha VÁLIDA; a competência 2026-01 tem linhas_invalidas=0
+          com milhões de truncamentos, e a regra recusaria o dado correto
+        instead: conferir linhas_invalidas só contra defeitos do tipo VALOR_ILEGIVEL
       do_not_touch:
       - _raw
       - cvg/docs/adrs

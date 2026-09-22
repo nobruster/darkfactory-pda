@@ -1,6 +1,6 @@
 > Projetado de `LEG-LEITURA-POSICIONAL.md` pelo Seamwise.
 > **Não edite aqui** — edite a recipe e rode `seamwise plan`.
-> origem sha256: `09e218b811801bf57c3e6e9359bf4a5773f37f347c48b409390ea45c2095e0b4`
+> origem sha256: `89ddcb5c4e323308daf17b2a0558b7cebdd9ab460a245983832a262bd62daed7`
 
 ---
 
@@ -48,12 +48,12 @@ tasks:
       a leitura BLOQUEIA antes de ler qualquer registro — trocar colunas não monetárias preserva os cinco
       controles, então o juiz monetário não supriria este gate
   - id: B-2
-    given: um registro cujo campo monetário é ilegível, e outro cuja descrição tem exatamente 20 caracteres
-      com dinheiro válido
+    given: um registro cujo campo monetário é ilegível, e os quatro exemplos do ADR 0004 — entre eles
+      'Pensão por Morte de ' com 20 caracteres brutos e 19 após strip
     when: os registros são contados
-    then: o primeiro entra em linhas_invalidas com identidade, valor original e posição; o segundo NÃO
-      é inválido mas emite defeito de truncamento — o defeito do ADR 0004 tem de chegar ao juízo, não
-      ficar só documentado
+    then: o primeiro entra em linhas_invalidas com identidade, valor original e posição; os quatro emitem
+      defeito de truncamento sem serem inválidos, porque o critério é o campo BRUTO ocupar os 20 caracteres
+      do layout — medir após strip deixaria o exemplo principal do ADR de fora
   evals:
   - id: eval_1
     description: Leitura posicional; cabeçalho fora de ordem bloqueia antes de ler
@@ -85,7 +85,7 @@ tasks:
   - _raw
   rollback: Remover o leitor e seus testes.
   observability: registros lidos e defeitos por tipo
-source_seam_sha256: baf78fca28fa858f3b6207e736d54a07173bf7bd80788c26961e0a872db75e61
+source_seam_sha256: 3d961ff0182fb1f6018230a186100b7c66473179c5da85fe9586b95a5819e7a0
 ---
 # A leitura é posicional e não altera a fonte
 

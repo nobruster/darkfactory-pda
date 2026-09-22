@@ -41,11 +41,13 @@ tasks:
     then: ambos são recusados — a âncora vale para UM arquivo, e sem esse vínculo uma republicação com
       os mesmos cinco controles passaria despercebida
   - id: B-2
-    given: um envelope com linhas_invalidas menor que a contagem de defeitos observados, e outro produzido
-      por um motor que não é o juiz
+    given: um envelope onde linhas_invalidas diverge da contagem de defeitos do tipo VALOR_ILEGIVEL, e
+      outro com linhas_invalidas=0 e defeitos de truncamento, e outro produzido por um motor que não é
+      o juiz
     when: o envelope é validado
-    then: o primeiro é recusado por incoerência interna; o segundo é aceito sem que o juiz importe nada
-      do motor produtor
+    then: o primeiro é recusado; o segundo é ACEITO — truncamento é defeito numa linha válida, e a competência
+      2026-01 tem linhas_invalidas=0 com milhões de truncamentos; o terceiro é aceito sem que o juiz importe
+      nada do motor produtor
   evals:
   - id: eval_1
     description: Sha256 ausente ou divergente do ancorado é recusado
@@ -53,8 +55,8 @@ tasks:
     verifies:
     - B-1
   - id: eval_2
-    description: linhas_invalidas incoerente com os defeitos é recusado
-    bash: pytest -q tests/test_envelope.py -k invalidas_coerentes
+    description: linhas_invalidas confere com VALOR_ILEGIVEL; truncamento não a incrementa
+    bash: pytest -q tests/test_envelope.py -k "invalidas_por_tipo or truncamento_nao_invalida"
     verifies:
     - B-2
   - id: eval_3
@@ -70,15 +72,16 @@ tasks:
   - action: importar o motor produtor dentro do validador
     reason: o juiz voltaria a depender de quem ele julga
     instead: validar o envelope como dado, seja qual for a origem
-  - action: aceitar linhas_invalidas sem conferir contra os defeitos
-    reason: um produtor que conte só as válidas devolveria zero e ninguém acusaria
-    instead: exigir coerência entre o controle e os defeitos observados
+  - action: somar todo defeito em linhas_invalidas
+    reason: truncamento é defeito numa linha VÁLIDA; a competência 2026-01 tem linhas_invalidas=0 com
+      milhões de truncamentos, e a regra recusaria o dado correto
+    instead: conferir linhas_invalidas só contra defeitos do tipo VALOR_ILEGIVEL
   do_not_touch:
   - _raw
   - cvg/docs/adrs
   rollback: Remover o validador de envelope e seus testes.
   observability: envelopes recusados por motivo
-source_seam_sha256: b7bb7f4e989d287e5387f3a68d68a3cb58a6e3bfc93453c1de786650bbd0f094
+source_seam_sha256: 10de0ee605ae6930891cdefbd140add95d4586a689748bb1b316cde1174898d0
 ---
 # O envelope liga o agregado ao arquivo que o gerou
 

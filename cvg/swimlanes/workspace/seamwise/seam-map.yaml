@@ -3,9 +3,9 @@ status: SEAM_MAP=READY
 intent_id: DI-PDA-BENEFICIOS
 source_recipe:
   name: pda-recipe.yaml
-  sha256: 6f31d8154269f9a09b61f90244f7cdd82d0ece067638db9d60ce016dd8714ea2
+  sha256: 0503913154b6bd7f48489dd099bbf421d0ec2c74a060cc8192f4dc588293e04a
 intent_sha256: 01c40fa4e0b6ad03f2d908526c72f61772183c9e2435bafeddd295f092bf8566
-system_map_sha256: e46876a3a1011cde6e70d708e0891b7c329a60d33782b9865e74bc955f508b0d
+system_map_sha256: d4a29a23e30d4997a86e84a83d0a9c89fdd2008fe816faba2941dca009d786ea
 evidence_sha256: 2f99c72ec331b73c69d5b61ea60268f45989f9cb56f51cbe9f33d3e9829b6bc3
 decisions:
 - id: ADR-0002-POSICIONAL
@@ -31,35 +31,35 @@ seams:
   evidence:
   - E-ANCORA-202601
   swimlane_id: LANE-CONTRATO
-  sha256: a071b4826cff30a3b89ae5cc45059e195c6d544fac993d8e1ea55c3f00249f6d
+  sha256: 172592dfebd03e99a3520522778d804e90e578d09e7f2d9c7299a016421273bd
 - id: SEAM-LEITURA
   path: seamwise/seams/SEAM-LEITURA.md
   owner: leitura
   evidence:
   - E-ESPECIE-TRUNCADA
   swimlane_id: LANE-LEITURA
-  sha256: baf78fca28fa858f3b6207e736d54a07173bf7bd80788c26961e0a872db75e61
+  sha256: 3d961ff0182fb1f6018230a186100b7c66473179c5da85fe9586b95a5819e7a0
 - id: SEAM-AGREGACAO
   path: seamwise/seams/SEAM-AGREGACAO.md
   owner: agregacao
   evidence:
   - E-ANCORA-202601
   swimlane_id: LANE-AGREGACAO
-  sha256: 8e8b93a424bfaf490b5ef6743ea200e48e4c7386076a3f2c7364f5f5f4083c5e
+  sha256: c2ccb6ad6dcbd028f7f4dc5abd002f8d240d9ed1f100c1fd02a55adfcb1e1c67
 - id: SEAM-JUIZO
   path: seamwise/seams/SEAM-JUIZO.md
   owner: juizo
   evidence:
   - E-ANCORA-202601
   swimlane_id: LANE-JUIZO
-  sha256: 34b0096968f0bf7b9b48e9e9f90bb76ccf82f7bcf6cf9477c6999292558627dc
+  sha256: ece9904fa201a63366f43e9607dfdd0b8202b6d2389657c116ca6cb0067f9074
 - id: SEAM-EVIDENCIA
   path: seamwise/seams/SEAM-EVIDENCIA.md
   owner: evidencia
   evidence:
   - E-ANCORA-202601
   swimlane_id: LANE-EVIDENCIA
-  sha256: 48a15b65b4f77d276fea2384cf73e52e654c58035edb9422ba3ada95f7c9b7f2
+  sha256: b6bdd94507d5133732e25d6b0c385f61906f04f3cb5bcf5fbbce988d9afc3502
 - id: SEAM-ORQUESTRACAO
   path: seamwise/seams/SEAM-ORQUESTRACAO.md
   owner: orquestracao
@@ -73,4 +73,4 @@ seams:
   evidence:
   - E-ANCORA-202601
   swimlane_id: LANE-FRONTEIRA
-  sha256: b7bb7f4e989d287e5387f3a68d68a3cb58a6e3bfc93453c1de786650bbd0f094
+  sha256: 10de0ee605ae6930891cdefbd140add95d4586a689748bb1b316cde1174898d0

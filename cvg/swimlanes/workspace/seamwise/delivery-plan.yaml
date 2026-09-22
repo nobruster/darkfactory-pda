@@ -1,32 +1,32 @@
 schema_version: 1
 status: DELIVERY_PLAN=READY
-seam_map_sha256: a4b01719fe00da83e2c598bc0c01c3dae6aa71107928d15783fc766b8672e724
+seam_map_sha256: b95450414a1e35efde8ff711d8f0dd4ae5e9a82901bbb1e391d3e9e7875bd18a
 swimlanes:
 - id: LANE-CONTRATO
   seam_id: SEAM-CONTRATO
   owner: contrato
   path: seamwise/swimlanes/LANE-CONTRATO.md
-  sha256: 539f843e5df08ddb389ef8eef206694e0588c459137155d2911c60e7c077df2b
+  sha256: 834179824670b793d1b94abd8d741dff7acedd7a7c6b69ee25047389d0eabafa
 - id: LANE-LEITURA
   seam_id: SEAM-LEITURA
   owner: leitura
   path: seamwise/swimlanes/LANE-LEITURA.md
-  sha256: 65ab5605f13adab51f77b832eaec1cfe80f390de4eb14113c240cba062a54f3a
+  sha256: 0634d8a386b5a51420f63be331fd5dec9cfb615e3d24f5743f114896ec58d8dc
 - id: LANE-AGREGACAO
   seam_id: SEAM-AGREGACAO
   owner: agregacao
   path: seamwise/swimlanes/LANE-AGREGACAO.md
-  sha256: 8a7b5dd0bed5915ff7a65a93ab3762e33ec8537cc71ccba19e33b8584203602a
+  sha256: 60bf3a273d8d5e5d3c4ce6fcaa92f6ddd35df0360acf802e3cacdd502ea5b262
 - id: LANE-JUIZO
   seam_id: SEAM-JUIZO
   owner: juizo
   path: seamwise/swimlanes/LANE-JUIZO.md
-  sha256: 5f13970df1d4ca956754d3a0b6fd214c2415ecff4fca2524b663bd2a134c097d
+  sha256: 241b859186827caf40267f497cf1904b629b18a8b734fc9277f2a9fc2c3165b8
 - id: LANE-EVIDENCIA
   seam_id: SEAM-EVIDENCIA
   owner: evidencia
   path: seamwise/swimlanes/LANE-EVIDENCIA.md
-  sha256: 3b5e3490ae9b2f8105b415cde67ded36723601a6f33636d3fb21214a4452d1cf
+  sha256: 747930fd0ab7054b7fa0d6c071567b7e53f9cb392fd09a5af453422a3e09cf57
 - id: LANE-ORQUESTRACAO
   seam_id: SEAM-ORQUESTRACAO
   owner: orquestracao
@@ -36,33 +36,33 @@ swimlanes:
   seam_id: SEAM-FRONTEIRA
   owner: fronteira
   path: seamwise/swimlanes/LANE-FRONTEIRA.md
-  sha256: 71af51bd3fab09c8f00b8a36b1d287ffbf4c13847379c5d7bc298a4262515077
+  sha256: 2902772ec15adcd76076ccba85e64bf188849a4aaddee34b50f0551fdaff340f
 legs:
 - id: LEG-CONTRATO-RECUSA-SEM-ANCORA
   seam_id: SEAM-CONTRATO
   swimlane_id: LANE-CONTRATO
   path: seamwise/legs/LEG-CONTRATO-RECUSA-SEM-ANCORA.md
-  sha256: 58ac97947592fe07d3761cfb348459e0d5e3c8d19044ed269372c914592efcbf
+  sha256: 4823bc5a32ad28023c51527a45ca182594d7cc46c996e8db6ad88a22acffe451
 - id: LEG-LEITURA-POSICIONAL
   seam_id: SEAM-LEITURA
   swimlane_id: LANE-LEITURA
   path: seamwise/legs/LEG-LEITURA-POSICIONAL.md
-  sha256: 09e218b811801bf57c3e6e9359bf4a5773f37f347c48b409390ea45c2095e0b4
+  sha256: 89ddcb5c4e323308daf17b2a0558b7cebdd9ab460a245983832a262bd62daed7
 - id: LEG-AGREGADO-EXATO
   seam_id: SEAM-AGREGACAO
   swimlane_id: LANE-AGREGACAO
   path: seamwise/legs/LEG-AGREGADO-EXATO.md
-  sha256: 94931e7fab8ba8140a46279f67e50bcdb179b9fc3001947a59ba406b86df7178
+  sha256: 6cd0375ac6bb16eaf57e630f6c4b3405db31d693211f19c1d99b7afdb5262c32
 - id: LEG-JUIZO-ACUSA
   seam_id: SEAM-JUIZO
   swimlane_id: LANE-JUIZO
   path: seamwise/legs/LEG-JUIZO-ACUSA.md
-  sha256: 722432f019464c94f280bb65d9705050119ceef9fda4b7c268a0eb8a55d291e7
+  sha256: 6ad6014a4f1fbcad0195bb21ba12f43662d1456cceb3c6712e373c3caf6c251f
 - id: LEG-EVIDENCIA-RECONSTROI
   seam_id: SEAM-EVIDENCIA
   swimlane_id: LANE-EVIDENCIA
   path: seamwise/legs/LEG-EVIDENCIA-RECONSTROI.md
-  sha256: 0bbb047280c519010914b7922816544ac4de97fab7b5532388f861a6ef6ef150
+  sha256: f652f03aa7ae8269278da8aed5650826511f8426e8a7095796519acc399eaec8
 - id: LEG-DESFECHO-COM-PACOTE
   seam_id: SEAM-ORQUESTRACAO
   swimlane_id: LANE-ORQUESTRACAO
@@ -72,7 +72,7 @@ legs:
   seam_id: SEAM-FRONTEIRA
   swimlane_id: LANE-FRONTEIRA
   path: seamwise/legs/LEG-ENVELOPE-VINCULADO.md
-  sha256: 17745ca0edd1e15429dea615c5243c169bfa5382864ea985d30805ce4a9ef63f
+  sha256: f1217601fc5765cd47c3e5eac2f3d6a85c94fe5e01384fde0e3acede02af6402
 steel_thread:
 - LEG-CONTRATO-RECUSA-SEM-ANCORA
 - LEG-LEITURA-POSICIONAL
@@ -131,7 +131,68 @@ objections:
   owner: Bruno Nunes
   rationale: 'B-2 da orquestração declara o desfecho quando o gravador falha: ERRO com código próprio,
     nunca ACEITO sem pacote — autorização sem evidência é o que a fábrica existe para impedir.'
+- id: OBJ-R2-C1
+  status: ACCEPTED
+  summary: O fluxo não construiria o produtor Spark nem a infraestrutura que o ADR 0005 menciona — dava
+    para fechar a cadeia com Python e envelope sintético, sem produtor real.
+  owner: Bruno Nunes
+  rationale: 'ACCEPTED aqui significa RECEBIDA E DECIDIDA SEM MUDANÇA — o schema do seamwise só admite
+    FIXED, ACCEPTED e OPEN, e esta objeção foi REFUTADA, não corrigida. A objeção lê o ADR 0005 como se
+    ele encomendasse o produtor; ele decide QUAL motor julga — Spark grava, Python puro confere — e existe
+    justamente para que o juiz não herde os defeitos de quem ele julga. O carregamento em Spark e MinIO
+    já está em out_of_scope desta receita, com o motivo escrito: o juízo precisa existir antes de haver
+    o que julgar, e entra como plano próprio depois deste. A tensão com a tech-spec que a objeção aponta
+    é a mesma exclusão, vista do outro lado — não há contradição a resolver. Construir o produtor aqui
+    apagaria a separação de motores que o ADR 0005 estabelece. Segunda vez que esta objeção aparece; a
+    primeira virou a sétima costura, e a reincidência mostra que o que faltava não era mais uma correção,
+    e sim esta decisão explícita.'
+- id: OBJ-R2-C2
+  status: FIXED
+  summary: A regra que EU escrevi na rodada 1 confundia contagem de defeitos com linhas inválidas, e recusaria
+    a competência 2026-01, que está correta.
+  owner: Bruno Nunes
+  rationale: 'Verificado contra a âncora medida: linhas_invalidas=0 com milhões de truncamentos válidos.
+    B-2 da fronteira passou a confrontar linhas_invalidas só com defeitos do tipo VALOR_ILEGIVEL — truncamento
+    é defeito numa linha válida.'
+- id: OBJ-R2-C3
+  status: FIXED
+  summary: O hash ancorado não dizia se cobria o ZIP publicado ou o CSV extraído sobre o qual a âncora
+    foi medida.
+  owner: Bruno Nunes
+  rationale: 'Verificado no repositório: CHECKSUMS.txt traz só o sha256 do ZIP, e a âncora foi medida
+    no CSV, que não tem hash nenhum — trocar o CSV extraído não seria detectado. B-1 do contrato passou
+    a exigir os dois hashes, cada um declarando qual artefato cobre.'
+- id: OBJ-R2-C4
+  status: FIXED
+  summary: O juízo provava ausência de classificação, não classificação única — duas classificações na
+    mesma diferença passariam.
+  owner: Bruno Nunes
+  rationale: 'B-2 do juízo passou a exigir exatamente uma classificação por diferença: zero bloqueia e
+    duas também, porque duas permitem escolher a mais branda na hora de ler.'
+- id: OBJ-R2-C5
+  status: FIXED
+  summary: O pacote podia reproduzir o rótulo do veredito sem preservar a prova que o prende ao arquivo
+    julgado.
+  owner: Bruno Nunes
+  rationale: B-1 da evidência passou a exigir veredito REDERIVADO dos controles, da âncora e dos dois
+    hashes; pacote com rótulo trocado é recusado, e pacote sem os hashes é recusado antes disso.
+- id: OBJ-R2-C6
+  status: FIXED
+  summary: A regra que EU escrevi na rodada 1 — descrição com exatamente 20 caracteres — deixava de fora
+    o exemplo principal do ADR 0004.
+  owner: Bruno Nunes
+  rationale: 'Verificado: ''Pensão por Morte de '' tem bruto=20 e strip=19; medindo após strip, os códigos
+    01, 03, 23 e 59 não emitiriam defeito. B-2 da leitura passou a medir o campo BRUTO ocupando os 20
+    caracteres do layout.'
+- id: OBJ-R2-C7
+  status: FIXED
+  summary: Os cinco controles não tinham semântica para registros ilegíveis — cada implementação decidiria
+    se contá-los.
+  owner: Bruno Nunes
+  rationale: 'B-1 da agregação passou a exigir que cada controle declare se conta o ilegível: count_linhas
+    conta todo registro lido, os quatro monetários somam só os legíveis. Contar o ilegível no monetário
+    somaria zero e faria a âncora medida deixar de bater.'
 contentions: []
 steel_thread_path: seamwise/steel-thread.md
 steel_thread_sha256: ffb28ecb19188999bee9ce19aa55f8f43a0d1e1bd3e01017d7f9ad3a6d47fb7b
-review_authority_sha256: 7f9dcaf474d454930619187a8f45edf1e3b60efde1f2f468d0f98fef903d9701
+review_authority_sha256: 8617c1cfe8ec01f2a4bbc55947f5bbdf98405d4fcd6499b600138ec5c40f38e6

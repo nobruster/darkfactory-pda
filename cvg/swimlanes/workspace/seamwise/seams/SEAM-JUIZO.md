@@ -62,11 +62,13 @@ swimlane:
         then: os cinco controles são comparados individualmente e qualquer divergência recusa — soma e
           contagem iguais não bastam
       - id: B-2
-        given: uma diferença de cada uma das seis classificações, incluindo um controle divergente marcado
-          CONFIRMED
+        given: uma diferença de cada uma das seis classificações, uma sem classificação nenhuma, e uma
+          marcada com DUAS ao mesmo tempo
         when: o veredito é calculado
-        then: divergência em qualquer controle RECUSA mesmo classificada; fora dos controles, MODERN_DEFECT,
-          CONTRACT_AMBIGUITY e UNRESOLVED bloqueiam e as três CONFIRMED/APPROVED apenas registram
+        then: cada diferença carrega exatamente uma classificação — zero bloqueia e duas também, porque
+          duas permitem escolher a mais branda na hora de ler; divergência em qualquer controle RECUSA
+          mesmo classificada; fora dos controles, MODERN_DEFECT, CONTRACT_AMBIGUITY e UNRESOLVED bloqueiam
+          e as três CONFIRMED/APPROVED apenas registram
       evals:
       - id: eval_1
         description: Linha a menos recusa; extremos alterados com soma igual também
@@ -79,8 +81,8 @@ swimlane:
         verifies:
         - B-2
       - id: eval_3
-        description: Defeito observado sem classificação bloqueia
-        bash: pytest -q tests/test_juizo.py -k defeito_sem_classe
+        description: Sem classificação bloqueia; DUAS classificações também
+        bash: pytest -q tests/test_juizo.py -k "defeito_sem_classe or classificacao_unica"
         verifies:
         - B-1
         - B-2

@@ -2,7 +2,7 @@ FORK: B (task-driven) — rota única desde a v3.4 — o consenso sempre entrega
 
 > Projetado de `LANE-JUIZO.md` pelo Seamwise.
 > **Não edite aqui** — edite a recipe e rode `seamwise plan`.
-> origem sha256: `5f13970df1d4ca956754d3a0b6fd214c2415ecff4fca2524b663bd2a134c097d`
+> origem sha256: `241b859186827caf40267f497cf1904b629b18a8b734fc9277f2a9fc2c3165b8`
 
 ---
 
@@ -14,7 +14,7 @@ id: LANE-JUIZO
 name: Juízo lane
 owner: juizo
 seam_id: SEAM-JUIZO
-source_seam_sha256: 34b0096968f0bf7b9b48e9e9f90bb76ccf82f7bcf6cf9477c6999292558627dc
+source_seam_sha256: ece9904fa201a63366f43e9607dfdd0b8202b6d2389657c116ca6cb0067f9074
 legs:
 - LEG-JUIZO-ACUSA
 ---

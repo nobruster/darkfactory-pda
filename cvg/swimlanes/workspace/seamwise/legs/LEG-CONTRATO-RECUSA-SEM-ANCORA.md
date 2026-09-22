@@ -32,18 +32,21 @@ tasks:
   - contracts/competencia-202601.yaml
   behavior:
   - id: B-1
-    given: um contrato com os cinco controles nomeados, a procedência e o layout posicional
+    given: um contrato com os cinco controles nomeados, a procedência, o layout posicional e os DOIS hashes
+      — o do ZIP publicado e o do CSV extraído sobre o qual a âncora foi medida
     when: o contrato é carregado
-    then: âncora, procedência e layout saem juntos; a mesma âncora sem aprovador ou sem data de medição
-      resulta em NAO_MEDIDO
+    then: âncora, procedência, layout e os dois hashes saem juntos, cada um dizendo qual artefato cobre;
+      falta o hash do CSV e o resultado é NAO_MEDIDO, porque hoje só o ZIP tem checksum e a âncora foi
+      medida no CSV — sem o par, trocar o CSV extraído não seria detectado; sem aprovador ou sem data
+      também é NAO_MEDIDO
   - id: B-2
     given: uma competência sem âncora no contrato
     when: o contrato é carregado
     then: retorna NAO_MEDIDO como valor, sem gravar nem encerrar o processo
   evals:
   - id: eval_1
-    description: Cinco controles com procedência; sem aprovador vira NAO_MEDIDO
-    bash: pytest -q tests/test_contrato.py -k "ancorada or sem_procedencia"
+    description: Cinco controles com procedência; hash do ZIP e do CSV distintos; sem aprovador vira NAO_MEDIDO
+    bash: pytest -q tests/test_contrato.py -k "ancorada or sem_procedencia or hash_zip_e_csv"
     verifies:
     - B-1
   - id: eval_2
@@ -72,7 +75,7 @@ tasks:
   - cvg/docs/adrs
   rollback: Remover o carregador de contrato e seus testes.
   observability: competências ancoradas no contrato
-source_seam_sha256: a071b4826cff30a3b89ae5cc45059e195c6d544fac993d8e1ea55c3f00249f6d
+source_seam_sha256: 172592dfebd03e99a3520522778d804e90e578d09e7f2d9c7299a016421273bd
 ---
 # A fábrica recusa construir sem âncora medida
 
