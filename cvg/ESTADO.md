@@ -136,9 +136,9 @@ Agrupar por descrição somaria quatro espécies numa linha só — **e o total
 continuaria batendo**. É o modo de falha que esta fábrica existe para
 impedir.
 
-## Os 10 ADRs
+## Os 12 ADRs
 
-Seis vigentes. Quatro superseded — e **revisão de ADR se faz com ADR novo**,
+Oito vigentes. Quatro superseded — e **revisão de ADR se faz com ADR novo**,
 nunca editando o antigo: o motivo da mudança é a parte que importa.
 
 | # | Decisão |
@@ -149,6 +149,8 @@ nunca editando o antigo: o motivo da mudança é a parte que importa.
 | [0006](docs/adrs/0006-the-judge-ships-before-the-spark-producer-that-it-will-judge.md) | juízo e produtor Spark são entregáveis separáveis |
 | [0008](docs/adrs/0008-the-description-defect-is-collapsed-identity-not-field-width.md) | o defeito da descrição é identidade colapsada, não largura |
 | [0009](docs/adrs/0009-the-derived-precision-assumes-a-monotonic-sum-with-no-negative-values.md) | a precisão derivada assume soma monotônica; negativo é defeito |
+| [0010](docs/adrs/0010-the-benefit-average-steps-up-between-2025-12-and-2026-01-and-stays.md) | a média por benefício dá um degrau de +6,01% e **fica** |
+| [0011](docs/adrs/0011-competencias-are-disjoint-so-the-lake-total-is-the-sum-of-approved-anchors.md) | competências são disjuntas; o lago é a soma das âncoras |
 
 | superseded | por | porque |
 |---|---|---|
@@ -222,9 +224,25 @@ até lá "120 testes passando" prova a lógica, não a competência.
 outra nasce `NAO_MEDIDO` até alguém medir — faixa medida numa competência
 não vira regra para outra.
 
-⚠️ **Nenhum gate compara competências vizinhas** (ADR 0001). Um salto na
-média passa sem que nada acuse. Está em `out_of_scope` como limite conhecido,
-não resolvido em silêncio.
+⚠️ **Nenhum gate compara competências vizinhas** (ADR 0001). A lacuna agora
+está **medida**, não só nomeada:
+
+| | |
+|---|---|
+| [ADR 0010](docs/adrs/0010-the-benefit-average-steps-up-between-2025-12-and-2026-01-and-stays.md) | a variação **entre** competências — degrau de +6,01% que fica |
+| [ADR 0011](docs/adrs/0011-competencias-are-disjoint-so-the-lake-total-is-the-sum-of-approved-anchors.md) | o **acumulado** delas — 249.571.127 linhas, disjuntas |
+
+Os dois são **fatos, não gates**. Com seis pontos, qualquer limiar seria
+arbitrário — e gate arbitrário recusa o arquivo correto, a falha que esta
+descida encontrou quatro vezes (Regra 9).
+
+⚠️ **Carga incremental, e o acumulado sem gate** (ADR 0011). Os arquivos
+entram somando ao lago, não substituindo. Enquanto o gate do acumulado não
+existir, uma carga pode **perder ou duplicar uma competência inteira** sem que
+nada acuse — a fábrica veria cada mês certo e o lago errado.
+
+`scripts/medir_serie.py` e `scripts/medir_incremental.py` mostram o que a
+fábrica não vê. Nenhum dos dois recusa nada, por escolha declarada.
 
 ⚠️ **O produtor Spark não é deste plano** (ADR 0006). O juízo é exercido
 contra envelope declarado, e isso **não** substitui julgar uma execução de
