@@ -106,10 +106,85 @@ A queixa que sobra é de `T-20260921-contrato-ancora`, que declara
 precisa existir como evidência. É uma tensão da tarefa original, anterior ao
 medalhão.
 
+## O que os quatro agentes acharam
+
+Despachados em paralelo (Regra 8). **Dezenove achados**, cada um medido antes
+de virar correção (Regra 7). Os que mudaram o plano:
+
+| # | Achado | Veredito |
+|---|---|---|
+| C2 | citei ADR **superseded**, e da numeração do *template* | confirmado, corrigido |
+| C1 | `negativ` aparecia **0×** — derrubei o domínio não-negativo | confirmado, corrigido |
+| E1 | *"nomeadas na saída"* afirma isolação sem medi-la | confirmado, corrigido |
+| E4 | `eval_3` dizia cobrir B-2 com `-k` que só tocava B-1 | confirmado, corrigido |
+| — | três tokens passariam com implementação errada | confirmado, corrigido |
+| **🔴** | **nenhum ambiente roda o eval de Bronze** | confirmado, declarado |
+| **🔴** | **minha própria correção recusaria o dado correto** | confirmado, desfeito |
+| — | `src/medalhao/` fora das cercas | **refutado** |
+| ⬜ | Gold produz e ninguém consome | **em aberto** |
+
+### O gate que eu escrevi e recusaria o dado correto
+
+Vinte minutos depois de commitar a correção C3, o quarto agente mirou nela:
+
+```
+gravar_lago.py:87-90 projeta TRÊS colunas — especie_codigo,
+especie_descricao, vl_liquido — mais a de partição.
+NENHUMA é procedência. O hash vai para /tmp/prova-lago.json,
+FORA do lago.
+```
+
+Como eu tinha escrito, Bronze devolveria `NAO_MEDIDO` na partição **correta**,
+a que bate ao centavo. É o **quinto** *"gate que recusaria o arquivo correto"*
+desta fábrica — e eu o escrevi enquanto corrigia outra coisa, apertando o
+oráculo contra um número que não medi.
+
+⚠️ **A Regra 9 tem duas faces, e a segunda é mais fácil de cair.** Afrouxar o
+oráculo é manobra que a gente reconhece; **apertá-lo contra o que não mediu**
+parece rigor.
+
+### A pinça da infraestrutura
+
+| | pytest | leitor de Parquet |
+|---|---|---|
+| host | (fora do PATH) | **nenhum** — sem pyspark, pyarrow, pandas, duckdb, java |
+| `pda-spark` | **não tem** | pyspark 3.5.9 ✅ |
+
+Os três evals de Bronze são `pytest`. Não existe hoje ambiente onde eles rodem
+contra o lago. `required_tools` dizia `[git, bash, python3, pytest]` — falso
+para uma camada que lê `s3a://`. Agora declara `docker` e `pyspark`, e montar
+o ambiente virou **parte da tarefa**, não pressuposto dela.
+
+### O achado refutado
+
+`src/medalhao/` fora das cercas **não é defeito** — e a refutação veio do
+próprio agente que o levantou. `src/` é a **superfície de construção**: tem de
+ser gravável, senão nenhuma tarefa do Pass 8 escreve lá. A cerca é teto do que
+ninguém toca (oráculo, ADRs, medidores); quem estreita `src/` é o
+`creates_paths`. Não mexi nas cercas.
+
+## ⬜ Em aberto — o medalhão não reencontra o juízo
+
+`SEAM-GOLD` produz `gold reconciliado` e **ninguém consome**. `SEAM-JUIZO`
+continua consumindo `[envelope do produtor, contrato validado]`; nada olha
+para Gold.
+
+As dez costuras formam **dois ramos paralelos** que partem de `contrato
+validado` e nunca se reencontram. O `steel_thread` enfileira as dez em
+sequência, o que *parece* cadeia única — mas ordem não cria dependência de
+dado. Gold pode reconciliar e o veredito da fábrica sair sem jamais tê-lo
+visto.
+
+É a mesma classe da `OBJ-C1`, que criou a `SEAM-FRONTEIRA` justamente porque
+*"dava para concluir a cadeia sem nunca conectar o produtor que será
+julgado"*. Precisa ser medido antes de decidir como ligar.
+
 ## O que falta
 
-- [ ] Pass 4 — adversário cross-family **e** os quatro agentes (Regra 8)
-- [ ] Regenerar o `task-plan.json` para que inclua as três costuras
+- [ ] **Ligar Gold ao juízo** — ou registrar por que são ramos separados
+- [ ] Adversário cross-family (o `task-plan.json` precisa ser regenerado antes)
+- [ ] Registrar as 19 objeções no bloco `objections:` da receita
 - [ ] Pass 5 — selar as três folhas
 - [ ] Pass 7, Pass 8
-- [ ] `src/medalhao/` nas **duas** cercas, antes de o Pass 8 escrever lá
+- [ ] Tarefa própria para o lago carregar a procedência (toca `gravar_lago.py`,
+      que está sem Task-Spec — Regra 11)
