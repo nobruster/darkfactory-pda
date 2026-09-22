@@ -1,6 +1,6 @@
 > Projetado de `LEG-DESFECHO-COM-PACOTE.md` pelo Seamwise.
 > **Não edite aqui** — edite a recipe e rode `seamwise plan`.
-> origem sha256: `16f94c24d5b13d9e56e1e0c6a09b8132be0997f41a0b7179313b26aeb32ece3c`
+> origem sha256: `db30f489b8dc30cdb03a22ddffadb11c8d5cf7b29b975377ce3280572f76998f`
 
 ---
 
@@ -42,10 +42,14 @@ tasks:
   - tests/test_orquestracao.py
   behavior:
   - id: B-1
-    given: execução sem âncora, execução que bate, e o arquivo com uma linha removida
+    given: execução sem âncora, execução que bate, e uma execução sobre o arquivo íntegro em que o agregador
+      divergiu de um controle — não o arquivo alterado, cujo sha256 mudaria e faria a fronteira recusar
+      antes de o juízo comparar
     when: a orquestração conduz o fluxo inteiro
     then: as três gravam pacote — ACEITO_SEM_ANCORA, ACEITO e RECUSADO — com códigos de saída distintos,
-      e só ACEITO autoriza publicar
+      e só ACEITO autoriza publicar; o terceiro caso é RECUSADO pelo JUÍZO com hash íntegro, e o teste
+      falha se um juízo que aceita tudo for injetado, provando que a integração chama e respeita o juízo,
+      como R-7 exige
   - id: B-2
     given: uma exceção real levantada dentro da leitura, e uma execução que estoura o limite de tempo
     when: a orquestração conduz a execução
@@ -55,8 +59,8 @@ tasks:
       sem evidência é o que esta fábrica existe para impedir
   evals:
   - id: eval_1
-    description: Os quatro desfechos gravam pacote com código próprio
-    bash: pytest -q tests/test_orquestracao.py -k desfechos
+    description: Os quatro desfechos gravam pacote; juízo permissivo injetado faz o teste falhar
+    bash: pytest -q tests/test_orquestracao.py -k "desfechos or juizo_permissivo_falha"
     verifies:
     - B-1
   - id: eval_2
@@ -85,7 +89,7 @@ tasks:
   - cvg/docs/adrs
   rollback: Remover a orquestração e seus testes.
   observability: desfechos por tipo e segundos até o veredito
-source_seam_sha256: 52da5c86fe059445eea2a21aad92340aa77f5ccc68d841d09e3070022c4e357b
+source_seam_sha256: fd89ea958bca1e7b48352427d924ded930b6159a2d39e57eb3a6a847ee1c52b2
 ---
 # Todo caminho termina com pacote e código de saída
 

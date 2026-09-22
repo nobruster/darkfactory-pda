@@ -58,19 +58,21 @@ swimlane:
         given: uma execução com âncora, outra que terminou antes da leitura, e um pacote adulterado onde
           só o rótulo do veredito foi trocado
         when: o pacote é lido de volta
-        then: o veredito é REDERIVADO dos cinco controles, da âncora e dos dois hashes gravados — nunca
-          lido do rótulo; o pacote adulterado é recusado porque o rótulo discorda do que os controles
-          produzem, e um pacote sem os hashes do ZIP e do CSV é recusado antes disso, já que sem eles
-          o veredito não se prende a arquivo nenhum; campos não percorridos são marcados ausentes, nunca
-          zerados
+        then: o veredito é REDERIVADO dos cinco controles, da âncora, das classificações de cada diferença
+          e dos hashes gravados — nunca lido do rótulo; o pacote adulterado é recusado porque o rótulo
+          discorda do que esses insumos produzem. A ausência de hash não é recusa incondicional — ela
+          decide o veredito, porque sem hash do CSV o desfecho é ACEITO_SEM_ANCORA com causa NAO_MEDIDO
+          e o pacote é válido; recusar aqui impediria de gravar justamente a execução que não tinha âncora.
+          Só é recusado o pacote cujo rótulo não bate com o que os insumos rederivam; campos não percorridos
+          são marcados ausentes, nunca zerados
       - id: B-2
         given: duas execuções da mesma competência
         when: a segunda é gravada
         then: as duas coexistem — a segunda não sobrescreve a primeira
       evals:
       - id: eval_1
-        description: Veredito rederivado; rótulo trocado e pacote sem hashes são recusados
-        bash: pytest -q tests/test_evidencia.py -k "rederiva or ausente or rotulo_adulterado or sem_hashes"
+        description: Rederiva com classificações; rótulo trocado recusa; sem hash grava ACEITO_SEM_ANCORA
+        bash: pytest -q tests/test_evidencia.py -k "rederiva or ausente or rotulo_adulterado or sem_hash_aceito_sem_ancora"
         verifies:
         - B-1
       - id: eval_2

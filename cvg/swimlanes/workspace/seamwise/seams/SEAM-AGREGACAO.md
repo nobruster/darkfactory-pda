@@ -62,10 +62,11 @@ swimlane:
         given: um valor de ponto flutuante em campo monetário, e um lote com registros ilegíveis misturados
           aos válidos
         when: o agregado é calculado
-        then: o float é recusado com erro explícito; o agregado traz os cinco controles nomeados e cada
-          um declara se conta o ilegível — count_linhas conta TODO registro lido, os quatro monetários
-          somam só os legíveis, e o ilegível aparece em linhas_invalidas; contar o ilegível no monetário
-          somaria zero e faria a âncora medida deixar de bater
+        then: o float é recusado com erro explícito; os cinco controles são DOIS de contagem e TRÊS monetários,
+          e só sum_vl_liquido é soma — count_linhas conta todo registro lido, linhas_invalidas conta só
+          os ilegíveis, e sum, min e max ignoram o ilegível em vez de tratá-lo como 0.00; o teste prova
+          que o ilegível foi EXCLUÍDO, nunca comparando totais, porque preencher com 0.00 não muda a soma,
+          não muda max e não muda min — min já é 0.00 na fonte — e passaria despercebido pelos três
       - id: B-2
         given: um contexto decimal de precisão baixa, valores em empate exato, e a alternativa meio-para-cima
         when: o total é calculado
@@ -75,8 +76,8 @@ swimlane:
           total
       evals:
       - id: eval_1
-        description: Float recusado; cinco controles nomeados e ilegível declarado em cada um
-        bash: pytest -q tests/test_agregacao.py -k "recusa_float or cinco_controles or ilegivel_conta_em_linhas"
+        description: Float recusado; dois de contagem e três monetários; ilegível excluído, não zerado
+        bash: pytest -q tests/test_agregacao.py -k "recusa_float or cinco_controles or ilegivel_excluido_nao_zerado"
         verifies:
         - B-1
       - id: eval_2

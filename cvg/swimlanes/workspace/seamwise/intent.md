@@ -18,8 +18,10 @@ out_of_scope:
 - Corrigir defeitos da fonte — a fábrica classifica, nunca corrige.
 - Substituir o carregamento atual, que segue rodando em paralelo.
 - O ETL a jusante que consome o resultado.
-- O carregamento ao lago em Spark e MinIO. Não é incógnita - o ADR 0005 decidiu que os motores são separados,
-  e o juízo precisa existir antes de haver o que julgar. Entra como plano próprio depois deste.
+- O carregamento ao lago em Spark e MinIO. Não é incógnita - o ADR 0006 decidiu que o juízo e o produtor
+  são entregáveis separáveis, e que a infra ausente não impede construir nem provar o juízo. Entra como
+  plano próprio, contra o envelope que a SEAM-FRONTEIRA já contrata. O ADR 0006 supersedes a linha de
+  escopo do 0005, que prendia a infra a este mesmo plano.
 ---
 # Conferir uma competência do PDA contra âncora medida antes de publicar
 

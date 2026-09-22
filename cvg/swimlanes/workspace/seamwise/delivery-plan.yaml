@@ -1,6 +1,6 @@
 schema_version: 1
 status: DELIVERY_PLAN=READY
-seam_map_sha256: b95450414a1e35efde8ff711d8f0dd4ae5e9a82901bbb1e391d3e9e7875bd18a
+seam_map_sha256: 8d1bfdc03429aaec066467241926cbe1e356b9f38378840e7ef9ad0a6860d435
 swimlanes:
 - id: LANE-CONTRATO
   seam_id: SEAM-CONTRATO
@@ -16,7 +16,7 @@ swimlanes:
   seam_id: SEAM-AGREGACAO
   owner: agregacao
   path: seamwise/swimlanes/LANE-AGREGACAO.md
-  sha256: 60bf3a273d8d5e5d3c4ce6fcaa92f6ddd35df0360acf802e3cacdd502ea5b262
+  sha256: 27e2aa69ce1fe6a24486e43880ba45ed2a62557a08ea7ae41ac68b1aefd9a055
 - id: LANE-JUIZO
   seam_id: SEAM-JUIZO
   owner: juizo
@@ -26,17 +26,17 @@ swimlanes:
   seam_id: SEAM-EVIDENCIA
   owner: evidencia
   path: seamwise/swimlanes/LANE-EVIDENCIA.md
-  sha256: 747930fd0ab7054b7fa0d6c071567b7e53f9cb392fd09a5af453422a3e09cf57
+  sha256: 7357874678367ff6a232c8e9a815d13eaf388821844364ee684cfd2d0457bb07
 - id: LANE-ORQUESTRACAO
   seam_id: SEAM-ORQUESTRACAO
   owner: orquestracao
   path: seamwise/swimlanes/LANE-ORQUESTRACAO.md
-  sha256: ec0e2b0cf81142c4ea2a1c4497bd5a54c8ecb0212aeaa86961b1850819076356
+  sha256: 9a52d897d5fb1f187731f34930a8eb75fc4e0651ca521505d11f248e86f48d35
 - id: LANE-FRONTEIRA
   seam_id: SEAM-FRONTEIRA
   owner: fronteira
   path: seamwise/swimlanes/LANE-FRONTEIRA.md
-  sha256: 2902772ec15adcd76076ccba85e64bf188849a4aaddee34b50f0551fdaff340f
+  sha256: 9a0596b924bb5c612a507fde2c5848174b2fa267ea86bf77a56336476d2e08ec
 legs:
 - id: LEG-CONTRATO-RECUSA-SEM-ANCORA
   seam_id: SEAM-CONTRATO
@@ -52,7 +52,7 @@ legs:
   seam_id: SEAM-AGREGACAO
   swimlane_id: LANE-AGREGACAO
   path: seamwise/legs/LEG-AGREGADO-EXATO.md
-  sha256: 6cd0375ac6bb16eaf57e630f6c4b3405db31d693211f19c1d99b7afdb5262c32
+  sha256: 13dc396650b3598fa6f28c20a87fd314c948f7e2e9c2b56f30d938fc314ba1e3
 - id: LEG-JUIZO-ACUSA
   seam_id: SEAM-JUIZO
   swimlane_id: LANE-JUIZO
@@ -62,17 +62,17 @@ legs:
   seam_id: SEAM-EVIDENCIA
   swimlane_id: LANE-EVIDENCIA
   path: seamwise/legs/LEG-EVIDENCIA-RECONSTROI.md
-  sha256: f652f03aa7ae8269278da8aed5650826511f8426e8a7095796519acc399eaec8
+  sha256: 6d08c1a4a1c7026a99475d7a354c1ab3201173fd319f88043056d313548982dc
 - id: LEG-DESFECHO-COM-PACOTE
   seam_id: SEAM-ORQUESTRACAO
   swimlane_id: LANE-ORQUESTRACAO
   path: seamwise/legs/LEG-DESFECHO-COM-PACOTE.md
-  sha256: 16f94c24d5b13d9e56e1e0c6a09b8132be0997f41a0b7179313b26aeb32ece3c
+  sha256: db30f489b8dc30cdb03a22ddffadb11c8d5cf7b29b975377ce3280572f76998f
 - id: LEG-ENVELOPE-VINCULADO
   seam_id: SEAM-FRONTEIRA
   swimlane_id: LANE-FRONTEIRA
   path: seamwise/legs/LEG-ENVELOPE-VINCULADO.md
-  sha256: f1217601fc5765cd47c3e5eac2f3d6a85c94fe5e01384fde0e3acede02af6402
+  sha256: 70739b0560976a1f7c2f54c8ea58977981987ac1d20e90a305625352c5adf9e1
 steel_thread:
 - LEG-CONTRATO-RECUSA-SEM-ANCORA
 - LEG-LEITURA-POSICIONAL
@@ -192,7 +192,63 @@ objections:
   rationale: 'B-1 da agregação passou a exigir que cada controle declare se conta o ilegível: count_linhas
     conta todo registro lido, os quatro monetários somam só os legíveis. Contar o ilegível no monetário
     somaria zero e faria a âncora medida deixar de bater.'
+- id: OBJ-R3-C1
+  status: FIXED
+  summary: O ADR 0005 põe a infra Spark no escopo do Pass 3, e o out_of_scope da receita a exclui. Terceira
+    rodada da mesma objeção.
+  owner: Bruno Nunes
+  rationale: 'MINHA REFUTAÇÃO DA 2a RODADA ESTAVA ERRADA. Argumentei que o ADR 0005 só decidia qual motor
+    julga; ele diz na linha 90 que montar a infra "faz parte do escopo, e entra como tarefa no plano do
+    Pass 3". Eu tinha lido a seção Decision e não o resto do documento. O adversário tinha os fatos; eu
+    tinha leitura parcial. A contradição era real e estava entre a doutrina e o plano. Resolvida com o
+    ADR 0006, que SUPERSEDES a parte de escopo do 0005 e registra o fato verificável: a receita das sete
+    costuras não menciona pyspark, e a âncora foi medida por Python sequencial em 64s — juízo e produtor
+    são entregáveis separáveis. A separação de motores do 0005 permanece; é ela que torna a ordem livre.
+    CHECK_ADR=OK.'
+- id: OBJ-R3-C2
+  status: FIXED
+  summary: Minha correção de C5 recusava pacote sem hash incondicionalmente, o que impedia gravar justamente
+    a execução ACEITO_SEM_ANCORA.
+  owner: Bruno Nunes
+  rationale: 'Duas correções minhas se contradiziam. B-1 da evidência passou a tratar ausência de hash
+    como algo que DECIDE o veredito, não que o recusa: sem hash do CSV o desfecho é ACEITO_SEM_ANCORA
+    com causa NAO_MEDIDO, e o pacote é válido. Só é recusado o pacote cujo rótulo não bate com o que os
+    insumos rederivam.'
+- id: OBJ-R3-C3
+  status: FIXED
+  summary: 'Os insumos que eu listei para rederivar o veredito não o determinam: mesmos controles e hashes
+    admitem decisões distintas.'
+  owner: Bruno Nunes
+  rationale: Correto — um defeito fora dos controles com CONFIRMED apenas registra e com UNRESOLVED bloqueia,
+    e as classificações não estavam entre os insumos. B-1 da evidência passou a incluí-las na regra de
+    rederivação.
+- id: OBJ-R3-C4
+  status: FIXED
+  summary: Minha correção de C7 dizia "os quatro monetários somam"; não existem quatro monetários, e min/max
+    não somam.
+  owner: Bruno Nunes
+  rationale: 'Verificado contra a âncora: são DOIS de contagem (count_linhas, linhas_invalidas) e TRÊS
+    monetários (sum, min, max), e só sum é soma. Pior, minha justificativa era aritmeticamente falsa:
+    preencher o ilegível com 0.00 NÃO é detectado por nenhum dos três — a soma não muda, max não muda,
+    e min já é 0.00 na fonte. Só linhas_invalidas acusa. B-1 da agregação passou a exigir que o teste
+    prove EXCLUSÃO do ilegível, nunca comparando totais.'
+- id: OBJ-R3-C5
+  status: FIXED
+  summary: Comparar o hash declarado não prova que ele veio dos bytes lidos — um produtor com cache errado
+    pode copiar o hash ancorado.
+  owner: Bruno Nunes
+  rationale: B-1 da fronteira passou a declarar o sha256 como SAÍDA do leitor, computada sobre os mesmos
+    bytes que alimentaram os controles, e a recusar o envelope cujo hash declarado discorda do que o leitor
+    computou. Igualdade com o ancorado não bastava.
+- id: OBJ-R3-C6
+  status: FIXED
+  summary: 'A prova integrada de R-7 passaria sem exercitar o juízo: remover uma linha muda o hash, e
+    a fronteira recusa antes da comparação.'
+  owner: Bruno Nunes
+  rationale: 'B-1 da orquestração trocou o caso: agora é o arquivo ÍNTEGRO com o agregador divergindo
+    de um controle, recusado pelo JUÍZO com hash válido. E o teste falha se um juízo permissivo for injetado
+    — é isso que prova que a integração chama e respeita o juízo, como R-7 exige.'
 contentions: []
 steel_thread_path: seamwise/steel-thread.md
 steel_thread_sha256: ffb28ecb19188999bee9ce19aa55f8f43a0d1e1bd3e01017d7f9ad3a6d47fb7b
-review_authority_sha256: 8617c1cfe8ec01f2a4bbc55947f5bbdf98405d4fcd6499b600138ec5c40f38e6
+review_authority_sha256: 1d36b635164f166cbcc7164dc7e6e481069a5f49199de1c4695f6acf3a7d431f

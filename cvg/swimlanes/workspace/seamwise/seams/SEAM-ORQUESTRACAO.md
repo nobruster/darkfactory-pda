@@ -61,10 +61,14 @@ swimlane:
       - tests/test_orquestracao.py
       behavior:
       - id: B-1
-        given: execução sem âncora, execução que bate, e o arquivo com uma linha removida
+        given: execução sem âncora, execução que bate, e uma execução sobre o arquivo íntegro em que o
+          agregador divergiu de um controle — não o arquivo alterado, cujo sha256 mudaria e faria a fronteira
+          recusar antes de o juízo comparar
         when: a orquestração conduz o fluxo inteiro
         then: as três gravam pacote — ACEITO_SEM_ANCORA, ACEITO e RECUSADO — com códigos de saída distintos,
-          e só ACEITO autoriza publicar
+          e só ACEITO autoriza publicar; o terceiro caso é RECUSADO pelo JUÍZO com hash íntegro, e o teste
+          falha se um juízo que aceita tudo for injetado, provando que a integração chama e respeita o
+          juízo, como R-7 exige
       - id: B-2
         given: uma exceção real levantada dentro da leitura, e uma execução que estoura o limite de tempo
         when: a orquestração conduz a execução
@@ -74,8 +78,8 @@ swimlane:
           autorização sem evidência é o que esta fábrica existe para impedir
       evals:
       - id: eval_1
-        description: Os quatro desfechos gravam pacote com código próprio
-        bash: pytest -q tests/test_orquestracao.py -k desfechos
+        description: Os quatro desfechos gravam pacote; juízo permissivo injetado faz o teste falhar
+        bash: pytest -q tests/test_orquestracao.py -k "desfechos or juizo_permissivo_falha"
         verifies:
         - B-1
       - id: eval_2

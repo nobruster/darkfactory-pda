@@ -133,6 +133,62 @@ objections:
   rationale: 'B-1 da agregação passou a exigir que cada controle declare se conta o ilegível: count_linhas
     conta todo registro lido, os quatro monetários somam só os legíveis. Contar o ilegível no monetário
     somaria zero e faria a âncora medida deixar de bater.'
+- id: OBJ-R3-C1
+  status: FIXED
+  summary: O ADR 0005 põe a infra Spark no escopo do Pass 3, e o out_of_scope da receita a exclui. Terceira
+    rodada da mesma objeção.
+  owner: Bruno Nunes
+  rationale: 'MINHA REFUTAÇÃO DA 2a RODADA ESTAVA ERRADA. Argumentei que o ADR 0005 só decidia qual motor
+    julga; ele diz na linha 90 que montar a infra "faz parte do escopo, e entra como tarefa no plano do
+    Pass 3". Eu tinha lido a seção Decision e não o resto do documento. O adversário tinha os fatos; eu
+    tinha leitura parcial. A contradição era real e estava entre a doutrina e o plano. Resolvida com o
+    ADR 0006, que SUPERSEDES a parte de escopo do 0005 e registra o fato verificável: a receita das sete
+    costuras não menciona pyspark, e a âncora foi medida por Python sequencial em 64s — juízo e produtor
+    são entregáveis separáveis. A separação de motores do 0005 permanece; é ela que torna a ordem livre.
+    CHECK_ADR=OK.'
+- id: OBJ-R3-C2
+  status: FIXED
+  summary: Minha correção de C5 recusava pacote sem hash incondicionalmente, o que impedia gravar justamente
+    a execução ACEITO_SEM_ANCORA.
+  owner: Bruno Nunes
+  rationale: 'Duas correções minhas se contradiziam. B-1 da evidência passou a tratar ausência de hash
+    como algo que DECIDE o veredito, não que o recusa: sem hash do CSV o desfecho é ACEITO_SEM_ANCORA
+    com causa NAO_MEDIDO, e o pacote é válido. Só é recusado o pacote cujo rótulo não bate com o que os
+    insumos rederivam.'
+- id: OBJ-R3-C3
+  status: FIXED
+  summary: 'Os insumos que eu listei para rederivar o veredito não o determinam: mesmos controles e hashes
+    admitem decisões distintas.'
+  owner: Bruno Nunes
+  rationale: Correto — um defeito fora dos controles com CONFIRMED apenas registra e com UNRESOLVED bloqueia,
+    e as classificações não estavam entre os insumos. B-1 da evidência passou a incluí-las na regra de
+    rederivação.
+- id: OBJ-R3-C4
+  status: FIXED
+  summary: Minha correção de C7 dizia "os quatro monetários somam"; não existem quatro monetários, e min/max
+    não somam.
+  owner: Bruno Nunes
+  rationale: 'Verificado contra a âncora: são DOIS de contagem (count_linhas, linhas_invalidas) e TRÊS
+    monetários (sum, min, max), e só sum é soma. Pior, minha justificativa era aritmeticamente falsa:
+    preencher o ilegível com 0.00 NÃO é detectado por nenhum dos três — a soma não muda, max não muda,
+    e min já é 0.00 na fonte. Só linhas_invalidas acusa. B-1 da agregação passou a exigir que o teste
+    prove EXCLUSÃO do ilegível, nunca comparando totais.'
+- id: OBJ-R3-C5
+  status: FIXED
+  summary: Comparar o hash declarado não prova que ele veio dos bytes lidos — um produtor com cache errado
+    pode copiar o hash ancorado.
+  owner: Bruno Nunes
+  rationale: B-1 da fronteira passou a declarar o sha256 como SAÍDA do leitor, computada sobre os mesmos
+    bytes que alimentaram os controles, e a recusar o envelope cujo hash declarado discorda do que o leitor
+    computou. Igualdade com o ancorado não bastava.
+- id: OBJ-R3-C6
+  status: FIXED
+  summary: 'A prova integrada de R-7 passaria sem exercitar o juízo: remover uma linha muda o hash, e
+    a fronteira recusa antes da comparação.'
+  owner: Bruno Nunes
+  rationale: 'B-1 da orquestração trocou o caso: agora é o arquivo ÍNTEGRO com o agregador divergindo
+    de um controle, recusado pelo JUÍZO com hash válido. E o teste falha se um juízo permissivo for injetado
+    — é isso que prova que a integração chama e respeita o juízo, como R-7 exige.'
 contentions: []
 ---
 # System Map

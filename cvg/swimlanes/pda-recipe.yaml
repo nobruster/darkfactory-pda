@@ -22,9 +22,12 @@ intent:
     - Corrigir defeitos da fonte — a fábrica classifica, nunca corrige.
     - Substituir o carregamento atual, que segue rodando em paralelo.
     - O ETL a jusante que consome o resultado.
-    - O carregamento ao lago em Spark e MinIO. Não é incógnita - o ADR 0005
-      decidiu que os motores são separados, e o juízo precisa existir antes
-      de haver o que julgar. Entra como plano próprio depois deste.
+    - O carregamento ao lago em Spark e MinIO. Não é incógnita - o ADR 0006
+      decidiu que o juízo e o produtor são entregáveis separáveis, e que a
+      infra ausente não impede construir nem provar o juízo. Entra como
+      plano próprio, contra o envelope que a SEAM-FRONTEIRA já contrata.
+      O ADR 0006 supersedes a linha de escopo do 0005, que prendia a infra
+      a este mesmo plano.
 system_map:
   claim: proposed
   components:
@@ -86,6 +89,9 @@ decisions:
       Spark grava no lago, Python puro confere. Um juiz que usa o motor que
       julga herda seus pontos cegos — se a leitura distribuída descartar uma
       das duas colunas Espécie, os dois lados concordariam e nada acusaria.
+      O ADR 0006 supersedeu a parte de ESCOPO do 0005, não esta: a separação
+      de motores continua valendo, e é justamente ela que torna o juízo e o
+      produtor entregáveis separáveis.
 seams:
   - id: SEAM-CONTRATO
     name: Contrato e âncora
@@ -305,15 +311,15 @@ seams:
                 - id: B-1
                   given: um valor de ponto flutuante em campo monetário, e um lote com registros ilegíveis misturados aos válidos
                   when: o agregado é calculado
-                  then: o float é recusado com erro explícito; o agregado traz os cinco controles nomeados e cada um declara se conta o ilegível — count_linhas conta TODO registro lido, os quatro monetários somam só os legíveis, e o ilegível aparece em linhas_invalidas; contar o ilegível no monetário somaria zero e faria a âncora medida deixar de bater
+                  then: o float é recusado com erro explícito; os cinco controles são DOIS de contagem e TRÊS monetários, e só sum_vl_liquido é soma — count_linhas conta todo registro lido, linhas_invalidas conta só os ilegíveis, e sum, min e max ignoram o ilegível em vez de tratá-lo como 0.00; o teste prova que o ilegível foi EXCLUÍDO, nunca comparando totais, porque preencher com 0.00 não muda a soma, não muda max e não muda min — min já é 0.00 na fonte — e passaria despercebido pelos três
                 - id: B-2
                   given: um contexto decimal de precisão baixa, valores em empate exato, e a alternativa meio-para-cima
                   when: o total é calculado
                   then: o resultado é o de HALF_EVEN a duas casas — comparado contra o valor que HALF_UP produziria, e RECUSANDO-o; declarar um modo não basta, o teste falha se a implementação usar meio-para-cima. A perda por precisão baixa também é acusada, e arredondar por campo difere de arredondar no total
               evals:
                 - id: eval_1
-                  description: Float recusado; cinco controles nomeados e ilegível declarado em cada um
-                  bash: pytest -q tests/test_agregacao.py -k "recusa_float or cinco_controles or ilegivel_conta_em_linhas"
+                  description: Float recusado; dois de contagem e três monetários; ilegível excluído, não zerado
+                  bash: pytest -q tests/test_agregacao.py -k "recusa_float or cinco_controles or ilegivel_excluido_nao_zerado"
                   verifies: [B-1]
                 - id: eval_2
                   description: HALF_EVEN recusa o valor que HALF_UP daria; precisão e granularidade
@@ -467,15 +473,15 @@ seams:
                 - id: B-1
                   given: uma execução com âncora, outra que terminou antes da leitura, e um pacote adulterado onde só o rótulo do veredito foi trocado
                   when: o pacote é lido de volta
-                  then: o veredito é REDERIVADO dos cinco controles, da âncora e dos dois hashes gravados — nunca lido do rótulo; o pacote adulterado é recusado porque o rótulo discorda do que os controles produzem, e um pacote sem os hashes do ZIP e do CSV é recusado antes disso, já que sem eles o veredito não se prende a arquivo nenhum; campos não percorridos são marcados ausentes, nunca zerados
+                  then: o veredito é REDERIVADO dos cinco controles, da âncora, das classificações de cada diferença e dos hashes gravados — nunca lido do rótulo; o pacote adulterado é recusado porque o rótulo discorda do que esses insumos produzem. A ausência de hash não é recusa incondicional — ela decide o veredito, porque sem hash do CSV o desfecho é ACEITO_SEM_ANCORA com causa NAO_MEDIDO e o pacote é válido; recusar aqui impediria de gravar justamente a execução que não tinha âncora. Só é recusado o pacote cujo rótulo não bate com o que os insumos rederivam; campos não percorridos são marcados ausentes, nunca zerados
                 - id: B-2
                   given: duas execuções da mesma competência
                   when: a segunda é gravada
                   then: as duas coexistem — a segunda não sobrescreve a primeira
               evals:
                 - id: eval_1
-                  description: Veredito rederivado; rótulo trocado e pacote sem hashes são recusados
-                  bash: pytest -q tests/test_evidencia.py -k "rederiva or ausente or rotulo_adulterado or sem_hashes"
+                  description: Rederiva com classificações; rótulo trocado recusa; sem hash grava ACEITO_SEM_ANCORA
+                  bash: pytest -q tests/test_evidencia.py -k "rederiva or ausente or rotulo_adulterado or sem_hash_aceito_sem_ancora"
                   verifies: [B-1]
                 - id: eval_2
                   description: Duas execuções coexistem, sem overwrite
@@ -547,17 +553,17 @@ seams:
                 - tests/test_orquestracao.py
               behavior:
                 - id: B-1
-                  given: execução sem âncora, execução que bate, e o arquivo com uma linha removida
+                  given: execução sem âncora, execução que bate, e uma execução sobre o arquivo íntegro em que o agregador divergiu de um controle — não o arquivo alterado, cujo sha256 mudaria e faria a fronteira recusar antes de o juízo comparar
                   when: a orquestração conduz o fluxo inteiro
-                  then: as três gravam pacote — ACEITO_SEM_ANCORA, ACEITO e RECUSADO — com códigos de saída distintos, e só ACEITO autoriza publicar
+                  then: as três gravam pacote — ACEITO_SEM_ANCORA, ACEITO e RECUSADO — com códigos de saída distintos, e só ACEITO autoriza publicar; o terceiro caso é RECUSADO pelo JUÍZO com hash íntegro, e o teste falha se um juízo que aceita tudo for injetado, provando que a integração chama e respeita o juízo, como R-7 exige
                 - id: B-2
                   given: uma exceção real levantada dentro da leitura, e uma execução que estoura o limite de tempo
                   when: a orquestração conduz a execução
                   then: a exceção vira ERRO com pacote gravado, e o tempo é medido do início da leitura ao veredito, no total. Se o PRÓPRIO gravador falhar — permissão negada, disco cheio — o desfecho é ERRO com código próprio e a falha vai para a saída de erro; nunca se devolve ACEITO sem pacote, porque autorização sem evidência é o que esta fábrica existe para impedir
               evals:
                 - id: eval_1
-                  description: Os quatro desfechos gravam pacote com código próprio
-                  bash: pytest -q tests/test_orquestracao.py -k desfechos
+                  description: Os quatro desfechos gravam pacote; juízo permissivo injetado faz o teste falhar
+                  bash: pytest -q tests/test_orquestracao.py -k "desfechos or juizo_permissivo_falha"
                   verifies: [B-1]
                 - id: eval_2
                   description: Exceção real vira ERRO; o tempo é medido no total
@@ -644,17 +650,17 @@ seams:
                 - contracts/envelope-produtor.schema.json
               behavior:
                 - id: B-1
-                  given: um envelope sem o sha256 do arquivo lido, e outro cujo sha256 difere do que o contrato ancorou
+                  given: um envelope sem o sha256 do arquivo lido, outro cujo sha256 difere do ancorado, e um terceiro que COPIOU o sha256 ancorado mas foi produzido lendo outro arquivo
                   when: o envelope é validado
-                  then: ambos são recusados — a âncora vale para UM arquivo, e sem esse vínculo uma republicação com os mesmos cinco controles passaria despercebida
+                  then: os três são recusados — o sha256 não é campo declarado e sim SAÍDA do leitor, computado sobre os mesmos bytes que alimentaram os controles e emitido junto com eles; o terceiro é recusado porque o hash que o leitor computou discorda do que o envelope declara, e é esse caso, não a mera igualdade, que prova o vínculo — um hash copiado, com os cinco controles coincidindo, passaria em qualquer teste de igualdade
                 - id: B-2
                   given: um envelope onde linhas_invalidas diverge da contagem de defeitos do tipo VALOR_ILEGIVEL, e outro com linhas_invalidas=0 e defeitos de truncamento, e outro produzido por um motor que não é o juiz
                   when: o envelope é validado
                   then: o primeiro é recusado; o segundo é ACEITO — truncamento é defeito numa linha válida, e a competência 2026-01 tem linhas_invalidas=0 com milhões de truncamentos; o terceiro é aceito sem que o juiz importe nada do motor produtor
               evals:
                 - id: eval_1
-                  description: Sha256 ausente ou divergente do ancorado é recusado
-                  bash: pytest -q tests/test_envelope.py -k "sha_ausente or sha_divergente"
+                  description: Sha ausente, divergente, ou copiado de outro arquivo lido é recusado
+                  bash: pytest -q tests/test_envelope.py -k "sha_ausente or sha_divergente or sha_copiado_outro_arquivo"
                   verifies: [B-1]
                 - id: eval_2
                   description: linhas_invalidas confere com VALOR_ILEGIVEL; truncamento não a incrementa
@@ -840,4 +846,80 @@ objections:
       ilegível: count_linhas conta todo registro lido, os quatro monetários
       somam só os legíveis. Contar o ilegível no monetário somaria zero e
       faria a âncora medida deixar de bater.
+  - id: OBJ-R3-C1
+    status: FIXED
+    summary: >-
+      O ADR 0005 põe a infra Spark no escopo do Pass 3, e o out_of_scope da
+      receita a exclui. Terceira rodada da mesma objeção.
+    owner: Bruno Nunes
+    rationale: >-
+      MINHA REFUTAÇÃO DA 2a RODADA ESTAVA ERRADA. Argumentei que o ADR 0005
+      só decidia qual motor julga; ele diz na linha 90 que montar a infra
+      "faz parte do escopo, e entra como tarefa no plano do Pass 3". Eu
+      tinha lido a seção Decision e não o resto do documento. O adversário
+      tinha os fatos; eu tinha leitura parcial. A contradição era real e
+      estava entre a doutrina e o plano. Resolvida com o ADR 0006, que
+      SUPERSEDES a parte de escopo do 0005 e registra o fato verificável:
+      a receita das sete costuras não menciona pyspark, e a âncora foi
+      medida por Python sequencial em 64s — juízo e produtor são
+      entregáveis separáveis. A separação de motores do 0005 permanece; é
+      ela que torna a ordem livre. CHECK_ADR=OK.
+  - id: OBJ-R3-C2
+    status: FIXED
+    summary: >-
+      Minha correção de C5 recusava pacote sem hash incondicionalmente, o
+      que impedia gravar justamente a execução ACEITO_SEM_ANCORA.
+    owner: Bruno Nunes
+    rationale: >-
+      Duas correções minhas se contradiziam. B-1 da evidência passou a
+      tratar ausência de hash como algo que DECIDE o veredito, não que o
+      recusa: sem hash do CSV o desfecho é ACEITO_SEM_ANCORA com causa
+      NAO_MEDIDO, e o pacote é válido. Só é recusado o pacote cujo rótulo
+      não bate com o que os insumos rederivam.
+  - id: OBJ-R3-C3
+    status: FIXED
+    summary: >-
+      Os insumos que eu listei para rederivar o veredito não o determinam:
+      mesmos controles e hashes admitem decisões distintas.
+    owner: Bruno Nunes
+    rationale: >-
+      Correto — um defeito fora dos controles com CONFIRMED apenas registra
+      e com UNRESOLVED bloqueia, e as classificações não estavam entre os
+      insumos. B-1 da evidência passou a incluí-las na regra de rederivação.
+  - id: OBJ-R3-C4
+    status: FIXED
+    summary: >-
+      Minha correção de C7 dizia "os quatro monetários somam"; não existem
+      quatro monetários, e min/max não somam.
+    owner: Bruno Nunes
+    rationale: >-
+      Verificado contra a âncora: são DOIS de contagem (count_linhas,
+      linhas_invalidas) e TRÊS monetários (sum, min, max), e só sum é soma.
+      Pior, minha justificativa era aritmeticamente falsa: preencher o
+      ilegível com 0.00 NÃO é detectado por nenhum dos três — a soma não
+      muda, max não muda, e min já é 0.00 na fonte. Só linhas_invalidas
+      acusa. B-1 da agregação passou a exigir que o teste prove EXCLUSÃO do
+      ilegível, nunca comparando totais.
+  - id: OBJ-R3-C5
+    status: FIXED
+    summary: >-
+      Comparar o hash declarado não prova que ele veio dos bytes lidos —
+      um produtor com cache errado pode copiar o hash ancorado.
+    owner: Bruno Nunes
+    rationale: >-
+      B-1 da fronteira passou a declarar o sha256 como SAÍDA do leitor,
+      computada sobre os mesmos bytes que alimentaram os controles, e a
+      recusar o envelope cujo hash declarado discorda do que o leitor
+      computou. Igualdade com o ancorado não bastava.
+  - id: OBJ-R3-C6
+    status: FIXED
+    summary: >-
+      A prova integrada de R-7 passaria sem exercitar o juízo: remover uma
+      linha muda o hash, e a fronteira recusa antes da comparação.
+    owner: Bruno Nunes
+    rationale: >-
+      B-1 da orquestração trocou o caso: agora é o arquivo ÍNTEGRO com o
+      agregador divergindo de um controle, recusado pelo JUÍZO com hash
+      válido. E o teste falha se um juízo permissivo for injetado — é isso
+      que prova que a integração chama e respeita o juízo, como R-7 exige.
 contentions: []

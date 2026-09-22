@@ -3,9 +3,9 @@ status: SEAM_MAP=READY
 intent_id: DI-PDA-BENEFICIOS
 source_recipe:
   name: pda-recipe.yaml
-  sha256: 0503913154b6bd7f48489dd099bbf421d0ec2c74a060cc8192f4dc588293e04a
-intent_sha256: 01c40fa4e0b6ad03f2d908526c72f61772183c9e2435bafeddd295f092bf8566
-system_map_sha256: d4a29a23e30d4997a86e84a83d0a9c89fdd2008fe816faba2941dca009d786ea
+  sha256: 6de0dbcd8a24b625e8aea7d68191b8e9f09cf2e52f3c7e051fb3f25ca64b0362
+intent_sha256: 7e97b240616bd07633d782d99a1b165ec4bd7527e0eeb9e6d2f088f7b0717fff
+system_map_sha256: 7ddb9e62f8b9de9d9f88397b928c4f77477aa8ff92474cb10151112c35aff80e
 evidence_sha256: 2f99c72ec331b73c69d5b61ea60268f45989f9cb56f51cbe9f33d3e9829b6bc3
 decisions:
 - id: ADR-0002-POSICIONAL
@@ -23,7 +23,7 @@ decisions:
 - id: ADR-0005-MOTORES-SEPARADOS
   path: seamwise/decisions/ADR-0005-MOTORES-SEPARADOS.md
   status: accepted
-  sha256: 20ba1994d209da7528fc813c908b87662a794b54e0a151e941555e5f1be26811
+  sha256: 436bbc414cfbee5bd7fe3bce621af38e7a5422f7e68eda8f071d625a5e8e2c94
 seams:
 - id: SEAM-CONTRATO
   path: seamwise/seams/SEAM-CONTRATO.md
@@ -45,7 +45,7 @@ seams:
   evidence:
   - E-ANCORA-202601
   swimlane_id: LANE-AGREGACAO
-  sha256: c2ccb6ad6dcbd028f7f4dc5abd002f8d240d9ed1f100c1fd02a55adfcb1e1c67
+  sha256: 261802931a30d1dd85c995e06baa346dd830d5f1ac45515d1988c2875ceea955
 - id: SEAM-JUIZO
   path: seamwise/seams/SEAM-JUIZO.md
   owner: juizo
@@ -59,18 +59,18 @@ seams:
   evidence:
   - E-ANCORA-202601
   swimlane_id: LANE-EVIDENCIA
-  sha256: b6bdd94507d5133732e25d6b0c385f61906f04f3cb5bcf5fbbce988d9afc3502
+  sha256: 3474e47fccc93c6ac733c088241d5c486d8640ff33c7f4c02457fbda0a0d39c2
 - id: SEAM-ORQUESTRACAO
   path: seamwise/seams/SEAM-ORQUESTRACAO.md
   owner: orquestracao
   evidence:
   - E-ANCORA-202601
   swimlane_id: LANE-ORQUESTRACAO
-  sha256: 52da5c86fe059445eea2a21aad92340aa77f5ccc68d841d09e3070022c4e357b
+  sha256: fd89ea958bca1e7b48352427d924ded930b6159a2d39e57eb3a6a847ee1c52b2
 - id: SEAM-FRONTEIRA
   path: seamwise/seams/SEAM-FRONTEIRA.md
   owner: fronteira
   evidence:
   - E-ANCORA-202601
   swimlane_id: LANE-FRONTEIRA
-  sha256: 10de0ee605ae6930891cdefbd140add95d4586a689748bb1b316cde1174898d0
+  sha256: 79d576add826943381a84fde5b1b3cf823fff30277e7c47dcf9b9a1a5ae40a49

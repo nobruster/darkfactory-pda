@@ -36,10 +36,14 @@ tasks:
   - contracts/envelope-produtor.schema.json
   behavior:
   - id: B-1
-    given: um envelope sem o sha256 do arquivo lido, e outro cujo sha256 difere do que o contrato ancorou
+    given: um envelope sem o sha256 do arquivo lido, outro cujo sha256 difere do ancorado, e um terceiro
+      que COPIOU o sha256 ancorado mas foi produzido lendo outro arquivo
     when: o envelope é validado
-    then: ambos são recusados — a âncora vale para UM arquivo, e sem esse vínculo uma republicação com
-      os mesmos cinco controles passaria despercebida
+    then: os três são recusados — o sha256 não é campo declarado e sim SAÍDA do leitor, computado sobre
+      os mesmos bytes que alimentaram os controles e emitido junto com eles; o terceiro é recusado porque
+      o hash que o leitor computou discorda do que o envelope declara, e é esse caso, não a mera igualdade,
+      que prova o vínculo — um hash copiado, com os cinco controles coincidindo, passaria em qualquer
+      teste de igualdade
   - id: B-2
     given: um envelope onde linhas_invalidas diverge da contagem de defeitos do tipo VALOR_ILEGIVEL, e
       outro com linhas_invalidas=0 e defeitos de truncamento, e outro produzido por um motor que não é
@@ -50,8 +54,8 @@ tasks:
       nada do motor produtor
   evals:
   - id: eval_1
-    description: Sha256 ausente ou divergente do ancorado é recusado
-    bash: pytest -q tests/test_envelope.py -k "sha_ausente or sha_divergente"
+    description: Sha ausente, divergente, ou copiado de outro arquivo lido é recusado
+    bash: pytest -q tests/test_envelope.py -k "sha_ausente or sha_divergente or sha_copiado_outro_arquivo"
     verifies:
     - B-1
   - id: eval_2
@@ -81,7 +85,7 @@ tasks:
   - cvg/docs/adrs
   rollback: Remover o validador de envelope e seus testes.
   observability: envelopes recusados por motivo
-source_seam_sha256: 10de0ee605ae6930891cdefbd140add95d4586a689748bb1b316cde1174898d0
+source_seam_sha256: 79d576add826943381a84fde5b1b3cf823fff30277e7c47dcf9b9a1a5ae40a49
 ---
 # O envelope liga o agregado ao arquivo que o gerou
 

@@ -3,8 +3,8 @@
   "approved": true,
   "kind": "TaskPlan",
   "metadata": {
-    "delivery_plan_review_sha256": "ef77b0bb8be97343cb4ea6d446ada1600259af64f64f129190ac1aac2e6ff9d0",
-    "delivery_plan_sha256": "14435ef5936bbb9210dc51790756b9e83c3e9970a120ee041ff66e0e6a0cb7a5",
+    "delivery_plan_review_sha256": "e9df2c8b5964113cd20a367b4ff261d32ac8e91d2d6443deba538e1c4dd8a3b2",
+    "delivery_plan_sha256": "206ce463676e05168ca975b125d609d731ec438736688f891c0d11493411a4f7",
     "name": "DI-PDA-BENEFICIOS",
     "producer": "seamwise",
     "producer_version": "0.2.0",
@@ -23,7 +23,7 @@
         {
           "given": "um valor de ponto flutuante em campo monetário, e um lote com registros ilegíveis misturados aos válidos",
           "id": "B-1",
-          "then": "o float é recusado com erro explícito; o agregado traz os cinco controles nomeados e cada um declara se conta o ilegível — count_linhas conta TODO registro lido, os quatro monetários somam só os legíveis, e o ilegível aparece em linhas_invalidas; contar o ilegível no monetário somaria zero e faria a âncora medida deixar de bater",
+          "then": "o float é recusado com erro explícito; os cinco controles são DOIS de contagem e TRÊS monetários, e só sum_vl_liquido é soma — count_linhas conta todo registro lido, linhas_invalidas conta só os ilegíveis, e sum, min e max ignoram o ilegível em vez de tratá-lo como 0.00; o teste prova que o ilegível foi EXCLUÍDO, nunca comparando totais, porque preencher com 0.00 não muda a soma, não muda max e não muda min — min já é 0.00 na fonte — e passaria despercebido pelos três",
           "when": "o agregado é calculado"
         },
         {
@@ -49,8 +49,8 @@
       "effort": "M",
       "evals": [
         {
-          "command": "pytest -q tests/test_agregacao.py -k \"recusa_float or cinco_controles or ilegivel_conta_em_linhas\"",
-          "description": "Float recusado; cinco controles nomeados e ilegível declarado em cada um",
+          "command": "pytest -q tests/test_agregacao.py -k \"recusa_float or cinco_controles or ilegivel_excluido_nao_zerado\"",
+          "description": "Float recusado; dois de contagem e três monetários; ilegível excluído, não zerado",
           "expected_duration_sec": 10,
           "id": "eval_1",
           "terminal": false,
@@ -190,9 +190,9 @@
       ],
       "behaviors": [
         {
-          "given": "um envelope sem o sha256 do arquivo lido, e outro cujo sha256 difere do que o contrato ancorou",
+          "given": "um envelope sem o sha256 do arquivo lido, outro cujo sha256 difere do ancorado, e um terceiro que COPIOU o sha256 ancorado mas foi produzido lendo outro arquivo",
           "id": "B-1",
-          "then": "ambos são recusados — a âncora vale para UM arquivo, e sem esse vínculo uma republicação com os mesmos cinco controles passaria despercebida",
+          "then": "os três são recusados — o sha256 não é campo declarado e sim SAÍDA do leitor, computado sobre os mesmos bytes que alimentaram os controles e emitido junto com eles; o terceiro é recusado porque o hash que o leitor computou discorda do que o envelope declara, e é esse caso, não a mera igualdade, que prova o vínculo — um hash copiado, com os cinco controles coincidindo, passaria em qualquer teste de igualdade",
           "when": "o envelope é validado"
         },
         {
@@ -219,8 +219,8 @@
       "effort": "M",
       "evals": [
         {
-          "command": "pytest -q tests/test_envelope.py -k \"sha_ausente or sha_divergente\"",
-          "description": "Sha256 ausente ou divergente do ancorado é recusado",
+          "command": "pytest -q tests/test_envelope.py -k \"sha_ausente or sha_divergente or sha_copiado_outro_arquivo\"",
+          "description": "Sha ausente, divergente, ou copiado de outro arquivo lido é recusado",
           "expected_duration_sec": 10,
           "id": "eval_1",
           "terminal": false,
@@ -278,7 +278,7 @@
         {
           "given": "uma execução com âncora, outra que terminou antes da leitura, e um pacote adulterado onde só o rótulo do veredito foi trocado",
           "id": "B-1",
-          "then": "o veredito é REDERIVADO dos cinco controles, da âncora e dos dois hashes gravados — nunca lido do rótulo; o pacote adulterado é recusado porque o rótulo discorda do que os controles produzem, e um pacote sem os hashes do ZIP e do CSV é recusado antes disso, já que sem eles o veredito não se prende a arquivo nenhum; campos não percorridos são marcados ausentes, nunca zerados",
+          "then": "o veredito é REDERIVADO dos cinco controles, da âncora, das classificações de cada diferença e dos hashes gravados — nunca lido do rótulo; o pacote adulterado é recusado porque o rótulo discorda do que esses insumos produzem. A ausência de hash não é recusa incondicional — ela decide o veredito, porque sem hash do CSV o desfecho é ACEITO_SEM_ANCORA com causa NAO_MEDIDO e o pacote é válido; recusar aqui impediria de gravar justamente a execução que não tinha âncora. Só é recusado o pacote cujo rótulo não bate com o que os insumos rederivam; campos não percorridos são marcados ausentes, nunca zerados",
           "when": "o pacote é lido de volta"
         },
         {
@@ -304,8 +304,8 @@
       "effort": "S",
       "evals": [
         {
-          "command": "pytest -q tests/test_evidencia.py -k \"rederiva or ausente or rotulo_adulterado or sem_hashes\"",
-          "description": "Veredito rederivado; rótulo trocado e pacote sem hashes são recusados",
+          "command": "pytest -q tests/test_evidencia.py -k \"rederiva or ausente or rotulo_adulterado or sem_hash_aceito_sem_ancora\"",
+          "description": "Rederiva com classificações; rótulo trocado recusa; sem hash grava ACEITO_SEM_ANCORA",
           "expected_duration_sec": 10,
           "id": "eval_1",
           "terminal": false,
@@ -532,9 +532,9 @@
       ],
       "behaviors": [
         {
-          "given": "execução sem âncora, execução que bate, e o arquivo com uma linha removida",
+          "given": "execução sem âncora, execução que bate, e uma execução sobre o arquivo íntegro em que o agregador divergiu de um controle — não o arquivo alterado, cujo sha256 mudaria e faria a fronteira recusar antes de o juízo comparar",
           "id": "B-1",
-          "then": "as três gravam pacote — ACEITO_SEM_ANCORA, ACEITO e RECUSADO — com códigos de saída distintos, e só ACEITO autoriza publicar",
+          "then": "as três gravam pacote — ACEITO_SEM_ANCORA, ACEITO e RECUSADO — com códigos de saída distintos, e só ACEITO autoriza publicar; o terceiro caso é RECUSADO pelo JUÍZO com hash íntegro, e o teste falha se um juízo que aceita tudo for injetado, provando que a integração chama e respeita o juízo, como R-7 exige",
           "when": "a orquestração conduz o fluxo inteiro"
         },
         {
@@ -560,8 +560,8 @@
       "effort": "M",
       "evals": [
         {
-          "command": "pytest -q tests/test_orquestracao.py -k desfechos",
-          "description": "Os quatro desfechos gravam pacote com código próprio",
+          "command": "pytest -q tests/test_orquestracao.py -k \"desfechos or juizo_permissivo_falha\"",
+          "description": "Os quatro desfechos gravam pacote; juízo permissivo injetado faz o teste falhar",
           "expected_duration_sec": 10,
           "id": "eval_1",
           "terminal": false,
