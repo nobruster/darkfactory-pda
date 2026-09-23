@@ -182,6 +182,121 @@ def _e_dado(relativo: str, ignorados: Tuple[str, ...]) -> bool:
     return not (nome in ignorados or nome.startswith("_") or nome.startswith("."))
 
 
+NOME_PROVA = "_PROCEDENCIA.json"
+
+
+class ProvaInvalida(Exception):
+    """`_PROCEDENCIA.json` existe mas não é uma prova legível."""
+
+
+def _fs_e_caminho(spark: SparkSession, uri: str):
+    caminho = spark._jvm.org.apache.hadoop.fs.Path(uri)
+    fs = caminho.getFileSystem(spark._jsc.hadoopConfiguration())
+    # o sha256 do manifesto é a verificação; o .crc do FS local levantaria
+    # ChecksumException em vez de deixar o manifesto acusar a diferença
+    fs.setVerifyChecksum(False)
+    return fs, caminho
+
+
+def _sha256_e_tamanho(spark: SparkSession, uri: str) -> Tuple[str, int]:
+    jvm = spark._jvm
+    fs, caminho = _fs_e_caminho(spark, uri)
+    resumo = jvm.java.security.MessageDigest.getInstance("SHA-256")
+    saida = jvm.java.security.DigestOutputStream(jvm.java.io.OutputStream.nullOutputStream(), resumo)
+    entrada = fs.open(caminho)
+    try:
+        jvm.org.apache.hadoop.io.IOUtils.copyBytes(entrada, saida, 65536, False)
+    finally:
+        entrada.close()
+    return bytes(resumo.digest()).hex(), int(fs.getFileStatus(caminho).getLen())
+
+
+def _ler_prova(spark: SparkSession, uri: str) -> dict:
+    jvm = spark._jvm
+    fs, caminho = _fs_e_caminho(spark, uri)
+    saida = jvm.java.io.ByteArrayOutputStream()
+    entrada = fs.open(caminho)
+    try:
+        jvm.org.apache.hadoop.io.IOUtils.copyBytes(entrada, saida, 65536, False)
+    finally:
+        entrada.close()
+    try:
+        prova = json.loads(bytes(saida.toByteArray()).decode("utf-8"))
+    except ValueError as exc:
+        raise ProvaInvalida(f"{NOME_PROVA} não é JSON: {exc}") from exc
+    if not isinstance(prova, dict):
+        raise ProvaInvalida(f"{NOME_PROVA} não é um objeto JSON")
+    for chave, tipo in (("competencia", str), ("csv_sha256", str), ("manifesto", list), ("controles", dict)):
+        if not isinstance(prova.get(chave), tipo):
+            raise ProvaInvalida(f"{NOME_PROVA} sem '{chave}' válido")
+    if not all(isinstance(o, dict) and isinstance(o.get("nome"), str) for o in prova["manifesto"]):
+        raise ProvaInvalida(f"{NOME_PROVA} com manifesto malformado")
+    return prova
+
+
+def _manifesto_observado(
+    spark: SparkSession, objetos: List[Tuple[str, str]], prefixo: str, ignorados: Tuple[str, ...]
+) -> Dict[str, dict]:
+    """Todo objeto sob a partição EXCETO os auxiliares nomeados e a prova — um a um, nunca por prefixo `_`."""
+    isentos = set(ignorados) | {NOME_PROVA}
+    observado: Dict[str, dict] = {}
+    for uri, rel in objetos:
+        if not rel.startswith(prefixo):
+            continue
+        nome = rel[len(prefixo):]
+        if nome in isentos:
+            continue
+        sha, tamanho = _sha256_e_tamanho(spark, uri)
+        observado[nome] = {"nome": nome, "tamanho": tamanho, "sha256": sha}
+    return observado
+
+
+def _numero(valor: Any) -> Optional[Decimal]:
+    if valor is None or valor == "":
+        return None
+    try:
+        return Decimal(str(valor))
+    except ArithmeticError:
+        return None
+
+
+def _diferencas_da_prova(
+    prova: dict, observado: Dict[str, dict], controles: Dict[str, Any], contrato, competencia: str
+) -> List[dict]:
+    difs: List[dict] = []
+    if prova["csv_sha256"] != contrato.procedencia.hash_csv_sha256:
+        difs.append(
+            _diferenca("procedencia", "hash_csv_sha256", contrato.procedencia.hash_csv_sha256, prova["csv_sha256"])
+        )
+    if prova["competencia"] != competencia or prova["competencia"] != contrato.competencia:
+        difs.append(_diferenca("procedencia", "competencia", competencia, prova["competencia"]))
+
+    listado = {o["nome"]: o for o in prova["manifesto"]}
+    for nome in sorted(listado.keys() | observado.keys()):
+        if nome not in listado:
+            difs.append(_diferenca("procedencia", f"manifesto:{nome}", None, "objeto a mais"))
+        elif nome not in observado:
+            difs.append(_diferenca("procedencia", f"manifesto:{nome}", "listado", "objeto a menos"))
+        else:
+            for campo in ("tamanho", "sha256"):
+                if listado[nome].get(campo) != observado[nome][campo]:
+                    difs.append(
+                        _diferenca(
+                            "procedencia", f"manifesto:{nome}:{campo}", listado[nome].get(campo), observado[nome][campo]
+                        )
+                    )
+
+    gravados = prova["controles"]
+    for nome in CONTROLES:
+        medido = controles.get(nome)
+        if nome == "sum_vl_liquido" and medido is None:
+            medido = Decimal(0)
+        esperado = _numero(gravados.get(nome))
+        if esperado is None or _numero(medido) != esperado:
+            difs.append(_diferenca("procedencia", f"controle_da_prova:{nome}", gravados.get(nome), medido))
+    return difs
+
+
 def _valor_da_particao(relativo: str, chave: str) -> Optional[str]:
     partes = relativo.split("/")
     if len(partes) >= 2 and partes[0].startswith(f"{chave}="):
@@ -500,6 +615,14 @@ def _medir(spark, contrato, competencia, raiz, procedencia) -> BronzeConferido:
     if motivo:
         return _erro(competencia, motivo)
 
+    prefixo = f"{part.chave}={competencia}/"
+    prova = None
+    if procedencia is None and any(r == prefixo + NOME_PROVA for _, r in objetos):
+        try:
+            prova = _ler_prova(spark, next(u for u, r in objetos if r == prefixo + NOME_PROVA))
+        except ProvaInvalida as exc:
+            return _erro(competencia, f"PROCEDENCIA_JSON_INVALIDO: {exc}")
+
     bruto = _ler_parquet(spark, arquivos)
     base = bruto.select(
         "especie_codigo", "especie_descricao", "vl_liquido", F.lit(competencia).alias("competencia")
@@ -527,7 +650,11 @@ def _medir(spark, contrato, competencia, raiz, procedencia) -> BronzeConferido:
 
     marcas: List[str] = []
     hash_proc = None
-    if procedencia is None:
+    if prova is not None:
+        hash_proc = prova["csv_sha256"]
+        observado = _manifesto_observado(spark, objetos, prefixo, ignorados)
+        diferencas.extend(_diferencas_da_prova(prova, observado, controles, contrato, competencia))
+    elif procedencia is None:
         marcas.append(PROCEDENCIA_NAO_VINCULADA)
     else:
         hash_proc = procedencia.get("hash_csv_sha256")

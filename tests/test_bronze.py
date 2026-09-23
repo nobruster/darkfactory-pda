@@ -700,3 +700,135 @@ def test_emite_marca_sem_vinculo(spark, tmp_path):
     assert bronze.PROCEDENCIA_NAO_VINCULADA in gravado.marcas
     _, dono, _ = bronze.ler_competencia_publicada(spark, str(tmp_path / "dest"), COMP)
     assert bronze.PROCEDENCIA_NAO_VINCULADA in dono["marcas"]
+
+
+# ---------------------------------------------------------------- procedência lida do lago
+
+import hashlib  # noqa: E402
+
+CONTROLES_BOAS = {
+    "count_linhas": "3",
+    "linhas_invalidas": "0",
+    "sum_vl_liquido": "60.75",
+    "min_vl_liquido": "10.00",
+    "max_vl_liquido": "30.25",
+}
+
+
+def _manifesto_do_disco(particao: Path) -> list:
+    itens = []
+    for p in sorted(particao.rglob("*")):
+        if p.is_file() and not p.name.startswith(".") and p.name not in ("_SUCCESS", "_PROCEDENCIA.json"):
+            dados = p.read_bytes()
+            itens.append(
+                {
+                    "nome": str(p.relative_to(particao)),
+                    "tamanho": len(dados),
+                    "sha256": hashlib.sha256(dados).hexdigest(),
+                }
+            )
+    return itens
+
+
+def _vincular(raiz: Path, **troca) -> dict:
+    particao = raiz / f"competencia={COMP}"
+    prova = {
+        "competencia": COMP,
+        "csv_nome": "teste.csv",
+        "csv_sha256": HASH_CSV,
+        "manifesto": _manifesto_do_disco(particao),
+        "controles": dict(CONTROLES_BOAS),
+    }
+    prova.update(troca)
+    (particao / "_PROCEDENCIA.json").write_text(json.dumps(prova), encoding="utf-8")
+    return prova
+
+
+def test_procedencia_confere_tira_a_marca(spark, tmp_path):
+    raiz = _lago(spark, tmp_path)
+    _vincular(raiz)
+    r = _ler(spark, raiz)
+    assert r.estado == bronze.INTEGRO
+    assert bronze.PROCEDENCIA_NAO_VINCULADA not in r.marcas
+    assert r.hash_procedencia == HASH_CSV
+    gravado = _ler_e_gravar(spark, tmp_path, _contrato(), COMP, raiz, "exec-p")
+    assert gravado.gravacao is not None
+    _, dono, _ = bronze.ler_competencia_publicada(spark, str(tmp_path / "dest"), COMP)
+    assert dono["hash_procedencia"] == HASH_CSV
+    assert bronze.PROCEDENCIA_NAO_VINCULADA not in dono["marcas"]
+
+
+def test_manifesto_confere_objetos_listados(spark, tmp_path):
+    raiz = _lago(spark, tmp_path)
+    prova = _vincular(raiz)
+    assert prova["manifesto"]
+    (raiz / f"competencia={COMP}" / "_SUCCESS").touch()  # auxiliar nomeado no contrato
+    r = _ler(spark, raiz)
+    assert r.estado == bronze.INTEGRO
+    assert r.diferencas == ()
+
+
+def test_controles_da_procedencia_conferidos(spark, tmp_path):
+    raiz = _lago(spark, tmp_path)
+    _vincular(raiz, controles={**CONTROLES_BOAS, "sum_vl_liquido": "60.76"})
+    r = _ler(spark, raiz)
+    assert r.estado == bronze.DIVERGE
+    assert "controle_da_prova:sum_vl_liquido" in _nomes_das_diferencas(r)
+    assert r.linhas is None
+
+
+def test_competencia_da_prova_conferida(spark, tmp_path):
+    raiz = _lago(spark, tmp_path)
+    _vincular(raiz, competencia="2025-12")
+    r = _ler(spark, raiz)
+    assert r.estado == bronze.DIVERGE
+    assert "competencia" in _nomes_das_diferencas(r)
+
+
+def test_sem_procedencia_mantem_a_marca(spark, tmp_path):
+    raiz = _lago(spark, tmp_path)
+    r = _ler(spark, raiz)
+    assert r.estado == bronze.INTEGRO
+    assert bronze.PROCEDENCIA_NAO_VINCULADA in r.marcas
+    assert r.hash_procedencia is None
+
+
+def test_procedencia_json_invalido_e_erro(spark, tmp_path):
+    raiz = _lago(spark, tmp_path)
+    (raiz / f"competencia={COMP}" / "_PROCEDENCIA.json").write_text("{nao e json", encoding="utf-8")
+    r = _ler(spark, raiz)
+    assert r.estado == bronze.ERRO_LEITURA
+    assert "PROCEDENCIA_JSON_INVALIDO" in r.motivo
+    assert r.linhas is None
+
+
+def test_objeto_a_mais_diverge(spark, tmp_path):
+    raiz = _lago(spark, tmp_path)
+    _vincular(raiz)
+    particao = raiz / f"competencia={COMP}"
+    origem = next(p for p in particao.glob("*.parquet"))
+    (particao / "part-extra.parquet").write_bytes(origem.read_bytes())
+    r = _ler(spark, raiz)
+    assert r.estado == bronze.DIVERGE
+    assert "manifesto:part-extra.parquet" in _nomes_das_diferencas(r)
+    assert r.linhas is None
+
+
+def test_hash_da_procedencia_diverge(spark, tmp_path):
+    raiz = _lago(spark, tmp_path)
+    _vincular(raiz, csv_sha256="c" * 64)
+    r = _ler(spark, raiz)
+    assert r.estado == bronze.DIVERGE
+    assert "hash_csv_sha256" in _nomes_das_diferencas(r)
+    assert r.linhas is None
+
+
+def test_objeto_com_underscore_a_mais_diverge(spark, tmp_path):
+    raiz = _lago(spark, tmp_path)
+    _vincular(raiz)
+    particao = raiz / f"competencia={COMP}"
+    origem = next(p for p in particao.glob("*.parquet"))
+    (particao / "_extra.parquet").write_bytes(origem.read_bytes())
+    r = _ler(spark, raiz)
+    assert r.estado == bronze.DIVERGE
+    assert "manifesto:_extra.parquet" in _nomes_das_diferencas(r)
