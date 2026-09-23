@@ -1,0 +1,10 @@
+{
+  "disposition": "accepted",
+  "draft_sha256": "481580c0daca96dfa4d7c175fe617cba6b6c2a129c82ac414455a66a8d640901",
+  "fixture": false,
+  "plan_sha256": "7d7af4b13e7cf76e691bc029007c089200ae9391c877baea5250e6015db4dbb6",
+  "reason": "Pass 4 do medalhao fechado com CHECK_CONSENSUS=OK apos dez rodadas de adversario cross-family e 51 objecoes decididas, procedencia verificada sobre os 6 arquivos do plano. Tres costuras, tres lanes, grafo fechado com cinco estados produzidos.",
+  "reviewed_at": "2026-09-23T03:56:41.463402+00:00",
+  "reviewer": "Bruno Nunes",
+  "schema_version": 1
+}

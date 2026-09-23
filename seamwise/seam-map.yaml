@@ -1,0 +1,44 @@
+schema_version: 1
+status: SEAM_MAP=READY
+intent_id: DI-PDA-MEDALHAO
+source_recipe:
+  name: medalhao-recipe.yaml
+  sha256: 669aa1b0cced497bcc6e61909a738eae67bcc9c7bc7284a407bd53ea1ac64314
+intent_sha256: 77a7a451d74972a865c85bed3b41a33b45cc6e1f5007fc6af52e4425858a161e
+system_map_sha256: d9c0af203fb583004eb1501a3d175b6c3e8035a076bacdf0e001d2f9a97af879
+evidence_sha256: f601d0840184c26f965db2920850c41b94472dd57c4647ccd73dff8b40a9ca3c
+decisions:
+- id: ADR-0002-POSICIONAL
+  path: seamwise/decisions/ADR-0002-POSICIONAL.md
+  status: accepted
+  sha256: 9169d73fdb90b181ed951add20e93350e3bc1627e503dcca90cc04984527a88b
+- id: ADR-0003-HALF-EVEN
+  path: seamwise/decisions/ADR-0003-HALF-EVEN.md
+  status: accepted
+  sha256: b09504c6ee425d8beb540da2be7ac9b72031c58c8e80fa20dbe6ca56f7eb35b6
+- id: ADR-0004-CODIGO-E-CHAVE
+  path: seamwise/decisions/ADR-0004-CODIGO-E-CHAVE.md
+  status: accepted
+  sha256: 6b01f69703c83af46012050459ccf9431e0bc4795c8b87fea37262696cfeb1b3
+seams:
+- id: SEAM-BRONZE
+  path: seamwise/seams/SEAM-BRONZE.md
+  owner: medalhao
+  evidence:
+  - E-ANCORA-202601
+  swimlane_id: LANE-BRONZE
+  sha256: cafd6348439d37f0447861eca772149f4221dcc179c84df891706266a7eb0cec
+- id: SEAM-SILVER
+  path: seamwise/seams/SEAM-SILVER.md
+  owner: medalhao
+  evidence:
+  - E-ESPECIE-TRUNCADA
+  swimlane_id: LANE-SILVER
+  sha256: c23ae1f940fedc72021e9adc623f7bd3eb1e4582bbaf07eb079786b56eff35df
+- id: SEAM-GOLD
+  path: seamwise/seams/SEAM-GOLD.md
+  owner: medalhao
+  evidence:
+  - E-ANCORA-202601
+  swimlane_id: LANE-GOLD
+  sha256: c01c38c14cf3883ae1fb26c805b72d0689eeb1465f5d8e52751acf9b3211806b

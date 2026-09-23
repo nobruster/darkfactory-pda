@@ -1,0 +1,274 @@
+{
+  "api_version": "taskspec.dev/v1",
+  "approved": true,
+  "kind": "TaskPlan",
+  "metadata": {
+    "delivery_plan_review_sha256": "c3a38421e10a893c1e500c0df28538f5cc340d1b8520ab2a8d78655cf1edd4da",
+    "delivery_plan_sha256": "7d7af4b13e7cf76e691bc029007c089200ae9391c877baea5250e6015db4dbb6",
+    "name": "DI-PDA-MEDALHAO",
+    "producer": "seamwise",
+    "producer_version": "0.2.0",
+    "seamwise_plan_status": "DELIVERY_PLAN=READY",
+    "source": "seamwise/task-plan.json"
+  },
+  "units": [
+    {
+      "agent": "any",
+      "anti_patterns": [
+        "Do not conferir só contagem e soma, deixando min, max e linhas_invalidas de fora: a R-5 exige os cinco individualmente, e uma alteração compensada entre duas linhas preserva contagem e soma enquanto empurra o máximo acima do ancorado; instead comparar os cinco, nomeando na saída qual deles divergiu.",
+        "Do not aceitar diferença de centavos como arredondamento: afrouxar a tolerância é editar o oráculo pelo avesso; instead exigir igualdade exata entre Decimal e Decimal.",
+        "Do not reimplementar do zero o que scripts/medir_lago.py já faz, sem citá-lo: os dois passariam a medir a mesma partição com pisos possivelmente diferentes, e medir_lago.py traz a âncora como default de linha de comando em vez de lê-la do contrato; instead partir de medir_lago.py, lendo a âncora do CONTRATO, e declarar no código qual dos dois é o de produção."
+      ],
+      "behaviors": [
+        {
+          "given": "uma partição do lago e o contrato da competência, com a âncora de linhas e de soma medidas na fonte",
+          "id": "B-1",
+          "then": "a contagem e a soma são recalculadas SOBRE A PARTIÇÃO, nunca sobre a união das partições — um agregado sem GROUP BY na coluna de partição não mede partição nenhuma, e foi assim que a leitura da união deu 41.622.553 contra a âncora de 41.572.553 e uma contaminação inexistente foi reportada, quando a partição real batia exato e as 50.000 linhas estavam em competencia=fatia-teste, isolada. A soma é feita com a precisão DECLARADA no contrato, jamais herdada do contexto global, como o ADR 0009 exige, porque qualquer biblioteca importada pode alterar o contexto e o acumulador passaria a perder centavos sem que uma linha deste código mude. Os CINCO controles da âncora são comparados INDIVIDUALMENTE, como a R-5 da tech-spec exige — count_linhas, sum_vl_liquido, min_vl_liquido, max_vl_liquido e linhas_invalidas. Contagem e soma sozinhas não bastam, e não bastam nem juntas: uma alteração COMPENSADA entre duas linhas preserva as duas e ainda assim empurra o máximo acima dos 183.725,76 ancorados, com todos os valores finitos, não negativos e na escala permitida. Silver preservaria a soma e Gold compararia soma e cardinalidade; nenhuma das três veria. Bronze PRODUZ o mapa total_por_codigo — soma exata não quantizada, por código — e ele é parte declarada de 'bronze conferido'. É a ORIGEM do mapa: quem lê o Parquet é quem sabe qual valor pertence a qual código, e uma camada posterior que o recalcule a partir dos mesmos bytes repetiria um erro de atribuição nos dois lados da comparação, aprovando-o. Cada controle que diverge é nomeado na saída, porque saber QUAL falhou é o que separa investigar de adivinhar — e cada diferença recebe EXATAMENTE UMA das seis classificações da R-6 (CONFIRMED_SOURCE_DEFECT, CONFIRMED_LEGACY_DEFECT, APPROVED_BEHAVIOR_CHANGE, MODERN_DEFECT, CONTRACT_AMBIGUITY, UNRESOLVED). DIVERGE é estado de MEDIÇÃO, não classificação: recusar a partição corretamente e entregar diagnóstico sem classificação deixaria a diferença sem dono. Diferença que a camada não saiba classificar recebe UNRESOLVED, que é uma das seis e BLOQUEIA — nunca fica em branco. O tipo monetário da ENTRADA é recusado se não for decimal — a R-4 manda recusar float, nunca convertê-lo, e converter apaga a evidência da entrada proibida: Decimal(str(1.25)) devolve 1.25, finito, não negativo e na escala 2, satisfazendo todas as verificações de domínio enquanto a origem era um DOUBLE. A recusa é do TIPO declarado no esquema do Parquet, antes de ler valor algum. Só então a comparação monetária é entre Decimal e Decimal, e a igualdade é exata — tolerância aqui seria a Regra 3 pelo avesso, afrouxar o oráculo para a camada passar. Todo valor lido é conferido contra o domínio monetário do contrato antes de entrar no acumulador — finito, NÃO NEGATIVO e dentro da escala declarada. A não-negatividade não é preferência, e sim a premissa de soma MONOTÔNICA sob a qual o ADR 0009 deriva a precisão 14 — um valor negativo quebra a premissa e a perda de centavo passa a acontecer DURANTE a soma, onde a comparação final não a enxerga. Bronze lê Parquet, que não passa nem pela gramática do CSV nem pela fronteira do envelope, e por isso é uma TERCEIRA porta de entrada para valores; fechá-la é obrigação desta camada. Valor fora do domínio é defeito classificado com identidade, valor original e posição, nunca somado em silêncio. A procedência do arquivo que originou a partição é APRESENTADA a Bronze junto da leitura — hoje pelo pacote que a gravação emite, não por coluna do Parquet, porque MEDIDO em gravar_lago.py a partição tem três colunas mais a de partição e nenhuma é procedência; exigir que ela viesse do Parquet faria Bronze devolver NAO_MEDIDO na partição CORRETA, que é o defeito da Regra 9 pelo avesso. Quando apresentada, o hash_csv_sha256 é comparado com o ancorado e divergência é DIVERGE, porque reproduzir os dois controles não distingue o arquivo ancorado de outro com os mesmos totais, e a âncora vale para UM arquivo. Fazer a partição carregar a procedência é melhoria desejável e exige tarefa própria, por tocar em gravar_lago.py, que está sem Task-Spec (Regra 11) — enquanto não existir, a ausência do vínculo tem CONSEQUÊNCIA definida e propagada — 'bronze conferido' sai marcado PROCEDENCIA_NAO_VINCULADA, Silver e Gold propagam a marca sem removê-la, e Gold NÃO PUBLICA sob ela. Registrar só uma ressalva deixaria a cadeia publicar partição diferente da ancorada, porque o hash correto num pacote sem vínculo verificável com a partição lida satisfaz a comparação textual e não prova nada. Partição que diverge é DIVERGE, e Bronze não escreve nada",
+          "when": "Bronze lê a partição"
+        },
+        {
+          "given": "uma competência cuja partição não existe no lago, existe com zero linhas, ou existe e não está vazia mas NÃO tem âncora declarada no contrato",
+          "id": "B-2",
+          "then": "retorna NAO_MEDIDO como valor nos três casos — partição presente e não vazia SEM âncora é NAO_MEDIDO, não DIVERGE, porque sem referencial não há contra o que divergir, e tentar comparar contra controles ausentes falharia no acesso em vez de devolver veredito, sem escrever camada nenhuma e sem encerrar o processo; partição ausente e partição vazia são casos distintos e ambos NAO_MEDIDO, porque ler o lago e não encontrar nada não é o mesmo que medir e encontrar zero — a Regra 9 existe porque o segundo caminho é o que veste NAO_MEDIDO de MEDIDO. As outras partições do lago são nomeadas E CONTADAS na saída, e a soma das contagens por partição é conferida contra o total lido — nomear sem contar afirma isolação sem medi-la, e a lista de nomes continuaria idêntica se as linhas de uma partição tivessem migrado para outra. A PRECEDÊNCIA é declarada e não negociável: o estado da competência SOLICITADA decide primeiro. Ausente ou vazia devolve NAO_MEDIDO mesmo que o lago tenha outros problemas, porque não se reprova o que não se mediu. Só quando a competência existe e foi medida é que o fechamento do lago entra — e aí, se a soma das partições não fecha com o total, é DIVERGE, porque linha que não pertence a partição nenhuma é contaminação — e o total vem de um UNIVERSO INDEPENDENTE, a listagem dos objetos do lago, nunca da mesma leitura agrupada: somar contagens agrupadas pela própria relação lida é identidade, fecha sempre, inclusive somando o grupo nulo, e não veria arquivo que as DUAS leituras ignoraram. As chaves que constituem partição válida são as declaradas no contrato; objeto fora delas, ou linha cuja chave de partição é nula, conta como não pertencente e faz o controle reprovar, e foi para vê-la que este controle existe",
+          "when": "Bronze lê a partição"
+        }
+      ],
+      "context": "Intent DI-PDA-MEDALHAO; seam SEAM-BRONZE; swimlane LANE-BRONZE; capability leg LEG-BRONZE-REPRODUZ-ANCORA. Done condition: Os cinco controles da partição real batem com o contrato. Partição AUSENTE ou VAZIA devolve NAO_MEDIDO; partição MEDIDA que diverge em qualquer controle devolve DIVERGE — os dois são estados distintos e nenhum escreve camada, porque confundir ausência de medição com reprovação torna instável a interface que Silver consome. Os evals rodam num ambiente que tem AO MESMO TEMPO pytest e um leitor de Parquet — medido, hoje nenhum tem: o host não tem pyspark, pyarrow, pandas, duckdb nem java, e o contêiner pda-spark não tem pytest. As ferramentas do HOST são git, bash, python3, pytest e docker: pyspark NÃO entra em required_tools, porque o pré-voo confere o PATH do host com shutil.which e a tarefa que existe PARA montar o ambiente seria impedida de começar por exigir o que ela mesma vai prover — pyspark vive dentro do contêiner, que o docker levanta. Montar esse ambiente é parte desta tarefa e tem caminho declarado — infra/medalhao-evals.sh, que roda os evals num checkout limpo sem instalação manual — e os nove evals das três camadas o INVOCAM, em vez de chamar pytest direto, porque criar o script não muda o ambiente de quem executa e o eval falharia antes de testar Bronze. Sem ele a obrigação existiria sem forma reproduzível de cumpri-la, e um agente que criasse o arquivo mesmo assim receberia path_policy: fail.",
+      "creates_paths": [
+        "src/medalhao/bronze.py",
+        "tests/test_bronze.py",
+        "infra/medalhao-evals.sh"
+      ],
+      "depends_on": [],
+      "do_not_touch": [
+        "_raw",
+        "cvg/docs/adrs",
+        "contracts"
+      ],
+      "done_condition": "Os cinco controles da partição real batem com o contrato. Partição AUSENTE ou VAZIA devolve NAO_MEDIDO; partição MEDIDA que diverge em qualquer controle devolve DIVERGE — os dois são estados distintos e nenhum escreve camada, porque confundir ausência de medição com reprovação torna instável a interface que Silver consome. Os evals rodam num ambiente que tem AO MESMO TEMPO pytest e um leitor de Parquet — medido, hoje nenhum tem: o host não tem pyspark, pyarrow, pandas, duckdb nem java, e o contêiner pda-spark não tem pytest. As ferramentas do HOST são git, bash, python3, pytest e docker: pyspark NÃO entra em required_tools, porque o pré-voo confere o PATH do host com shutil.which e a tarefa que existe PARA montar o ambiente seria impedida de começar por exigir o que ela mesma vai prover — pyspark vive dentro do contêiner, que o docker levanta. Montar esse ambiente é parte desta tarefa e tem caminho declarado — infra/medalhao-evals.sh, que roda os evals num checkout limpo sem instalação manual — e os nove evals das três camadas o INVOCAM, em vez de chamar pytest direto, porque criar o script não muda o ambiente de quem executa e o eval falharia antes de testar Bronze. Sem ele a obrigação existiria sem forma reproduzível de cumpri-la, e um agente que criasse o arquivo mesmo assim receberia path_policy: fail.",
+      "effort": "M",
+      "evals": [
+        {
+          "command": "bash infra/medalhao-evals.sh tests/test_bronze.py -k \"cinco_controles or alteracao_compensada or isola_particao or nao_soma_uniao or precisao_declarada\"",
+          "description": "Os cinco controles comparados individualmente, e a partição medida isoladamente",
+          "expected_duration_sec": 10,
+          "id": "eval_1",
+          "terminal": false,
+          "verifies": [
+            "B-1"
+          ]
+        },
+        {
+          "command": "bash infra/medalhao-evals.sh tests/test_bronze.py -k \"particao_ausente or particao_vazia or presente_sem_ancora or diverge_nao_e_nao_medido\"",
+          "description": "Ausente e vazia devolvem NAO_MEDIDO; medida e divergente devolve DIVERGE",
+          "expected_duration_sec": 10,
+          "id": "eval_2",
+          "terminal": false,
+          "verifies": [
+            "B-2"
+          ]
+        },
+        {
+          "command": "bash infra/medalhao-evals.sh tests/test_bronze.py -k \"centavo_a_mais or maximo_acima_do_ancorado or recusa_float_na_entrada or classificacao_das_seis\"",
+          "description": "Float recusado na entrada, e toda diferença com uma das seis classificações",
+          "expected_duration_sec": 10,
+          "id": "eval_3",
+          "terminal": true,
+          "verifies": [
+            "B-1"
+          ]
+        }
+      ],
+      "execution_backend": "any",
+      "goal": "Fazer a camada recusar nascer sobre dado que não bate.",
+      "id": "T-20260922-bronze-confere-ancora",
+      "observability": "partições recusadas por controle divergente",
+      "profile": "standard",
+      "required_tools": [
+        "git",
+        "bash",
+        "python3",
+        "pytest",
+        "docker"
+      ],
+      "rollback": "Remover o leitor Bronze e seus testes.",
+      "source_note": "seamwise/legs/LEG-BRONZE-REPRODUZ-ANCORA.md#T-20260922-bronze-confere-ancora",
+      "title": "Ler a partição do lago e conferi-la contra a âncora",
+      "touches_paths": [],
+      "why": "Fazer a camada recusar nascer sobre dado que não bate."
+    },
+    {
+      "agent": "any",
+      "anti_patterns": [
+        "Do not construir o contexto decimal sem declarar as traps, seja com localcontext() sozinho ou com Context(prec, rounding): localcontext() copia o contexto global, e Context() preenche o omitido a partir de DefaultContext — os dois mutáveis; com traps[Inexact] ligada, quantize levanta e o arredondamento que o contrato permite encerra a operação; instead localcontext(Context(prec=..., rounding=..., traps=[])).",
+        "Do not provar a agregação só com a soma total e a contagem de códigos: uma redistribuição compensada entre códigos preserva as duas e troca os valores de lugar — contraexemplo executado com {'01': 10.00, '03': 20.00} contra {'01': 11.00, '03': 19.00}; instead comparar o mapa total_por_codigo código a código contra o da camada anterior, em soma exata não quantizada.",
+        "Do not tratar falta de âncora como divergência: ausência de referencial vira medição com resultado ruim, e a fábrica parece ter medido; instead devolver NAO_MEDIDO, distinto de DIVERGE."
+      ],
+      "behaviors": [
+        {
+          "given": "o Silver classificado e o contrato, com a política decimal declarada — HALF_EVEN, escala 2, e a precisão DERIVADA conforme o ADR 0009, que nesta competência dá 14",
+          "id": "B-1",
+          "then": "o arredondamento acontece UMA VEZ, sobre o total, como o ADR 0003 exige, na camada que o 0007 e o 0009 preservaram — arredondar cada código antes de somar dá resultado diferente, e a diferença é sistemática, não ruído — 2,345 + 2,345 dá 4,68 por campo e 4,69 no total, ambos meio-para-par. O modo é HALF_EVEN, decidido pelo ADR 0003 e preservado pelo 0009, lido do CONTRATO, nunca escolhido aqui, porque meio-para-cima empurra todo empate na mesma direção e vira tendência em volume. A precisão é a declarada e o contexto é CONSTRUÍDO DO ZERO — localcontext(Context(prec, rounding, traps=[])) — as TRAPS são declaradas, não deixadas por conta do construtor. localcontext() sozinho COPIA o contexto global e herda as traps junto; e Context(prec, rounding) sem declarar traps preenche o que foi omitido a partir de DefaultContext, que é IGUALMENTE mutável, então uma biblioteca que ligue DefaultContext.traps[Inexact] derruba também essa construção. O que não se declara, se herda: com traps[Inexact] ligada por qualquer biblioteca importada, Decimal('2.345').quantize(Decimal('.01')) LEVANTA Inexact dentro de um localcontext que declarou prec e rounding, e o arredondamento que o contrato PERMITE encerra a operação. O ADR 0006 diz que a precisão é declarada e não herdada; as traps são herdadas do mesmo jeito, e declarar prec e rounding não basta. Depois de agregar, a soma das linhas de Gold é RECONCILIADA com a âncora do contrato e a igualdade é exata ao centavo. Soma e cardinalidade NÃO BASTAM: uma redistribuição compensada entre códigos preserva as duas e troca os valores de lugar — {'01': 10.00, '03': 20.00} e {'01': 11.00, '03': 19.00} têm a mesma soma e as mesmas chaves, e acrescentar os outros 63 códigos idênticos aos dois mantém o contraexemplo com os 65. Por isso o MAPA total_por_codigo de Gold é comparado, código a código, contra o mapa que a camada anterior produziu, em soma EXATA não quantizada; com um mapa só, deslocar valor entre códigos seria aprovado por comparação consigo mesmo; Gold que não reconcilia devolve DIVERGE e NÃO publica, porque um agregado publicado sem reconciliar é exatamente o que a âncora existe para impedir. A reconciliação é recalculada a partir das linhas CANDIDATAS — materializadas em local privado, jamais no caminho que os consumidores leem — e não herdada de Bronze, senão Gold provaria a conta de outra camada. A publicação é um passo POSTERIOR e condicionado ao veredito, e o veredito CONSOME a marca PROCEDENCIA_NAO_VINCULADA que Bronze emite e Silver preserva — Gold recusa publicar sob ela, e a recusa tem eval próprio, senão cada camada cumpre o seu e a marca se perde na transformação: se as candidatas fossem escritas no destino para depois serem relidas, o dado divergente já teria ficado exposto antes de qualquer veredito, e remover depois não desfaz a exposição. Um teste que confira só o resultado final ou a ausência de arquivos ao término não vê isso — o eval observa que o caminho de destino permanece inalterado DURANTE a reconciliação. E a publicação em si é uma transição INDIVISÍVEL de visibilidade: o conjunto publicado é exatamente o conjunto reconciliado, tudo ou nada. Copiar vários arquivos expondo-os à medida que chegam deixaria um consumidor lendo parte das candidatas, ou misturadas com as da execução anterior, com a reconciliação correta e o total lido por ninguém aprovado — e uma interrupção no meio congela esse estado. Publicação interrompida deixa o destino como estava antes",
+          "when": "Gold agrega por código"
+        },
+        {
+          "given": "um Silver cujo total não reproduz a âncora, ou uma competência sem âncora no contrato",
+          "id": "B-2",
+          "then": "devolve DIVERGE quando o total não bate e NAO_MEDIDO quando não há âncora, dois estados distintos que nunca colapsam num só — sem âncora não é divergência, é ausência de referencial, e tratá-los igual faria a fábrica parecer que mediu quando não tinha contra o que medir. Nenhum dos dois publica, o motivo sai nomeado, e cada diferença recebe EXATAMENTE UMA das seis classificações da R-6 — inclusive a introduzida DEPOIS de Bronze, que é justamente a que nenhuma camada anterior viu. Devolver só estado e motivo cumpriria este plano e violaria a especificação; diferença que Gold não saiba classificar recebe UNRESOLVED, que bloqueia; a contagem de códigos de Gold é conferida contra os 65 do contrato, e o GRÃO das linhas publicadas é UMA por código — reagrupar candidatas para construir o mapa esconderia código duplicado no resultado materializado, já que ('01', 30.00) e o par ('01', 10.00) mais ('01', 20.00) produzem o mesmo mapa e a mesma contagem de códigos distintos; a prova é sobre as linhas EFETIVAMENTE publicadas, não sobre o mapa derivado delas, porque um agregado com menos códigos que a fonte pode somar o mesmo total e ainda assim ter perdido uma categoria inteira",
+          "when": "Gold agrega"
+        }
+      ],
+      "context": "Intent DI-PDA-MEDALHAO; seam SEAM-GOLD; swimlane LANE-GOLD; capability leg LEG-GOLD-RECONCILIA. Done condition: A soma das linhas de Gold é igual à âncora ao centavo, com arredondamento único no total.",
+      "creates_paths": [
+        "src/medalhao/gold.py",
+        "tests/test_gold.py"
+      ],
+      "depends_on": [
+        "T-20260922-silver-classifica-colapso"
+      ],
+      "do_not_touch": [
+        "_raw",
+        "cvg/docs/adrs",
+        "contracts"
+      ],
+      "done_condition": "A soma das linhas de Gold é igual à âncora ao centavo, com arredondamento único no total.",
+      "effort": "S",
+      "evals": [
+        {
+          "command": "bash infra/medalhao-evals.sh tests/test_gold.py -k \"arredonda_uma_vez or half_even_do_contrato or nao_arredonda_por_campo or traps_declaradas or recusa_sob_procedencia_nao_vinculada\"",
+          "description": "Arredondamento único, precisão declarada, e recusa sob procedência não vinculada",
+          "expected_duration_sec": 10,
+          "id": "eval_1",
+          "terminal": false,
+          "verifies": [
+            "B-1"
+          ]
+        },
+        {
+          "command": "bash infra/medalhao-evals.sh tests/test_gold.py -k \"reconcilia_recalculando or mapa_por_codigo or redistribuicao_compensada or contagem_de_codigos or uma_linha_por_codigo\"",
+          "description": "Reconcilia recalculando, compara o mapa por código e confere os 65",
+          "expected_duration_sec": 10,
+          "id": "eval_2",
+          "terminal": false,
+          "verifies": [
+            "B-1",
+            "B-2"
+          ]
+        },
+        {
+          "command": "bash infra/medalhao-evals.sh tests/test_gold.py -k \"diverge_nao_publica or sem_ancora_nao_medido or destino_inalterado_durante or classifica_diferenca_das_seis\"",
+          "description": "DIVERGE e NAO_MEDIDO são estados distintos e nenhum publica",
+          "expected_duration_sec": 10,
+          "id": "eval_3",
+          "terminal": true,
+          "verifies": [
+            "B-2"
+          ]
+        }
+      ],
+      "execution_backend": "any",
+      "goal": "Fazer o agregado provar que fecha, em vez de afirmar.",
+      "id": "T-20260922-gold-reconcilia-ancora",
+      "observability": "agregados recusados por não reconciliar",
+      "profile": "standard",
+      "required_tools": [
+        "git",
+        "bash",
+        "python3",
+        "pytest",
+        "docker"
+      ],
+      "rollback": "Remover a camada Gold e seus testes.",
+      "source_note": "seamwise/legs/LEG-GOLD-RECONCILIA.md#T-20260922-gold-reconcilia-ancora",
+      "title": "Agregar por código e reconciliar com a âncora",
+      "touches_paths": [],
+      "why": "Fazer o agregado provar que fecha, em vez de afirmar."
+    },
+    {
+      "agent": "any",
+      "anti_patterns": [
+        "Do not provar a conservação só com a soma global entre Bronze e Silver: trocar os valores de dois códigos preserva soma, chaves e cardinalidades — {'01': 10.00, '03': 20.00} virando {'01': 20.00, '03': 10.00} passa em toda prova global; instead comparar o mapa total_por_codigo código a código contra o de Bronze, em soma exata não quantizada.",
+        "Do not agrupar por descrição em vez de código: funde os 24 colapsados; o total continua batendo e os mapas por código saem errados; instead usar o código como chave, sempre.",
+        "Do not provar a conservação só com contagem, soma e mapa por código: duas linhas do mesmo código e descrição com valores trocados — 10.00 e 20.00 virando 11.00 e 19.00 — preservam os três, porque o mapa agrega por código; instead comparar o multiconjunto de (código, valor) entre Bronze e Silver, linha a linha."
+      ],
+      "behaviors": [
+        {
+          "given": "o Bronze conferido e o contrato, que declara 65 códigos, 52 descrições e 11 colapsos cobrindo 24 códigos, pré-classificados como CONFIRMED_SOURCE_DEFECT com aprovador e data",
+          "id": "B-1",
+          "then": "a CHAVE é o código, nunca a descrição, como o ADR 0008 exige — agrupar por descrição fundiria os 24 códigos colapsados em 11 linhas e o total continuaria batendo, com os mapas por código errados e nada acusando. A normalização é de FORMA e não de conteúdo — espaços à borda e caixa da descrição, jamais o valor monetário. E a CONTAGEM DE COLAPSOS é medida sobre a descrição ORIGINAL, nunca sobre a normalizada, porque a normalização pode FUNDIR descrições que a fonte publica distintas: 'ABC' e 'abc' de códigos diferentes viram um grupo só depois de igualar a caixa, e o colapso criado pela camada seria atribuído à fonte, ou uma partição correta receberia DIVERGE. Se as duas contagens diferirem, a diferença é da normalização, sai nomeada E RECEBE uma das seis classificações da R-6 como qualquer outra — identidade criada na saída normalizada é diferença, e diferença nomeada sem classificação fica sem dono, que é o vício que a R-6 existe para fechar; ela não é somada aos 11 do contrato. E a descrição ORIGINAL é PRESERVADA no registro do defeito, não apenas usada para contar — medir sobre ela e depois gravar o texto normalizado faria 'ABC' e 'abc' virarem indistinguíveis na saída, com as contagens corretas e a prova específica perdida. A Regra 4 pede preservar o defeito, e defeito de identidade sem a identidade original não é preservação, que atravessa como Decimal com a precisão declarada. A marca PROCEDENCIA_NAO_VINCULADA, quando Bronze a emite, atravessa Silver SEM ser removida e segue em 'silver classificado' — remover uma marca de limitação é apagar prova, não normalizar. Silver PRODUZ o mapa total_por_codigo, em soma EXATA não quantizada, e ele é parte declarada de 'silver classificado' — Gold o consome, e sem essa declaração Gold recalcularia os dois lados com a mesma transformação, perdendo a independência que o próprio plano dele exige. A conservação provada NÃO é só a soma global: o mapa de Silver é comparado com o de Bronze CÓDIGO A CÓDIGO, porque trocar os valores de dois códigos preserva soma, chaves, cardinalidades e grupos — {'01': 10.00, '03': 20.00} virando {'01': 20.00, '03': 10.00} passa em toda prova global e altera o resultado por espécie. O MULTICONJUNTO de linhas de Silver é idêntico ao de Bronze no que toca código e valor — igualdade linha a linha, não agregada: duas linhas do MESMO código e MESMA descrição, 10.00 e 20.00, virando 11.00 e 19.00 preservam contagem, soma E o mapa por código, porque o mapa agrega justamente por código e não separa linhas irmãs. Por isso a prova é sobre o multiconjunto, e a contagem de linhas de Silver é idêntica à de Bronze — soma e mapa por código não bastam: remover uma linha de valor ZERO cuja combinação código/descrição continue presente preserva a soma, o mapa, as cardinalidades e os colapsos, e a perda passaria em toda prova declarada. A soma de Silver também é comparada com a de Bronze e precisa ser IDÊNTICA — um pipeline que altera o total ao normalizar texto tem um defeito, não uma melhoria. Cada colapso recebe EXATAMENTE UMA das seis classificações e a contagem medida é conferida contra a do contrato — encontrar número diferente de 11 é DIVERGE, porque o contrato mediu na competência inteira e a divergência significa fonte diferente da ancorada, não permissão para ajustar o número",
+          "when": "Silver normaliza"
+        },
+        {
+          "given": "um código cuja descrição diverge do contrato, ou um colapso não declarado",
+          "id": "B-2",
+          "then": "a linha atravessa com o VALOR intacto e o defeito registrado, nunca descartada nem corrigida — descartar mudaria o total e corrigir destruiria a prova. Defeito não classificado BLOQUEIA a camada, e UNRESOLVED — que é uma das seis — BLOQUEIA igualmente: classificação preenchida não é defeito resolvido, e uma descrição divergente que recebesse UNRESOLVED conservaria o valor e satisfaria literalmente a condição de conclusão enquanto a diferença segue sem dono, porque a classificação é o que transforma um erro da origem em cobrança rastreável; e nenhuma classificação é inferida em silêncio, já que atribuir CONFIRMED_SOURCE_DEFECT sem aprovador transformaria juízo em default. MEDIDO no contrato: existem as cardinalidades 65/52/11/24 e a classificação global, mas NÃO existe mapa código→descrição nem a lista dos 11 grupos aprovados — e sem esse referencial 'descrição que diverge do contrato' não é verificável, porque trocar a descrição de um código mantém todas as quatro cardinalidades. Silver então NÃO INVENTA referencial e NÃO aceita o grupo novo por default: sem o mapa declarado no contrato, a comparação por identidade devolve NAO_MEDIDO, distinto de bloquear por defeito — e esse NAO_MEDIDO IMPEDE produzir 'silver classificado', porque uma capacidade chamada 'classificado' que sai com a identidade não medida mente no próprio nome. A cadeia para aqui com o motivo nomeado, em vez de seguir e publicar com a identidade em aberto. Declarar esse mapa é trabalho do contrato, com aprovador e data, não desta camada — e ENQUANTO ele não existir, esta tarefa entrega apenas a capacidade CONDICIONAL: o caminho NAO_MEDIDO provado, e o caminho positivo provado contra contrato de teste, jamais contra a competência contratada. Concluir Bronze NÃO habilita a prova positiva de Silver sobre 2026-01, e o plano não finge que habilita. scripts/medir_colapso.py já mede os 11 grupos na competência inteira; falta a aprovação, que é decisão de negócio.",
+          "when": "Silver normaliza"
+        }
+      ],
+      "context": "Intent DI-PDA-MEDALHAO; seam SEAM-SILVER; swimlane LANE-SILVER; capability leg LEG-SILVER-PRESERVA-DEFEITO. Done condition: A contagem de linhas e a soma não mudam entre Bronze e Silver, e cada colapso recebe exatamente uma das seis classificações.",
+      "creates_paths": [
+        "src/medalhao/silver.py",
+        "tests/test_silver.py"
+      ],
+      "depends_on": [
+        "T-20260922-bronze-confere-ancora"
+      ],
+      "do_not_touch": [
+        "_raw",
+        "cvg/docs/adrs",
+        "contracts"
+      ],
+      "done_condition": "A contagem de linhas e a soma não mudam entre Bronze e Silver, e cada colapso recebe exatamente uma das seis classificações.",
+      "effort": "S",
+      "evals": [
+        {
+          "command": "bash infra/medalhao-evals.sh tests/test_silver.py -k \"chave_e_codigo or multiconjunto_identico or linhas_irmas_com_valores_trocados or linha_de_valor_zero_nao_some or mapa_por_codigo_preservado\"",
+          "description": "Chave é o código; contagem, mapa e soma preservados, inclusive linha de valor zero",
+          "expected_duration_sec": 10,
+          "id": "eval_1",
+          "terminal": false,
+          "verifies": [
+            "B-1"
+          ]
+        },
+        {
+          "command": "bash infra/medalhao-evals.sh tests/test_silver.py -k \"colapso_classificado or contagem_de_colapsos or classificacao_unica or colapsos_na_descricao_original or colapso_da_normalizacao_classificado\"",
+          "description": "Os 11 colapsos saem classificados e a contagem confere",
+          "expected_duration_sec": 10,
+          "id": "eval_2",
+          "terminal": false,
+          "verifies": [
+            "B-1"
+          ]
+        },
+        {
+          "command": "bash infra/medalhao-evals.sh tests/test_silver.py -k \"nao_classificado_bloqueia or valor_intacto or atravessa_sem_descartar or unresolved_bloqueia or sem_mapa_nao_produz_capacidade\"",
+          "description": "Defeito não classificado bloqueia em vez de passar",
+          "expected_duration_sec": 10,
+          "id": "eval_3",
+          "terminal": true,
+          "verifies": [
+            "B-2"
+          ]
+        }
+      ],
+      "execution_backend": "any",
+      "goal": "Preservar o defeito da fonte com o total intacto.",
+      "id": "T-20260922-silver-classifica-colapso",
+      "observability": "colapsos classificados por competência",
+      "profile": "standard",
+      "required_tools": [
+        "git",
+        "bash",
+        "python3",
+        "pytest",
+        "docker"
+      ],
+      "rollback": "Remover a camada Silver e seus testes.",
+      "source_note": "seamwise/legs/LEG-SILVER-PRESERVA-DEFEITO.md#T-20260922-silver-classifica-colapso",
+      "title": "Normalizar a forma e classificar a identidade colapsada",
+      "touches_paths": [],
+      "why": "Preservar o defeito da fonte com o total intacto."
+    }
+  ]
+}

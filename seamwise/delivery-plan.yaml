@@ -1,0 +1,44 @@
+schema_version: 1
+status: DELIVERY_PLAN=READY
+seam_map_sha256: 8d9c738dd173363afe98a8e9a288fabdd0ee3ffc76149af75e1014cf0496d60a
+swimlanes:
+- id: LANE-BRONZE
+  seam_id: SEAM-BRONZE
+  owner: medalhao
+  path: seamwise/swimlanes/LANE-BRONZE.md
+  sha256: b1e4d68d362e1e8b1fc758b5d76bfb0f4579aa14e1387dca913cbf2542b03842
+- id: LANE-SILVER
+  seam_id: SEAM-SILVER
+  owner: medalhao
+  path: seamwise/swimlanes/LANE-SILVER.md
+  sha256: d5d05f52e382d8934a5761432904203a4840ab30300a2b949ec8fc30c16e2aa1
+- id: LANE-GOLD
+  seam_id: SEAM-GOLD
+  owner: medalhao
+  path: seamwise/swimlanes/LANE-GOLD.md
+  sha256: 674846a34411e23c9c896b59bd8fcc0b903e057376a141d8f146ae86ea8f4060
+legs:
+- id: LEG-BRONZE-REPRODUZ-ANCORA
+  seam_id: SEAM-BRONZE
+  swimlane_id: LANE-BRONZE
+  path: seamwise/legs/LEG-BRONZE-REPRODUZ-ANCORA.md
+  sha256: 9f533d54caf1155310da417c33ec4ce775e0cd5123f9e4e2ad9e5a275b76339a
+- id: LEG-SILVER-PRESERVA-DEFEITO
+  seam_id: SEAM-SILVER
+  swimlane_id: LANE-SILVER
+  path: seamwise/legs/LEG-SILVER-PRESERVA-DEFEITO.md
+  sha256: fa35570600c8276bf6165b61637b474e0eebc1f551cacd42e96cec2c6081abe7
+- id: LEG-GOLD-RECONCILIA
+  seam_id: SEAM-GOLD
+  swimlane_id: LANE-GOLD
+  path: seamwise/legs/LEG-GOLD-RECONCILIA.md
+  sha256: e7c935f56193dfcb5696e9ca48971f4ddf91181f1eb684034bc2a43f74b4a74a
+steel_thread:
+- LEG-BRONZE-REPRODUZ-ANCORA
+- LEG-SILVER-PRESERVA-DEFEITO
+- LEG-GOLD-RECONCILIA
+objections: []
+contentions: []
+steel_thread_path: seamwise/steel-thread.md
+steel_thread_sha256: bf51bef6e893fee42b1c9f7b706f1c8d32efe539d46a2c5f5953ee32e2442953
+review_authority_sha256: 3cb7834ba29766f227b2000fc9434d03cbdd68d8a6871936b0cf06ed1175fd6e
