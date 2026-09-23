@@ -106,3 +106,47 @@ defeitos_conhecidos:
     classificacao: "CONFIRMED_SOURCE_DEFECT"
     aprovador: "Bruno Nunes"
     aprovado_em: "2026-09-21"
+
+# Mapa de colapsos de identidade — competência 2026-01
+#
+# A fonte (PDA/INSS) trunca a descrição da espécie em 20 caracteres, e
+# espécies diferentes cujo nome começa igual publicam o MESMO texto. Cada
+# grupo abaixo é uma descrição que cobre mais de um código. O código segue
+# distinto em toda linha; a fábrica preserva os dois e nunca funde códigos.
+# Classificação: CONFIRMED_SOURCE_DEFECT (defeitos_conhecidos).
+#
+# Medido por scripts/medir_colapso.py sobre _raw/D.SDA.PDA.003.EMI.202601.csv
+# e conferido contra a tabela Silver real (41.572.553 linhas, soma
+# 78.521.752.562,12): 11 grupos, 24 códigos — as cardinalidades deste contrato.
+# Provado antes de entrar: com os 11 grupos a Silver real dá INTEGRO; com 10,
+# DIVERGE. Aprovado pelo dono em 2026-09-23 (DEC-MAPA-APROVADO-OBRIGATORIO).
+#
+# ⚠️ As descrições têm EXATAMENTE 20 caracteres, inclusive o espaço final de
+# 'Pensão por Morte de '. Os códigos vão entre aspas: sem elas o YAML lê
+# 01 como o inteiro 1.
+mapa_colapsos:
+  aprovado_por: "Bruno Nunes"
+  aprovado_em: "2026-09-23"
+  grupos:
+    - descricao: "Pensão por Morte de "
+      codigos: ["01", "03", "23", "59"]
+    - descricao: "Pensão por Morte Aci"
+      codigos: ["02", "93"]
+    - descricao: "Aposentadoria por In"
+      codigos: ["04", "83"]
+    - descricao: "Aposent. Invalidez A"
+      codigos: ["05", "92"]
+    - descricao: "Pensão por Morte Ex-"
+      codigos: ["29", "84"]
+    - descricao: "Renda Mensal Vitalíc"
+      codigos: ["30", "40"]
+    - descricao: "Aposentadoria Invali"
+      codigos: ["32", "33"]
+    - descricao: "Aposent. Tempo Servi"
+      codigos: ["45", "72"]
+    - descricao: "Aposentadoria Especi"
+      codigos: ["44", "46"]
+    - descricao: "Aposent. Invalidez E"
+      codigos: ["06", "51"]
+    - descricao: "Abono Permanencia em"
+      codigos: ["47", "48"]
