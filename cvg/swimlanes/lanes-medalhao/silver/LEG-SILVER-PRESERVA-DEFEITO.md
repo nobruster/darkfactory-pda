@@ -1,6 +1,6 @@
 > Projetado de `LEG-SILVER-PRESERVA-DEFEITO.md` pelo Seamwise.
 > **Não edite aqui** — edite a recipe e rode `seamwise plan`.
-> origem sha256: `651a8e98264a19c76a93b73cb1ceb8c27f09836a82cead5f02dad04ca5595aa8`
+> origem sha256: `4872f8c45cde8fdb53829854c4169333275eb6b55fc8fc73c3d457395320e821`
 
 ---
 
@@ -45,32 +45,39 @@ tasks:
     given: o Bronze conferido e o contrato, que declara 65 códigos, 52 descrições e 11 colapsos cobrindo
       24 códigos, pré-classificados como CONFIRMED_SOURCE_DEFECT com aprovador e data
     when: Silver normaliza
-    then: 'a CHAVE é o código, nunca a descrição, como o ADR 0008 exige — agrupar por descrição fundiria
-      os 24 códigos colapsados em 11 linhas e o total continuaria batendo, com os mapas por código errados
-      e nada acusando. A normalização é de FORMA e não de conteúdo — espaços à borda e caixa da descrição,
-      jamais o valor monetário. e as QUATRO cardinalidades do contrato são conferidas contra o dado, não
-      apenas a de colapsos — 65 códigos, 52 descrições, 11 colapsos e 24 códigos colapsados, cada uma
-      comparada individualmente, porque um contrato com 51 descrições e 25 colapsados passaria numa conferência
-      que só olha os 11. As TRÊS cardinalidades que dependem de descrição — descrições distintas, colapsos
-      e códigos colapsados — são medidas sobre a descrição ORIGINAL, a mesma base em que o contrato as
-      mediu; só códigos distintos independe dela. A normalização move as três em sentidos opostos: ''ABC''
-      e ''abc'' de códigos diferentes DIMINUEM as descrições distintas e AUMENTAM os códigos colapsados,
-      e comparar medida normalizada contra contrato bruto reprovaria a partição correta ou esconderia
-      um colapso criado pela própria camada. A CONTAGEM DE COLAPSOS é medida sobre a descrição ORIGINAL,
-      nunca sobre a normalizada, porque a normalização pode FUNDIR descrições que a fonte publica distintas:
-      ''ABC'' e ''abc'' de códigos diferentes viram um grupo só depois de igualar a caixa, e o colapso
-      criado pela camada seria atribuído à fonte, ou uma partição correta receberia DIVERGE. A prova de
-      que a normalização não fundiu identidades NÃO é contar grupos — é comparar, CÓDIGO A CÓDIGO, o conjunto
-      de códigos que compartilham a descrição antes e depois de normalizar. Contar falha: se ''ABC'' cobre
-      01 e 02 e ''abc'' cobre 03, há um grupo colapsado antes e um depois, e o 03 perdeu identidade sem
-      a contagem mudar. Todo código cujo grupo mudou é COLAPSO INTRODUZIDO PELA CAMADA, e ele NÃO é classificável
-      aqui: o contrato diz que defeito fora da lista conhecida bloqueia, e rotulá-lo MODERN_DEFECT deixaria
-      passar uma fusão que a própria camada criou. Silver sai BLOQUEADO, com os códigos afetados nomeados.
-      Se as contagens diferirem, a diferença também sai nomeada — identidade criada na saída normalizada
-      é diferença, e diferença nomeada sem classificação fica sem dono, que é o vício que a R-6 existe
-      para fechar; ela não é somada aos 11 do contrato. E a descrição ORIGINAL é PRESERVADA no registro
-      do defeito, não apenas usada para contar — medir sobre ela e depois gravar o texto normalizado faria
-      ''ABC'' e ''abc'' virarem indistinguíveis na saída, com as contagens corretas e a prova específica
+    then: 'No caminho Spark, o Context do Python NÃO governa a aritmética — medido: com prec=3 e Emax=5
+      no Python, o Spark somou exato, e sum() promove decimal(14,2) a decimal(24,2) por conta própria.
+      O que governa é o DecimalType do acumulador, declarado a partir da politica_decimal do contrato,
+      e a sessão roda com spark.sql.ansi.enabled=true DECLARADO: em modo não-ANSI, o estouro do acumulador
+      devolve NULL sem erro, que é o Infinity da Regra 5 com outro nome. O Context(prec, rounding, traps=[],
+      Emax, Emin) vale para o que roda em Python fora do motor. a CHAVE é o código, nunca a descrição,
+      como o ADR 0008 exige — agrupar por descrição fundiria os 24 códigos colapsados em 11 linhas e o
+      total continuaria batendo, com os mapas por código errados e nada acusando. A normalização é de
+      FORMA e não de conteúdo — espaços à borda e caixa da descrição, jamais o valor monetário. e as QUATRO
+      cardinalidades do contrato são conferidas contra o dado, não apenas a de colapsos — 65 códigos,
+      52 descrições, 11 colapsos e 24 códigos colapsados, cada uma comparada individualmente, porque um
+      contrato com 51 descrições e 25 colapsados passaria numa conferência que só olha os 11. As TRÊS
+      cardinalidades que dependem de descrição — descrições distintas, colapsos e códigos colapsados —
+      são medidas sobre a descrição ORIGINAL, a mesma base em que o contrato as mediu; só códigos distintos
+      independe dela. A normalização move as três em sentidos opostos: ''ABC'' e ''abc'' de códigos diferentes
+      DIMINUEM as descrições distintas e AUMENTAM os códigos colapsados, e comparar medida normalizada
+      contra contrato bruto reprovaria a partição correta ou esconderia um colapso criado pela própria
+      camada. A CONTAGEM DE COLAPSOS é medida sobre a descrição ORIGINAL, nunca sobre a normalizada, porque
+      a normalização pode FUNDIR descrições que a fonte publica distintas: ''ABC'' e ''abc'' de códigos
+      diferentes viram um grupo só depois de igualar a caixa, e o colapso criado pela camada seria atribuído
+      à fonte, ou uma partição correta receberia DIVERGE. A prova de que a normalização não fundiu identidades
+      NÃO é contar grupos — é comparar, CÓDIGO A CÓDIGO, o conjunto de códigos que compartilham a descrição
+      antes e depois de normalizar. Contar falha: se ''ABC'' cobre 01 e 02 e ''abc'' cobre 03, há um grupo
+      colapsado antes e um depois, e o 03 perdeu identidade sem a contagem mudar. Todo código cujo grupo
+      mudou é COLAPSO INTRODUZIDO PELA CAMADA, classificado como MODERN_DEFECT — porque foi a camada moderna
+      que o criou — E bloqueante mesmo assim: classificar e autorizar são decisões independentes, como
+      já vale para UNRESOLVED, e o contrato diz que defeito fora da lista conhecida bloqueia. A classificação
+      dá dono à diferença; o bloqueio impede que ela siga. Silver sai BLOQUEADO, com os códigos afetados
+      nomeados. Se as contagens diferirem, a diferença também sai nomeada — identidade criada na saída
+      normalizada é diferença, e diferença nomeada sem classificação fica sem dono, que é o vício que
+      a R-6 existe para fechar; ela não é somada aos 11 do contrato. E a descrição ORIGINAL é PRESERVADA
+      no registro do defeito, não apenas usada para contar — medir sobre ela e depois gravar o texto normalizado
+      faria ''ABC'' e ''abc'' virarem indistinguíveis na saída, com as contagens corretas e a prova específica
       perdida. A Regra 4 pede preservar o defeito, e defeito de identidade sem a identidade original não
       é preservação. O valor monetário atravessa como Decimal sob um contexto construído INTEIRO a partir
       da politica_decimal do contrato — Context(prec, rounding, traps=[], Emax, Emin) — pelo mesmo motivo
@@ -141,11 +148,12 @@ tasks:
     description: Chave é o código; contagem, mapa e soma preservados, inclusive linha de valor zero
     bash: docker compose -f infra/docker-compose.yml exec -T spark sh -c 'for c in chave_e_codigo multiconjunto_identico
       linhas_irmas_com_valores_trocados linha_de_valor_zero_nao_some mapa_por_codigo_preservado contexto_declarado
-      entrega_as_linhas_normalizadas descricao_trocada_entre_codigos multiconjunto_sem_coletar; do python3
-      -m pytest --collect-only -q tests/test_silver.py -k "$c" 2>/dev/null | grep -q "::" || { echo "EVAL=CENARIO_AUSENTE_$c";
-      exit 1; }; done; python3 -m pytest -q tests/test_silver.py -k "chave_e_codigo or multiconjunto_identico
-      or linhas_irmas_com_valores_trocados or linha_de_valor_zero_nao_some or mapa_por_codigo_preservado
-      or contexto_declarado or entrega_as_linhas_normalizadas or descricao_trocada_entre_codigos or multiconjunto_sem_coletar"'
+      entrega_as_linhas_normalizadas descricao_trocada_entre_codigos multiconjunto_sem_coletar ansi_declarado_estouro_nao_vira_nulo;
+      do python3 -m pytest --collect-only -q tests/test_silver.py -k "$c" 2>/dev/null | grep -q "::" ||
+      { echo "EVAL=CENARIO_AUSENTE_$c"; exit 1; }; done; python3 -m pytest -q tests/test_silver.py -k
+      "chave_e_codigo or multiconjunto_identico or linhas_irmas_com_valores_trocados or linha_de_valor_zero_nao_some
+      or mapa_por_codigo_preservado or contexto_declarado or entrega_as_linhas_normalizadas or descricao_trocada_entre_codigos
+      or multiconjunto_sem_coletar or ansi_declarado_estouro_nao_vira_nulo"'
     verifies:
     - B-1
   - id: eval_2
@@ -187,7 +195,7 @@ tasks:
   - contracts
   rollback: Remover a camada Silver e seus testes.
   observability: colapsos classificados por competência
-source_seam_sha256: d87824046c6f4b9f7632e01daa92f5ea29afa137b5a5f3de8a54cae1d2a1b51c
+source_seam_sha256: e3e1d3d6f3553ba43c1beb035e1e6029cfd4f35b3c057c93acaec45ba07017a7
 ---
 # Silver classifica o defeito e conserva o total
 

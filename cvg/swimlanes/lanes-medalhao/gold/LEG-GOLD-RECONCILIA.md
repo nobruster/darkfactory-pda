@@ -1,6 +1,6 @@
 > Projetado de `LEG-GOLD-RECONCILIA.md` pelo Seamwise.
 > **Não edite aqui** — edite a recipe e rode `seamwise plan`.
-> origem sha256: `6efea99c855a1f8c4f16bc13ca00a1a4c00ae1cc688a57475170cb95ec38752d`
+> origem sha256: `471951cb0bd1021c299343a0af84cebb19f3a059652532b47350184665bc0375`
 
 ---
 
@@ -43,21 +43,27 @@ tasks:
     given: o Silver classificado e o contrato, com a política decimal declarada — HALF_EVEN, escala 2,
       e a precisão DERIVADA conforme o ADR 0009, que nesta competência dá 14
     when: Gold agrega por código
-    then: 'A agregação por código e a comparação do mapa rodam NO MOTOR, sem coletar as linhas de Silver
-      — só as 65 linhas agregadas e os totais saem do motor. o arredondamento acontece UMA VEZ, sobre
-      o total, como o ADR 0003 exige, na camada que o 0007 e o 0009 preservaram — arredondar cada código
-      antes de somar dá resultado diferente, e a diferença é sistemática, não ruído — 2,345 + 2,345 dá
-      4,68 por campo e 4,69 no total, ambos meio-para-par. O modo é HALF_EVEN, decidido pelo ADR 0003
-      e preservado pelo 0009, lido do CONTRATO, nunca escolhido aqui, porque meio-para-cima empurra todo
-      empate na mesma direção e vira tendência em volume. A precisão é a declarada e o contexto é CONSTRUÍDO
-      DO ZERO — localcontext(Context(prec, rounding, traps=[], Emax, Emin)) — o contexto INTEIRO declarado,
-      e os cinco valores vêm da politica_decimal do CONTRATO, que agora declara emax 999999 e emin -999999
-      com aprovador e data. Não são escolha de quem implementa: são o limite que NÃO INTERFERE, declarado
-      para que nenhuma biblioteca o imponha — as TRAPS são declaradas, não deixadas por conta do construtor.
-      localcontext() sozinho COPIA o contexto global e herda as traps junto; e Context(prec, rounding)
-      sem declarar traps preenche o que foi omitido a partir de DefaultContext, que é IGUALMENTE mutável,
-      então uma biblioteca que ligue DefaultContext.traps[Inexact] derruba também essa construção. O que
-      não se declara, se herda: com traps[Inexact] ligada por qualquer biblioteca importada, Decimal(''2.345'').quantize(Decimal(''.01''))
+    then: 'No caminho Spark, o Context do Python NÃO governa a aritmética — medido: com prec=3 e Emax=5
+      no Python, o Spark somou exato, e sum() promove decimal(14,2) a decimal(24,2) por conta própria.
+      O que governa é o DecimalType do acumulador, declarado a partir da politica_decimal do contrato,
+      e a sessão roda com spark.sql.ansi.enabled=true DECLARADO: em modo não-ANSI, o estouro do acumulador
+      devolve NULL sem erro, que é o Infinity da Regra 5 com outro nome. O Context(prec, rounding, traps=[],
+      Emax, Emin) vale para o que roda em Python fora do motor. A agregação por código e a comparação
+      do mapa rodam NO MOTOR, sem coletar as linhas de Silver — só as 65 linhas agregadas e os totais
+      saem do motor. o arredondamento acontece UMA VEZ, sobre o total, como o ADR 0003 exige, na camada
+      que o 0007 e o 0009 preservaram — arredondar cada código antes de somar dá resultado diferente,
+      e a diferença é sistemática, não ruído — 2,345 + 2,345 dá 4,68 por campo e 4,69 no total, ambos
+      meio-para-par. O modo é HALF_EVEN, decidido pelo ADR 0003 e preservado pelo 0009, lido do CONTRATO,
+      nunca escolhido aqui, porque meio-para-cima empurra todo empate na mesma direção e vira tendência
+      em volume. A precisão é a declarada e o contexto é CONSTRUÍDO DO ZERO — localcontext(Context(prec,
+      rounding, traps=[], Emax, Emin)) — o contexto INTEIRO declarado, e os cinco valores vêm da politica_decimal
+      do CONTRATO, que agora declara emax 999999 e emin -999999 com aprovador e data. Não são escolha
+      de quem implementa: são o limite que NÃO INTERFERE, declarado para que nenhuma biblioteca o imponha
+      — as TRAPS são declaradas, não deixadas por conta do construtor. localcontext() sozinho COPIA o
+      contexto global e herda as traps junto; e Context(prec, rounding) sem declarar traps preenche o
+      que foi omitido a partir de DefaultContext, que é IGUALMENTE mutável, então uma biblioteca que ligue
+      DefaultContext.traps[Inexact] derruba também essa construção. O que não se declara, se herda: com
+      traps[Inexact] ligada por qualquer biblioteca importada, Decimal(''2.345'').quantize(Decimal(''.01''))
       LEVANTA Inexact dentro de um localcontext que declarou prec e rounding, e o arredondamento que o
       contrato PERMITE encerra a operação. O ADR 0006 diz que a precisão é declarada e não herdada; as
       traps são herdadas do mesmo jeito, e declarar prec e rounding não basta. Gold só agrega sobre ''silver
@@ -111,10 +117,11 @@ tasks:
   - id: eval_1
     description: Arredondamento único, precisão declarada, e recusa sob procedência não vinculada
     bash: docker compose -f infra/docker-compose.yml exec -T spark sh -c 'for c in arredonda_uma_vez half_even_do_contrato
-      nao_arredonda_por_campo traps_declaradas recusa_sob_procedencia_nao_vinculada; do python3 -m pytest
-      --collect-only -q tests/test_gold.py -k "$c" 2>/dev/null | grep -q "::" || { echo "EVAL=CENARIO_AUSENTE_$c";
-      exit 1; }; done; python3 -m pytest -q tests/test_gold.py -k "arredonda_uma_vez or half_even_do_contrato
-      or nao_arredonda_por_campo or traps_declaradas or recusa_sob_procedencia_nao_vinculada"'
+      nao_arredonda_por_campo traps_declaradas recusa_sob_procedencia_nao_vinculada ansi_declarado_estouro_nao_vira_nulo;
+      do python3 -m pytest --collect-only -q tests/test_gold.py -k "$c" 2>/dev/null | grep -q "::" ||
+      { echo "EVAL=CENARIO_AUSENTE_$c"; exit 1; }; done; python3 -m pytest -q tests/test_gold.py -k "arredonda_uma_vez
+      or half_even_do_contrato or nao_arredonda_por_campo or traps_declaradas or recusa_sob_procedencia_nao_vinculada
+      or ansi_declarado_estouro_nao_vira_nulo"'
     verifies:
     - B-1
   - id: eval_2
@@ -156,7 +163,7 @@ tasks:
   - contracts
   rollback: Remover a camada Gold e seus testes.
   observability: agregados recusados por não reconciliar
-source_seam_sha256: 569c35691f1ebfeed13efa57b00780681dc1281f8d8d6de69bf4e66d4ac67bbf
+source_seam_sha256: 0e191123b9f63d9fb1c63d3779da720c143627448c74c5864dff4d530aa3769d
 ---
 # Gold só publica quando reconcilia com a âncora
 

@@ -182,7 +182,7 @@ def _simetria(seams, falhas):
     }
 
     TERMOS = ["FORMA declarada", "estado INTEGRO", "traps=[]",
-              "uma das seis", "NO MOTOR", "ansi.enabled"]
+              "uma das seis", "NO MOTOR", "ansi.enabled", "especie_codigo"]
 
     corpos = {}
     for s in seams:
