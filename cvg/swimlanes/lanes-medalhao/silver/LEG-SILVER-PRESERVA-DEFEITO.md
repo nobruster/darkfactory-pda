@@ -1,6 +1,6 @@
 > Projetado de `LEG-SILVER-PRESERVA-DEFEITO.md` pelo Seamwise.
 > **Não edite aqui** — edite a recipe e rode `seamwise plan`.
-> origem sha256: `d0584c24f543a27c679ef25e2d2d2ff208df05c18dd37d2d3ce1df6bfb67fbf2`
+> origem sha256: `f0771df68bf579c992c8c5c8bebdcda06948b253d6631cc44a730dd544204b6e`
 
 ---
 
@@ -51,16 +51,21 @@ tasks:
       jamais o valor monetário. e as QUATRO cardinalidades do contrato são conferidas contra o dado, não
       apenas a de colapsos — 65 códigos, 52 descrições, 11 colapsos e 24 códigos colapsados, cada uma
       comparada individualmente, porque um contrato com 51 descrições e 25 colapsados passaria numa conferência
-      que só olha os 11. A CONTAGEM DE COLAPSOS é medida sobre a descrição ORIGINAL, nunca sobre a normalizada,
-      porque a normalização pode FUNDIR descrições que a fonte publica distintas: ''ABC'' e ''abc'' de
-      códigos diferentes viram um grupo só depois de igualar a caixa, e o colapso criado pela camada seria
-      atribuído à fonte, ou uma partição correta receberia DIVERGE. Se as duas contagens diferirem, a
-      diferença é da normalização, sai nomeada E RECEBE uma das seis classificações da R-6 como qualquer
-      outra — identidade criada na saída normalizada é diferença, e diferença nomeada sem classificação
-      fica sem dono, que é o vício que a R-6 existe para fechar; ela não é somada aos 11 do contrato.
-      E a descrição ORIGINAL é PRESERVADA no registro do defeito, não apenas usada para contar — medir
-      sobre ela e depois gravar o texto normalizado faria ''ABC'' e ''abc'' virarem indistinguíveis na
-      saída, com as contagens corretas e a prova específica perdida. A Regra 4 pede preservar o defeito,
+      que só olha os 11. As TRÊS cardinalidades que dependem de descrição — descrições distintas, colapsos
+      e códigos colapsados — são medidas sobre a descrição ORIGINAL, a mesma base em que o contrato as
+      mediu; só códigos distintos independe dela. A normalização move as três em sentidos opostos: ''ABC''
+      e ''abc'' de códigos diferentes DIMINUEM as descrições distintas e AUMENTAM os códigos colapsados,
+      e comparar medida normalizada contra contrato bruto reprovaria a partição correta ou esconderia
+      um colapso criado pela própria camada. A CONTAGEM DE COLAPSOS é medida sobre a descrição ORIGINAL,
+      nunca sobre a normalizada, porque a normalização pode FUNDIR descrições que a fonte publica distintas:
+      ''ABC'' e ''abc'' de códigos diferentes viram um grupo só depois de igualar a caixa, e o colapso
+      criado pela camada seria atribuído à fonte, ou uma partição correta receberia DIVERGE. Se as duas
+      contagens diferirem, a diferença é da normalização, sai nomeada E RECEBE uma das seis classificações
+      da R-6 como qualquer outra — identidade criada na saída normalizada é diferença, e diferença nomeada
+      sem classificação fica sem dono, que é o vício que a R-6 existe para fechar; ela não é somada aos
+      11 do contrato. E a descrição ORIGINAL é PRESERVADA no registro do defeito, não apenas usada para
+      contar — medir sobre ela e depois gravar o texto normalizado faria ''ABC'' e ''abc'' virarem indistinguíveis
+      na saída, com as contagens corretas e a prova específica perdida. A Regra 4 pede preservar o defeito,
       e defeito de identidade sem a identidade original não é preservação. O valor monetário atravessa
       como Decimal sob um contexto construído INTEIRO a partir da politica_decimal do contrato — Context(prec,
       rounding, traps=[], Emax, Emin) — pelo mesmo motivo que vale em Bronze e Gold: Silver SOMA, e declarar
@@ -164,7 +169,7 @@ tasks:
   - contracts
   rollback: Remover a camada Silver e seus testes.
   observability: colapsos classificados por competência
-source_seam_sha256: 93cdacc0d0a902626d00123991ba0a49c7829fc472013c6382a8e651aa2c1346
+source_seam_sha256: 89952e18d0642887b23cef16a8503d1aeee83fffcea250335690fc70a56d7648
 ---
 # Silver classifica o defeito e conserva o total
 

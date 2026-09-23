@@ -13,31 +13,31 @@
     "family": "anthropic"
   },
   "verdict": "REVISE",
-  "prompt_sha256": "56ba6652c87fd1c745c51f4d2b8b37cfa34b16fd04db42bab72cb75ab2733153",
+  "prompt_sha256": "44941e25aa904684a1556a4577e9e93d26678b1fcdc5dcd1889fd3bbdd7a2799",
   "inputs": [
     {
       "path": "bronze/LEG-BRONZE-REPRODUZ-ANCORA.md",
-      "sha256": "9396a2aee1265bd1134bbe4fc944b5a5c7de4f31e6e4e45e91a73ce9c6fdeb35"
+      "sha256": "486bd3685d63f07223352601139cb1d9425742cfd3c1bcb749f1e0c3933646fe"
     },
     {
       "path": "bronze/_lane.md",
-      "sha256": "fdf47a927646124be07cff6a19cef4910aefa89b28ab936c9fb37a48f3606965"
+      "sha256": "e6227cd5dbe091da516ce58f3b44f6f7f38ee67e4231b2c49003097d05fb7917"
     },
     {
       "path": "gold/LEG-GOLD-RECONCILIA.md",
-      "sha256": "6b96138ef93417b62494a26a18d49e474afaa91ae949dad80974c3527c5ee0a8"
+      "sha256": "8df8d38d68d9906f1d2dde7350b5a7d2325e55958858d5b490e6b57f1377802b"
     },
     {
       "path": "gold/_lane.md",
-      "sha256": "ac1eb8103030607ec75c99c5008eb4d527b8e35a8aa059348aed20fb9878e365"
+      "sha256": "a4f306a6b836afcbb1ffe46524b123ae2fbfcdfbb8fbde593abdec59f23786c6"
     },
     {
       "path": "silver/LEG-SILVER-PRESERVA-DEFEITO.md",
-      "sha256": "4d5e62cfa9e27e95ddf79cd8546df3030320b39edd8d9bb66cb0361b466d395e"
+      "sha256": "915d37acde2315286ac03b72618dfed2cd168cbd37d0e2a522d6f50e36f8ab7f"
     },
     {
       "path": "silver/_lane.md",
-      "sha256": "41480efaa0d7052c43c4820fecf0c12e68e9b76afbf3ac24b18468e26e0caf4c"
+      "sha256": "1dabb5de7336156211fb6931c2dde42484828908a444061096f77f29dfc7f780"
     }
   ],
   "objections": [
@@ -50,115 +50,110 @@
       "leg": "LEG-BRONZE-REPRODUZ-ANCORA",
       "location": {
         "plan_file": "cvg/swimlanes/lanes-medalhao/bronze/LEG-BRONZE-REPRODUZ-ANCORA.md",
-        "section": "behavior B-1: linhas conferidas; B-2: fechamento por listagem independente"
+        "section": "tasks[0].behavior B-1: linhas conferidas; B-2: universo independente"
       },
-      "title": "As medi\u00e7\u00f5es n\u00e3o t\u00eam identidade temporal comum",
-      "body": "Entregar as linhas conferidas evita uma releitura expl\u00edcita por Silver, mas n\u00e3o define como controles, mapa, linhas e listagem pertencem \u00e0 mesma vers\u00e3o do lago. Se um objeto mudar entre a contagem, a soma e a obten\u00e7\u00e3o das linhas, Bronze pode combinar medi\u00e7\u00f5es de vers\u00f5es diferentes. Uma cole\u00e7\u00e3o lazy tamb\u00e9m pode reler os objetos ao ser consumida. O fechamento independente pode acusar contamina\u00e7\u00e3o inexistente se outra parti\u00e7\u00e3o leg\u00edtima mudar entre as leituras. N\u00e3o h\u00e1 garantia declarada de imutabilidade, exclus\u00e3o de escritores ou vers\u00e3o comum durante essas opera\u00e7\u00f5es. Trata-se de uma hip\u00f3tese de corrida, n\u00e3o de uma corrida observada.",
-      "evidence": "B-1 exige 'AS LINHAS CONFERIDAS'; B-2 exige total de um 'UNIVERSO INDEPENDENTE, a listagem dos objetos do lago', sem declarar a identidade comum dessas observa\u00e7\u00f5es.",
+      "title": "A identidade temporal entre controles, linhas e listagem n\u00e3o est\u00e1 contratada",
+      "body": "Entregar as linhas evita uma releitura expl\u00edcita por Silver, mas o plano n\u00e3o define se elas s\u00e3o materializadas ou uma rela\u00e7\u00e3o que pode executar novamente a leitura. Tamb\u00e9m n\u00e3o fixa a gera\u00e7\u00e3o entre os cinco controles, o mapa e a listagem independente. Se objetos forem substitu\u00eddos entre essas opera\u00e7\u00f5es, os controles podem descrever uma vers\u00e3o e as linhas entregues outra; o fechamento pode reprovar uma mistura transit\u00f3ria de vers\u00f5es corretas. \u00c9 uma hip\u00f3tese de concorr\u00eancia ainda n\u00e3o exclu\u00edda pelo plano, n\u00e3o uma ocorr\u00eancia medida. A marca de proced\u00eancia bloqueia hoje a publica\u00e7\u00e3o, mas n\u00e3o resolve a consist\u00eancia da capacidade Bronze.",
+      "evidence": "B-1 exige 'AS LINHAS CONFERIDAS' para evitar uma segunda leitura sem identidade contratada. B-2 exige um total vindo da 'listagem dos objetos do lago'. N\u00e3o declara imutabilidade, exclus\u00e3o de escrita ou identidade de gera\u00e7\u00e3o durante essas opera\u00e7\u00f5es.",
       "cites": [
-        "cvg/docs/tech-spec/tech-spec-pda-beneficios.md \u00a7 Requirements \u2014 R-5",
-        "contracts/competencia-202601.yaml \u00a7 particionamento"
-      ],
-      "proposal": null
+        "cvg/docs/tech-spec/tech-spec-pda-beneficios.md \u00a7 Requirements, R-5",
+        "contracts/competencia-202601.yaml \u00a7 particionamento",
+        "cvg/swimlanes/lanes-medalhao/bronze/LEG-BRONZE-REPRODUZ-ANCORA.md \u00a7 behavior B-1 e B-2"
+      ]
     },
     {
       "id": "C2",
       "severity": "high",
       "rank": 2,
-      "attack_class": "cross-lane-interface",
+      "attack_class": "data-loss",
       "swimlane": "LANE-SILVER",
       "leg": "LEG-SILVER-PRESERVA-DEFEITO",
       "location": {
         "plan_file": "cvg/swimlanes/lanes-medalhao/silver/LEG-SILVER-PRESERVA-DEFEITO.md",
-        "section": "produces; behavior B-1: forma de silver classificado"
+        "section": "tasks[0].behavior B-1: multiconjunto e descri\u00e7\u00e3o original; eval_1"
       },
-      "title": "Silver n\u00e3o declara as linhas que Gold precisa agregar",
-      "body": "O plano inclui expressamente mapa, compet\u00eancia e marca em silver classificado, mas n\u00e3o define a cole\u00e7\u00e3o de linhas entregue, sua representa\u00e7\u00e3o ou os campos monet\u00e1rios consum\u00edveis. Gold exige agregar Silver e comparar o resultado com o mapa anterior. Uma implementa\u00e7\u00e3o que entregue apenas o mapa e os metadados declarados deixa Gold sem entrada independente: ele teria de usar o pr\u00f3prio mapa como fonte e refer\u00eancia, ou buscar linhas por uma interface n\u00e3o contratada. Os testes locais das duas tarefas podem passar com fixtures incompat\u00edveis.",
-      "evidence": "Silver declara que 'total_por_codigo ... \u00e9 parte declarada de silver classificado'. Gold B-1 exige comparar seu mapa 'contra o mapa que a camada anterior produziu' e rejeita compara\u00e7\u00e3o consigo mesmo.",
+      "title": "A prova de conserva\u00e7\u00e3o exclui a associa\u00e7\u00e3o entre c\u00f3digo e descri\u00e7\u00e3o original",
+      "body": "A preserva\u00e7\u00e3o declarada inclui descri\u00e7\u00e3o original, mas o multiconjunto obrigat\u00f3rio verifica apenas c\u00f3digo e valor. Considere duas linhas de c\u00f3digos n\u00e3o colapsados: ('01', 'A', 10) e ('03', 'B', 20). Trocar apenas as descri\u00e7\u00f5es originais na sa\u00edda mant\u00e9m o multiconjunto exigido, todos os totais e as quatro cardinalidades. As demais linhas podem permanecer iguais. Uma implementa\u00e7\u00e3o que compare o mapa contratual com a entrada e corrompa a associa\u00e7\u00e3o ao construir a sa\u00edda passa nessas provas. O resultado conserva dinheiro, mas perde a identidade original que deveria preservar.",
+      "evidence": "B-1 declara linhas com 'c\u00f3digo, descri\u00e7\u00e3o original, descri\u00e7\u00e3o normalizada e valor', por\u00e9m exige igualdade do multiconjunto somente 'no que toca c\u00f3digo e valor'. A preserva\u00e7\u00e3o expl\u00edcita da descri\u00e7\u00e3o no registro do defeito tamb\u00e9m n\u00e3o cobre a associa\u00e7\u00e3o de todas as linhas de sa\u00edda.",
       "cites": [
-        "cvg/swimlanes/lanes-medalhao/gold/LEG-GOLD-RECONCILIA.md \u00a7 behavior B-1",
-        "cvg/swimlanes/lanes-medalhao/bronze/LEG-BRONZE-REPRODUZ-ANCORA.md \u00a7 behavior B-1 \u2014 forma de bronze conferido"
-      ],
-      "proposal": null
+        "cvg/docs/tech-spec/tech-spec-pda-beneficios.md \u00a7 Scope: a f\u00e1brica classifica, nunca corrige",
+        "cvg/docs/adrs/0008-the-description-defect-is-collapsed-identity-not-field-width.md \u00a7 Decision e Consequences",
+        "cvg/swimlanes/lanes-medalhao/silver/LEG-SILVER-PRESERVA-DEFEITO.md \u00a7 behavior B-1 e eval_1"
+      ]
     },
     {
       "id": "C3",
       "severity": "high",
       "rank": 3,
-      "attack_class": "unverified-assumption",
-      "swimlane": "LANE-GOLD",
-      "leg": "LEG-GOLD-RECONCILIA",
+      "attack_class": "cross-lane-interface",
+      "swimlane": "LANE-SILVER",
+      "leg": "LEG-SILVER-PRESERVA-DEFEITO",
       "location": {
-        "plan_file": "cvg/swimlanes/lanes-medalhao/gold/LEG-GOLD-RECONCILIA.md",
-        "section": "behavior B-1: publica\u00e7\u00e3o indivis\u00edvel; eval_1\u2013eval_3"
+        "plan_file": "cvg/swimlanes/lanes-medalhao/silver/LEG-SILVER-PRESERVA-DEFEITO.md",
+        "section": "tasks[0].behavior B-2: bloqueio por defeito n\u00e3o classificado ou UNRESOLVED"
       },
-      "title": "Atomicidade da publica\u00e7\u00e3o n\u00e3o tem prova exigida pelos evals",
-      "body": "O plano exige visibilidade indivis\u00edvel e preserva\u00e7\u00e3o do destino em uma interrup\u00e7\u00e3o, mas os cen\u00e1rios obrigat\u00f3rios verificam sobretudo reconcilia\u00e7\u00e3o e aus\u00eancia de altera\u00e7\u00e3o DURANTE a reconcilia\u00e7\u00e3o. N\u00e3o exigem observar leitores ou interromper a etapa posterior de publica\u00e7\u00e3o. Uma implementa\u00e7\u00e3o que mantenha candidatas privadas, reconcilie corretamente e depois copie arquivos um a um pode satisfazer esses cen\u00e1rios e violar a garantia de publica\u00e7\u00e3o. O backend e o ponto de commit tamb\u00e9m n\u00e3o est\u00e3o declarados neste leg, impedindo avaliar a garantia pelo desenho.",
-      "evidence": "B-1: 'Publica\u00e7\u00e3o interrompida deixa o destino como estava antes'. eval_3 exige 'destino_inalterado_durante', descrito no comportamento como observa\u00e7\u00e3o durante a reconcilia\u00e7\u00e3o; nenhum cen\u00e1rio obrigat\u00f3rio nomeia interrup\u00e7\u00e3o durante a publica\u00e7\u00e3o.",
+      "title": "O bloqueio de classifica\u00e7\u00e3o n\u00e3o tem estado de sa\u00edda definido",
+      "body": "Silver define NAO_MEDIDO para aus\u00eancia do mapa e DIVERGE para cardinalidade divergente, mas n\u00e3o define o estado retornado quando um defeito \u00e9 UNRESOLVED ou n\u00e3o classificado. A sa\u00edda inclui estado e defeitos; Gold condiciona a agrega\u00e7\u00e3o a estado INTEGRO, sem exigir inspe\u00e7\u00e3o das classifica\u00e7\u00f5es recebidas. Com mapa presente e uma diferen\u00e7a de normaliza\u00e7\u00e3o UNRESOLVED, dois implementadores podem representar o bloqueio de formas incompat\u00edveis. Deixar INTEGRO para expressar conserva\u00e7\u00e3o monet\u00e1ria permitiria a Gold continuar, embora Silver devesse bloquear.",
+      "evidence": "Silver B-2: 'UNRESOLVED [...] BLOQUEIA igualmente'. Silver B-1 declara a forma da capacidade com 'o estado', sem definir esse caso. Gold B-1: 'Gold s\u00f3 agrega sobre silver classificado com estado INTEGRO'.",
       "cites": [
-        "cvg/swimlanes/lanes-medalhao/gold/LEG-GOLD-RECONCILIA.md \u00a7 behavior B-1 e evals",
-        "cvg/docs/tech-spec/tech-spec-pda-beneficios.md \u00a7 Problem restated"
-      ],
-      "proposal": null
+        "cvg/docs/tech-spec/tech-spec-pda-beneficios.md \u00a7 Requirements, R-6",
+        "cvg/swimlanes/lanes-medalhao/silver/LEG-SILVER-PRESERVA-DEFEITO.md \u00a7 behavior B-1 e B-2",
+        "cvg/swimlanes/lanes-medalhao/gold/LEG-GOLD-RECONCILIA.md \u00a7 behavior B-1"
+      ]
     },
     {
       "id": "C4",
       "severity": "medium",
       "rank": 4,
-      "attack_class": "cross-lane-interface",
-      "swimlane": "LANE-BRONZE",
-      "leg": "LEG-BRONZE-REPRODUZ-ANCORA",
+      "attack_class": "unverified-assumption",
+      "swimlane": "LANE-GOLD",
+      "leg": "LEG-GOLD-RECONCILIA",
       "location": {
-        "plan_file": "cvg/swimlanes/lanes-medalhao/bronze/LEG-BRONZE-REPRODUZ-ANCORA.md",
-        "section": "behavior B-1: ERRO_LEITURA; B-2: aus\u00eancia e preced\u00eancia; eval_2"
+        "plan_file": "cvg/swimlanes/lanes-medalhao/gold/LEG-GOLD-RECONCILIA.md",
+        "section": "tasks[0].behavior B-1: publica\u00e7\u00e3o indivis\u00edvel; eval_3"
       },
-      "title": "ERRO_LEITURA existe no enum, mas n\u00e3o no comportamento",
-      "body": "O objeto prev\u00ea ERRO_LEITURA, por\u00e9m o plano n\u00e3o determina o resultado de acesso negado, falha de listagem, Parquet ileg\u00edvel ou leitura parcial. Sem essa distin\u00e7\u00e3o, uma implementa\u00e7\u00e3o pode transformar falha de acesso em parti\u00e7\u00e3o ausente ou medir apenas os arquivos leg\u00edveis e reportar DIVERGE. Isso confunde incapacidade de observar com aus\u00eancia ou diverg\u00eancia efetivamente medidas. Os evals obrigat\u00f3rios n\u00e3o exercitam essa fronteira.",
-      "evidence": "B-1 enumera 'INTEGRO, DIVERGE, NAO_MEDIDO, ERRO_LEITURA'; B-2 define aus\u00eancia, vazio e fechamento, sem condi\u00e7\u00f5es para ERRO_LEITURA.",
+      "title": "O eval obrigat\u00f3rio termina antes do intervalo que amea\u00e7a a atomicidade",
+      "body": "O cen\u00e1rio destino_inalterado_durante observa a reconcilia\u00e7\u00e3o, mas o risco descrito pelo pr\u00f3prio plano acontece depois dela, durante a publica\u00e7\u00e3o. Uma implementa\u00e7\u00e3o pode manter o destino intacto enquanto confere e depois copiar arquivos sequencialmente. Ela satisfaz esse cen\u00e1rio e ainda exp\u00f5e resultado parcial se interrompida durante a c\u00f3pia. Nenhum cen\u00e1rio obrigat\u00f3rio exige observar a transi\u00e7\u00e3o de publica\u00e7\u00e3o ou interromp\u00ea-la; a promessa de atomicidade permanece sem a prova correspondente.",
+      "evidence": "B-1 exige 'Publica\u00e7\u00e3o interrompida deixa o destino como estava antes'. Os seletores dos tr\u00eas evals n\u00e3o exigem cen\u00e1rio de interrup\u00e7\u00e3o da publica\u00e7\u00e3o; eval_3 exige destino_inalterado_durante, descrito em B-1 como observa\u00e7\u00e3o 'DURANTE a reconcilia\u00e7\u00e3o'.",
       "cites": [
-        "cvg/swimlanes/lanes-medalhao/bronze/LEG-BRONZE-REPRODUZ-ANCORA.md \u00a7 behavior B-1, B-2 e eval_2"
-      ],
-      "proposal": null
+        "cvg/docs/tech-spec/tech-spec-pda-beneficios.md \u00a7 Problem restated",
+        "cvg/swimlanes/lanes-medalhao/gold/LEG-GOLD-RECONCILIA.md \u00a7 behavior B-1 e eval_3"
+      ]
     },
     {
       "id": "C5",
       "severity": "medium",
       "rank": 5,
       "attack_class": "unverified-assumption",
-      "swimlane": "LANE-SILVER",
-      "leg": "LEG-SILVER-PRESERVA-DEFEITO",
+      "swimlane": "LANE-BRONZE",
+      "leg": "LEG-BRONZE-REPRODUZ-ANCORA",
       "location": {
-        "plan_file": "cvg/swimlanes/lanes-medalhao/silver/LEG-SILVER-PRESERVA-DEFEITO.md",
-        "section": "behavior B-1: quatro cardinalidades e descri\u00e7\u00e3o original"
+        "plan_file": "cvg/swimlanes/lanes-medalhao/bronze/LEG-BRONZE-REPRODUZ-ANCORA.md",
+        "section": "tasks[0].behavior B-1: dom\u00ednio e proced\u00eancia; eval_1\u2013eval_3"
       },
-      "title": "A base de duas cardinalidades permanece amb\u00edgua",
-      "body": "O plano determina explicitamente que a contagem de colapsos usa descri\u00e7\u00f5es originais, mas n\u00e3o estende inequivocamente essa base a descri\u00e7\u00f5es distintas e c\u00f3digos colapsados. Com c\u00f3digos diferentes rotulados ABC e abc, a normaliza\u00e7\u00e3o diminui descri\u00e7\u00f5es distintas e aumenta c\u00f3digos colapsados. Comparar essas duas medidas normalizadas com o contrato bruto reprova uma entrada correta, mesmo mantendo a contagem de colapsos original como exigido. O cen\u00e1rio quatro_cardinalidades n\u00e3o especifica essa combina\u00e7\u00e3o.",
-      "evidence": "B-1 exige as 'QUATRO cardinalidades' e depois restringe expressamente 'A CONTAGEM DE COLAPSOS' \u00e0 descri\u00e7\u00e3o ORIGINAL. O pr\u00f3prio B-1 fornece o exemplo ABC/abc.",
+      "title": "Os evals n\u00e3o exigem provar duas recusas essenciais da entrada Bronze",
+      "body": "Os cen\u00e1rios obrigat\u00f3rios cobrem float, controles e precis\u00e3o, mas n\u00e3o exigem entrada Decimal negativa ou fora da escala, nem hash de proced\u00eancia divergente ou emiss\u00e3o da marca quando falta v\u00ednculo. Conferir controles finais n\u00e3o prova que um valor inv\u00e1lido foi recusado antes do acumulador, com identidade e valor original preservados. O teste de Gold para uma marca recebida tamb\u00e9m n\u00e3o prova que Bronze a emite. Assim, as su\u00edtes selecionadas podem ficar verdes sem demonstrar essas obriga\u00e7\u00f5es j\u00e1 inclu\u00eddas no escopo.",
+      "evidence": "B-1 exige dom\u00ednio monet\u00e1rio antes da soma, hash divergente como DIVERGE e emiss\u00e3o de PROCEDENCIA_NAO_VINCULADA. Nenhum dos seletores obrigat\u00f3rios de eval_1\u2013eval_3 exige esses casos; recusa_float_na_entrada cobre outra condi\u00e7\u00e3o.",
       "cites": [
-        "contracts/competencia-202601.yaml \u00a7 cardinalidade",
-        "cvg/docs/adrs/0008-the-description-defect-is-collapsed-identity-not-field-width.md \u00a7 Decision e Evidence",
-        "cvg/docs/tech-spec/tech-spec-pda-beneficios.md \u00a7 Requirements \u2014 R-3"
-      ],
-      "proposal": null
+        "cvg/docs/tech-spec/tech-spec-pda-beneficios.md \u00a7 Requirements, R-4",
+        "cvg/docs/adrs/0009-the-derived-precision-assumes-a-monotonic-sum-with-no-negative-values.md \u00a7 Consequences",
+        "cvg/swimlanes/lanes-medalhao/bronze/LEG-BRONZE-REPRODUZ-ANCORA.md \u00a7 behavior B-1 e evals"
+      ]
     }
   ],
   "cross_lane_interfaces": [],
   "fork": {
     "choice": "B",
-    "reason": "Reproduz a declara\u00e7\u00e3o dos tr\u00eas arquivos _lane.md; n\u00e3o \u00e9 uma escolha do advers\u00e1rio.",
+    "reason": "Transcri\u00e7\u00e3o do FORK j\u00e1 declarado nos tr\u00eas arquivos _lane.md; nenhuma escolha feita pelo advers\u00e1rio.",
     "per_plan_declared": true
   },
   "open_questions": [
     {
-      "q": "Qual garantia existente mant\u00e9m est\u00e1vel a vers\u00e3o dos objetos durante as medi\u00e7\u00f5es e a entrega de linhas de Bronze? Se exigir requisito novo, a decis\u00e3o deve retornar ao Pass 2/3.",
+      "q": "Qual garantia existente mant\u00e9m a mesma vers\u00e3o dos objetos entre listagem, medi\u00e7\u00e3o dos controles e consumo das linhas conferidas?",
       "blocks_build": true
     },
     {
-      "q": "Qual backend, contrato de leitura e ponto de commit sustentam a publica\u00e7\u00e3o indivis\u00edvel j\u00e1 exigida por Gold?",
-      "blocks_build": true
-    },
-    {
-      "q": "Como o despacho representa obje\u00e7\u00f5es ainda n\u00e3o decididas? O schema 1.1 exige resolution com FIX/ACCEPT e identifica\u00e7\u00e3o humana, indispon\u00edveis nesta etapa.",
+      "q": "Qual estado Silver devolve para bloqueio por classifica\u00e7\u00e3o, e como Gold o consome sem reinterpret\u00e1-lo?",
       "blocks_build": true
     }
   ],
