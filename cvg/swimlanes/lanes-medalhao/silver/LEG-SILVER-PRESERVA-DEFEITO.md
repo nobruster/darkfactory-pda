@@ -1,6 +1,6 @@
 > Projetado de `LEG-SILVER-PRESERVA-DEFEITO.md` pelo Seamwise.
 > **Não edite aqui** — edite a recipe e rode `seamwise plan`.
-> origem sha256: `bf7fba3686a889fde4a6df55d30167b6234b73f8c86cb2abdcd15c2e5339ef58`
+> origem sha256: `969142fe4081f0d70248cc6a108b02b73a369de1a04fdc61f2a91f798848dba4`
 
 ---
 
@@ -132,7 +132,14 @@ tasks:
       — um pipeline que altera o total ao normalizar texto tem um defeito, não uma melhoria. Cada colapso
       recebe EXATAMENTE UMA das seis classificações e a contagem medida é conferida contra a do contrato
       — encontrar número diferente de 11 é DIVERGE, porque o contrato mediu na competência inteira e a
-      divergência significa fonte diferente da ancorada, não permissão para ajustar o número'
+      divergência significa fonte diferente da ancorada, não permissão para ajustar o número. GRAVAÇÃO
+      NO MINIO, pela decisão DEC-CAMADAS-GRAVAM-NO-MINIO: Silver lê Bronze pelo ponteiro _ATUAL, nunca
+      por listagem, e grava em s3a://silver/pda/beneficios-emitidos/competencia=<c>/execucao=<id>/ com
+      estado INTEGRO ou NAO_MEDIDO — o valor está conservado, e a identidade não medida fica DECLARADA
+      no manifesto _ESTADO.json, junto da cobertura do referencial —, nunca com BLOQUEADO ou DIVERGE.
+      Relê o que gravou e confere a conservação contra Bronze antes do manifesto e, por ÚLTIMO, do ponteiro
+      _ATUAL, um PUT único. Gold só consome Silver cujo manifesto diz INTEGRO. O destino é parâmetro com
+      esse padrão, e os testes gravam sob um prefixo de teste próprio, nunca no destino real'
   - id: B-2
     given: um código COLAPSADO cuja descrição diverge do mapa aprovado, ou um colapso não declarado
     when: Silver normaliza
@@ -180,12 +187,13 @@ tasks:
     bash: docker compose -f infra/docker-compose.yml exec -T spark sh -c 'for c in chave_e_codigo multiconjunto_identico
       linhas_irmas_com_valores_trocados linha_de_valor_zero_nao_some mapa_por_codigo_preservado contexto_declarado
       entrega_as_linhas_normalizadas descricao_trocada_entre_codigos multiconjunto_sem_coletar ansi_declarado_estouro_nao_vira_nulo
-      consome_saida_real_de_bronze; do python3 -m pytest --collect-only -q tests/test_silver.py -k "$c"
-      2>/dev/null | grep -q "::" || { echo "EVAL=CENARIO_AUSENTE_$c"; exit 1; }; done; python3 -m pytest
-      -q tests/test_silver.py -k "chave_e_codigo or multiconjunto_identico or linhas_irmas_com_valores_trocados
-      or linha_de_valor_zero_nao_some or mapa_por_codigo_preservado or contexto_declarado or entrega_as_linhas_normalizadas
-      or descricao_trocada_entre_codigos or multiconjunto_sem_coletar or ansi_declarado_estouro_nao_vira_nulo
-      or consome_saida_real_de_bronze"'
+      consome_saida_real_de_bronze le_bronze_pelo_ponteiro grava_silver_com_estado_no_manifesto; do python3
+      -m pytest --collect-only -q tests/test_silver.py -k "$c" 2>/dev/null | grep -q "::" || { echo "EVAL=CENARIO_AUSENTE_$c";
+      exit 1; }; done; python3 -m pytest -q tests/test_silver.py -k "chave_e_codigo or multiconjunto_identico
+      or linhas_irmas_com_valores_trocados or linha_de_valor_zero_nao_some or mapa_por_codigo_preservado
+      or contexto_declarado or entrega_as_linhas_normalizadas or descricao_trocada_entre_codigos or multiconjunto_sem_coletar
+      or ansi_declarado_estouro_nao_vira_nulo or consome_saida_real_de_bronze or le_bronze_pelo_ponteiro
+      or grava_silver_com_estado_no_manifesto"'
     verifies:
     - B-1
   - id: eval_2
@@ -230,7 +238,7 @@ tasks:
   - contracts
   rollback: Remover a camada Silver e seus testes.
   observability: colapsos classificados por competência
-source_seam_sha256: 7c6310788594b11801c067ecdfe0d34beaa63c22694e6bf025d4922d77bb9997
+source_seam_sha256: 7e96feaa4a71b3e2b4f7fd2c36346eda9df18f7d5fd4c9258acf883a421de386
 ---
 # Silver classifica o defeito e conserva o total
 

@@ -1,6 +1,6 @@
 > Projetado de `LEG-BRONZE-REPRODUZ-ANCORA.md` pelo Seamwise.
 > **Não edite aqui** — edite a recipe e rode `seamwise plan`.
-> origem sha256: `22d8061e2672585ec608d208c0ce7471017ea33e3b62344111a045deb2220957`
+> origem sha256: `4fab72c4dc49ccacae22a0bef22e6d5dde5cc1450a320f9a34249a2272f16baf`
 
 ---
 
@@ -47,8 +47,9 @@ tasks:
   - tests/test_bronze.py
   behavior:
   - id: B-1
-    given: uma partição do lago e o contrato da competência, com a âncora de linhas e de soma medidas
-      na fonte
+    given: a partição JÁ GRAVADA na landing — s3a://landing/pda/beneficios-emitidos/competencia=2026-01,
+      o caminho que o contrato declara em particionamento.caminho, lido dali e nunca regerado a partir
+      do CSV — e o contrato da competência, com a âncora de linhas e de soma medidas na fonte
     when: Bronze lê a partição
     then: 'No caminho Spark, o Context do Python NÃO governa a aritmética — medido: com prec=3 e Emax=5
       no Python, o Spark somou exato, e sum() promove decimal(14,2) a decimal(24,2) por conta própria.
@@ -123,7 +124,12 @@ tasks:
       com a conferida não está contratada — o mesmo motivo pelo qual Bronze recusa confiar no Parquet
       por tê-lo escrito — porque ''produces'' com nome e sem forma deixa Silver e Bronze passarem nos
       próprios testes com fixtures locais e não encaixarem um no outro. Partição que diverge é DIVERGE,
-      e Bronze não escreve nada'
+      e Bronze não escreve nada. GRAVAÇÃO NO MINIO, pela decisão DEC-CAMADAS-GRAVAM-NO-MINIO: só com estado
+      INTEGRO, Bronze grava as linhas conferidas em Parquet, com o DecimalType declarado, em s3a://bronze/pda/beneficios-emitidos/competencia=<c>/execucao=<id>/;
+      RELÊ o que gravou e reconfere os cinco controles contra a âncora — gravação que não os reproduz
+      é DIVERGE e o ponteiro não muda —; grava o manifesto _ESTADO.json com o estado, os controles e a
+      execução; e por ÚLTIMO o ponteiro competencia=<c>/_ATUAL, um PUT único. O destino é parâmetro com
+      esse padrão, e os testes gravam sob um prefixo de teste próprio, nunca no destino real'
   - id: B-2
     given: uma competência cuja partição não existe no lago ou existe com zero linhas, ou cujo contrato
       NÃO declara âncora
@@ -166,11 +172,12 @@ tasks:
     description: Os cinco controles comparados individualmente, e a partição medida isoladamente
     bash: docker compose -f infra/docker-compose.yml exec -T spark sh -c 'for c in cinco_controles alteracao_compensada
       isola_particao nao_soma_uniao precisao_declarada entrega_as_linhas_conferidas ansi_declarado_estouro_nao_vira_nulo
-      entrega_o_hash_da_procedencia posicao_no_lago_nomeada; do python3 -m pytest --collect-only -q tests/test_bronze.py
-      -k "$c" 2>/dev/null | grep -q "::" || { echo "EVAL=CENARIO_AUSENTE_$c"; exit 1; }; done; python3
-      -m pytest -q tests/test_bronze.py -k "cinco_controles or alteracao_compensada or isola_particao
-      or nao_soma_uniao or precisao_declarada or entrega_as_linhas_conferidas or ansi_declarado_estouro_nao_vira_nulo
-      or entrega_o_hash_da_procedencia or posicao_no_lago_nomeada"'
+      entrega_o_hash_da_procedencia posicao_no_lago_nomeada grava_no_minio_e_reconfere ponteiro_atual_por_ultimo;
+      do python3 -m pytest --collect-only -q tests/test_bronze.py -k "$c" 2>/dev/null | grep -q "::" ||
+      { echo "EVAL=CENARIO_AUSENTE_$c"; exit 1; }; done; python3 -m pytest -q tests/test_bronze.py -k
+      "cinco_controles or alteracao_compensada or isola_particao or nao_soma_uniao or precisao_declarada
+      or entrega_as_linhas_conferidas or ansi_declarado_estouro_nao_vira_nulo or entrega_o_hash_da_procedencia
+      or posicao_no_lago_nomeada or grava_no_minio_e_reconfere or ponteiro_atual_por_ultimo"'
     verifies:
     - B-1
   - id: eval_2
@@ -212,7 +219,7 @@ tasks:
   - contracts
   rollback: Remover o leitor Bronze e seus testes.
   observability: partições recusadas por controle divergente
-source_seam_sha256: 849221b29714b305887280c1d733941ee95d697bc0f9d8d347ed6cfc7c43f260
+source_seam_sha256: 7c2690802325e1272bbe8fdf643d3f6ad9a7b273bf8727f00bcdcbc13d304d59
 ---
 # Bronze só existe quando reproduz a âncora do contrato
 

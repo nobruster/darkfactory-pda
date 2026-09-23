@@ -1,6 +1,6 @@
 > Projetado de `LEG-GOLD-RECONCILIA.md` pelo Seamwise.
 > **Não edite aqui** — edite a recipe e rode `seamwise plan`.
-> origem sha256: `20c44cb1985151f0d618708ffa410e80417f8d5a87602598572d9a06c8a837b3`
+> origem sha256: `ffb2ba843950138ecfee86647f0fa5a6893401c0c06d2830eee27e43e130db52`
 
 ---
 
@@ -145,7 +145,14 @@ tasks:
       o conjunto reconciliado, tudo ou nada. Copiar vários arquivos expondo-os à medida que chegam deixaria
       um consumidor lendo parte das candidatas, ou misturadas com as da execução anterior, com a reconciliação
       correta e o total lido por ninguém aprovado — e uma interrupção no meio congela esse estado. Publicação
-      interrompida deixa o destino como estava antes'
+      interrompida deixa o destino como estava antes. GRAVAÇÃO NO MINIO, pela decisão DEC-CAMADAS-GRAVAM-NO-MINIO,
+      e é ela que define o destino e o protocolo da publicação: Gold lê Silver pelo ponteiro _ATUAL e
+      grava as candidatas em s3a://gold/pda/beneficios-emitidos/competencia=<c>/execucao=<id>/, invisíveis
+      a quem lê pelo ponteiro; relê e reconcilia sobre o que gravou; e só com Desfecho.autorizado_publicar
+      E o anexo conferido grava o manifesto e, por ÚLTIMO, o ponteiro _ATUAL — um PUT único. Interrupção
+      antes do ponteiro deixa publicado o que estava; a execução órfã fica no prefixo dela, nomeada, nunca
+      apagada em silêncio. O destino é parâmetro com esse padrão, e os testes gravam sob um prefixo de
+      teste próprio, nunca no destino real'
   - id: B-2
     given: um Silver cujo total não reproduz a âncora, ou uma competência sem âncora no contrato
     when: Gold agrega
@@ -179,10 +186,12 @@ tasks:
     description: Arredondamento único, precisão declarada, e recusa sob procedência não vinculada
     bash: docker compose -f infra/docker-compose.yml exec -T spark sh -c 'for c in arredonda_uma_vez half_even_do_contrato
       nao_arredonda_por_campo traps_declaradas recusa_sob_procedencia_nao_vinculada ansi_declarado_estouro_nao_vira_nulo
-      cobertura_anexada_ao_pacote; do python3 -m pytest --collect-only -q tests/test_gold.py -k "$c" 2>/dev/null
-      | grep -q "::" || { echo "EVAL=CENARIO_AUSENTE_$c"; exit 1; }; done; python3 -m pytest -q tests/test_gold.py
-      -k "arredonda_uma_vez or half_even_do_contrato or nao_arredonda_por_campo or traps_declaradas or
-      recusa_sob_procedencia_nao_vinculada or ansi_declarado_estouro_nao_vira_nulo or cobertura_anexada_ao_pacote"'
+      cobertura_anexada_ao_pacote publica_pelo_ponteiro_atual interrompida_antes_do_ponteiro_nao_publica;
+      do python3 -m pytest --collect-only -q tests/test_gold.py -k "$c" 2>/dev/null | grep -q "::" ||
+      { echo "EVAL=CENARIO_AUSENTE_$c"; exit 1; }; done; python3 -m pytest -q tests/test_gold.py -k "arredonda_uma_vez
+      or half_even_do_contrato or nao_arredonda_por_campo or traps_declaradas or recusa_sob_procedencia_nao_vinculada
+      or ansi_declarado_estouro_nao_vira_nulo or cobertura_anexada_ao_pacote or publica_pelo_ponteiro_atual
+      or interrompida_antes_do_ponteiro_nao_publica"'
     verifies:
     - B-1
   - id: eval_2
@@ -232,7 +241,7 @@ tasks:
   - contracts
   rollback: Remover a camada Gold e seus testes.
   observability: agregados recusados por não reconciliar
-source_seam_sha256: 7c61b88a163e814484a5d71b29df1bfdc6e2bcccfb4bea362e84b66fdec3ae10
+source_seam_sha256: bbe01e22d328e3359e7983c1457cb730d614b12301ab8bff2e7f0e607c03c679
 ---
 # Gold só publica quando reconcilia com a âncora
 

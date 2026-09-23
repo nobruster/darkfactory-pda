@@ -13,15 +13,15 @@
     "family": "anthropic"
   },
   "verdict": "REVISE",
-  "prompt_sha256": "3b86bf464cd285e1e521b9be7da0c722ac22dc11719520a321255766f4ddf165",
+  "prompt_sha256": "20762a9550816d6519f82c555530e0cdbcf851f0aa63a3d865ce4bb5623f9b6c",
   "inputs": [
     {
       "path": "bronze/LEG-BRONZE-REPRODUZ-ANCORA.md",
-      "sha256": "1c1dd0c5fc4a01f908b4e45c9e2a40ef3979e98a4f746456be7572d75762ad67"
+      "sha256": "4b803b5c59892a93ff5b2608aa9943cdc57c7ce1f3732606d004099805b4c257"
     },
     {
       "path": "bronze/_lane.md",
-      "sha256": "e96733772b3a769f98a026ff936b6e69f146ad16ce6ad60884bf62298108ff08"
+      "sha256": "e51346a639df35257a5063b133534f282455645774a8c9244267dc9e14b3ae21"
     },
     {
       "path": "contrato-ext/LEG-CONTRATO-EXPOE-PARTICAO.md",
@@ -33,19 +33,19 @@
     },
     {
       "path": "gold/LEG-GOLD-RECONCILIA.md",
-      "sha256": "3105bfd318d407083f39a4dfb7a3a96f0dd10575a2befc48b96e5d22f2cecb24"
+      "sha256": "4d216428fa57148eafa072a84c27cb3ede19876d232513a12b82e7543a0e8146"
     },
     {
       "path": "gold/_lane.md",
-      "sha256": "6c8bbc541ee13627f1e5a5526d98afb20697730b427a48ac9561a1000d8c96e5"
+      "sha256": "8908a24e825cc50a525de838f1be0ac934887b4434004cdc6b7710b5c58fa93f"
     },
     {
       "path": "silver/LEG-SILVER-PRESERVA-DEFEITO.md",
-      "sha256": "40bccc28b506d9e800e0473eab8a9770041e8035d4e6d103b3c4b836180376cd"
+      "sha256": "dec4ffcd5a4f7036602504ca3acfb305d4829e7c84abd3057207da0bfbf82afb"
     },
     {
       "path": "silver/_lane.md",
-      "sha256": "1484c9762de47a3002d3e6246afdb0d1406a6e55b4db425f5cc48da05d93a1a2"
+      "sha256": "95a99255201141aaae67aed34bc253a6907cc059bd7d8e241279faa17e4cc5c8"
     }
   ],
   "objections": [
@@ -53,133 +53,106 @@
       "id": "C1",
       "severity": "high",
       "rank": 1,
-      "attack_class": "race",
+      "attack_class": "data-loss",
       "swimlane": "LANE-BRONZE",
       "leg": "LEG-BRONZE-REPRODUZ-ANCORA",
-      "title": "As medi\u00e7\u00f5es n\u00e3o est\u00e3o vinculadas a uma mesma vers\u00e3o dos objetos",
       "location": {
         "plan_file": "cvg/swimlanes/lanes-medalhao/bronze/LEG-BRONZE-REPRODUZ-ANCORA.md",
-        "section": "B-1: rela\u00e7\u00e3o materializada; B-2: universo independente da listagem"
+        "section": "B-1 \u2014 GRAVA\u00c7\u00c3O NO MINIO; reconfer\u00eancia ap\u00f3s escrita"
       },
-      "evidence": "B-1 entrega uma 'rela\u00e7\u00e3o materializada'; B-2 exige total obtido de um 'UNIVERSO INDEPENDENTE, a listagem dos objetos do lago'. N\u00e3o h\u00e1 identidade de vers\u00e3o comum declarada para listagem, leitura dos objetos, controles e rela\u00e7\u00e3o entregue.",
-      "body": "A independ\u00eancia da listagem n\u00e3o prova simultaneidade. Se um objeto for substitu\u00eddo entre essas opera\u00e7\u00f5es, Bronze pode comparar controles de uma gera\u00e7\u00e3o com fechamento de outra, recusando dados corretos ou entregando linhas diferentes das conferidas. Materializar a rela\u00e7\u00e3o resolve apenas parte do problema: n\u00e3o declara qual gera\u00e7\u00e3o a listagem externa mede. Quest\u00e3o bloqueante: o lago permanece est\u00e1vel durante toda a confer\u00eancia, ou existe uma identidade verific\u00e1vel de gera\u00e7\u00e3o compartilhada pelas opera\u00e7\u00f5es?",
+      "title": "Os cinco controles n\u00e3o provam preserva\u00e7\u00e3o das linhas persistidas",
+      "body": "A reconfer\u00eancia p\u00f3s-escrita permite alterar c\u00f3digo ou descri\u00e7\u00e3o sem alterar nenhum dos cinco controles. Mesmo conservar o mapa por c\u00f3digo n\u00e3o detectaria duas linhas irm\u00e3s de 10 e 20 transformadas em 11 e 19, mantendo m\u00ednimos e m\u00e1ximos por outras linhas. Silver passa a tomar o Bronze persistido como refer\u00eancia; sua compara\u00e7\u00e3o de multiconjuntos n\u00e3o recupera a refer\u00eancia anterior \u00e0 escrita. A afirma\u00e7\u00e3o de que foram gravadas as linhas conferidas fica sem prova correspondente.",
+      "evidence": "B-1 exige reler o que gravou e reconferir os cinco controles contra a \u00e2ncora; Silver B-1 exige ler Bronze pelo ponteiro _ATUAL.",
       "cites": [
-        "cvg/docs/tech-spec/tech-spec-pda-beneficios.md \u2014 R-5",
-        "contracts/competencia-202601.yaml \u2014 particionamento"
+        "cvg/swimlanes/lanes-medalhao/bronze/LEG-BRONZE-REPRODUZ-ANCORA.md \u00a7 B-1",
+        "cvg/swimlanes/lanes-medalhao/silver/LEG-SILVER-PRESERVA-DEFEITO.md \u00a7 B-1 \u2014 multiconjunto",
+        "cvg/docs/tech-spec/tech-spec-pda-beneficios.md \u00a7 Success metrics \u2014 prova do conte\u00fado publicado"
       ],
-      "resolution": {
-        "disposition": "ACCEPT",
-        "decided_by": "Bruno Nunes",
-        "decided_at": "2026-09-23T15:45:53Z",
-        "owner": "Bruno Nunes",
-        "risk_residual": "Storage \u2014 gera\u00e7\u00e3o do lago. Vincular leitura, contagens e listagem a uma mesma vers\u00e3o dos objetos depende do mecanismo (ETag/versionamento do object storage, snapshot de tabela), que o plano n\u00e3o escolhe. Hoje o lago tem um \u00fanico escritor local e a parti\u00e7\u00e3o 2026-01 j\u00e1 reproduz os dois controles at\u00e9 o centavo (41.572.553 linhas, 78.521.752.562,12). O Pass 8 prende as medi\u00e7\u00f5es \u00e0 vers\u00e3o dos objetos listados contra o mecanismo que adotar. Decidido pelo dono ao fechar o Pass 4 na R30."
-      }
+      "proposal": null
     },
     {
       "id": "C2",
       "severity": "high",
       "rank": 2,
       "attack_class": "cross-lane-interface",
-      "swimlane": "LANE-CONTRATO-EXT",
-      "leg": "LEG-CONTRATO-EXPOE-PARTICAO",
-      "title": "O mapa aprovado tem conte\u00fado descrito, mas n\u00e3o representa\u00e7\u00e3o contratada",
+      "swimlane": "LANE-SILVER",
+      "leg": "LEG-SILVER-PRESERVA-DEFEITO",
       "location": {
-        "plan_file": "cvg/swimlanes/lanes-medalhao/contrato-ext/LEG-CONTRATO-EXPOE-PARTICAO.md",
-        "section": "B-1: exposi\u00e7\u00e3o do MAPA DE COLAPSOS APROVADO"
+        "plan_file": "cvg/swimlanes/lanes-medalhao/silver/LEG-SILVER-PRESERVA-DEFEITO.md",
+        "section": "B-1 \u2014 capacidade silver classificado e GRAVA\u00c7\u00c3O NO MINIO"
       },
-      "evidence": "O plano especifica grupos, descri\u00e7\u00e3o original, c\u00f3digos, aprovador e data, mas n\u00e3o nomeia a chave YAML, o atributo de Contrato nem os campos de cada grupo. O contrato real ainda n\u00e3o cont\u00e9m esse bloco.",
-      "body": "O produtor do objeto Contrato e Silver podem implementar representa\u00e7\u00f5es incompat\u00edveis e passar com fixtures pr\u00f3prias. A prova Silver\u2192Bronze n\u00e3o demonstra que Silver consome o mapa produzido pelo carregador real. A decis\u00e3o de neg\u00f3cio existe na recipe; falta o contrato de representa\u00e7\u00e3o que permita implement\u00e1-la sem duas interpreta\u00e7\u00f5es. Quest\u00e3o bloqueante: qual \u00e9 a forma can\u00f4nica desse bloco e do atributo entregue ao consumidor?",
+      "title": "A capacidade em mem\u00f3ria n\u00e3o tem contrato equivalente na persist\u00eancia",
+      "body": "Silver deve transportar hash, cinco controles de detalhe, limita\u00e7\u00f5es, defeitos e mapa exato. Entretanto, o protocolo persistido s\u00f3 explicita estado e cobertura no manifesto; as colunas Parquet n\u00e3o cont\u00eam esses metadados. Gold deve ler pelo ponteiro, mas n\u00e3o est\u00e1 definido de onde reconstr\u00f3i a capacidade completa. Uma implementa\u00e7\u00e3o que satisfa\u00e7a literalmente o manifesto descrito pode perder PROCEDENCIA_NAO_VINCULADA ou impossibilitar a emiss\u00e3o do envelope. A mesma lacuna existe na entrada persistida de Bronze.",
+      "evidence": "O manifesto Bronze enumera estado, controles e execu\u00e7\u00e3o; o manifesto Silver enumera estado e cobertura. Gold exige hash e controles de detalhe recebidos atrav\u00e9s de Silver.",
       "cites": [
-        "cvg/swimlanes/medalhao-recipe.yaml \u2014 DEC-MAPA-APROVADO-OBRIGATORIO",
-        "cvg/swimlanes/lanes-medalhao/silver/LEG-SILVER-PRESERVA-DEFEITO.md \u2014 B-2",
-        "contracts/competencia-202601.yaml \u2014 defeitos_conhecidos"
+        "cvg/swimlanes/lanes-medalhao/bronze/LEG-BRONZE-REPRODUZ-ANCORA.md \u00a7 B-1 \u2014 manifesto",
+        "cvg/swimlanes/lanes-medalhao/silver/LEG-SILVER-PRESERVA-DEFEITO.md \u00a7 B-1 \u2014 controles e hash atravessam",
+        "cvg/swimlanes/lanes-medalhao/gold/LEG-GOLD-RECONCILIA.md \u00a7 B-1 \u2014 envelope e leitura pelo ponteiro"
       ],
-      "resolution": {
-        "disposition": "ACCEPT",
-        "decided_by": "Bruno Nunes",
-        "decided_at": "2026-09-23T15:45:53Z",
-        "owner": "Bruno Nunes",
-        "risk_residual": "Pend\u00eancia do contrato. O mapa dos 11 colapsos ainda n\u00e3o foi aprovado nem declarado; a representa\u00e7\u00e3o contratada se define JUNTO com a aprova\u00e7\u00e3o, pelo dono, sob DEC-MAPA-APROVADO-OBRIGATORIO. At\u00e9 l\u00e1 Silver devolve NAO_MEDIDO e Gold n\u00e3o publica 2026-01 \u2014 nenhuma representa\u00e7\u00e3o divergente chega a publicar. Exig\u00eancia para o Pass 8: o eval de Silver consome o Contrato produzido pelo carregador REAL sobre um contrato-fixture, nunca uma representa\u00e7\u00e3o pr\u00f3pria. Decidido pelo dono ao fechar o Pass 4 na R30."
-      }
+      "proposal": null
     },
     {
       "id": "C3",
       "severity": "high",
       "rank": 3,
-      "attack_class": "unverified-assumption",
+      "attack_class": "race",
       "swimlane": "LANE-GOLD",
       "leg": "LEG-GOLD-RECONCILIA",
-      "title": "Publica\u00e7\u00e3o indivis\u00edvel ainda n\u00e3o tem destino nem protocolo definidos",
       "location": {
         "plan_file": "cvg/swimlanes/lanes-medalhao/gold/LEG-GOLD-RECONCILIA.md",
-        "section": "B-1: transi\u00e7\u00e3o INDIVIS\u00cdVEL de visibilidade"
+        "section": "B-1 \u2014 consumo de Silver por _ATUAL"
       },
-      "evidence": "O plano exige 'tudo ou nada' e que publica\u00e7\u00e3o interrompida deixe o destino anterior intacto. N\u00e3o declara o armazenamento de destino, a unidade de publica\u00e7\u00e3o nem como o consumidor identifica o conjunto publicado.",
-      "body": "A propriedade depende da interface de armazenamento e leitura. O lago de entrada usa s3a, mas isso n\u00e3o estabelece onde Gold publica. Um teste com diret\u00f3rio tempor\u00e1rio local pode passar sem provar a opera\u00e7\u00e3o no destino efetivo. Sem essa decis\u00e3o, o implementador precisa inventar o contrato de publica\u00e7\u00e3o durante o build. Quest\u00e3o bloqueante a devolver ao Pass 3: qual destino e qual opera\u00e7\u00e3o de visibilidade sustentam a atomicidade j\u00e1 exigida?",
+      "title": "PUT at\u00f4mico n\u00e3o vincula linhas, manifesto e controles \u00e0 mesma execu\u00e7\u00e3o",
+      "body": "N\u00e3o h\u00e1 regra expl\u00edcita para resolver _ATUAL uma \u00fanica vez e vincular todas as leituras \u00e0 execu\u00e7\u00e3o selecionada, nem restri\u00e7\u00e3o declarada que impe\u00e7a sua mudan\u00e7a durante o consumo. Se o consumidor obtiver o manifesto da execu\u00e7\u00e3o A e resolver novamente o ponteiro para ler dados, poder\u00e1 consumir B com estado, hash e cobertura de A. Cada PUT continua at\u00f4mico, mas a capacidade composta deixa de ser a que foi conferida. O risco tamb\u00e9m vale para Silver consumindo Bronze.",
+      "evidence": "O plano exige ler pelo ponteiro _ATUAL e um PUT \u00fanico na publica\u00e7\u00e3o, mas n\u00e3o declara o v\u00ednculo entre a resolu\u00e7\u00e3o do ponteiro e todas as leituras da capacidade.",
       "cites": [
-        "cvg/docs/tech-spec/tech-spec-pda-beneficios.md \u2014 Problem restated; R-7",
-        "contracts/competencia-202601.yaml \u2014 particionamento.caminho",
-        "infra/docker-compose.yml \u2014 servi\u00e7os spark e minio"
+        "cvg/swimlanes/lanes-medalhao/gold/LEG-GOLD-RECONCILIA.md \u00a7 B-1",
+        "cvg/swimlanes/lanes-medalhao/silver/LEG-SILVER-PRESERVA-DEFEITO.md \u00a7 B-1",
+        "cvg/swimlanes/medalhao-recipe.yaml \u00a7 DEC-CAMADAS-GRAVAM-NO-MINIO"
       ],
-      "resolution": {
-        "disposition": "ACCEPT",
-        "decided_by": "Bruno Nunes",
-        "decided_at": "2026-09-23T15:45:53Z",
-        "owner": "Bruno Nunes",
-        "risk_residual": "Storage \u2014 atomicidade da publica\u00e7\u00e3o. O destino e o protocolo de publica\u00e7\u00e3o dependem do mecanismo de armazenamento, que este plano deliberadamente n\u00e3o escolhe. O plano j\u00e1 exige visibilidade INDIVIS\u00cdVEL, destino inalterado durante a reconcilia\u00e7\u00e3o, publica\u00e7\u00e3o s\u00f3 com Desfecho.autorizado_publicar e interrup\u00e7\u00e3o deixando o destino como estava. Provar com inje\u00e7\u00e3o de falha e leitura concorrente, no destino efetivo e n\u00e3o em diret\u00f3rio tempor\u00e1rio, \u00e9 trabalho do Pass 8. Hoje h\u00e1 um \u00fanico escritor num MinIO local; isto n\u00e3o muda o total de 2026-01. Decidido pelo dono ao fechar o Pass 4 na R30."
-      }
+      "proposal": null
     },
     {
       "id": "C4",
-      "severity": "medium",
+      "severity": "high",
       "rank": 4,
-      "attack_class": "observability",
-      "swimlane": "LANE-BRONZE",
-      "leg": "LEG-BRONZE-REPRODUZ-ANCORA",
-      "title": "A posi\u00e7\u00e3o f\u00edsica do defeito \u00e9 prometida sem prova de estabilidade",
+      "attack_class": "unverified-assumption",
+      "swimlane": "LANE-CONTRATO-EXT",
+      "leg": "LEG-CONTRATO-EXPOE-PARTICAO",
       "location": {
-        "plan_file": "cvg/swimlanes/lanes-medalhao/bronze/LEG-BRONZE-REPRODUZ-ANCORA.md",
-        "section": "B-1: objeto Parquet e ordinal da linha; eval_1"
+        "plan_file": "cvg/swimlanes/lanes-medalhao/contrato-ext/LEG-CONTRATO-EXPOE-PARTICAO.md",
+        "section": "B-1 \u2014 valida\u00e7\u00e3o do mapa de colapsos aprovado"
       },
-      "evidence": "O diagn\u00f3stico exige 'o objeto Parquet e o ordinal da linha dentro dele'. O cen\u00e1rio obrigat\u00f3rio chama-se posicao_no_lago_nomeada; o plano n\u00e3o declara como comprovar que o ordinal corresponde \u00e0 posi\u00e7\u00e3o f\u00edsica no objeto.",
-      "body": "Nomear corretamente um \u00edndice n\u00e3o demonstra sua proced\u00eancia. Uma implementa\u00e7\u00e3o pode numerar a rela\u00e7\u00e3o ap\u00f3s leitura ou transforma\u00e7\u00e3o e produzir uma posi\u00e7\u00e3o que muda entre execu\u00e7\u00f5es, embora o nome do campo e o valor original estejam presentes. Isso impede localizar o defeito no objeto indicado. Falta uma prova que confronte a posi\u00e7\u00e3o reportada com uma posi\u00e7\u00e3o conhecida no arquivo, incluindo mais de um objeto.",
+      "title": "Mapa presente e aprovado ainda pode estar incompleto",
+      "body": "As recusas enumeradas cobrem grupo unit\u00e1rio, c\u00f3digo repetido e aprova\u00e7\u00e3o incompleta, mas n\u00e3o cobrem mapa vazio ou parcial com aprova\u00e7\u00e3o v\u00e1lida. Um mapa contendo apenas um dos onze grupos satisfaz essas valida\u00e7\u00f5es. Silver declara que o mapa cobre os 24 c\u00f3digos e trata aus\u00eancia do mapa, mas n\u00e3o explicita a recusa por cobertura parcial. Assim, presen\u00e7a pode ser confundida com aprova\u00e7\u00e3o individual de todos os colapsos, condi\u00e7\u00e3o exigida pela decis\u00e3o do dono.",
+      "evidence": "B-1 recusa mapa com grupo de um c\u00f3digo s\u00f3 ou c\u00f3digo repetido entre grupos; Silver B-2 afirma que o mapa aprovado cobre os 24 c\u00f3digos colapsados.",
       "cites": [
-        "cvg/docs/adrs/0009-the-derived-precision-assumes-a-monotonic-sum-with-no-negative-values.md \u2014 Consequences",
-        "cvg/docs/tech-spec/tech-spec-pda-beneficios.md \u2014 Scope: pacote de evid\u00eancia"
+        "cvg/swimlanes/lanes-medalhao/contrato-ext/LEG-CONTRATO-EXPOE-PARTICAO.md \u00a7 B-1",
+        "cvg/swimlanes/lanes-medalhao/silver/LEG-SILVER-PRESERVA-DEFEITO.md \u00a7 B-2 \u2014 alcance do referencial",
+        "seamwise/decisions/DEC-MAPA-APROVADO-OBRIGATORIO.md \u00a7 Rationale \u2014 aprova\u00e7\u00e3o individual dos 11 colapsos"
       ],
-      "resolution": {
-        "disposition": "ACCEPT",
-        "decided_by": "Bruno Nunes",
-        "decided_at": "2026-09-23T15:45:53Z",
-        "owner": "Bruno Nunes",
-        "risk_residual": "Aceito como limita\u00e7\u00e3o. A posi\u00e7\u00e3o no lago \u00e9 diagn\u00f3stico, nunca entra no envelope: Bronze com defeito de dom\u00ednio n\u00e3o fica INTEGRO, e sem INTEGRO n\u00e3o h\u00e1 envelope. A \u00e2ncora de 2026-01 declara linhas_invalidas=0, ent\u00e3o n\u00e3o h\u00e1 defeito a localizar nesta compet\u00eancia. Para o Pass 8: o teste l\u00ea o mesmo objeto duas vezes e confere que a posi\u00e7\u00e3o reportada \u00e9 a mesma. Decidido pelo dono ao fechar o Pass 4 na R30."
-      }
+      "proposal": null
     },
     {
       "id": "C5",
       "severity": "medium",
       "rank": 5,
-      "attack_class": "unverified-assumption",
-      "swimlane": "LANE-GOLD",
-      "leg": "LEG-GOLD-RECONCILIA",
-      "title": "Os evals n\u00e3o exigem interromper a publica\u00e7\u00e3o",
+      "attack_class": "drift",
+      "swimlane": "LANE-BRONZE",
+      "leg": "LEG-BRONZE-REPRODUZ-ANCORA",
       "location": {
-        "plan_file": "cvg/swimlanes/lanes-medalhao/gold/LEG-GOLD-RECONCILIA.md",
-        "section": "B-1: publica\u00e7\u00e3o interrompida; eval_1\u2013eval_3"
+        "plan_file": "cvg/swimlanes/lanes-medalhao/bronze/LEG-BRONZE-REPRODUZ-ANCORA.md",
+        "section": "B-1 \u2014 given; caminho da parti\u00e7\u00e3o"
       },
-      "evidence": "B-1 exige preserva\u00e7\u00e3o do destino anterior em publica\u00e7\u00e3o interrompida. O cen\u00e1rio destino_inalterado_durante observa a reconcilia\u00e7\u00e3o; nenhum cen\u00e1rio obrigat\u00f3rio nomeia interrup\u00e7\u00e3o durante a publica\u00e7\u00e3o ou leitura de uma gera\u00e7\u00e3o parcial.",
-      "body": "Uma implementa\u00e7\u00e3o que mantenha candidatas privadas durante a reconcilia\u00e7\u00e3o e depois copie arquivos individualmente pode satisfazer os cen\u00e1rios explicitamente exigidos. A falha s\u00f3 aparece ap\u00f3s a autoriza\u00e7\u00e3o, durante a exposi\u00e7\u00e3o dos arquivos. Assim, a parte mais forte da garantia de publica\u00e7\u00e3o permanece sem prova obrigat\u00f3ria, mesmo depois de definido o protocolo.",
+      "title": "O caminho atribu\u00eddo ao contrato n\u00e3o \u00e9 o caminho que ele declara",
+      "body": "O given identifica o caminho terminado em competencia=2026-01 como particionamento.caminho. O contrato real declara a raiz beneficios-emitidos, sem esse sufixo. Ler literalmente o atributo pode trazer a uni\u00e3o de parti\u00e7\u00f5es; tratar o atributo como parti\u00e7\u00e3o pronta pode impedir localizar a compet\u00eancia. A proibi\u00e7\u00e3o de somar a uni\u00e3o est\u00e1 clara, mas a interpreta\u00e7\u00e3o do endere\u00e7o contradiz o dado de entrada real.",
+      "evidence": "Plano: s3a://landing/pda/beneficios-emitidos/competencia=2026-01 como caminho declarado. Contrato: particionamento.caminho = s3a://landing/pda/beneficios-emitidos; chave = competencia.",
       "cites": [
-        "cvg/swimlanes/lanes-medalhao/gold/LEG-GOLD-RECONCILIA.md \u2014 B-1 e eval_3",
-        "cvg/docs/tech-spec/tech-spec-pda-beneficios.md \u2014 R-7"
+        "cvg/swimlanes/lanes-medalhao/bronze/LEG-BRONZE-REPRODUZ-ANCORA.md \u00a7 B-1 \u2014 given",
+        "contracts/competencia-202601.yaml \u00a7 particionamento",
+        "cvg/docs/tech-spec/tech-spec-pda-beneficios.md \u00a7 R-1 e R-5"
       ],
-      "resolution": {
-        "disposition": "ACCEPT",
-        "decided_by": "Bruno Nunes",
-        "decided_at": "2026-09-23T15:45:53Z",
-        "owner": "Bruno Nunes",
-        "risk_residual": "Storage \u2014 atomicidade da publica\u00e7\u00e3o. O destino e o protocolo de publica\u00e7\u00e3o dependem do mecanismo de armazenamento, que este plano deliberadamente n\u00e3o escolhe. O plano j\u00e1 exige visibilidade INDIVIS\u00cdVEL, destino inalterado durante a reconcilia\u00e7\u00e3o, publica\u00e7\u00e3o s\u00f3 com Desfecho.autorizado_publicar e interrup\u00e7\u00e3o deixando o destino como estava. Provar com inje\u00e7\u00e3o de falha e leitura concorrente, no destino efetivo e n\u00e3o em diret\u00f3rio tempor\u00e1rio, \u00e9 trabalho do Pass 8. Hoje h\u00e1 um \u00fanico escritor num MinIO local; isto n\u00e3o muda o total de 2026-01. Decidido pelo dono ao fechar o Pass 4 na R30."
-      }
+      "proposal": null
     }
   ],
   "cross_lane_interfaces": [],
@@ -190,7 +163,7 @@
   },
   "open_questions": [
     {
-      "q": "Como representar obje\u00e7\u00f5es ainda abertas se o schema exige resolution assinada pelo humano? As resolu\u00e7\u00f5es foram omitidas para n\u00e3o fabricar consentimento.",
+      "q": "Como registrar obje\u00e7\u00f5es ainda abertas no schema 1.1, que exige resolution com decis\u00e3o humana, sem fabricar FIX ou ACCEPT?",
       "blocks_build": true
     }
   ],
