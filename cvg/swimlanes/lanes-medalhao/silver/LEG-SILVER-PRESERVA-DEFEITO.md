@@ -1,6 +1,6 @@
 > Projetado de `LEG-SILVER-PRESERVA-DEFEITO.md` pelo Seamwise.
 > **Não edite aqui** — edite a recipe e rode `seamwise plan`.
-> origem sha256: `774ddede7545c07a04b896628447520f50a039c353422de3b11e47e39fbb2400`
+> origem sha256: `59e7f2a577b6364744b4ef5264f34636153b670819d05aa8fd7187cdfb4d0146`
 
 ---
 
@@ -24,7 +24,9 @@ tasks:
   title: Normalizar a forma e classificar a identidade colapsada
   goal: Preservar o defeito da fonte com o total intacto.
   done_condition: A contagem de linhas e a soma não mudam entre Bronze e Silver, e cada colapso recebe
-    exatamente uma das seis classificações.
+    exatamente uma das seis classificações. Na competência real, enquanto o mapa código→descrição não
+    for aprovado no contrato, 'silver classificado' sai com estado NAO_MEDIDO na competência real — a
+    capacidade existe e é entregue, com o estado dizendo por que a cadeia para.
   effort: S
   profile: standard
   execution_backend: any
@@ -201,7 +203,7 @@ tasks:
   - contracts
   rollback: Remover a camada Silver e seus testes.
   observability: colapsos classificados por competência
-source_seam_sha256: 7008dd1b6385401ca6493b41b8ed7bd7a716b560ac69885a7ac4a9407ac82567
+source_seam_sha256: e3f89e80222561a70ec53f9292bf783c6a6b509badba4da667fadf8bbe01a84f
 ---
 # Silver classifica o defeito e conserva o total
 
@@ -211,7 +213,7 @@ A soma de Silver é idêntica à de Bronze, e os 11 colapsos saem classificados 
 
 ## Runnable leaves
 
-- `T-20260922-silver-classifica-colapso` — Normalizar a forma e classificar a identidade colapsada: A contagem de linhas e a soma não mudam entre Bronze e Silver, e cada colapso recebe exatamente uma das seis classificações.
+- `T-20260922-silver-classifica-colapso` — Normalizar a forma e classificar a identidade colapsada: A contagem de linhas e a soma não mudam entre Bronze e Silver, e cada colapso recebe exatamente uma das seis classificações. Na competência real, enquanto o mapa código→descrição não for aprovado no contrato, 'silver classificado' sai com estado NAO_MEDIDO na competência real — a capacidade existe e é entregue, com o estado dizendo por que a cadeia para.
 
 The leg names a capability state, not an activity. Each leaf owns one coherent,
 independently provable done-condition.

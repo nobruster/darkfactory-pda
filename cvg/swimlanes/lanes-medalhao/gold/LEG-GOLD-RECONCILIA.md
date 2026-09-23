@@ -1,6 +1,6 @@
 > Projetado de `LEG-GOLD-RECONCILIA.md` pelo Seamwise.
 > **Não edite aqui** — edite a recipe e rode `seamwise plan`.
-> origem sha256: `ea1d63dda3bcf2f34ee0f5e0f7bc7014e0e6b56a810d0a892487ca607bb13efc`
+> origem sha256: `cf7954b93726ebc60846ceddb00a21d385f147330132c7eeac5ec53086882add`
 
 ---
 
@@ -88,39 +88,51 @@ tasks:
       vl_liquido_total e competencia, uma linha por código. Gold consome ''silver classificado'' pelos
       nomes que Silver declara e prova que consome a saída REAL de Silver, produzida pelo módulo de Silver,
       não uma fixture. Conteúdo: o estado, as linhas agregadas — uma por código — o mapa total_por_codigo
-      em Decimal exato, o veredito da reconciliação, a competência e as marcas de limitação. A publicação
-      é um passo POSTERIOR e condicionado ao veredito, e o veredito CONSOME a marca PROCEDENCIA_NAO_VINCULADA
-      que Bronze emite e Silver preserva — Gold recusa publicar sob ela, e a recusa tem eval próprio,
-      senão cada camada cumpre o seu e a marca se perde na transformação: se as candidatas fossem escritas
-      no destino para depois serem relidas, o dado divergente já teria ficado exposto antes de qualquer
-      veredito, e remover depois não desfaz a exposição. Um teste que confira só o resultado final ou
-      a ausência de arquivos ao término não vê isso — o eval observa que o caminho de destino permanece
-      inalterado DURANTE a reconciliação. E a publicação em si é uma transição INDIVISÍVEL de visibilidade:
-      o conjunto publicado é exatamente o conjunto reconciliado, tudo ou nada. Copiar vários arquivos
-      expondo-os à medida que chegam deixaria um consumidor lendo parte das candidatas, ou misturadas
-      com as da execução anterior, com a reconciliação correta e o total lido por ninguém aprovado — e
-      uma interrupção no meio congela esse estado. Publicação interrompida deixa o destino como estava
-      antes'
+      em Decimal exato, o veredito da reconciliação, a competência e as marcas de limitação. A reconciliação
+      de Gold é a conferência DO PRODUTOR, e não basta para publicar: o ADR 0006 preserva a separação
+      de motores — Spark grava, Python puro confere — e Gold reconciliando sobre o próprio Spark é o produtor
+      conferindo a si mesmo. Por isso Gold EMITE O ENVELOPE da SEAM-FRONTEIRA, conforme o ENVELOPE_SCHEMA
+      declarado em src/pda/envelope.py, e a publicação exige o veredito do JUIZ INDEPENDENTE: validar_envelope(envelope,
+      capacidade_leitura, contrato), em que a capacidade de leitura é a leitura PRÓPRIA do juiz sobre
+      o CSV, e julgar() devolvendo ACEITO. Gold importa o juiz, jamais o edita, e o juiz nunca importa
+      Gold. A publicação é um passo POSTERIOR e condicionado aos dois vereditos, e o veredito CONSOME
+      a marca PROCEDENCIA_NAO_VINCULADA que Bronze emite e Silver preserva — Gold recusa publicar sob
+      ela, e a recusa tem eval próprio, senão cada camada cumpre o seu e a marca se perde na transformação:
+      se as candidatas fossem escritas no destino para depois serem relidas, o dado divergente já teria
+      ficado exposto antes de qualquer veredito, e remover depois não desfaz a exposição. Um teste que
+      confira só o resultado final ou a ausência de arquivos ao término não vê isso — o eval observa que
+      o caminho de destino permanece inalterado DURANTE a reconciliação. E a publicação em si é uma transição
+      INDIVISÍVEL de visibilidade: o conjunto publicado é exatamente o conjunto reconciliado, tudo ou
+      nada. Copiar vários arquivos expondo-os à medida que chegam deixaria um consumidor lendo parte das
+      candidatas, ou misturadas com as da execução anterior, com a reconciliação correta e o total lido
+      por ninguém aprovado — e uma interrupção no meio congela esse estado. Publicação interrompida deixa
+      o destino como estava antes'
   - id: B-2
     given: um Silver cujo total não reproduz a âncora, ou uma competência sem âncora no contrato
     when: Gold agrega
     then: 'devolve DIVERGE quando o total não bate e NAO_MEDIDO quando não há âncora, dois estados distintos
       que nunca colapsam num só — sem âncora não é divergência, é ausência de referencial, e tratá-los
       igual faria a fábrica parecer que mediu quando não tinha contra o que medir. O orçamento da R-9
-      é MEDIDO, não presumido: do início da leitura de Bronze ao veredito de Gold, sobre a partição real
-      de 41.572.553 linhas, a cadeia termina em até 20 minutos, e a duração sai no veredito. A tech-spec
-      registra esse número como ''não medido'' — meta declarada sem medição é a Regra 9, e executar no
-      motor não garante o orçamento: uma execução distribuída pode preservar todas as propriedades funcionais
-      e ainda estourá-lo. Nenhum dos dois publica, o motivo sai nomeado, e cada diferença recebe EXATAMENTE
-      UMA das seis classificações da R-6 — inclusive a introduzida DEPOIS de Bronze, que é justamente
-      a que nenhuma camada anterior viu. Devolver só estado e motivo cumpriria este plano e violaria a
-      especificação; diferença que Gold não saiba classificar recebe UNRESOLVED, que bloqueia; a contagem
-      de códigos de Gold é conferida contra os 65 do contrato, e o GRÃO das linhas publicadas é UMA por
-      código — reagrupar candidatas para construir o mapa esconderia código duplicado no resultado materializado,
-      já que (''01'', 30.00) e o par (''01'', 10.00) mais (''01'', 20.00) produzem o mesmo mapa e a mesma
-      contagem de códigos distintos; a prova é sobre as linhas EFETIVAMENTE publicadas, não sobre o mapa
-      derivado delas, porque um agregado com menos códigos que a fonte pode somar o mesmo total e ainda
-      assim ter perdido uma categoria inteira'
+      é MEDIDO, não presumido: do início da leitura de Bronze ao VEREDITO da cadeia, sobre a partição
+      real de 41.572.553 linhas, a cadeia termina em até 20 minutos — e o veredito é o primeiro estado
+      que PARA a cadeia, qualquer que seja. Enquanto o mapa código→descrição não estiver aprovado no contrato,
+      a cadeia real para em Silver com NAO_MEDIDO, e é até ESSE veredito que se mede: exigir que Gold
+      agregasse a competência real antes da aprovação tornaria o eval impossível por construção, e a duração
+      sai no veredito. A tech-spec registra esse número como ''não medido'' — meta declarada sem medição
+      é a Regra 9, e executar no motor não garante o orçamento: uma execução distribuída pode preservar
+      todas as propriedades funcionais e ainda estourá-lo. Nenhum dos dois publica, o motivo sai nomeado,
+      e cada diferença recebe EXATAMENTE UMA das seis classificações da R-6 — inclusive a introduzida
+      DEPOIS de Bronze, que é justamente a que nenhuma camada anterior viu. Devolver só estado e motivo
+      cumpriria este plano e violaria a especificação; diferença que Gold não saiba classificar recebe
+      UNRESOLVED, que bloqueia; a contagem de códigos de Gold é conferida contra os 65 do contrato, e
+      a especie_descricao publicada de cada código é conferida contra a descrição ORIGINAL que Silver
+      entregou para aquele código — trocar as descrições de dois códigos não colapsados mantém códigos,
+      valores, soma, competência e cardinalidade, e passaria em todas as outras provas. O GRÃO das linhas
+      publicadas é UMA por código — reagrupar candidatas para construir o mapa esconderia código duplicado
+      no resultado materializado, já que (''01'', 30.00) e o par (''01'', 10.00) mais (''01'', 20.00)
+      produzem o mesmo mapa e a mesma contagem de códigos distintos; a prova é sobre as linhas EFETIVAMENTE
+      publicadas, não sobre o mapa derivado delas, porque um agregado com menos códigos que a fonte pode
+      somar o mesmo total e ainda assim ter perdido uma categoria inteira'
   evals:
   - id: eval_1
     description: Arredondamento único, precisão declarada, e recusa sob procedência não vinculada
@@ -136,11 +148,12 @@ tasks:
     description: Reconcilia recalculando, compara o mapa por código e confere os 65
     bash: docker compose -f infra/docker-compose.yml exec -T spark sh -c 'for c in reconcilia_recalculando
       mapa_por_codigo redistribuicao_compensada contagem_de_codigos competencia_bate_com_o_contrato uma_linha_por_codigo
-      recusa_silver_nao_integro consome_saida_real_de_silver; do python3 -m pytest --collect-only -q tests/test_gold.py
-      -k "$c" 2>/dev/null | grep -q "::" || { echo "EVAL=CENARIO_AUSENTE_$c"; exit 1; }; done; python3
-      -m pytest -q tests/test_gold.py -k "reconcilia_recalculando or mapa_por_codigo or redistribuicao_compensada
-      or contagem_de_codigos or competencia_bate_com_o_contrato or uma_linha_por_codigo or recusa_silver_nao_integro
-      or consome_saida_real_de_silver"'
+      recusa_silver_nao_integro consome_saida_real_de_silver publicar_exige_juiz_independente descricao_publicada_bate_com_a_original;
+      do python3 -m pytest --collect-only -q tests/test_gold.py -k "$c" 2>/dev/null | grep -q "::" ||
+      { echo "EVAL=CENARIO_AUSENTE_$c"; exit 1; }; done; python3 -m pytest -q tests/test_gold.py -k "reconcilia_recalculando
+      or mapa_por_codigo or redistribuicao_compensada or contagem_de_codigos or competencia_bate_com_o_contrato
+      or uma_linha_por_codigo or recusa_silver_nao_integro or consome_saida_real_de_silver or publicar_exige_juiz_independente
+      or descricao_publicada_bate_com_a_original"'
     verifies:
     - B-1
     - B-2
@@ -172,7 +185,7 @@ tasks:
   - contracts
   rollback: Remover a camada Gold e seus testes.
   observability: agregados recusados por não reconciliar
-source_seam_sha256: d78b23e32c1e2271c0b77dd271201d7c659b3062f3e770ce2b2f002738bfae61
+source_seam_sha256: a094362d76ae656e75342289ffaf565016c24cecf9eb6c7c1e0b640eee6941ae
 ---
 # Gold só publica quando reconcilia com a âncora
 
