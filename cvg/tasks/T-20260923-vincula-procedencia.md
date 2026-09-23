@@ -28,10 +28,14 @@ execution_backend: any
 signed_off: true
 signed_off_by: nobru
 signed_off_at: 2026-09-23T19:35:13Z
-accepted: false
-accepted_by: (none)
-accepted_at: (none)
+accepted: true
+accepted_by: converge-loop
+accepted_at: 2026-09-23T20:39:31Z
 signed_off_sig: hmac-sha256-v3:85d3c104:e40c0f1e1a0d0f71bbbb37927dc16708713346a099bfbbf7cf4235f8bd14c804
+accepted_tier: 1
+accepted_attempt_id: 830bf1c1-201c-47ea-8cea-163c34e22b7d
+accepted_authorization_ref: hmac-sha256-v3:85d3c104:e40c0f1e1a0d0f71bbbb37927dc16708713346a099bfbbf7cf4235f8bd14c804
+acceptance_record_digest: sha256:53bb08817584b980ada9031f8dac77bd98aec364f81152ccca1969c953e593f0
 ---
 
 # Vincular a partição da landing ao CSV de origem
