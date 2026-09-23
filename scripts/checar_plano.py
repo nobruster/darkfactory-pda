@@ -65,6 +65,7 @@ def main() -> int:
                 _tarefa(sid, t, falhas)
 
     _grafo(seams, falhas)
+    _simetria(seams, falhas)
 
     print()
     if falhas:
@@ -158,6 +159,67 @@ def _eval(tid, eid, bash, falhas):
         falhas.append(f"{tid} {eid}: só {len(cenarios)} cenário")
 
     print(f"    {eid}: {len(cenarios)} cenários, laço confere um a um")
+
+
+def _simetria(seams, falhas):
+    """A doutrina que vale numa camada vale nas outras.
+
+    Três vezes o autor corrigiu a camada que o adversário apontou e
+    deixou as outras — o mapa em Gold sem Bronze, o contexto decimal em
+    Bronze e Gold sem Silver, a forma da capacidade em Bronze sem
+    Silver. A rodada seguinte achou o que sobrou, todas as vezes.
+
+    Este bloco mede a assimetria antes do despacho. Ele NÃO exige que
+    toda camada diga tudo: exige que, quando a maioria diz, quem não diz
+    apareça nomeado — para ser corrigido ou justificado.
+    """
+    # termo -> quem legitimamente pode não ter, e por quê
+    ISENTAS = {
+        "estado INTEGRO": {
+            # Bronze lê o lago; não consome capacidade anterior
+            "SEAM-BRONZE": "lê o lago, não consome capacidade anterior",
+        },
+    }
+
+    TERMOS = ["FORMA declarada", "estado INTEGRO", "traps=[]",
+              "uma das seis"]
+
+    corpos = {}
+    for s in seams:
+        sid = s.get("id", "?")
+        texto = []
+        for leg in s.get("swimlane", {}).get("legs", []):
+            for t in leg.get("tasks", []):
+                for b in t.get("behavior", []):
+                    texto.append(str(b.get("then", "")))
+                    texto.append(str(b.get("given", "")))
+        # sem caixa: o plano grita ênfase em maiúsculas ("EXATAMENTE UMA
+        # das seis"), e comparar com caixa acusou Gold de não ter o que
+        # ele tinha desde a R3. Falso positivo — verificador que reprova à
+        # toa corrói a confiança tanto quanto o que aprova à toa.
+        corpos[sid] = " ".join(texto).lower()
+
+    if len(corpos) < 2:
+        return
+
+    print()
+    print("  simetria entre as camadas:")
+    for termo in TERMOS:
+        tem = {sid for sid, c in corpos.items() if termo.lower() in c}
+        se_nao = set(corpos) - tem
+        isentas = set(ISENTAS.get(termo, {}))
+        faltam = se_nao - isentas
+
+        marca = "ok " if not faltam else "!! "
+        quem = ", ".join(sorted(s.replace("SEAM-", "") for s in tem)) or "—"
+        print(f"    {marca}{termo:<18} em: {quem}")
+
+        # só acusa quando a MAIORIA diz e uma minoria não
+        if faltam and len(tem) > len(faltam):
+            falhas.append(
+                f"assimetria: '{termo}' aparece em "
+                f"{', '.join(sorted(tem))} e falta em "
+                f"{', '.join(sorted(faltam))} — corrija ou declare a isenção")
 
 
 def _grafo(seams, falhas):
