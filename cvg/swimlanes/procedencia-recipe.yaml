@@ -1,0 +1,223 @@
+schema_version: 1
+intent:
+  id: DI-PDA-PROCEDENCIA
+  title: Vincular a partição da landing ao CSV de origem
+  summary: Provar que a partição competencia=2026-01 na landing é a transformação do CSV cujo sha256 o contrato declara, gravar essa prova ao lado da partição, e fazer a Bronze conferi-la — para a marca PROCEDENCIA_NAO_VINCULADA sair por prova, nunca por decreto.
+  claim: proposed
+  source:
+    uri: cvg/docs/tech-spec/tech-spec-pda-beneficios.md
+    captured_at: '2026-09-21T00:00:00Z'
+    sha256: e619ead9d343282533110bc8cb8f1203614d8e733565b21e3157df2b8f157b88
+  success:
+  - CSV com sha256 diferente do contrato não vincula nada.
+  - Partição cujo conteúdo não é a transformação do CSV não vincula.
+  - A Bronze só tira a marca quando hash, manifesto e controles conferem.
+  out_of_scope:
+  - 'Regravar a partição ou rodar o produtor de novo: ele grava com append (ADR 0011) e duplicaria 41,5 M linhas.'
+  - Editar src/produtor/gravar_lago.py, que está sem Task-Spec (Regra 11).
+  - 'Alterar o contrato: o sha256 do CSV já está declarado e aprovado.'
+system_map:
+  claim: proposed
+  components:
+  - Vinculador de procedência
+  - Bronze — leitura conferida
+  external_dependencies:
+  - CSV original em _raw/, montado somente leitura no pda-spark
+  - Partição competencia=2026-01 na landing, escrita pelo produtor
+  - Contrato com procedencia.hash_csv_sha256 aprovado
+  unknowns: []
+evidence:
+- id: E-ANCORA-202601
+  claim: external
+  source:
+    uri: cvg/docs/adrs/0001-the-2026-01-anchor-is-41572553-rows-summing-78521752562-12.md
+    captured_at: '2026-09-21T00:00:00Z'
+    sha256: 0505a743963abfb09a257373a431c3878b25cf6c19d71467c722da9830779acd
+  confidence: 1.0
+  summary: 'Competência 2026-01 medida na origem: 41572553 linhas, soma 78521752562.12.'
+decisions:
+- id: DEC-PROCEDENCIA-POR-VINCULADOR
+  status: accepted
+  owner: Bruno Nunes
+  rationale: 'Decidido pelo dono em 2026-09-23: o vínculo de procedência entra por tarefa da cadeia. Como o produtor grava com append e está sem Task-Spec, um vinculador NOVO prova a procedência sem regravar dado: compara o conteúdo da partição com a transformação do CSV e grava _PROCEDENCIA.json ao lado da partição.'
+seams:
+- id: SEAM-VINCULA-PROCEDENCIA
+  name: Vinculador — a partição provada contra o CSV de origem
+  description: Separa gravar o lago de provar de onde ele veio.
+  evidence:
+  - E-ANCORA-202601
+  responsibility: Provar que a partição na landing é a transformação do CSV declarado no contrato e gravar essa prova ao lado dela, sem tocar nos dados.
+  consumes:
+  - contrato estendido
+  - CSV de origem
+  produces:
+  - procedencia vinculada
+  owner: medalhao
+  independent_proof: Com o CSV e a partição reais, grava _PROCEDENCIA.json; com um CSV de hash diferente ou uma partição alterada, não grava nada.
+  decision_ids:
+  - DEC-PROCEDENCIA-POR-VINCULADOR
+  - ADR-0002-POSICIONAL
+  rejected_alternatives:
+  - alternative: Rodar o produtor de novo, agora gravando o hash
+    reason: 'Ele grava com append: a competência duplicaria.'
+  swimlane:
+    id: LANE-VINCULA-PROCEDENCIA
+    name: Vinculador de procedência lane
+    owner: medalhao
+    legs:
+    - id: LEG-VINCULA-PROCEDENCIA
+      observable_state: A partição tem _PROCEDENCIA.json com hash, manifesto e controles
+      proof: O vinculador só grava quando hash e conteúdo conferem; senão não grava nada.
+      requires: []
+      produces:
+      - procedencia vinculada
+      tasks:
+      - id: T-20260923-vincula-procedencia
+        title: Vincular a partição da landing ao CSV de origem
+        goal: Gravar ao lado da partição a prova de que ela veio do CSV declarado.
+        done_condition: Com o CSV cujo sha256 é o do contrato e a partição cujo conteúdo é a transformação dele, _PROCEDENCIA.json é gravado e relido; em qualquer divergência nada é gravado.
+        effort: S
+        profile: standard
+        execution_backend: any
+        required_tools: &id001
+        - git
+        - bash
+        - python3
+        - pytest
+        - docker
+        depends_on: []
+        touches_paths: []
+        creates_paths:
+        - src/produtor/vincular_procedencia.py
+        - tests/test_vincular_procedencia.py
+        behavior:
+        - id: B-1
+          given: o CSV em _raw/, o contrato com procedencia.hash_csv_sha256 e o layout posicional, e a partição competencia=<c> sob particionamento.caminho do contrato
+          when: o vinculador roda para a competência
+          then: calcula o sha256 dos bytes do CSV em fluxo e, se diferir do contrato, devolve DIVERGE sem gravar nada; lê o CSV no motor pelas posições do layout, com o DecimalType da politica_decimal e ansi.enabled=true, nunca float; e compara com a partição o MULTICONJUNTO de (especie_codigo, especie_descricao, vl_liquido) — um exceptAll e a igualdade das contagens, que juntos provam a igualdade. Conferindo, grava _PROCEDENCIA.json no prefixo da partição com competência, nome e sha256 do CSV, o MANIFESTO de todo objeto de dado da partição — nome, tamanho e sha256 do conteúdo —, os cinco controles como texto e o id da execução; relê o arquivo gravado e confere. Nunca toca nos objetos de dado. Zero linhas lidas de qualquer lado é NAO_MEDIDO.
+        - id: B-2
+          given: uma partição que já tem _PROCEDENCIA.json
+          when: o vinculador roda de novo
+          then: se a prova nova é idêntica à gravada, devolve INTEGRO sem regravar; se diverge — objeto acrescentado, removido ou alterado —, devolve DIVERGE nomeando a diferença e NUNCA sobrescreve em silêncio a prova anterior.
+        evals:
+        - id: eval_1
+          description: Hash e conteúdo provados antes de gravar
+          bash: docker compose -f infra/docker-compose.yml exec -T spark sh -c 'for c in hash_divergente_nao_grava conteudo_divergente_nao_grava grava_manifesto_hash_e_controles rele_o_que_gravou; do python3 -m pytest --collect-only -q tests/test_vincular_procedencia.py -k "$c" 2>/dev/null | grep -q "::" || { echo "EVAL=CENARIO_AUSENTE_$c"; exit 1; }; done; python3 -m pytest -q tests/test_vincular_procedencia.py -k "hash_divergente_nao_grava or conteudo_divergente_nao_grava or grava_manifesto_hash_e_controles or rele_o_que_gravou"'
+          verifies:
+          - B-1
+        - id: eval_2
+          description: Nunca float, nunca vazio
+          bash: docker compose -f infra/docker-compose.yml exec -T spark sh -c 'for c in valor_em_decimal_nunca_float zero_linhas_e_nao_medido; do python3 -m pytest --collect-only -q tests/test_vincular_procedencia.py -k "$c" 2>/dev/null | grep -q "::" || { echo "EVAL=CENARIO_AUSENTE_$c"; exit 1; }; done; python3 -m pytest -q tests/test_vincular_procedencia.py -k "valor_em_decimal_nunca_float or zero_linhas_e_nao_medido"'
+          verifies:
+          - B-1
+        - id: eval_3
+          description: Rodar de novo não apaga a prova
+          bash: docker compose -f infra/docker-compose.yml exec -T spark sh -c 'for c in prova_identica_nao_regrava prova_divergente_nao_sobrescreve; do python3 -m pytest --collect-only -q tests/test_vincular_procedencia.py -k "$c" 2>/dev/null | grep -q "::" || { echo "EVAL=CENARIO_AUSENTE_$c"; exit 1; }; done; python3 -m pytest -q tests/test_vincular_procedencia.py -k "prova_identica_nao_regrava or prova_divergente_nao_sobrescreve"'
+          verifies:
+          - B-2
+        anti_patterns:
+        - action: regravar a partição ou chamar o produtor
+          reason: o produtor grava com append e a competência duplicaria
+          instead: provar sobre os objetos que já estão lá
+        - action: calcular o hash e gravar sem comparar o conteúdo
+          reason: hash certo sem vínculo com a partição não prova nada
+          instead: comparar o multiconjunto antes de gravar
+        - action: importar _ler_fonte de gravar_lago.py
+          reason: é código sem Task-Spec (Regra 11)
+          instead: ler o CSV pelo layout do contrato neste módulo
+        do_not_touch:
+        - _raw
+        - cvg/docs/adrs
+        - contracts
+        - src/produtor/gravar_lago.py
+        rollback: Remover o _PROCEDENCIA.json; os objetos de dado nunca foram tocados.
+        observability: competências sem _PROCEDENCIA.json
+- id: SEAM-BRONZE-LE-PROCEDENCIA
+  name: Bronze confere a procedência gravada
+  description: Separa ler a partição de saber de onde ela veio.
+  evidence:
+  - E-ANCORA-202601
+  responsibility: Ler _PROCEDENCIA.json da partição e só retirar a marca PROCEDENCIA_NAO_VINCULADA quando hash, manifesto e controles conferem.
+  consumes:
+  - procedencia vinculada
+  produces:
+  - bronze com procedencia
+  owner: medalhao
+  independent_proof: Com a prova real a Bronze sai sem a marca; com um objeto a mais na partição, a procedência diverge.
+  decision_ids:
+  - DEC-PROCEDENCIA-POR-VINCULADOR
+  rejected_alternatives:
+  - alternative: Passar o hash do CSV como parâmetro da Bronze
+    reason: Um parâmetro não prova vínculo com os objetos lidos.
+  swimlane:
+    id: LANE-BRONZE-LE-PROCEDENCIA
+    name: Bronze lê procedência lane
+    owner: medalhao
+    legs:
+    - id: LEG-BRONZE-LE-PROCEDENCIA
+      observable_state: A Bronze sai sem a marca quando a procedência confere
+      proof: A marca só sai com hash, manifesto e controles conferidos.
+      requires:
+      - procedencia vinculada
+      produces:
+      - bronze com procedencia
+      tasks:
+      - id: T-20260923-bronze-le-procedencia
+        title: Bronze confere _PROCEDENCIA.json da partição
+        goal: Tirar a marca PROCEDENCIA_NAO_VINCULADA só com prova.
+        done_condition: Com _PROCEDENCIA.json válido a Bronze sai sem a marca e com o hash; sem ele, a marca continua; com manifesto divergente, DIVERGE; e toda a suíte já existente de tests/test_bronze.py continua passando.
+        effort: S
+        profile: standard
+        execution_backend: any
+        required_tools: *id001
+        depends_on:
+        - T-20260923-vincula-procedencia
+        touches_paths:
+        - src/medalhao/bronze.py
+        - tests/test_bronze.py
+        creates_paths: []
+        behavior:
+        - id: B-1
+          given: a partição com _PROCEDENCIA.json gravado pelo vinculador
+          when: a Bronze lê a competência
+          then: lê o arquivo do prefixo da partição, confere o sha256 do CSV contra o contrato, o MANIFESTO contra os objetos de dado que ela mesma lista — nome, tamanho e sha256 do conteúdo — e os controles do arquivo contra os que ela mede; conferindo tudo, sai sem a marca PROCEDENCIA_NAO_VINCULADA e com hash_procedencia preenchido, e o estado INTEGRO segue as regras que já existem.
+        - id: B-2
+          given: uma partição sem _PROCEDENCIA.json, com um JSON inválido, ou com manifesto que não bate com os objetos
+          when: a Bronze lê a competência
+          then: sem o arquivo, a marca continua como hoje; JSON inválido é ERRO_LEITURA; manifesto, hash ou controles divergentes são DIVERGE com a diferença nomeada, e nada é gravado — objeto a mais, a menos ou alterado depois da vinculação é exatamente o que a procedência existe para acusar. Nenhum teste já existente de tests/test_bronze.py é editado.
+        evals:
+        - id: eval_1
+          description: A marca sai só com prova conferida
+          bash: docker compose -f infra/docker-compose.yml exec -T spark sh -c 'for c in procedencia_confere_tira_a_marca manifesto_confere_objetos_listados controles_da_procedencia_conferidos; do python3 -m pytest --collect-only -q tests/test_bronze.py -k "$c" 2>/dev/null | grep -q "::" || { echo "EVAL=CENARIO_AUSENTE_$c"; exit 1; }; done; python3 -m pytest -q tests/test_bronze.py -k "procedencia_confere_tira_a_marca or manifesto_confere_objetos_listados or controles_da_procedencia_conferidos"'
+          verifies:
+          - B-1
+        - id: eval_2
+          description: Ausente, inválida ou divergente
+          bash: docker compose -f infra/docker-compose.yml exec -T spark sh -c 'for c in sem_procedencia_mantem_a_marca procedencia_json_invalido_e_erro objeto_a_mais_diverge hash_da_procedencia_diverge; do python3 -m pytest --collect-only -q tests/test_bronze.py -k "$c" 2>/dev/null | grep -q "::" || { echo "EVAL=CENARIO_AUSENTE_$c"; exit 1; }; done; python3 -m pytest -q tests/test_bronze.py -k "sem_procedencia_mantem_a_marca or procedencia_json_invalido_e_erro or objeto_a_mais_diverge or hash_da_procedencia_diverge"'
+          verifies:
+          - B-2
+        - id: eval_3
+          description: A suíte já existente continua passando
+          bash: docker compose -f infra/docker-compose.yml exec -T spark sh -c 'for c in cinco_controles particao_ausente centavo_a_mais; do python3 -m pytest --collect-only -q tests/test_bronze.py -k "$c" 2>/dev/null | grep -q "::" || { echo "EVAL=CENARIO_AUSENTE_$c"; exit 1; }; done; python3 -m pytest -q tests/test_bronze.py -k "cinco_controles or particao_ausente or centavo_a_mais"'
+          verifies:
+          - B-1
+          - B-2
+        anti_patterns:
+        - action: aceitar o hash do arquivo sem conferir o manifesto
+          reason: hash certo sem vínculo com os objetos lidos não prova nada
+          instead: conferir nome, tamanho e sha256 de cada objeto listado
+        - action: contar _PROCEDENCIA.json como objeto de dado
+          reason: mudaria a contagem e o fechamento do lago
+          instead: ignorá-lo como os demais objetos auxiliares com _
+        - action: editar um teste já existente de tests/test_bronze.py
+          reason: teste selado que precisa mudar denuncia mudança de comportamento
+          instead: só acrescentar testes novos
+        do_not_touch:
+        - _raw
+        - cvg/docs/adrs
+        - contracts
+        rollback: Reverter src/medalhao/bronze.py e tests/test_bronze.py ao commit assentado.
+        observability: leituras com a marca PROCEDENCIA_NAO_VINCULADA
+steel_thread:
+- LEG-VINCULA-PROCEDENCIA
+- LEG-BRONZE-LE-PROCEDENCIA
