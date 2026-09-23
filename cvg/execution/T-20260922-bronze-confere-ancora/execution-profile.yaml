@@ -11,7 +11,7 @@
         "epoch_change"
       ]
     },
-    "epoch": "T-20260922-bronze-confere-ancora@2e357e660cac",
+    "epoch": "T-20260922-bronze-confere-ancora@f764c4b34fd6",
     "grants": [
       {
         "capability": "fs.read",
@@ -31,7 +31,6 @@
         "granted": true,
         "phase": "implement",
         "scope": [
-          "infra/medalhao-evals.sh",
           "src/medalhao/bronze.py",
           "tests/test_bronze.py"
         ]
@@ -55,7 +54,6 @@
         "granted": true,
         "phase": "settle",
         "scope": [
-          "infra/medalhao-evals.sh",
           "src/medalhao/bronze.py",
           "tests/test_bronze.py"
         ]
@@ -299,7 +297,7 @@
     "id": "T-20260922-bronze-confere-ancora",
     "spec_ref": {
       "path": "cvg/tasks/T-20260922-bronze-confere-ancora.md",
-      "sha256": "2e357e660cacc89cdc203c173de75a20f364a5968b87f44567b2088113716ea4"
+      "sha256": "f764c4b34fd648a05ab7819035290e3cd82b3d1634edbc61b5f7af42b5b7bfc1"
     }
   },
   "topology": {

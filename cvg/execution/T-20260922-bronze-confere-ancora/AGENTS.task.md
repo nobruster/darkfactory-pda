@@ -4,7 +4,7 @@
 
 - **Spec (canonical):** `cvg/tasks/T-20260922-bronze-confere-ancora.md`
 - **Contract:** `cvg/execution/T-20260922-bronze-confere-ancora/execution-profile.yaml`
-- **Epoch:** `T-20260922-bronze-confere-ancora@2e357e660cac`
+- **Epoch:** `T-20260922-bronze-confere-ancora@f764c4b34fd6`
 - **Project conventions:** `AGENTS.md` (read it once; it is the router)
 
 ## Goal
@@ -13,7 +13,6 @@ Fazer a camada recusar nascer sobre dado que não bate.
 
 ## You may write ONLY these paths
 
-- `infra/medalhao-evals.sh`
 - `src/medalhao/bronze.py`
 - `tests/test_bronze.py`
 
