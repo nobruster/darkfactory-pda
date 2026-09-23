@@ -1,6 +1,6 @@
 > Projetado de `LEG-BRONZE-REPRODUZ-ANCORA.md` pelo Seamwise.
 > **Não edite aqui** — edite a recipe e rode `seamwise plan`.
-> origem sha256: `7a168891bc21987a1e6d22252295fd0b75eff969d124f8a8f85f649028cf0f76`
+> origem sha256: `44df3f103790cdd4bb6b0f88ee0a6d9e9bd87aea9ab5dd5617b3fe64d3dae9ed`
 
 ---
 
@@ -14,7 +14,8 @@ swimlane_id: LANE-BRONZE
 observable_state: Bronze só existe quando reproduz a âncora do contrato
 proof: A partição lida reproduz os cinco controles ancorados; ausente ou vazia devolve NAO_MEDIDO, e medida-e-divergente
   devolve DIVERGE — estados distintos, nunca colapsados.
-requires: []
+requires:
+- contrato estendido
 produces:
 - bronze conferido
 - totais por código de Bronze
@@ -38,7 +39,8 @@ tasks:
   - python3
   - pytest
   - docker
-  depends_on: []
+  depends_on:
+  - T-20260923-contrato-expoe-particao
   touches_paths: []
   creates_paths:
   - src/medalhao/bronze.py
@@ -143,12 +145,15 @@ tasks:
       não fecha com o total, é DIVERGE, porque linha que não pertence a partição nenhuma é contaminação
       — e o total vem de um UNIVERSO INDEPENDENTE, a listagem dos objetos do lago, nunca da mesma leitura
       agrupada: somar contagens agrupadas pela própria relação lida é identidade, fecha sempre, inclusive
-      somando o grupo nulo, e não veria arquivo que as DUAS leituras ignoraram. A CHAVE de partição é
-      a declarada no contrato — ''competencia'' — e os objetos auxiliares que ele lista, como _SUCCESS,
-      são ignorados no fechamento. A competência CONTRATADA não é a lista exaustiva de partições válidas:
-      tratá-la assim reprovaria competencia=fatia-teste, que existe no lago e é legítima, e seria mais
-      um gate recusando o correto; objeto fora delas, ou linha cuja chave de partição é nula, conta como
-      não pertencente e faz o controle reprovar, e foi para vê-la que este controle existe'
+      somando o grupo nulo, e não veria arquivo que as DUAS leituras ignoraram. Se o Contrato carregado
+      trouxer particionamento ou os limites de expoente como None — contrato que não os declara —, Bronze
+      devolve NAO_MEDIDO: é o CONSUMIDOR que exige esses campos, e ausência declarada não é valor padrão.
+      A CHAVE de partição é a declarada no contrato — ''competencia'' — e os objetos auxiliares que ele
+      lista, como _SUCCESS, são ignorados no fechamento. A competência CONTRATADA não é a lista exaustiva
+      de partições válidas: tratá-la assim reprovaria competencia=fatia-teste, que existe no lago e é
+      legítima, e seria mais um gate recusando o correto; objeto fora delas, ou linha cuja chave de partição
+      é nula, conta como não pertencente e faz o controle reprovar, e foi para vê-la que este controle
+      existe'
   evals:
   - id: eval_1
     description: Os cinco controles comparados individualmente, e a partição medida isoladamente
@@ -200,7 +205,7 @@ tasks:
   - contracts
   rollback: Remover o leitor Bronze e seus testes.
   observability: partições recusadas por controle divergente
-source_seam_sha256: 006db70942e756aa470cf895cdf4c5e94511c3026cc6b564569109f9ec81b8e9
+source_seam_sha256: 8fb3685923b93d3cc2233e2079f0421b523d3f2d70e3324ff0f626320e2171b0
 ---
 # Bronze só existe quando reproduz a âncora do contrato
 

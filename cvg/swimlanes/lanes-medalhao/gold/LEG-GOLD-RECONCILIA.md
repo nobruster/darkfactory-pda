@@ -1,6 +1,6 @@
 > Projetado de `LEG-GOLD-RECONCILIA.md` pelo Seamwise.
 > **Não edite aqui** — edite a recipe e rode `seamwise plan`.
-> origem sha256: `a74e63c13cb34e05a52398b919783132af330523c48e6a2aa8ec62498628a7f3`
+> origem sha256: `4123c6d886f4d99bba63531220d162c86eb07c27ab5cbb4af52a62fb86996031`
 
 ---
 
@@ -92,27 +92,38 @@ tasks:
       de Gold é a conferência DO PRODUTOR, e não basta para publicar: o ADR 0006 preserva a separação
       de motores — Spark grava, Python puro confere — e Gold reconciliando sobre o próprio Spark é o produtor
       conferindo a si mesmo. Por isso Gold EMITE O ENVELOPE da SEAM-FRONTEIRA, e o campo defeitos dele
-      carrega SOMENTE defeitos de LINHA — cada um como (tipo, valor_original, posicao), com posicao INTEIRA,
-      o número da linha —, porque o validador os compara por multiconjunto exato contra os defeitos que
-      a leitura observou, e colapso de identidade fica FORA dali: a leitura o guarda num campo separado,
-      e o próprio validador registra que identidade colapsada não entra nessa conta (ADR 0008). O envelope
-      sai com os controles de DETALHE e o sha256 que recebeu de Bronze através de Silver — jamais recalculando
-      count, min e max sobre as próprias 65 linhas agregadas, que não são os controles da âncora, conforme
-      o ENVELOPE_SCHEMA declarado em src/pda/envelope.py, e a publicação é decidida pelo ORQUESTRADOR
-      já selado da primeira descida, nunca por uma reimplementação dele dentro de Gold: orquestracao.conduzir(diretorio_evidencia,
-      competencia_solicitada, caminho_contrato, executar_leitura), em que executar_leitura é o ponto de
-      injeção, e é DENTRO dele que roda a cadeia INTEIRA — Bronze, Silver e Gold — e que Gold chama envelope.validar_envelope(envelope,
+      carrega SOMENTE defeitos de LINHA — que, no ÚNICO caminho que emite envelope, é VAZIO: linhas_invalidas
+      é um dos cinco controles e está ancorado em zero, Bronze só fica INTEGRO com zero defeitos de domínio,
+      e o envelope só é emitido com a cadeia inteira INTEGRO. Não é preciso, portanto, reconstruir a posição
+      de linha do CSV, que o Parquet não carrega. Se uma competência futura ancorar linhas inválidas,
+      o lago terá de carregar o número da linha do CSV, e isso é mudança no produtor, que está sem Task-Spec
+      (Regra 11) — limitação declarada, não escondida. Cada defeito, quando houver, vai como — cada um
+      como (tipo, valor_original, posicao), com posicao INTEIRA, o número da linha —, porque o validador
+      os compara por multiconjunto exato contra os defeitos que a leitura observou, e colapso de identidade
+      fica FORA dali: a leitura o guarda num campo separado, e o próprio validador registra que identidade
+      colapsada não entra nessa conta (ADR 0008). O envelope sai com os controles de DETALHE e o sha256
+      que recebeu de Bronze através de Silver — jamais recalculando count, min e max sobre as próprias
+      65 linhas agregadas, que não são os controles da âncora, conforme o ENVELOPE_SCHEMA declarado em
+      src/pda/envelope.py, e a publicação é decidida pelo ORQUESTRADOR já selado da primeira descida,
+      nunca por uma reimplementação dele dentro de Gold: orquestracao.conduzir(diretorio_evidencia, competencia_solicitada,
+      caminho_contrato, executar_leitura), em que executar_leitura é o ponto de injeção, e é DENTRO dele
+      que roda a cadeia INTEIRA — Bronze, Silver e Gold — e que Gold chama envelope.validar_envelope(envelope,
       capacidade_leitura, contrato) ANTES de montar os insumos, porque, MEDIDO, conduzir() NÃO valida
       o envelope: ele só chama julgar() sobre insumos.agregado. Recusa do envelope, e qualquer camada
       que PARE a cadeia — Bronze ou Silver fora de INTEGRO, inclusive Silver sem o mapa aprovado —, sobe
-      como exceção que NOMEIA a camada e o estado; conduzir a captura, grava o pacote com evento_falha
-      e devolve um Desfecho sem autorização de publicar. Assim TODO caminho deixa evidência, e não só
-      o que chega à agregação. Pelo ponto de injeção Gold entrega um InsumosExecucao que PAREIA a leitura
-      PRÓPRIA do juiz sobre o CSV com o envelope de Gold — hash_ancorado, hash_observado pela leitura,
-      hash_declarado no envelope, defeitos_leitura contra defeitos_envelope, totais_leitura contra totais_envelope.
-      conduzir carrega o contrato, julga, grava o pacote de evidência em QUALQUER desfecho e devolve um
-      Desfecho; Gold publica se e somente se Desfecho.autorizado_publicar for verdadeiro E Desfecho.caminho_pacote
-      existir em disco. Não se compara string ''ACEITO'' contra o retorno de julgar(), que devolve Veredito(aceito,
+      como exceção cuja MENSAGEM é o diagnóstico estruturado serializado em JSON — camada, estado, os
+      controles que divergiram com o valor observado e o ancorado, e as classificações —, porque, MEDIDO,
+      o pacote guarda de evento_falha apenas {tipo, mensagem}: uma mensagem ''Bronze DIVERGE'' descartaria
+      tudo o que permite reconstruir a recusa. O veredito EXTERNO é o do orquestrador — ERRO, sem autorização
+      de publicar —, e ''sem tradução'' significa que o estado do medalhão é preservado VERBATIM dentro
+      do pacote, não re-rotulado. conduzir a captura, grava o pacote com evento_falha e devolve um Desfecho
+      sem autorização de publicar. Assim TODO caminho deixa evidência, e não só o que chega à agregação.
+      Pelo ponto de injeção Gold entrega um InsumosExecucao que PAREIA a leitura PRÓPRIA do juiz sobre
+      o CSV com o envelope de Gold — hash_ancorado, hash_observado pela leitura, hash_declarado no envelope,
+      defeitos_leitura contra defeitos_envelope, totais_leitura contra totais_envelope. conduzir carrega
+      o contrato, julga, grava o pacote de evidência em QUALQUER desfecho e devolve um Desfecho; Gold
+      publica se e somente se Desfecho.autorizado_publicar for verdadeiro E Desfecho.caminho_pacote existir
+      em disco. Não se compara string ''ACEITO'' contra o retorno de julgar(), que devolve Veredito(aceito,
       classificacoes), nem contra rederivar_veredito(), que devolve o par (veredito, causa) — descrever
       essas assinaturas em prosa errou um detalhe a cada rodada, e o orquestrador já as fala. Gold importa
       o orquestrador e o juiz, jamais os edita, e nenhum dos dois importa Gold. A publicação é um passo
@@ -170,13 +181,14 @@ tasks:
     bash: docker compose -f infra/docker-compose.yml exec -T spark sh -c 'for c in reconcilia_recalculando
       mapa_por_codigo redistribuicao_compensada contagem_de_codigos competencia_bate_com_o_contrato uma_linha_por_codigo
       recusa_silver_nao_integro consome_saida_real_de_silver publica_so_com_autorizado_publicar descricao_publicada_bate_com_a_original
-      publica_so_com_pacote_em_disco envelope_so_defeitos_de_linha envelope_validado_antes_dos_insumos;
-      do python3 -m pytest --collect-only -q tests/test_gold.py -k "$c" 2>/dev/null | grep -q "::" ||
-      { echo "EVAL=CENARIO_AUSENTE_$c"; exit 1; }; done; python3 -m pytest -q tests/test_gold.py -k "reconcilia_recalculando
-      or mapa_por_codigo or redistribuicao_compensada or contagem_de_codigos or competencia_bate_com_o_contrato
-      or uma_linha_por_codigo or recusa_silver_nao_integro or consome_saida_real_de_silver or publica_so_com_autorizado_publicar
-      or descricao_publicada_bate_com_a_original or publica_so_com_pacote_em_disco or envelope_so_defeitos_de_linha
-      or envelope_validado_antes_dos_insumos"'
+      publica_so_com_pacote_em_disco envelope_so_defeitos_de_linha envelope_validado_antes_dos_insumos
+      envelope_positivo_sem_defeitos_de_linha; do python3 -m pytest --collect-only -q tests/test_gold.py
+      -k "$c" 2>/dev/null | grep -q "::" || { echo "EVAL=CENARIO_AUSENTE_$c"; exit 1; }; done; python3
+      -m pytest -q tests/test_gold.py -k "reconcilia_recalculando or mapa_por_codigo or redistribuicao_compensada
+      or contagem_de_codigos or competencia_bate_com_o_contrato or uma_linha_por_codigo or recusa_silver_nao_integro
+      or consome_saida_real_de_silver or publica_so_com_autorizado_publicar or descricao_publicada_bate_com_a_original
+      or publica_so_com_pacote_em_disco or envelope_so_defeitos_de_linha or envelope_validado_antes_dos_insumos
+      or envelope_positivo_sem_defeitos_de_linha"'
     verifies:
     - B-1
     - B-2
@@ -184,10 +196,11 @@ tasks:
     description: DIVERGE e NAO_MEDIDO são estados distintos e nenhum publica
     bash: docker compose -f infra/docker-compose.yml exec -T spark sh -c 'for c in diverge_nao_publica
       sem_ancora_nao_medido destino_inalterado_durante classifica_diferenca_das_seis orcamento_leitura_ao_veredito_medido
-      parada_antecipada_grava_evidencia; do python3 -m pytest --collect-only -q tests/test_gold.py -k
-      "$c" 2>/dev/null | grep -q "::" || { echo "EVAL=CENARIO_AUSENTE_$c"; exit 1; }; done; python3 -m
-      pytest -q tests/test_gold.py -k "diverge_nao_publica or sem_ancora_nao_medido or destino_inalterado_durante
-      or classifica_diferenca_das_seis or orcamento_leitura_ao_veredito_medido or parada_antecipada_grava_evidencia"'
+      parada_antecipada_grava_evidencia diagnostico_estruturado_no_pacote; do python3 -m pytest --collect-only
+      -q tests/test_gold.py -k "$c" 2>/dev/null | grep -q "::" || { echo "EVAL=CENARIO_AUSENTE_$c"; exit
+      1; }; done; python3 -m pytest -q tests/test_gold.py -k "diverge_nao_publica or sem_ancora_nao_medido
+      or destino_inalterado_durante or classifica_diferenca_das_seis or orcamento_leitura_ao_veredito_medido
+      or parada_antecipada_grava_evidencia or diagnostico_estruturado_no_pacote"'
     verifies:
     - B-2
   anti_patterns:
@@ -209,7 +222,7 @@ tasks:
   - contracts
   rollback: Remover a camada Gold e seus testes.
   observability: agregados recusados por não reconciliar
-source_seam_sha256: 86ff4eccb3354a9296c4c9be5905e44ea6df79c688fd86c5f5d3e8acb2aee28c
+source_seam_sha256: 5b4e015a3cb55e743f353467d460df2d9b70a3964def3af4a405313ebcf15410
 ---
 # Gold só publica quando reconcilia com a âncora
 

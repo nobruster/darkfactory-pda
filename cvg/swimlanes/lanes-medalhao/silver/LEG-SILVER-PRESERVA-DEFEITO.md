@@ -1,6 +1,6 @@
 > Projetado de `LEG-SILVER-PRESERVA-DEFEITO.md` pelo Seamwise.
 > **Não edite aqui** — edite a recipe e rode `seamwise plan`.
-> origem sha256: `17c6ab7510ff7066cca0b31c44e33a2aadedc2f9c29794ae003dba1f9054e746`
+> origem sha256: `0942e584ebb5d46ea77931e31e12dd1c26e97a4e6070761499d54159a181ade3`
 
 ---
 
@@ -159,12 +159,14 @@ tasks:
       entregue, como objeto, mas com estado NAO_MEDIDO e nunca INTEGRO, porque um ''classificado'' INTEGRO
       com a identidade não medida mentiria no próprio nome, e porque Gold precisa RECEBER o estado para
       propagá-lo: devolver ausência quebraria o consumidor. A cadeia para aqui com o motivo nomeado, em
-      vez de seguir e publicar com a identidade em aberto. Declarar esse mapa é trabalho do contrato,
-      com aprovador e data, não desta camada — e ENQUANTO ele não existir, esta tarefa entrega apenas
-      a capacidade CONDICIONAL: o caminho NAO_MEDIDO provado, e o caminho positivo provado contra contrato
-      de teste, jamais contra a competência contratada. Concluir Bronze NÃO habilita a prova positiva
-      de Silver sobre 2026-01, e o plano não finge que habilita. scripts/medir_colapso.py já mede os 11
-      grupos na competência inteira; falta a aprovação, que é decisão de negócio.'
+      vez de seguir e publicar com a identidade em aberto. A exigência não é escolha desta camada: é a
+      decisão DEC-MAPA-APROVADO-OBRIGATORIO, do dono, que torna a aprovação individual do mapa condição
+      obrigatória de publicação. Declarar esse mapa é trabalho do contrato, com aprovador e data, não
+      desta camada — e ENQUANTO ele não existir, esta tarefa entrega apenas a capacidade CONDICIONAL:
+      o caminho NAO_MEDIDO provado, e o caminho positivo provado contra contrato de teste, jamais contra
+      a competência contratada. Concluir Bronze NÃO habilita a prova positiva de Silver sobre 2026-01,
+      e o plano não finge que habilita. scripts/medir_colapso.py já mede os 11 grupos na competência inteira;
+      falta a aprovação, que é decisão de negócio.'
   evals:
   - id: eval_1
     description: Chave é o código; contagem, mapa e soma preservados, inclusive linha de valor zero
@@ -220,7 +222,7 @@ tasks:
   - contracts
   rollback: Remover a camada Silver e seus testes.
   observability: colapsos classificados por competência
-source_seam_sha256: 4774f4aa3d1dbdfedcfc17fa65e0911bf8fe66532f82246b9d05779d6dd002e3
+source_seam_sha256: 1610243402f966bfd17310d9a3032fc55279ecaa75cb5f10a599faecf631ec9d
 ---
 # Silver classifica o defeito e conserva o total
 
