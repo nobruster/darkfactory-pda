@@ -1,6 +1,6 @@
 > Projetado de `LEG-GOLD-RECONCILIA.md` pelo Seamwise.
 > **Não edite aqui** — edite a recipe e rode `seamwise plan`.
-> origem sha256: `2c1dac21ad25087a7e3957b4c78b856a477ea6a4843da4d67156d02b2d07e3c5`
+> origem sha256: `fc93b4df9ad94da483f404e4fbe6a38a1d2152b734f4fa770173ac1666c94883`
 
 ---
 
@@ -147,24 +147,33 @@ tasks:
       correta e o total lido por ninguém aprovado — e uma interrupção no meio congela esse estado. Publicação
       interrompida deixa o destino como estava antes. GRAVAÇÃO EM DELTA NO MINIO, pelas decisões DEC-CAMADAS-GRAVAM-NO-MINIO
       e DEC-CAMADAS-EM-DELTA, e é ela que define o destino e o protocolo da publicação: Gold lê Silver
-      numa versão resolvida UMA vez, reconcilia sobre as candidatas, e só com Desfecho.autorizado_publicar
-      E o anexo conferido grava na tabela Delta s3a://gold/pda/beneficios-emitidos, com replaceWhere,
-      num ÚNICO commit — a publicação é esse commit, visível inteiro ou não visível. Interrupção antes
-      do commit deixa publicado o que estava. O DecimalType da coluna monetária é o declarado a partir
-      do contrato, e a IMPOSIÇÃO DE SCHEMA do Delta fica ligada; EVOLUÇÃO de schema só ADITIVA e explícita,
-      com mergeSchema — mudança de tipo, sobretudo monetário, é recusada, e overwriteSchema nunca é usado.
-      A tabela declara CHECK vl_liquido >= 0, o domínio da ADR 0009, e NOT NULL nas chaves. O que a capacidade
-      carrega além das linhas — estado, competência, hash da procedência, os cinco controles, marcas de
-      limitação, defeitos classificados, total_por_codigo em Decimal serializado como texto, cobertura
-      do referencial quando houver, id da execução e a VERSÃO lida da camada anterior — vai no userMetadata
-      do PRÓPRIO commit: a capacidade persistida se reconstrói de uma versão, linhas mais commit. O consumidor
-      resolve a versão UMA vez e lê tudo dela com versionAsOf, nunca o ''mais recente'' no meio do consumo.
-      Depois de gravar, RELÊ a versão commitada e compara o MULTICONJUNTO de (código, descrição, valor)
-      com o que produziu — exceptAll nos dois sentidos, ambos vazios — e os controles, porque trocar 10
-      e 20 por 11 e 19 preserva os cinco controles; divergência depois do commit é DIVERGE, e a camada
-      faz RESTORE para a versão anterior, que é commit novo e preserva o histórico. Nenhum VACUUM abaixo
-      da retenção padrão: o histórico é evidência. O destino é parâmetro com esse padrão, e os testes
-      gravam sob um prefixo de teste próprio, nunca no destino real'
+      como descrito abaixo, grava primeiro numa tabela Delta de PREPARO, privada, s3a://gold/_preparo/pda/beneficios-emitidos/execucao=<id>,
+      e só depois de reconferir ali publica na tabela s3a://gold/pda/beneficios-emitidos, particionada
+      por competencia, com overwrite e replaceWhere na competência — commit atômico, idempotente na reexecução,
+      que não toca as outras competências — e o commit que publica só acontece com Desfecho.autorizado_publicar
+      E o anexo conferido. A publicação é esse commit, visível inteiro ou não visível; interrupção antes
+      dele deixa publicado o que estava. O DecimalType da coluna monetária é o declarado a partir do contrato,
+      e a IMPOSIÇÃO DE SCHEMA do Delta fica ligada; EVOLUÇÃO de schema só ADITIVA e explícita, com mergeSchema
+      — mudança de tipo, sobretudo monetário, é recusada, e overwriteSchema nunca é usado. A tabela declara
+      CHECK >= 0 na coluna monetária QUE A PRÓPRIA CAMADA GRAVA — vl_liquido em Bronze e Silver, o total
+      agregado em Gold —, o domínio da ADR 0009, e NOT NULL nas chaves. A reconferência acontece NO PREPARO,
+      ANTES de publicar: RELÊ a versão commitada do preparo e compara o MULTICONJUNTO de TODAS as colunas
+      que a camada grava — em Silver inclusive a descrição normalizada e a classificação, esta conferida
+      também contra os defeitos dos metadados — com o que produziu, exceptAll nos dois sentidos, ambos
+      vazios, e os controles, porque trocar 10 e 20 por 11 e 19 preserva os cinco controles; divergência
+      no preparo é DIVERGE e nada é publicado. Publicada, a competência é relida e conferida de novo;
+      divergência ali é DIVERGE e a camada REVERTE SÓ A COMPETÊNCIA — replaceWhere com o conteúdo dela
+      na versão anterior, ou DELETE da competência quando ela não existia antes, inclusive na primeira
+      gravação —, nunca RESTORE da tabela inteira, que desfaria outra competência; o escritor é único,
+      pela DEC-CAMADAS-EM-DELTA. Os METADADOS da competência — estado, competência, hash da procedência,
+      os cinco controles, marcas de limitação, defeitos classificados, total_por_codigo em Decimal serializado
+      como texto, cobertura do referencial quando houver, id da execução e a versão lida da camada anterior
+      — vão no userMetadata do commit que PUBLICA a competência, e esse commit é o DONO deles: o consumidor
+      resolve a versão V da tabela UMA vez, lê os dados da competência com versionAsOf=V e os metadados
+      do ÚLTIMO commit até V cujo userMetadata nomeia essa competência — nunca do commit V em si, que
+      pode ser de outra. Nenhum VACUUM abaixo da retenção padrão: o histórico é evidência. O destino é
+      parâmetro com esse padrão, e os testes gravam sob um prefixo de teste próprio, nunca no destino
+      real'
   - id: B-2
     given: um Silver cujo total não reproduz a âncora, ou uma competência sem âncora no contrato
     when: Gold agrega
@@ -200,12 +209,14 @@ tasks:
       nao_arredonda_por_campo traps_declaradas recusa_sob_procedencia_nao_vinculada ansi_declarado_estouro_nao_vira_nulo
       cobertura_anexada_ao_pacote publica_em_um_unico_commit interrompida_antes_do_commit_nao_publica
       reconfere_multiconjunto_das_linhas commit_carrega_a_forma resolve_versao_uma_vez schema_evolucao_so_aditiva
-      check_nao_negativo; do python3 -m pytest --collect-only -q tests/test_gold.py -k "$c" 2>/dev/null
-      | grep -q "::" || { echo "EVAL=CENARIO_AUSENTE_$c"; exit 1; }; done; python3 -m pytest -q tests/test_gold.py
-      -k "arredonda_uma_vez or half_even_do_contrato or nao_arredonda_por_campo or traps_declaradas or
-      recusa_sob_procedencia_nao_vinculada or ansi_declarado_estouro_nao_vira_nulo or cobertura_anexada_ao_pacote
-      or publica_em_um_unico_commit or interrompida_antes_do_commit_nao_publica or reconfere_multiconjunto_das_linhas
-      or commit_carrega_a_forma or resolve_versao_uma_vez or schema_evolucao_so_aditiva or check_nao_negativo"'
+      check_nao_negativo reconfere_no_preparo_antes_de_publicar reverte_so_a_competencia metadados_do_commit_dono_da_competencia;
+      do python3 -m pytest --collect-only -q tests/test_gold.py -k "$c" 2>/dev/null | grep -q "::" ||
+      { echo "EVAL=CENARIO_AUSENTE_$c"; exit 1; }; done; python3 -m pytest -q tests/test_gold.py -k "arredonda_uma_vez
+      or half_even_do_contrato or nao_arredonda_por_campo or traps_declaradas or recusa_sob_procedencia_nao_vinculada
+      or ansi_declarado_estouro_nao_vira_nulo or cobertura_anexada_ao_pacote or publica_em_um_unico_commit
+      or interrompida_antes_do_commit_nao_publica or reconfere_multiconjunto_das_linhas or commit_carrega_a_forma
+      or resolve_versao_uma_vez or schema_evolucao_so_aditiva or check_nao_negativo or reconfere_no_preparo_antes_de_publicar
+      or reverte_so_a_competencia or metadados_do_commit_dono_da_competencia"'
     verifies:
     - B-1
   - id: eval_2
@@ -255,7 +266,7 @@ tasks:
   - contracts
   rollback: Remover a camada Gold e seus testes.
   observability: agregados recusados por não reconciliar
-source_seam_sha256: ca76acf0625ea07c3cbf050ffc6dd8e6695f8b1c7d35ec9e8b7427b4e6a13826
+source_seam_sha256: 371dedb0af3be5ef69637caf15d13a44846819594d572ff8446c378533ded455
 ---
 # Gold só publica quando reconcilia com a âncora
 

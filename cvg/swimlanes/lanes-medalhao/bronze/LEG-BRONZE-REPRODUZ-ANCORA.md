@@ -1,6 +1,6 @@
 > Projetado de `LEG-BRONZE-REPRODUZ-ANCORA.md` pelo Seamwise.
 > **Não edite aqui** — edite a recipe e rode `seamwise plan`.
-> origem sha256: `253a4ad810fd7660a10fa0716ca35bb4c85cf7c0c6346a04a677877dae37ac73`
+> origem sha256: `cabbdccdce5ef2c099a539019be9087b4ba890062defbc3a79dce07d02f0d6d5`
 
 ---
 
@@ -126,24 +126,31 @@ tasks:
       por tê-lo escrito — porque ''produces'' com nome e sem forma deixa Silver e Bronze passarem nos
       próprios testes com fixtures locais e não encaixarem um no outro. Partição que diverge é DIVERGE,
       e Bronze não escreve nada. GRAVAÇÃO EM DELTA NO MINIO, pelas decisões DEC-CAMADAS-GRAVAM-NO-MINIO
-      e DEC-CAMADAS-EM-DELTA: só com estado INTEGRO, Bronze grava as linhas conferidas na tabela Delta
-      s3a://bronze/pda/beneficios-emitidos, particionada por competencia, com overwrite e replaceWhere
-      competencia = ''<c>'' — um commit atômico, idempotente na reexecução, que não toca as outras competências.
-      O DecimalType da coluna monetária é o declarado a partir do contrato, e a IMPOSIÇÃO DE SCHEMA do
-      Delta fica ligada; EVOLUÇÃO de schema só ADITIVA e explícita, com mergeSchema — mudança de tipo,
-      sobretudo monetário, é recusada, e overwriteSchema nunca é usado. A tabela declara CHECK vl_liquido
-      >= 0, o domínio da ADR 0009, e NOT NULL nas chaves. O que a capacidade carrega além das linhas —
-      estado, competência, hash da procedência, os cinco controles, marcas de limitação, defeitos classificados,
-      total_por_codigo em Decimal serializado como texto, cobertura do referencial quando houver, id da
-      execução e a VERSÃO lida da camada anterior — vai no userMetadata do PRÓPRIO commit: a capacidade
-      persistida se reconstrói de uma versão, linhas mais commit. O consumidor resolve a versão UMA vez
-      e lê tudo dela com versionAsOf, nunca o ''mais recente'' no meio do consumo. Depois de gravar, RELÊ
-      a versão commitada e compara o MULTICONJUNTO de (código, descrição, valor) com o que produziu —
-      exceptAll nos dois sentidos, ambos vazios — e os controles, porque trocar 10 e 20 por 11 e 19 preserva
-      os cinco controles; divergência depois do commit é DIVERGE, e a camada faz RESTORE para a versão
-      anterior, que é commit novo e preserva o histórico. Nenhum VACUUM abaixo da retenção padrão: o histórico
-      é evidência. O destino é parâmetro com esse padrão, e os testes gravam sob um prefixo de teste próprio,
-      nunca no destino real'
+      e DEC-CAMADAS-EM-DELTA: só com estado INTEGRO, Bronze grava primeiro numa tabela Delta de PREPARO,
+      privada, s3a://bronze/_preparo/pda/beneficios-emitidos/execucao=<id>, e só depois de reconferir
+      ali publica na tabela s3a://bronze/pda/beneficios-emitidos, particionada por competencia, com overwrite
+      e replaceWhere na competência — commit atômico, idempotente na reexecução, que não toca as outras
+      competências. O DecimalType da coluna monetária é o declarado a partir do contrato, e a IMPOSIÇÃO
+      DE SCHEMA do Delta fica ligada; EVOLUÇÃO de schema só ADITIVA e explícita, com mergeSchema — mudança
+      de tipo, sobretudo monetário, é recusada, e overwriteSchema nunca é usado. A tabela declara CHECK
+      >= 0 na coluna monetária QUE A PRÓPRIA CAMADA GRAVA — vl_liquido em Bronze e Silver, o total agregado
+      em Gold —, o domínio da ADR 0009, e NOT NULL nas chaves. A reconferência acontece NO PREPARO, ANTES
+      de publicar: RELÊ a versão commitada do preparo e compara o MULTICONJUNTO de TODAS as colunas que
+      a camada grava — em Silver inclusive a descrição normalizada e a classificação, esta conferida também
+      contra os defeitos dos metadados — com o que produziu, exceptAll nos dois sentidos, ambos vazios,
+      e os controles, porque trocar 10 e 20 por 11 e 19 preserva os cinco controles; divergência no preparo
+      é DIVERGE e nada é publicado. Publicada, a competência é relida e conferida de novo; divergência
+      ali é DIVERGE e a camada REVERTE SÓ A COMPETÊNCIA — replaceWhere com o conteúdo dela na versão anterior,
+      ou DELETE da competência quando ela não existia antes, inclusive na primeira gravação —, nunca RESTORE
+      da tabela inteira, que desfaria outra competência; o escritor é único, pela DEC-CAMADAS-EM-DELTA.
+      Os METADADOS da competência — estado, competência, hash da procedência, os cinco controles, marcas
+      de limitação, defeitos classificados, total_por_codigo em Decimal serializado como texto, cobertura
+      do referencial quando houver, id da execução e a versão lida da camada anterior — vão no userMetadata
+      do commit que PUBLICA a competência, e esse commit é o DONO deles: o consumidor resolve a versão
+      V da tabela UMA vez, lê os dados da competência com versionAsOf=V e os metadados do ÚLTIMO commit
+      até V cujo userMetadata nomeia essa competência — nunca do commit V em si, que pode ser de outra.
+      Nenhum VACUUM abaixo da retenção padrão: o histórico é evidência. O destino é parâmetro com esse
+      padrão, e os testes gravam sob um prefixo de teste próprio, nunca no destino real'
   - id: B-2
     given: uma competência cuja partição não existe no lago ou existe com zero linhas, ou cujo contrato
       NÃO declara âncora
@@ -188,13 +195,14 @@ tasks:
       isola_particao nao_soma_uniao precisao_declarada entrega_as_linhas_conferidas ansi_declarado_estouro_nao_vira_nulo
       entrega_o_hash_da_procedencia posicao_no_lago_nomeada grava_no_minio_e_reconfere replacewhere_nao_toca_outra_competencia
       reconfere_multiconjunto_das_linhas commit_carrega_a_forma resolve_versao_uma_vez schema_evolucao_so_aditiva
-      check_nao_negativo; do python3 -m pytest --collect-only -q tests/test_bronze.py -k "$c" 2>/dev/null
-      | grep -q "::" || { echo "EVAL=CENARIO_AUSENTE_$c"; exit 1; }; done; python3 -m pytest -q tests/test_bronze.py
-      -k "cinco_controles or alteracao_compensada or isola_particao or nao_soma_uniao or precisao_declarada
+      check_nao_negativo reconfere_no_preparo_antes_de_publicar reverte_so_a_competencia metadados_do_commit_dono_da_competencia;
+      do python3 -m pytest --collect-only -q tests/test_bronze.py -k "$c" 2>/dev/null | grep -q "::" ||
+      { echo "EVAL=CENARIO_AUSENTE_$c"; exit 1; }; done; python3 -m pytest -q tests/test_bronze.py -k
+      "cinco_controles or alteracao_compensada or isola_particao or nao_soma_uniao or precisao_declarada
       or entrega_as_linhas_conferidas or ansi_declarado_estouro_nao_vira_nulo or entrega_o_hash_da_procedencia
       or posicao_no_lago_nomeada or grava_no_minio_e_reconfere or replacewhere_nao_toca_outra_competencia
       or reconfere_multiconjunto_das_linhas or commit_carrega_a_forma or resolve_versao_uma_vez or schema_evolucao_so_aditiva
-      or check_nao_negativo"'
+      or check_nao_negativo or reconfere_no_preparo_antes_de_publicar or reverte_so_a_competencia or metadados_do_commit_dono_da_competencia"'
     verifies:
     - B-1
   - id: eval_2
@@ -236,7 +244,7 @@ tasks:
   - contracts
   rollback: Remover o leitor Bronze e seus testes.
   observability: partições recusadas por controle divergente
-source_seam_sha256: e8762ba4072e51f4d7f60d34fb4a2056c9b83931c52a23475223f095f0f416d2
+source_seam_sha256: 42da3dee23b236a676de8eb3e8f1a6a3629e33b5a0282af670440fa5cdef3311
 ---
 # Bronze só existe quando reproduz a âncora do contrato
 

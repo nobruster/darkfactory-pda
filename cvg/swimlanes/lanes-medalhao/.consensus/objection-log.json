@@ -13,15 +13,15 @@
     "family": "anthropic"
   },
   "verdict": "REVISE",
-  "prompt_sha256": "5faa32e1059afa81e0d451ab8b7b387acc5313d852abdd4c5156fbb37a86c0eb",
+  "prompt_sha256": "a424c02fbd65dab31f884ac7618c8e2f4ac49c37ed75c6b1681327101287cbea",
   "inputs": [
     {
       "path": "bronze/LEG-BRONZE-REPRODUZ-ANCORA.md",
-      "sha256": "4e6c3f1d80643cd7ca95254ccd6a9887584c35b9b53d69681b44f8a8ad121d50"
+      "sha256": "a0ee26f361ea7af6ccf6a6750b950e3b5486deaabddaf96985ba0ab7dfec9fa6"
     },
     {
       "path": "bronze/_lane.md",
-      "sha256": "bd5425f5d0a22653ced0f989ec08817c6e32e7c52ac3920bde2f6ede59369cf5"
+      "sha256": "fb6fb235bd382fe8255d36e5a627fca9ea94f6f163b774dbca205ae269e81330"
     },
     {
       "path": "contrato-ext/LEG-CONTRATO-EXPOE-PARTICAO.md",
@@ -33,137 +33,185 @@
     },
     {
       "path": "gold/LEG-GOLD-RECONCILIA.md",
-      "sha256": "becf360fafdbf156d54d187c405d65a9da3604caa25c16a59ef2edc7b805a9e3"
+      "sha256": "d25f46237947f0bdba3bc806efacf46c7871d180eb77529d31dd15463d65d03c"
     },
     {
       "path": "gold/_lane.md",
-      "sha256": "2073df36719830482ce723792aa0aab1aa618fe044a3890fe46c7afe25cb797f"
+      "sha256": "67d160f72f332c5ac9a7bfd55cc64a333848cc4af1c575ba8f5b93d7fff60f4e"
     },
     {
       "path": "silver/LEG-SILVER-PRESERVA-DEFEITO.md",
-      "sha256": "4a071a72573d5595e2b6f05861a7bc9a902ed1814ed0f078ab889a9580e903a4"
+      "sha256": "de9d7c5d111d13ca58022a8f63a787fb6b72aace0951cb07b76b3c8819522c6d"
     },
     {
       "path": "silver/_lane.md",
-      "sha256": "62779c6041e2d76a4f10d470a831b256f50102d8e1793c372dbd0e86e05a8691"
+      "sha256": "98c4896bdc4378e0d22c9ea360ed9f2d8f2551550ced036ee04e20cab1eba883"
     }
   ],
   "objections": [
     {
       "id": "C1",
-      "severity": "critical",
+      "severity": "high",
       "rank": 1,
-      "attack_class": "drift",
-      "swimlane": "LANE-GOLD",
-      "leg": "LEG-GOLD-RECONCILIA",
-      "title": "A diverg\u00eancia de persist\u00eancia \u00e9 descoberta depois de tornar Gold p\u00fablico",
+      "attack_class": "cross-lane-interface",
+      "swimlane": "LANE-SILVER",
+      "leg": "LEG-SILVER-PRESERVA-DEFEITO",
       "location": {
-        "plan_file": "cvg/swimlanes/lanes-medalhao/gold/LEG-GOLD-RECONCILIA.md",
-        "section": "B-1 \u2014 publica\u00e7\u00e3o indivis\u00edvel e reconfer\u00eancia depois do commit"
+        "plan_file": "cvg/swimlanes/lanes-medalhao/silver/LEG-SILVER-PRESERVA-DEFEITO.md",
+        "section": "B-1 \u2014 resolu\u00e7\u00e3o dos metadados pelo \u00faltimo commit da compet\u00eancia e reten\u00e7\u00e3o"
       },
-      "evidence": "B-1 define que 'a publica\u00e7\u00e3o \u00e9 esse commit' e depois manda reler a vers\u00e3o commitada; se divergir, devolver DIVERGE e executar RESTORE.",
-      "body": "Contraexemplo admitido pelo pr\u00f3prio plano: as candidatas passam, a grava\u00e7\u00e3o produz conte\u00fado diferente e a reconfer\u00eancia detecta a diferen\u00e7a. Entre o commit e o RESTORE, consumidores podem ler a vers\u00e3o divergente. Uma interrup\u00e7\u00e3o nesse intervalo a mant\u00e9m publicada. A atomicidade do commit impede leitura parcial, mas n\u00e3o impede leitura de uma vers\u00e3o inteira incorreta. O protocolo contradiz tanto a proibi\u00e7\u00e3o interna de expor candidatas divergentes quanto R-7, que exige recusa antes da publica\u00e7\u00e3o. O pacote autorizado anteriormente tamb\u00e9m n\u00e3o demonstra o resultado dessa reconfer\u00eancia posterior.",
+      "title": "Uma compet\u00eancia ainda vigente pode perder os metadados necess\u00e1rios para ser consumida",
+      "body": "O consumidor depende do userMetadata de um commit hist\u00f3rico espec\u00edfico, mas o plano s\u00f3 limita VACUUM. Contraexemplo: janeiro permanece sem altera\u00e7\u00f5es enquanto outras compet\u00eancias recebem commits e checkpoints. Depois da limpeza do hist\u00f3rico, os dados atuais de janeiro continuam presentes, mas o commit que cont\u00e9m seu estado, hash e cobertura pode desaparecer. Resolver V uma vez n\u00e3o recupera esse registro. Gold deixa de conseguir consumir uma compet\u00eancia v\u00e1lida ou precisa inventar uma alternativa n\u00e3o contratada. Isso afeta a leitura atual, n\u00e3o apenas time travel.",
+      "evidence": "B-1 exige os metadados do \u00daLTIMO commit at\u00e9 V cujo userMetadata nomeia a compet\u00eancia e afirma: Nenhum VACUUM abaixo da reten\u00e7\u00e3o padr\u00e3o: o hist\u00f3rico \u00e9 evid\u00eancia. A reten\u00e7\u00e3o do log \u00e9 separada da reten\u00e7\u00e3o de arquivos e tem padr\u00e3o de 30 dias.",
       "cites": [
-        "cvg/docs/tech-spec/tech-spec-pda-beneficios.md \u00a7 Requirements, R-7",
-        "cvg/docs/tech-spec/tech-spec-pda-beneficios.md \u00a7 Problem restated",
-        "[Delta Lake \u2014 restaura\u00e7\u00e3o e vers\u00f5es](https://delta.io/blog/2022-10-03-rollback-delta-lake-restore/)"
-      ]
+        "cvg/swimlanes/medalhao-recipe.yaml \u2014 DEC-CAMADAS-EM-DELTA",
+        "cvg/docs/tech-spec/tech-spec-pda-beneficios.md \u2014 Problem restated: reconstru\u00e7\u00e3o meses depois",
+        "https://docs.delta.io/table-properties/",
+        "https://docs.delta.io/delta-batch/"
+      ],
+      "resolution": {
+        "disposition": "ACCEPT",
+        "decided_by": "Bruno Nunes",
+        "decided_at": "2026-09-23T16:27:36Z",
+        "owner": "Bruno Nunes",
+        "risk_residual": "Aceito, para o Pass 8. A limpeza do _delta_log \u00e9 governada por delta.logRetentionDuration (padr\u00e3o 30 dias), n\u00e3o pelo VACUUM. A implementa\u00e7\u00e3o declara na cria\u00e7\u00e3o da tabela uma reten\u00e7\u00e3o de log longa, como TBLPROPERTIES, e um eval confere a propriedade. Na primeira grava\u00e7\u00e3o de 2026-01 n\u00e3o h\u00e1 hist\u00f3rico a perder, e o dinheiro n\u00e3o depende disso. Decidido pelo dono ao fechar o Pass 4 na R33, sem editar o plano."
+      }
     },
     {
       "id": "C2",
       "severity": "high",
       "rank": 2,
       "attack_class": "cross-lane-interface",
-      "swimlane": "LANE-GOLD",
-      "leg": "LEG-GOLD-RECONCILIA",
-      "title": "A constraint monet\u00e1ria de Gold referencia uma coluna ausente",
+      "swimlane": "LANE-BRONZE",
+      "leg": "LEG-BRONZE-REPRODUZ-ANCORA",
       "location": {
-        "plan_file": "cvg/swimlanes/lanes-medalhao/gold/LEG-GOLD-RECONCILIA.md",
-        "section": "B-1 \u2014 colunas da capacidade e imposi\u00e7\u00e3o de schema Delta"
+        "plan_file": "cvg/swimlanes/lanes-medalhao/bronze/LEG-BRONZE-REPRODUZ-ANCORA.md",
+        "section": "B-1 \u2014 revers\u00e3o por replaceWhere ou DELETE e commit dono dos metadados"
       },
-      "evidence": "As colunas declaradas s\u00e3o especie_codigo, especie_descricao, vl_liquido_total e competencia; a mesma se\u00e7\u00e3o exige CHECK vl_liquido >= 0.",
-      "body": "O schema publicado n\u00e3o cont\u00e9m vl_liquido. A express\u00e3o obrigat\u00f3ria da constraint n\u00e3o pode ser resolvida contra esse schema, impedindo instalar a prote\u00e7\u00e3o e concluir o caminho positivo tal como especificado. Acrescentar silenciosamente a coluna de detalhe ou omitir a constraint faria a implementa\u00e7\u00e3o escolher qual trecho do contrato descumprir. O cen\u00e1rio check_nao_negativo precisa considerar o schema real de Gold para revelar esse conflito.",
+      "title": "A revers\u00e3o restaura linhas sem definir a restaura\u00e7\u00e3o da identidade da compet\u00eancia",
+      "body": "Contraexemplo: V10 cont\u00e9m a execu\u00e7\u00e3o A; V11 publica B; a reconfer\u00eancia falha; V12 restaura as linhas de A. O plano n\u00e3o define o userMetadata de V12. Se V12 n\u00e3o nomear a compet\u00eancia, a regra de leitura escolhe os metadados de B em V11. Se repetir os metadados da execu\u00e7\u00e3o corrente, tamb\u00e9m associa dados de A \u00e0 identidade de B. Na primeira grava\u00e7\u00e3o, DELETE pode deixar os metadados INTEGRO da publica\u00e7\u00e3o recusada como \u00faltimo registro eleg\u00edvel. Hash, controles, limita\u00e7\u00f5es e execu\u00e7\u00e3o deixam de descrever os dados consumidos.",
+      "evidence": "A revers\u00e3o \u00e9 descrita como replaceWhere com o conte\u00fado da vers\u00e3o anterior, ou DELETE quando a compet\u00eancia n\u00e3o existia. A sele\u00e7\u00e3o de metadados procura o \u00faltimo commit que nomeia a compet\u00eancia; o protocolo n\u00e3o especifica o conte\u00fado desse commit de revers\u00e3o.",
       "cites": [
-        "cvg/docs/adrs/0009-the-derived-precision-assumes-a-monotonic-sum-with-no-negative-values.md \u00a7 Decision",
-        "[Delta Lake \u2014 CHECK constraints](https://docs.delta.io/delta-constraints/)"
-      ]
+        "cvg/swimlanes/lanes-medalhao/bronze/LEG-BRONZE-REPRODUZ-ANCORA.md \u2014 B-1",
+        "cvg/swimlanes/medalhao-recipe.yaml \u2014 DEC-CAMADAS-EM-DELTA",
+        "cvg/docs/tech-spec/tech-spec-pda-beneficios.md \u2014 R-5 e R-6"
+      ],
+      "resolution": {
+        "disposition": "ACCEPT",
+        "decided_by": "Bruno Nunes",
+        "decided_at": "2026-09-23T16:27:36Z",
+        "owner": "Bruno Nunes",
+        "risk_residual": "Aceito, para o Pass 8. O commit de revers\u00e3o repete no userMetadata os metadados da execu\u00e7\u00e3o cujas linhas restaura, marcados como REVERSAO da execu\u00e7\u00e3o recusada; o DELETE da primeira grava\u00e7\u00e3o nomeia a compet\u00eancia como AUSENTE, e o consumidor a trata como NAO_MEDIDO. A revers\u00e3o s\u00f3 ocorre depois de uma diverg\u00eancia, e diverg\u00eancia j\u00e1 \u00e9 DIVERGE, ent\u00e3o nada chega a Gold. Decidido pelo dono ao fechar o Pass 4 na R33, sem editar o plano."
+      }
     },
     {
       "id": "C3",
       "severity": "high",
       "rank": 3,
-      "attack_class": "cross-lane-interface",
-      "swimlane": "LANE-SILVER",
-      "leg": "LEG-SILVER-PRESERVA-DEFEITO",
-      "title": "Uma vers\u00e3o da tabela n\u00e3o identifica sozinha os metadados da compet\u00eancia consumida",
+      "attack_class": "observability",
+      "swimlane": "LANE-GOLD",
+      "leg": "LEG-GOLD-RECONCILIA",
       "location": {
-        "plan_file": "cvg/swimlanes/lanes-medalhao/silver/LEG-SILVER-PRESERVA-DEFEITO.md",
-        "section": "B-1 \u2014 leitura de Bronze por vers\u00e3o e reconstru\u00e7\u00e3o por userMetadata"
+        "plan_file": "cvg/swimlanes/lanes-medalhao/gold/LEG-GOLD-RECONCILIA.md",
+        "section": "B-1 \u2014 retorno de conduzir, publica\u00e7\u00e3o posterior e reconfer\u00eancia do destino"
       },
-      "evidence": "Silver l\u00ea Bronze numa vers\u00e3o resolvida uma vez e s\u00f3 se o commit dessa vers\u00e3o diz INTEGRO. Bronze preserva outras compet\u00eancias via replaceWhere, mas registra compet\u00eancia, estado, hash e controles no userMetadata do pr\u00f3prio commit.",
-      "body": "Contraexemplo sequencial, sem concorr\u00eancia: v10 grava janeiro e seus metadados; v11 grava fevereiro e preserva as linhas de janeiro. Ler janeiro em versionAsOf=11 encontra seus dados, mas o userMetadata do commit v11 descreve fevereiro. Resolver a vers\u00e3o uma vez n\u00e3o estabelece qual commit cont\u00e9m a capacidade da parti\u00e7\u00e3o solicitada. O consumidor pode parear linhas e controles de compet\u00eancias diferentes ou recusar janeiro correto. O plano n\u00e3o determina a sele\u00e7\u00e3o do commit por compet\u00eancia nem o tratamento de commits que n\u00e3o carreguem essa capacidade. A mesma ambiguidade aparece entre Silver e Gold.",
+      "title": "Falhas posteriores \u00e0 autoriza\u00e7\u00e3o ficam fora do mecanismo de evid\u00eancia descrito",
+      "body": "O diagn\u00f3stico serializado s\u00f3 chega a evento_falha quando a exce\u00e7\u00e3o ocorre dentro de executar_leitura. A publica\u00e7\u00e3o depende do Desfecho devolvido por conduzir e, portanto, ocorre depois desse callback e da grava\u00e7\u00e3o do pacote. Uma diverg\u00eancia na releitura do destino, uma falha de commit ou uma revers\u00e3o malsucedida acontecem fora dessa captura. O plano n\u00e3o d\u00e1 destino persistente a esses eventos. Pode restar apenas um pacote ACEITO, sem registro da diferen\u00e7a medida depois ou do resultado da revers\u00e3o. A autoriza\u00e7\u00e3o anterior n\u00e3o \u00e9 falsa, mas n\u00e3o documenta o desfecho completo que o plano promete.",
+      "evidence": "B-1 afirma que TODO caminho deixa evid\u00eancia, condiciona a publica\u00e7\u00e3o ao pacote j\u00e1 existente e, posteriormente, exige releitura com eventual DIVERGE e revers\u00e3o. O anexo positivo descrito cont\u00e9m cobertura e hash do pacote, n\u00e3o o resultado dessas opera\u00e7\u00f5es posteriores.",
       "cites": [
-        "cvg/swimlanes/lanes-medalhao/bronze/LEG-BRONZE-REPRODUZ-ANCORA.md \u00a7 B-1 \u2014 replaceWhere e userMetadata",
-        "cvg/swimlanes/lanes-medalhao/gold/LEG-GOLD-RECONCILIA.md \u00a7 B-1 \u2014 consumo da vers\u00e3o de Silver",
-        "cvg/docs/tech-spec/tech-spec-pda-beneficios.md \u00a7 Requirements, R-1",
-        "[Delta Lake \u2014 vers\u00f5es, metadados de commit e replaceWhere](https://docs.delta.io/delta-batch/)"
-      ]
+        "cvg/swimlanes/lanes-medalhao/gold/LEG-GOLD-RECONCILIA.md \u2014 B-1",
+        "src/pda/orquestracao.py \u2014 conduzir e Desfecho",
+        "cvg/docs/tech-spec/tech-spec-pda-beneficios.md \u2014 Scope: pacote por execu\u00e7\u00e3o, com veredito, causa e n\u00fameros",
+        "cvg/docs/tech-spec/tech-spec-pda-beneficios.md \u2014 R-6 e W-2"
+      ],
+      "resolution": {
+        "disposition": "ACCEPT",
+        "decided_by": "Bruno Nunes",
+        "decided_at": "2026-09-23T16:27:36Z",
+        "owner": "Bruno Nunes",
+        "risk_residual": "Aceito, para o Pass 8. A falha depois da autoriza\u00e7\u00e3o \u00e9 falha de PUBLICA\u00c7\u00c3O, n\u00e3o de julgamento: o pacote do juiz continua correto, e a publica\u00e7\u00e3o falha fechada \u2014 sem commit, ou revertida s\u00f3 na compet\u00eancia. Gold registra o desfecho da publica\u00e7\u00e3o num pacote pr\u00f3prio, ligado ao caminho_pacote do julgamento. O orquestrador selado n\u00e3o \u00e9 alterado (out_of_scope). Decidido pelo dono ao fechar o Pass 4 na R33, sem editar o plano."
+      }
     },
     {
       "id": "C4",
-      "severity": "high",
+      "severity": "medium",
       "rank": 4,
-      "attack_class": "race",
+      "attack_class": "migration",
       "swimlane": "LANE-BRONZE",
       "leg": "LEG-BRONZE-REPRODUZ-ANCORA",
-      "title": "RESTORE n\u00e3o tem destino na primeira grava\u00e7\u00e3o nem isolamento declarado entre escritores",
       "location": {
         "plan_file": "cvg/swimlanes/lanes-medalhao/bronze/LEG-BRONZE-REPRODUZ-ANCORA.md",
-        "section": "B-1 \u2014 reconfer\u00eancia e RESTORE para a vers\u00e3o anterior"
+        "section": "B-1 \u2014 DecimalType derivado do contrato e schema da tabela compartilhada"
       },
-      "evidence": "Toda diverg\u00eancia depois do commit exige RESTORE para a vers\u00e3o anterior; a escrita promete n\u00e3o tocar outras compet\u00eancias. N\u00e3o h\u00e1 exce\u00e7\u00e3o para cria\u00e7\u00e3o da tabela nem exclus\u00e3o m\u00fatua declarada.",
-      "body": "Na primeira grava\u00e7\u00e3o, v0, n\u00e3o existe vers\u00e3o anterior para restaurar. Portanto, justamente o caminho de falha previsto deixa uma tabela divergente sem recupera\u00e7\u00e3o especificada. H\u00e1 ainda um segundo contraexemplo condicionado \u00e0 concorr\u00eancia: A grava janeiro em v10; B grava fevereiro em v11; A detecta diverg\u00eancia e restaura v9. RESTORE atua sobre a tabela e desfaz tamb\u00e9m fevereiro, contrariando a preserva\u00e7\u00e3o das outras compet\u00eancias. Os planos n\u00e3o fornecem um invariante que exclua essa execu\u00e7\u00e3o. Silver e Gold repetem o mesmo protocolo.",
+      "title": "Precis\u00e3o por compet\u00eancia conflita com tipo monet\u00e1rio imut\u00e1vel na tabela compartilhada",
+      "body": "A precis\u00e3o \u00e9 derivada da \u00e2ncora de cada compet\u00eancia, mas todas escrevem na mesma tabela e mudan\u00e7as de tipo s\u00e3o recusadas. Uma compet\u00eancia aprovada cuja precis\u00e3o derivada seja 15 encontra a tabela criada com precis\u00e3o 14: usar o novo DecimalType viola a proibi\u00e7\u00e3o de mudan\u00e7a; manter o antigo deixa de seguir a deriva\u00e7\u00e3o declarada e pode ser insuficiente. O problema n\u00e3o bloqueia por si s\u00f3 a primeira compet\u00eancia, mas a promessa de isolamento entre compet\u00eancias n\u00e3o resolve a incompatibilidade de schema. O limite suportado e a decis\u00e3o para esse caso est\u00e3o em aberto.",
+      "evidence": "B-1 simultaneamente determina DecimalType a partir do contrato, destino \u00fanico particionado por competencia e recusa de mudan\u00e7a de tipo, sobretudo monet\u00e1rio. O ADR 0009 deriva a precis\u00e3o do total ancorado, em vez de fix\u00e1-la para todas as compet\u00eancias.",
       "cites": [
-        "cvg/swimlanes/lanes-medalhao/bronze/LEG-BRONZE-REPRODUZ-ANCORA.md \u00a7 B-1 \u2014 overwrite restrito \u00e0 compet\u00eancia",
-        "cvg/swimlanes/lanes-medalhao/silver/LEG-SILVER-PRESERVA-DEFEITO.md \u00a7 B-1 \u2014 RESTORE",
-        "cvg/swimlanes/lanes-medalhao/gold/LEG-GOLD-RECONCILIA.md \u00a7 B-1 \u2014 RESTORE",
-        "[Delta Lake \u2014 RESTORE de tabela](https://docs.delta.io/delta-utility/)"
-      ]
+        "cvg/swimlanes/lanes-medalhao/bronze/LEG-BRONZE-REPRODUZ-ANCORA.md \u2014 B-1",
+        "cvg/docs/adrs/0009-the-derived-precision-assumes-a-monotonic-sum-with-no-negative-values.md \u2014 Decision",
+        "cvg/docs/tech-spec/tech-spec-pda-beneficios.md \u2014 R-4",
+        "https://docs.delta.io/delta-batch/"
+      ],
+      "resolution": {
+        "disposition": "ACCEPT",
+        "decided_by": "Bruno Nunes",
+        "decided_at": "2026-09-23T16:27:36Z",
+        "owner": "Bruno Nunes",
+        "risk_residual": "Aceito, para uma compet\u00eancia futura. 2026-01 \u00e9 a primeira: a tabela nasce com o DecimalType do contrato dela, precis\u00e3o 14. Uma compet\u00eancia que derive precis\u00e3o maior \u00e9 mudan\u00e7a de tipo monet\u00e1rio, que o plano recusa de prop\u00f3sito; ela exige decis\u00e3o nova, com ADR, e n\u00e3o acontece em sil\u00eancio. A recusa \u00e9 o comportamento certo, n\u00e3o um defeito. Decidido pelo dono ao fechar o Pass 4 na R33, sem editar o plano."
+      }
     },
     {
       "id": "C5",
-      "severity": "high",
+      "severity": "medium",
       "rank": 5,
       "attack_class": "unverified-assumption",
-      "swimlane": "LANE-SILVER",
-      "leg": "LEG-SILVER-PRESERVA-DEFEITO",
-      "title": "A reconfer\u00eancia persistida n\u00e3o verifica as colunas que Silver acrescenta",
+      "swimlane": "LANE-BRONZE",
+      "leg": "LEG-BRONZE-REPRODUZ-ANCORA",
       "location": {
-        "plan_file": "cvg/swimlanes/lanes-medalhao/silver/LEG-SILVER-PRESERVA-DEFEITO.md",
-        "section": "B-1 \u2014 forma de silver classificado e multiconjunto ap\u00f3s grava\u00e7\u00e3o"
+        "plan_file": "cvg/swimlanes/lanes-medalhao/bronze/LEG-BRONZE-REPRODUZ-ANCORA.md",
+        "section": "B-2 \u2014 fechamento por listagem independente de objetos"
       },
-      "evidence": "A capacidade inclui especie_descricao_normalizada e classificacao, mas a reconfer\u00eancia ap\u00f3s grava\u00e7\u00e3o compara somente (c\u00f3digo, descri\u00e7\u00e3o, valor) e controles.",
-      "body": "Uma sa\u00edda persistida com c\u00f3digo, descri\u00e7\u00e3o original e valor intactos, mas classificacao trocada ou descri\u00e7\u00e3o normalizada incorreta, satisfaz a reconfer\u00eancia declarada. Os defeitos no userMetadata podem continuar corretos enquanto as classifica\u00e7\u00f5es nas linhas divergem deles; n\u00e3o h\u00e1 compara\u00e7\u00e3o entre essas duas representa\u00e7\u00f5es. Gold verifica a descri\u00e7\u00e3o original e os valores, portanto suas provas tamb\u00e9m n\u00e3o cobrem essa altera\u00e7\u00e3o. O plano prova conserva\u00e7\u00e3o da proje\u00e7\u00e3o herdada de Bronze, mas n\u00e3o a integridade persistida da classifica\u00e7\u00e3o e normaliza\u00e7\u00e3o que constituem a entrega espec\u00edfica de Silver.",
+      "title": "O fechamento compara universos sem declarar um instante comum de medi\u00e7\u00e3o",
+      "body": "O plano exige contar parti\u00e7\u00f5es e comparar com um universo obtido por listagem independente, mas n\u00e3o declara estabilidade da landing durante essas opera\u00e7\u00f5es. Contraexemplo: Bronze conta as parti\u00e7\u00f5es; o produtor publica uma parti\u00e7\u00e3o leg\u00edtima adicional; a listagem independente j\u00e1 a inclui. O fechamento acusa contamina\u00e7\u00e3o apesar de ambos os estados do lago serem v\u00e1lidos. Um \u00fanico escritor Delta n\u00e3o prova exclus\u00e3o entre o leitor Bronze e o produtor da landing Parquet. Falta uma premissa verific\u00e1vel de estabilidade ou uma decis\u00e3o sobre essa concorr\u00eancia; n\u00e3o h\u00e1 evid\u00eancia aqui de que ela tenha ocorrido.",
+      "evidence": "B-2 atribui DIVERGE \u00e0 diferen\u00e7a entre soma das parti\u00e7\u00f5es e total do universo independente. DEC-CAMADAS-EM-DELTA declara escritor \u00fanico para o protocolo Delta, mas a entrada de Bronze continua sendo a landing Parquet produzida separadamente.",
       "cites": [
-        "cvg/swimlanes/lanes-medalhao/silver/LEG-SILVER-PRESERVA-DEFEITO.md \u00a7 B-1 \u2014 colunas nomeadas e classifica\u00e7\u00e3o",
-        "cvg/swimlanes/lanes-medalhao/silver/LEG-SILVER-PRESERVA-DEFEITO.md \u00a7 B-2 \u2014 classifica\u00e7\u00e3o obrigat\u00f3ria",
-        "cvg/docs/tech-spec/tech-spec-pda-beneficios.md \u00a7 Requirements, R-6"
-      ]
+        "cvg/swimlanes/lanes-medalhao/bronze/LEG-BRONZE-REPRODUZ-ANCORA.md \u2014 B-2",
+        "cvg/swimlanes/medalhao-recipe.yaml \u2014 system_map e DEC-CAMADAS-EM-DELTA"
+      ],
+      "resolution": {
+        "disposition": "ACCEPT",
+        "decided_by": "Bruno Nunes",
+        "decided_at": "2026-09-23T16:27:36Z",
+        "owner": "Bruno Nunes",
+        "risk_residual": "Storage: gera\u00e7\u00e3o do lago, a mesma fam\u00edlia das rodadas anteriores. Hoje a landing tem um \u00fanico escritor e est\u00e1 parada: 2026-01 foi medida com diferen\u00e7a zero nos dois controles (LAGO=INTEGRO). O instante comum de medi\u00e7\u00e3o fica para o Pass 8, contra o mecanismo adotado. Decidido pelo dono ao fechar o Pass 4 na R33, sem editar o plano."
+      }
     }
   ],
   "cross_lane_interfaces": [],
   "fork": {
     "choice": "B",
-    "reason": "Declara\u00e7\u00e3o j\u00e1 presente nos quatro _lane.md; reproduzida como proveni\u00eancia, sem nova escolha pelo advers\u00e1rio.",
+    "reason": "Rota j\u00e1 declarada nos quatro _lane.md; apenas transcrita, n\u00e3o escolhida pelo advers\u00e1rio.",
     "per_plan_declared": true
   },
   "open_questions": [
     {
-      "q": "Qual invariante j\u00e1 aprovado impede escritores concorrentes durante grava\u00e7\u00e3o, reconfer\u00eancia e eventual RESTORE? Os planos fornecidos n\u00e3o o declaram.",
+      "q": "Qual pol\u00edtica mant\u00e9m acess\u00edveis os metadados da compet\u00eancia enquanto seus dados continuam atuais?",
       "blocks_build": true
     },
     {
-      "q": "Como o fluxo de dispatch representa obje\u00e7\u00f5es ainda abertas sem inventar resolution, decided_by e decided_at, obrigat\u00f3rios no schema local?",
+      "q": "Qual identidade e estado o consumidor deve observar depois de uma revers\u00e3o, inclusive quando a compet\u00eancia \u00e9 removida?",
+      "blocks_build": true
+    },
+    {
+      "q": "Onde ficam registrados os resultados de publica\u00e7\u00e3o, reconfer\u00eancia e revers\u00e3o posteriores ao retorno de conduzir?",
+      "blocks_build": true
+    },
+    {
+      "q": "Como o contrato delimita compet\u00eancias com precis\u00e3o monet\u00e1ria diferente daquela usada para criar a tabela?",
+      "blocks_build": false
+    },
+    {
+      "q": "Existe garantia operacional de estabilidade da landing durante o fechamento independente de Bronze?",
       "blocks_build": true
     }
   ],

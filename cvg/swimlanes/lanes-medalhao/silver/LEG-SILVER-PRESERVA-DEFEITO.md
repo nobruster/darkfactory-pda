@@ -1,6 +1,6 @@
 > Projetado de `LEG-SILVER-PRESERVA-DEFEITO.md` pelo Seamwise.
 > **Não edite aqui** — edite a recipe e rode `seamwise plan`.
-> origem sha256: `e9d03e6084e2c5cbaa784d470dc5b7dba22658aa28ebb824e045264d15823415`
+> origem sha256: `ee5f09278aaf9215c5229721de54d90b90259526a7ada4749aaedc54f82e29ea`
 
 ---
 
@@ -134,25 +134,34 @@ tasks:
       — encontrar número diferente de 11 é DIVERGE, porque o contrato mediu na competência inteira e a
       divergência significa fonte diferente da ancorada, não permissão para ajustar o número. GRAVAÇÃO
       EM DELTA NO MINIO, pelas decisões DEC-CAMADAS-GRAVAM-NO-MINIO e DEC-CAMADAS-EM-DELTA: Silver lê
-      Bronze numa versão resolvida UMA vez e só se o commit dessa versão diz INTEGRO, e grava na tabela
-      Delta s3a://silver/pda/beneficios-emitidos, particionada por competencia, com replaceWhere, com
-      estado INTEGRO ou NAO_MEDIDO — o valor está conservado, e a identidade não medida fica DECLARADA
-      no commit —, nunca com BLOQUEADO ou DIVERGE; a conservação é conferida contra a versão de Bronze
-      que leu. Gold só consome Silver cujo commit diz INTEGRO. O DecimalType da coluna monetária é o declarado
+      Bronze como descrito abaixo, só se os metadados da competência dizem INTEGRO, e com estado INTEGRO
+      ou NAO_MEDIDO — o valor está conservado, e a identidade não medida fica DECLARADA nos metadados
+      —, nunca com BLOQUEADO ou DIVERGE, grava primeiro numa tabela Delta de PREPARO, privada, s3a://silver/_preparo/pda/beneficios-emitidos/execucao=<id>,
+      e só depois de reconferir ali publica na tabela s3a://silver/pda/beneficios-emitidos, particionada
+      por competencia, com overwrite e replaceWhere na competência — commit atômico, idempotente na reexecução,
+      que não toca as outras competências; a conservação é conferida contra a versão de Bronze que leu.
+      Gold só consome Silver cujos metadados dizem INTEGRO. O DecimalType da coluna monetária é o declarado
       a partir do contrato, e a IMPOSIÇÃO DE SCHEMA do Delta fica ligada; EVOLUÇÃO de schema só ADITIVA
       e explícita, com mergeSchema — mudança de tipo, sobretudo monetário, é recusada, e overwriteSchema
-      nunca é usado. A tabela declara CHECK vl_liquido >= 0, o domínio da ADR 0009, e NOT NULL nas chaves.
-      O que a capacidade carrega além das linhas — estado, competência, hash da procedência, os cinco
-      controles, marcas de limitação, defeitos classificados, total_por_codigo em Decimal serializado
-      como texto, cobertura do referencial quando houver, id da execução e a VERSÃO lida da camada anterior
-      — vai no userMetadata do PRÓPRIO commit: a capacidade persistida se reconstrói de uma versão, linhas
-      mais commit. O consumidor resolve a versão UMA vez e lê tudo dela com versionAsOf, nunca o ''mais
-      recente'' no meio do consumo. Depois de gravar, RELÊ a versão commitada e compara o MULTICONJUNTO
-      de (código, descrição, valor) com o que produziu — exceptAll nos dois sentidos, ambos vazios — e
-      os controles, porque trocar 10 e 20 por 11 e 19 preserva os cinco controles; divergência depois
-      do commit é DIVERGE, e a camada faz RESTORE para a versão anterior, que é commit novo e preserva
-      o histórico. Nenhum VACUUM abaixo da retenção padrão: o histórico é evidência. O destino é parâmetro
-      com esse padrão, e os testes gravam sob um prefixo de teste próprio, nunca no destino real'
+      nunca é usado. A tabela declara CHECK >= 0 na coluna monetária QUE A PRÓPRIA CAMADA GRAVA — vl_liquido
+      em Bronze e Silver, o total agregado em Gold —, o domínio da ADR 0009, e NOT NULL nas chaves. A
+      reconferência acontece NO PREPARO, ANTES de publicar: RELÊ a versão commitada do preparo e compara
+      o MULTICONJUNTO de TODAS as colunas que a camada grava — em Silver inclusive a descrição normalizada
+      e a classificação, esta conferida também contra os defeitos dos metadados — com o que produziu,
+      exceptAll nos dois sentidos, ambos vazios, e os controles, porque trocar 10 e 20 por 11 e 19 preserva
+      os cinco controles; divergência no preparo é DIVERGE e nada é publicado. Publicada, a competência
+      é relida e conferida de novo; divergência ali é DIVERGE e a camada REVERTE SÓ A COMPETÊNCIA — replaceWhere
+      com o conteúdo dela na versão anterior, ou DELETE da competência quando ela não existia antes, inclusive
+      na primeira gravação —, nunca RESTORE da tabela inteira, que desfaria outra competência; o escritor
+      é único, pela DEC-CAMADAS-EM-DELTA. Os METADADOS da competência — estado, competência, hash da procedência,
+      os cinco controles, marcas de limitação, defeitos classificados, total_por_codigo em Decimal serializado
+      como texto, cobertura do referencial quando houver, id da execução e a versão lida da camada anterior
+      — vão no userMetadata do commit que PUBLICA a competência, e esse commit é o DONO deles: o consumidor
+      resolve a versão V da tabela UMA vez, lê os dados da competência com versionAsOf=V e os metadados
+      do ÚLTIMO commit até V cujo userMetadata nomeia essa competência — nunca do commit V em si, que
+      pode ser de outra. Nenhum VACUUM abaixo da retenção padrão: o histórico é evidência. O destino é
+      parâmetro com esse padrão, e os testes gravam sob um prefixo de teste próprio, nunca no destino
+      real'
   - id: B-2
     given: um código COLAPSADO cuja descrição diverge do mapa aprovado, ou um colapso não declarado
     when: Silver normaliza
@@ -204,14 +213,16 @@ tasks:
       linhas_irmas_com_valores_trocados linha_de_valor_zero_nao_some mapa_por_codigo_preservado contexto_declarado
       entrega_as_linhas_normalizadas descricao_trocada_entre_codigos multiconjunto_sem_coletar ansi_declarado_estouro_nao_vira_nulo
       consome_saida_real_de_bronze le_bronze_por_versao grava_silver_com_estado_no_commit reconfere_multiconjunto_das_linhas
-      commit_carrega_a_forma resolve_versao_uma_vez schema_evolucao_so_aditiva check_nao_negativo; do
-      python3 -m pytest --collect-only -q tests/test_silver.py -k "$c" 2>/dev/null | grep -q "::" || {
-      echo "EVAL=CENARIO_AUSENTE_$c"; exit 1; }; done; python3 -m pytest -q tests/test_silver.py -k "chave_e_codigo
-      or multiconjunto_identico or linhas_irmas_com_valores_trocados or linha_de_valor_zero_nao_some or
-      mapa_por_codigo_preservado or contexto_declarado or entrega_as_linhas_normalizadas or descricao_trocada_entre_codigos
-      or multiconjunto_sem_coletar or ansi_declarado_estouro_nao_vira_nulo or consome_saida_real_de_bronze
-      or le_bronze_por_versao or grava_silver_com_estado_no_commit or reconfere_multiconjunto_das_linhas
-      or commit_carrega_a_forma or resolve_versao_uma_vez or schema_evolucao_so_aditiva or check_nao_negativo"'
+      commit_carrega_a_forma resolve_versao_uma_vez schema_evolucao_so_aditiva check_nao_negativo reconfere_no_preparo_antes_de_publicar
+      reverte_so_a_competencia metadados_do_commit_dono_da_competencia; do python3 -m pytest --collect-only
+      -q tests/test_silver.py -k "$c" 2>/dev/null | grep -q "::" || { echo "EVAL=CENARIO_AUSENTE_$c";
+      exit 1; }; done; python3 -m pytest -q tests/test_silver.py -k "chave_e_codigo or multiconjunto_identico
+      or linhas_irmas_com_valores_trocados or linha_de_valor_zero_nao_some or mapa_por_codigo_preservado
+      or contexto_declarado or entrega_as_linhas_normalizadas or descricao_trocada_entre_codigos or multiconjunto_sem_coletar
+      or ansi_declarado_estouro_nao_vira_nulo or consome_saida_real_de_bronze or le_bronze_por_versao
+      or grava_silver_com_estado_no_commit or reconfere_multiconjunto_das_linhas or commit_carrega_a_forma
+      or resolve_versao_uma_vez or schema_evolucao_so_aditiva or check_nao_negativo or reconfere_no_preparo_antes_de_publicar
+      or reverte_so_a_competencia or metadados_do_commit_dono_da_competencia"'
     verifies:
     - B-1
   - id: eval_2
@@ -256,7 +267,7 @@ tasks:
   - contracts
   rollback: Remover a camada Silver e seus testes.
   observability: colapsos classificados por competência
-source_seam_sha256: 60669260ced4f43950ad99122db7c3c890b402a1dcc8536a3a6edb9c26433284
+source_seam_sha256: 978dfad9600a68228651b2e8ef9f640c7ae66d6e09cce1f70ae949f99ae00041
 ---
 # Silver classifica o defeito e conserva o total
 
