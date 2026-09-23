@@ -150,3 +150,37 @@ mapa_colapsos:
       codigos: ["06", "51"]
     - descricao: "Abono Permanencia em"
       codigos: ["47", "48"]
+
+# Grupos de espécie — competência 2026-01 (Gold por assuntos, fat_especie)
+#
+# Regra aprovada pelo dono: a palavra inicial da DESCRIÇÃO decide o grupo —
+# Pensão…, Aposent…, Auxílio…, Amparo…/Amp. Social… Mesma descrição, mesmo
+# grupo: os 11 colapsos acima nunca se dividem entre grupos (medido: 0).
+# O que não começa com nenhuma dessas palavras vai para "Outros", NOMEADO
+# código a código — nunca um resto implícito. Código novo numa competência
+# futura não cai em grupo nenhum sozinho: exige revisão deste mapa.
+#
+# Medido sobre a Silver real (41.572.553 linhas, 78.521.752.562,12): os 65
+# códigos em exatamente um grupo. Pensão 20 (20,7%), Aposentadoria 24
+# (58,6%), Auxílio 11 (5,2%), Amparo/BPC 4 (15,4%), Outros 6 (0,1%).
+# Difere do script de referência (gold-beneficios-v2.py): lá 13 códigos
+# ficavam sem grupo, 4 colapsos se dividiam, e a RMV (30, 40) era
+# Aposentadoria. O dono confirmou os 6 de Outros em 2026-09-23.
+#
+# Entra antes do carregador que o lê (SEAM-CONTRATO-GRUPOS, Fase 1 da Gold
+# por assuntos): até lá nenhum código consome este bloco.
+grupos_especie:
+  aprovado_por: "Bruno Nunes"
+  aprovado_em: "2026-09-23"
+  regra: "palavra inicial da descricao da especie; mesma descricao, mesmo grupo"
+  grupos:
+    - grupo: "Pensao"
+      codigos: ["01", "02", "03", "21", "22", "23", "26", "27", "28", "29", "54", "55", "56", "59", "84", "85", "86", "89", "93", "96"]
+    - grupo: "Aposentadoria"
+      codigos: ["04", "05", "06", "07", "08", "32", "33", "34", "37", "38", "41", "42", "43", "44", "45", "46", "49", "51", "57", "58", "72", "82", "83", "92"]
+    - grupo: "Auxilio"
+      codigos: ["10", "13", "16", "18", "25", "31", "36", "80", "91", "94", "95"]
+    - grupo: "Amparo_BPC"
+      codigos: ["11", "12", "87", "88"]
+    - grupo: "Outros"
+      codigos: ["30", "40", "47", "48", "60", "79"]
