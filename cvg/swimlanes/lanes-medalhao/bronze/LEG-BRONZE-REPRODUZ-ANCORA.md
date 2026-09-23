@@ -1,6 +1,6 @@
 > Projetado de `LEG-BRONZE-REPRODUZ-ANCORA.md` pelo Seamwise.
 > **Não edite aqui** — edite a recipe e rode `seamwise plan`.
-> origem sha256: `9f533d54caf1155310da417c33ec4ce775e0cd5123f9e4e2ad9e5a275b76339a`
+> origem sha256: `0a832e2b822b03d35f7d991947b05ae08a55988d6fa5852746c74d1d5e36daab`
 
 ---
 
@@ -22,21 +22,14 @@ tasks:
 - id: T-20260922-bronze-confere-ancora
   title: Ler a partição do lago e conferi-la contra a âncora
   goal: Fazer a camada recusar nascer sobre dado que não bate.
-  done_condition: 'Os cinco controles da partição real batem com o contrato. Partição AUSENTE ou VAZIA
+  done_condition: Os cinco controles da partição real batem com o contrato. Partição AUSENTE ou VAZIA
     devolve NAO_MEDIDO; partição MEDIDA que diverge em qualquer controle devolve DIVERGE — os dois são
     estados distintos e nenhum escreve camada, porque confundir ausência de medição com reprovação torna
-    instável a interface que Silver consome. Os evals rodam num ambiente que tem AO MESMO TEMPO pytest
-    e um leitor de Parquet — medido, hoje nenhum tem: o host não tem pyspark, pyarrow, pandas, duckdb
-    nem java, e o contêiner pda-spark não tem pytest. As ferramentas do HOST são git, bash, python3, pytest
-    e docker: pyspark NÃO entra em required_tools, porque o pré-voo confere o PATH do host com shutil.which
-    e a tarefa que existe PARA montar o ambiente seria impedida de começar por exigir o que ela mesma
-    vai prover — pyspark vive dentro do contêiner, que o docker levanta. Montar esse ambiente é parte
-    desta tarefa e tem caminho declarado — infra/medalhao-evals.sh, que roda os evals num checkout limpo
-    sem instalação manual — e os nove evals das três camadas o INVOCAM, em vez de chamar pytest direto,
-    porque criar o script não muda o ambiente de quem executa e o eval falharia antes de testar Bronze.
-    Sem ele a obrigação existiria sem forma reproduzível de cumpri-la, e um agente que criasse o arquivo
-    mesmo assim receberia path_policy: fail.'
-  effort: M
+    instável a interface que Silver consome. Os evals rodam DENTRO do contêiner pda-spark, que tem pytest
+    e pyspark; montar esse ambiente é pré-requisito do HOST — infra/preparar-spark.sh — e NÃO é trabalho
+    desta tarefa, porque o contrato de runtime nega rede ao agente e instalar qualquer coisa seria impossível
+    por construção.
+  effort: S
   profile: standard
   execution_backend: any
   required_tools:
@@ -50,7 +43,6 @@ tasks:
   creates_paths:
   - src/medalhao/bronze.py
   - tests/test_bronze.py
-  - infra/medalhao-evals.sh
   behavior:
   - id: B-1
     given: uma partição do lago e o contrato da competência, com a âncora de linhas e de soma medidas
@@ -127,20 +119,23 @@ tasks:
   evals:
   - id: eval_1
     description: Os cinco controles comparados individualmente, e a partição medida isoladamente
-    bash: bash infra/medalhao-evals.sh tests/test_bronze.py -k "cinco_controles or alteracao_compensada
-      or isola_particao or nao_soma_uniao or precisao_declarada"
+    bash: docker compose -f infra/docker-compose.yml exec -T spark sh -c 'python3 -m pytest -q tests/test_bronze.py
+      -k "cinco_controles or alteracao_compensada or isola_particao or nao_soma_uniao or precisao_declarada";
+      rc=$?; [ $rc -eq 5 ] && { echo "EVAL=NADA_COLETADO"; exit 1; }; exit $rc'
     verifies:
     - B-1
   - id: eval_2
     description: Ausente e vazia devolvem NAO_MEDIDO; medida e divergente devolve DIVERGE
-    bash: bash infra/medalhao-evals.sh tests/test_bronze.py -k "particao_ausente or particao_vazia or
-      presente_sem_ancora or diverge_nao_e_nao_medido"
+    bash: docker compose -f infra/docker-compose.yml exec -T spark sh -c 'python3 -m pytest -q tests/test_bronze.py
+      -k "particao_ausente or particao_vazia or presente_sem_ancora or diverge_nao_e_nao_medido"; rc=$?;
+      [ $rc -eq 5 ] && { echo "EVAL=NADA_COLETADO"; exit 1; }; exit $rc'
     verifies:
     - B-2
   - id: eval_3
     description: Float recusado na entrada, e toda diferença com uma das seis classificações
-    bash: bash infra/medalhao-evals.sh tests/test_bronze.py -k "centavo_a_mais or maximo_acima_do_ancorado
-      or recusa_float_na_entrada or classificacao_das_seis"
+    bash: docker compose -f infra/docker-compose.yml exec -T spark sh -c 'python3 -m pytest -q tests/test_bronze.py
+      -k "centavo_a_mais or maximo_acima_do_ancorado or recusa_float_na_entrada or classificacao_das_seis";
+      rc=$?; [ $rc -eq 5 ] && { echo "EVAL=NADA_COLETADO"; exit 1; }; exit $rc'
     verifies:
     - B-1
   anti_patterns:
@@ -151,18 +146,17 @@ tasks:
   - action: aceitar diferença de centavos como arredondamento
     reason: afrouxar a tolerância é editar o oráculo pelo avesso
     instead: exigir igualdade exata entre Decimal e Decimal
-  - action: reimplementar do zero o que scripts/medir_lago.py já faz, sem citá-lo
-    reason: os dois passariam a medir a mesma partição com pisos possivelmente diferentes, e medir_lago.py
-      traz a âncora como default de linha de comando em vez de lê-la do contrato
-    instead: partir de medir_lago.py, lendo a âncora do CONTRATO, e declarar no código qual dos dois é
-      o de produção
+  - action: pedir ao agente do loop que instale ou baixe qualquer coisa para montar o ambiente de eval
+    reason: o contrato de runtime nega rede — net.egress False e policy.network deny — então a tarefa
+      seria impossível por construção e queimaria o orçamento inteiro sem escrever um arquivo
+    instead: preparar o ambiente fora do loop, em infra/preparar-spark.sh, e o eval apenas usá-lo
   do_not_touch:
   - _raw
   - cvg/docs/adrs
   - contracts
   rollback: Remover o leitor Bronze e seus testes.
   observability: partições recusadas por controle divergente
-source_seam_sha256: cafd6348439d37f0447861eca772149f4221dcc179c84df891706266a7eb0cec
+source_seam_sha256: 6cda8c11b7f6ca2d007142395609280a4eeebda3554693515252c0ba37c60fd5
 ---
 # Bronze só existe quando reproduz a âncora do contrato
 
@@ -172,7 +166,7 @@ A partição lida reproduz os cinco controles ancorados; ausente ou vazia devolv
 
 ## Runnable leaves
 
-- `T-20260922-bronze-confere-ancora` — Ler a partição do lago e conferi-la contra a âncora: Os cinco controles da partição real batem com o contrato. Partição AUSENTE ou VAZIA devolve NAO_MEDIDO; partição MEDIDA que diverge em qualquer controle devolve DIVERGE — os dois são estados distintos e nenhum escreve camada, porque confundir ausência de medição com reprovação torna instável a interface que Silver consome. Os evals rodam num ambiente que tem AO MESMO TEMPO pytest e um leitor de Parquet — medido, hoje nenhum tem: o host não tem pyspark, pyarrow, pandas, duckdb nem java, e o contêiner pda-spark não tem pytest. As ferramentas do HOST são git, bash, python3, pytest e docker: pyspark NÃO entra em required_tools, porque o pré-voo confere o PATH do host com shutil.which e a tarefa que existe PARA montar o ambiente seria impedida de começar por exigir o que ela mesma vai prover — pyspark vive dentro do contêiner, que o docker levanta. Montar esse ambiente é parte desta tarefa e tem caminho declarado — infra/medalhao-evals.sh, que roda os evals num checkout limpo sem instalação manual — e os nove evals das três camadas o INVOCAM, em vez de chamar pytest direto, porque criar o script não muda o ambiente de quem executa e o eval falharia antes de testar Bronze. Sem ele a obrigação existiria sem forma reproduzível de cumpri-la, e um agente que criasse o arquivo mesmo assim receberia path_policy: fail.
+- `T-20260922-bronze-confere-ancora` — Ler a partição do lago e conferi-la contra a âncora: Os cinco controles da partição real batem com o contrato. Partição AUSENTE ou VAZIA devolve NAO_MEDIDO; partição MEDIDA que diverge em qualquer controle devolve DIVERGE — os dois são estados distintos e nenhum escreve camada, porque confundir ausência de medição com reprovação torna instável a interface que Silver consome. Os evals rodam DENTRO do contêiner pda-spark, que tem pytest e pyspark; montar esse ambiente é pré-requisito do HOST — infra/preparar-spark.sh — e NÃO é trabalho desta tarefa, porque o contrato de runtime nega rede ao agente e instalar qualquer coisa seria impossível por construção.
 
 The leg names a capability state, not an activity. Each leaf owns one coherent,
 independently provable done-condition.

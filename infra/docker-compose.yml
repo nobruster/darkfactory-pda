@@ -89,6 +89,10 @@ services:
       - ../src:/app/src:ro
       - ../contracts:/app/contracts:ro
       - ../scripts:/app/scripts:ro
+      # os testes, para o eval do Pass 8 enxergá-los. Sem este monte o
+      # `pytest tests/test_x.py` sai com "no tests ran" e EXIT 0 — um eval
+      # que aprova por não achar nada, que é a Regra 9 no verificador.
+      - ../tests:/app/tests:ro
       - ./preparar-spark.sh:/app/infra/preparar-spark.sh:ro
       - spark-trabalho:/app/trabalho
     working_dir: /app

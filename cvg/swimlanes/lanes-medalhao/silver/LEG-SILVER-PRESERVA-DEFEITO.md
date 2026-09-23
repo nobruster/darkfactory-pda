@@ -1,6 +1,6 @@
 > Projetado de `LEG-SILVER-PRESERVA-DEFEITO.md` pelo Seamwise.
 > **Não edite aqui** — edite a recipe e rode `seamwise plan`.
-> origem sha256: `fa35570600c8276bf6165b61637b474e0eebc1f551cacd42e96cec2c6081abe7`
+> origem sha256: `4ed0a454e272a7c6aa38404ca18ea0b19b87b5903c5549f70bc13ad279f56ab1`
 
 ---
 
@@ -105,20 +105,26 @@ tasks:
   evals:
   - id: eval_1
     description: Chave é o código; contagem, mapa e soma preservados, inclusive linha de valor zero
-    bash: bash infra/medalhao-evals.sh tests/test_silver.py -k "chave_e_codigo or multiconjunto_identico
-      or linhas_irmas_com_valores_trocados or linha_de_valor_zero_nao_some or mapa_por_codigo_preservado"
+    bash: docker compose -f infra/docker-compose.yml exec -T spark sh -c 'python3 -m pytest -q tests/test_silver.py
+      -k "chave_e_codigo or multiconjunto_identico or linhas_irmas_com_valores_trocados or linha_de_valor_zero_nao_some
+      or mapa_por_codigo_preservado"; rc=$?; [ $rc -eq 5 ] && { echo "EVAL=NADA_COLETADO"; exit 1; };
+      exit $rc'
     verifies:
     - B-1
   - id: eval_2
     description: Os 11 colapsos saem classificados e a contagem confere
-    bash: bash infra/medalhao-evals.sh tests/test_silver.py -k "colapso_classificado or contagem_de_colapsos
-      or classificacao_unica or colapsos_na_descricao_original or colapso_da_normalizacao_classificado"
+    bash: docker compose -f infra/docker-compose.yml exec -T spark sh -c 'python3 -m pytest -q tests/test_silver.py
+      -k "colapso_classificado or contagem_de_colapsos or classificacao_unica or colapsos_na_descricao_original
+      or colapso_da_normalizacao_classificado"; rc=$?; [ $rc -eq 5 ] && { echo "EVAL=NADA_COLETADO"; exit
+      1; }; exit $rc'
     verifies:
     - B-1
   - id: eval_3
     description: Defeito não classificado bloqueia em vez de passar
-    bash: bash infra/medalhao-evals.sh tests/test_silver.py -k "nao_classificado_bloqueia or valor_intacto
-      or atravessa_sem_descartar or unresolved_bloqueia or sem_mapa_nao_produz_capacidade"
+    bash: docker compose -f infra/docker-compose.yml exec -T spark sh -c 'python3 -m pytest -q tests/test_silver.py
+      -k "nao_classificado_bloqueia or valor_intacto or atravessa_sem_descartar or unresolved_bloqueia
+      or sem_mapa_nao_produz_capacidade"; rc=$?; [ $rc -eq 5 ] && { echo "EVAL=NADA_COLETADO"; exit 1;
+      }; exit $rc'
     verifies:
     - B-2
   anti_patterns:
@@ -139,7 +145,7 @@ tasks:
   - contracts
   rollback: Remover a camada Silver e seus testes.
   observability: colapsos classificados por competência
-source_seam_sha256: c23ae1f940fedc72021e9adc623f7bd3eb1e4582bbaf07eb079786b56eff35df
+source_seam_sha256: 61c0e1c5898aebbc7f587b43beae34830ec498dcd58a6197994d394d3bea53fa
 ---
 # Silver classifica o defeito e conserva o total
 

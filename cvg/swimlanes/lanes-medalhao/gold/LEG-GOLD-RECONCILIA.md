@@ -1,6 +1,6 @@
 > Projetado de `LEG-GOLD-RECONCILIA.md` pelo Seamwise.
 > **Não edite aqui** — edite a recipe e rode `seamwise plan`.
-> origem sha256: `e7c935f56193dfcb5696e9ca48971f4ddf91181f1eb684034bc2a43f74b4a74a`
+> origem sha256: `ddd695dc993ee4072b748c4c859d251135c28780cbe865659256ec61dc556a8a`
 
 ---
 
@@ -97,21 +97,25 @@ tasks:
   evals:
   - id: eval_1
     description: Arredondamento único, precisão declarada, e recusa sob procedência não vinculada
-    bash: bash infra/medalhao-evals.sh tests/test_gold.py -k "arredonda_uma_vez or half_even_do_contrato
-      or nao_arredonda_por_campo or traps_declaradas or recusa_sob_procedencia_nao_vinculada"
+    bash: docker compose -f infra/docker-compose.yml exec -T spark sh -c 'python3 -m pytest -q tests/test_gold.py
+      -k "arredonda_uma_vez or half_even_do_contrato or nao_arredonda_por_campo or traps_declaradas or
+      recusa_sob_procedencia_nao_vinculada"; rc=$?; [ $rc -eq 5 ] && { echo "EVAL=NADA_COLETADO"; exit
+      1; }; exit $rc'
     verifies:
     - B-1
   - id: eval_2
     description: Reconcilia recalculando, compara o mapa por código e confere os 65
-    bash: bash infra/medalhao-evals.sh tests/test_gold.py -k "reconcilia_recalculando or mapa_por_codigo
-      or redistribuicao_compensada or contagem_de_codigos or uma_linha_por_codigo"
+    bash: docker compose -f infra/docker-compose.yml exec -T spark sh -c 'python3 -m pytest -q tests/test_gold.py
+      -k "reconcilia_recalculando or mapa_por_codigo or redistribuicao_compensada or contagem_de_codigos
+      or uma_linha_por_codigo"; rc=$?; [ $rc -eq 5 ] && { echo "EVAL=NADA_COLETADO"; exit 1; }; exit $rc'
     verifies:
     - B-1
     - B-2
   - id: eval_3
     description: DIVERGE e NAO_MEDIDO são estados distintos e nenhum publica
-    bash: bash infra/medalhao-evals.sh tests/test_gold.py -k "diverge_nao_publica or sem_ancora_nao_medido
-      or destino_inalterado_durante or classifica_diferenca_das_seis"
+    bash: docker compose -f infra/docker-compose.yml exec -T spark sh -c 'python3 -m pytest -q tests/test_gold.py
+      -k "diverge_nao_publica or sem_ancora_nao_medido or destino_inalterado_durante or classifica_diferenca_das_seis";
+      rc=$?; [ $rc -eq 5 ] && { echo "EVAL=NADA_COLETADO"; exit 1; }; exit $rc'
     verifies:
     - B-2
   anti_patterns:
@@ -135,7 +139,7 @@ tasks:
   - contracts
   rollback: Remover a camada Gold e seus testes.
   observability: agregados recusados por não reconciliar
-source_seam_sha256: c01c38c14cf3883ae1fb26c805b72d0689eeb1465f5d8e52751acf9b3211806b
+source_seam_sha256: 870c26d1d84c85d2dcea61b03dfd2ac375e283d73be0c39925fddc683b8fa5ac
 ---
 # Gold só publica quando reconcilia com a âncora
 
