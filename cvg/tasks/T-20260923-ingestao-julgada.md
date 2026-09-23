@@ -28,10 +28,14 @@ execution_backend: any
 signed_off: true
 signed_off_by: nobru
 signed_off_at: 2026-09-23T21:44:32Z
-accepted: false
-accepted_by: (none)
-accepted_at: (none)
+accepted: true
+accepted_by: converge-loop
+accepted_at: 2026-09-23T22:01:20Z
 signed_off_sig: hmac-sha256-v3:85d3c104:1daaa60bc594b0cd2505d92b234ff6a875401df90805a5ff2f13821cd74a0f83
+accepted_tier: 1
+accepted_attempt_id: cc8b7b26-6677-4b8f-8206-ee9f6d2e10b4
+accepted_authorization_ref: hmac-sha256-v3:85d3c104:1daaa60bc594b0cd2505d92b234ff6a875401df90805a5ff2f13821cd74a0f83
+acceptance_record_digest: sha256:71ead2a02eb60cc6036dfb8c86f26bfd9fc16da64904678f5e3835d48fb688a1
 ---
 
 # Julgar a ingestão com o segundo motor e publicar a Bronze só com ACEITO

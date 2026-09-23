@@ -1,0 +1,40 @@
+{
+  "acceptance_tier": 1,
+  "accepted_at": "2026-09-23T22:01:20Z",
+  "accepted_by": "converge-loop",
+  "contract": "AcceptanceRecord/v1",
+  "gate_outcomes": {
+    "authorization": {
+      "code": "AUTHORIZATION_VALID",
+      "status": "pass"
+    },
+    "evaluation": {
+      "code": "EVAL_PASSED",
+      "status": "pass"
+    },
+    "evidence": {
+      "code": "EVIDENCE_SATISFIED",
+      "proof": [
+        "format v3 or earlier: v4 policy receipts are not required"
+      ],
+      "status": "pass"
+    },
+    "preflight": {
+      "code": "PREFLIGHT_PASSED",
+      "status": "pass",
+      "warnings": []
+    }
+  },
+  "outcome": {
+    "code": "ACCEPTED_TIER_1",
+    "status": "accepted"
+  },
+  "receipts": [],
+  "subject": {
+    "attempt_id": "cc8b7b26-6677-4b8f-8206-ee9f6d2e10b4",
+    "authorization_ref": "hmac-sha256-v3:85d3c104:1daaa60bc594b0cd2505d92b234ff6a875401df90805a5ff2f13821cd74a0f83",
+    "base_commit": "c704f254a2f2aa625750d425f2f4a04d2898575b",
+    "task_id": "T-20260923-ingestao-julgada",
+    "task_revision_digest": "sha256:ad6defbf020c3da89879bf5dfdc4e6bafa13ae0a0d88f68f2e15989ea94ec37d"
+  }
+}
