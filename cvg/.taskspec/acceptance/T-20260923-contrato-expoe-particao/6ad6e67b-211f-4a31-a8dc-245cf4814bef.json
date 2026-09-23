@@ -1,0 +1,40 @@
+{
+  "acceptance_tier": 1,
+  "accepted_at": "2026-09-23T16:02:49Z",
+  "accepted_by": "converge-loop",
+  "contract": "AcceptanceRecord/v1",
+  "gate_outcomes": {
+    "authorization": {
+      "code": "AUTHORIZATION_VALID",
+      "status": "pass"
+    },
+    "evaluation": {
+      "code": "EVAL_PASSED",
+      "status": "pass"
+    },
+    "evidence": {
+      "code": "EVIDENCE_SATISFIED",
+      "proof": [
+        "format v3 or earlier: v4 policy receipts are not required"
+      ],
+      "status": "pass"
+    },
+    "preflight": {
+      "code": "PREFLIGHT_PASSED",
+      "status": "pass",
+      "warnings": []
+    }
+  },
+  "outcome": {
+    "code": "ACCEPTED_TIER_1",
+    "status": "accepted"
+  },
+  "receipts": [],
+  "subject": {
+    "attempt_id": "6ad6e67b-211f-4a31-a8dc-245cf4814bef",
+    "authorization_ref": "hmac-sha256-v3:85d3c104:1308b0199ba6bdf09991eb8190d7733c22b52ebf2829f8c65d07835bc0568b07",
+    "base_commit": "93293cf2cb4a9e7a6e57dcd43384d7a3342798ae",
+    "task_id": "T-20260923-contrato-expoe-particao",
+    "task_revision_digest": "sha256:2dd43bf2649b388f306120354b71fae8d5eb2c219a3fc6cc3401624af317dc69"
+  }
+}
