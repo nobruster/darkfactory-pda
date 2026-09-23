@@ -775,3 +775,139 @@ def test_marca_de_procedencia_vira_evidencia(spark, tmp_path):
     assert d["motivo"] == gold.PROCEDENCIA_NAO_VINCULADA
     assert gold.PROCEDENCIA_NAO_VINCULADA in d["marcas"]
     assert _pacote(desfecho)["evento_falha"]["mensagem"]  # o pacote guarda {tipo, mensagem}: a mensagem é o diagnóstico
+
+
+# ---------------------------------------------------------------- Gold lê a Silver (SEAM-GOLD-LE-SILVER)
+
+
+def _cadeia_publicada(spark, base, cen, *, com_pacote=True):
+    """Bronze (pela ingestão julgada ou direto), Silver publicada e os três destinos sob `base`."""
+    from medalhao import ingestao
+
+    base = Path(base)
+    d = {k: str(base / k) for k in ("bronze", "silver", "gold", "prep_b", "prep_s", "prep_g")}
+    contrato = carregar_contrato(cen.contrato)
+    if com_pacote:
+        desfecho, _ = ingestao.executar_ingestao(
+            spark, diretorio_evidencia=base / "evidencia", competencia_solicitada=cen.comp,
+            caminho_contrato=cen.contrato, caminho_csv=cen.csv, raiz=str(cen.raiz),
+            procedencia=_procedencia(cen), destino=d["bronze"], preparo_raiz=d["prep_b"], id_execucao="b1",
+        )
+        assert desfecho.veredito == evidencia.ACEITO
+    else:
+        b = bronze.executar_leitura(spark, contrato, raiz=str(cen.raiz), gravar=False, procedencia=_procedencia(cen))
+        bronze.publicar_bronze(spark, contrato, b, destino=d["bronze"], preparo_raiz=d["prep_b"], id_execucao="b1")
+        desfecho = None
+    s = silver.executar_classificacao(
+        spark, contrato, bronze_destino=d["bronze"], destino=d["silver"], preparo_raiz=d["prep_s"], id_execucao="s1"
+    )
+    return d, s, desfecho
+
+
+def _gold_da_silver(spark, cen, d, contrato=None):
+    return gold.executar_gold_da_silver(
+        spark, caminho_contrato=contrato or cen.contrato, silver_destino=d["silver"],
+        bronze_destino=d["bronze"], destino=d["gold"], preparo_raiz=d["prep_g"], id_execucao="g1",
+    )
+
+
+def test_gold_le_so_a_silver(spark, tmp_path):
+    cen = _cenario(spark, tmp_path)
+    d, s, _ = _cadeia_publicada(spark, tmp_path, cen)
+    assert s.estado == silver.INTEGRO and s.gravacao is not None
+    g = _gold_da_silver(spark, cen, d)
+    assert g.estado == gold.INTEGRO and g.gravacao["destino"] == d["gold"]
+    assert g.versao_silver == s.gravacao["versao"]
+
+
+def test_nao_abre_landing_nem_csv(spark, tmp_path, monkeypatch):
+    cen = _cenario(spark, tmp_path)
+    d, _, _ = _cadeia_publicada(spark, tmp_path, cen)
+    from pda import leitura
+
+    def proibido(*a, **kw):
+        raise AssertionError("a Gold da Silver não abre landing nem CSV")
+
+    monkeypatch.setattr(leitura, "ler_competencia", proibido)
+    monkeypatch.setattr(bronze, "executar_leitura", proibido)
+    monkeypatch.setattr(bronze, "_medir", proibido)
+    os.chmod(cen.csv, 0o000)  # nem o CSV nem a landing podem ser lidos
+    try:
+        g = _gold_da_silver(spark, cen, d)
+    finally:
+        os.chmod(cen.csv, 0o444)
+    assert g.estado == gold.INTEGRO
+
+
+def test_linhagem_ate_pacote_aceito(spark, tmp_path):
+    cen = _cenario(spark, tmp_path)
+    d, s, desfecho = _cadeia_publicada(spark, tmp_path, cen)
+    g = _gold_da_silver(spark, cen, d)
+    assert g.estado == gold.INTEGRO
+    _, dono, _ = bronze.ler_competencia_publicada(spark, d["bronze"], COMP)
+    assert dono["caminho_pacote"] == str(desfecho.caminho_pacote)
+    assert s.versao_bronze is not None
+    assert evidencia.rederivar_veredito(evidencia.ler_pacote(dono["caminho_pacote"]))[0] == evidencia.ACEITO
+
+
+def test_sha256_do_pacote_conferido(spark, tmp_path):
+    cen = _cenario(spark, tmp_path)
+    d, _, desfecho = _cadeia_publicada(spark, tmp_path, cen)
+    pacote = Path(desfecho.caminho_pacote)
+    pacote.write_bytes(pacote.read_bytes() + b" ")  # mesmos dados, bytes diferentes
+    g = _gold_da_silver(spark, cen, d)
+    assert g.estado == gold.DIVERGE and g.motivo == "PACOTE_DA_LINHAGEM_ADULTERADO"
+    assert "sha256_pacote" in _nomes(g)
+    assert not Path(d["gold"]).exists()
+
+
+def test_gold_da_silver_fecha_com_a_ancora(spark, tmp_path):
+    cen = _cenario(spark, tmp_path)
+    d, s, _ = _cadeia_publicada(spark, tmp_path, cen)
+    g = _gold_da_silver(spark, cen, d)
+    assert g.estado == gold.INTEGRO and g.reconciliacao == gold.INTEGRO
+    assert g.controles["sum_vl_liquido"] == Decimal("2011.00")
+    assert g.total_por_codigo == MAPA_ESPERADO
+    lido, _, _ = gold.ler_competencia_publicada(spark, d["gold"], COMP)
+    assert lido.count() == 7
+    assert lido.agg(F.sum("vl_liquido_total")).collect()[0][0] == Decimal("2011.00")
+
+
+def test_commit_nomeia_silver_e_pacote(spark, tmp_path):
+    cen = _cenario(spark, tmp_path)
+    d, s, desfecho = _cadeia_publicada(spark, tmp_path, cen)
+    _gold_da_silver(spark, cen, d)
+    _, dono, _ = gold.ler_competencia_publicada(spark, d["gold"], COMP)
+    assert dono["versao_silver"] == s.gravacao["versao"]
+    assert dono["caminho_pacote"] == str(desfecho.caminho_pacote)
+    assert dono["sha256_pacote"] == hashlib.sha256(Path(desfecho.caminho_pacote).read_bytes()).hexdigest()
+
+
+def test_sem_pacote_aceito_nao_medido(spark, tmp_path):
+    cen = _cenario(spark, tmp_path)
+    d, s, _ = _cadeia_publicada(spark, tmp_path, cen, com_pacote=False)
+    assert s.estado == silver.INTEGRO
+    g = _gold_da_silver(spark, cen, d)
+    assert g.estado == gold.NAO_MEDIDO and g.motivo == "SEM_PACOTE_ACEITO_NA_LINHAGEM"
+    assert not Path(d["gold"]).exists()
+
+
+def test_silver_nao_integra_nao_publica(spark, tmp_path):
+    cen = _cenario(spark, tmp_path, com_mapa=False)
+    d, s, _ = _cadeia_publicada(spark, tmp_path, cen)
+    assert s.estado == silver.NAO_MEDIDO
+    g = _gold_da_silver(spark, cen, d)
+    assert g.estado == gold.NAO_MEDIDO and g.linhas is None
+    assert not Path(d["gold"]).exists()
+
+
+def test_gold_soma_que_nao_fecha_diverge(spark, tmp_path):
+    cen = _cenario(spark, tmp_path)
+    d, _, _ = _cadeia_publicada(spark, tmp_path, cen)
+    dados = yaml.safe_load(Path(cen.contrato).read_text(encoding="utf-8"))
+    dados["ancora"]["sum_vl_liquido"] = "2011.01"
+    outro = Path(tmp_path) / "contrato-outra-ancora.yaml"
+    outro.write_text(yaml.safe_dump(dados, allow_unicode=True, sort_keys=False), encoding="utf-8")
+    g = _gold_da_silver(spark, cen, d, contrato=outro)
+    assert g.estado == gold.DIVERGE and "soma_das_linhas" in _nomes(g)
+    assert not Path(d["gold"]).exists()

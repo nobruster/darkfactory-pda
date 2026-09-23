@@ -570,6 +570,7 @@ def publicar(
     destino: str = DESTINO_PADRAO,
     id_execucao: Optional[str] = None,
     evolucao_aditiva: bool = False,
+    metadados_extra: Optional[dict] = None,
 ) -> GoldReconciliado:
     """Passo POSTERIOR: publica se e somente se autorizado E pacote em disco E anexo conferido.
 
@@ -587,7 +588,7 @@ def publicar(
     pol = contrato.politica_decimal
     comp = gold.competencia
     id_execucao = id_execucao or uuid.uuid4().hex
-    meta = _metadados_do_commit(gold, id_execucao)
+    meta = {**_metadados_do_commit(gold, id_execucao), **(metadados_extra or {})}
     linhas = gold.linhas.select(*GOLD_COLUNAS)
     controles = {"sum_vl_liquido": gold.controles["sum_vl_liquido"]}
 
@@ -644,4 +645,123 @@ def executar_gold(
     return desfecho, publicar(
         spark, contrato, gold, desfecho, destino=destino, id_execucao=id_execucao,
         evolucao_aditiva=evolucao_aditiva,
+    )
+
+
+# ---------------------------------------------------------------- Gold a partir da Silver (SEAM-GOLD-LE-SILVER)
+
+
+def _commit_da_bronze(spark: SparkSession, bronze_destino: str, competencia: str, versao: int) -> Optional[dict]:
+    """Metadados do ÚLTIMO commit da Bronze até `versao` que nomeia a competência."""
+    for v, meta in sorted(_historico(spark, bronze_destino), key=lambda t: t[0], reverse=True):
+        if v > versao or not meta:
+            continue
+        try:
+            corpo = json.loads(meta)
+        except ValueError:
+            continue
+        if isinstance(corpo, dict) and corpo.get("competencia") == competencia:
+            return corpo
+    return None
+
+
+def _conferir_linhagem(spark: SparkSession, competencia: str, s, versao_silver, bronze_destino: str):
+    """Segue a Silver até o pacote ACEITO. Devolve (caminho, sha256_pacote) ou uma GoldReconciliado que para."""
+
+    def falha(estado, motivo, dif=()):
+        return GoldReconciliado(
+            estado=estado, competencia=competencia, controles=s.controles,
+            total_por_codigo=s.total_por_codigo, marcas=s.marcas, hash_procedencia=s.hash_procedencia,
+            diferencas=tuple(dif), motivo=motivo, versao_silver=versao_silver,
+        )
+
+    if s.versao_bronze is None:
+        return falha(NAO_MEDIDO, "SILVER_SEM_VERSAO_DA_BRONZE")
+    try:
+        commit = _commit_da_bronze(spark, bronze_destino, competencia, int(s.versao_bronze))
+    except Exception as exc:  # não conseguiu ler: não é NAO_MEDIDO
+        return falha(ERRO_LEITURA, f"BRONZE_ILEGIVEL: {type(exc).__name__}: {exc}")
+    if commit is None or not commit.get("caminho_pacote") or not commit.get("sha256_pacote"):
+        return falha(NAO_MEDIDO, "SEM_PACOTE_ACEITO_NA_LINHAGEM")
+    caminho = Path(commit["caminho_pacote"])
+    if not caminho.is_file():
+        return falha(NAO_MEDIDO, "PACOTE_DA_LINHAGEM_AUSENTE")
+    observado = hashlib.sha256(caminho.read_bytes()).hexdigest()  # os BYTES, não o que o pacote diz de si
+    if observado != commit["sha256_pacote"]:
+        return falha(
+            DIVERGE, "PACOTE_DA_LINHAGEM_ADULTERADO",
+            [_diferenca("procedencia", "sha256_pacote", commit["sha256_pacote"], observado)],
+        )
+    pacote = evidencia.ler_pacote(caminho)
+    try:
+        veredito, _ = evidencia.rederivar_veredito(pacote)
+    except evidencia.EvidenciaRecusada:
+        veredito = None
+    if veredito != evidencia.ACEITO:
+        return falha(NAO_MEDIDO, "SEM_PACOTE_ACEITO_NA_LINHAGEM")
+    if pacote.get("competencia_contrato") != competencia:
+        return falha(
+            DIVERGE, "PACOTE_DE_OUTRA_COMPETENCIA",
+            [_diferenca("competencia", "competencia_do_pacote", competencia, pacote.get("competencia_contrato"))],
+        )
+    if not s.hash_procedencia:
+        return falha(NAO_MEDIDO, "SILVER_SEM_SHA256_DO_CSV")
+    if pacote.get("hash_observado") != s.hash_procedencia:
+        return falha(
+            DIVERGE, "PACOTE_DE_OUTRO_CSV",
+            [_diferenca("procedencia", "sha256_csv", s.hash_procedencia, pacote.get("hash_observado"))],
+        )
+    return caminho, observado
+
+
+def executar_gold_da_silver(
+    spark: SparkSession,
+    *,
+    caminho_contrato,
+    silver_destino: str,
+    bronze_destino: str,
+    destino: str = DESTINO_PADRAO,
+    preparo_raiz: str = PREPARO_PADRAO,
+    id_execucao: Optional[str] = None,
+    evolucao_aditiva: bool = False,
+) -> GoldReconciliado:
+    """Gold principal lendo SÓ a Silver publicada — nunca a landing nem o CSV.
+
+    Resolve a versão da Silver UMA vez, segue a versão da Bronze registrada nos
+    metadados dela e confere que o commit da Bronze nomeia um pacote ACEITO da mesma
+    competência e do mesmo sha256 do CSV. Sem essa linhagem, nada é publicado.
+    """
+    from pda import contrato as contrato_mod
+
+    contrato = contrato_mod.carregar_contrato(caminho_contrato)
+    competencia = contrato.competencia
+    if not re.fullmatch(r"[A-Za-z0-9._-]+", competencia or ""):
+        return GoldReconciliado(ERRO_LEITURA, str(competencia), motivo="COMPETENCIA_INVALIDA")
+    s, versao_silver = ler_silver(spark, silver_destino, competencia)
+    if s.estado != INTEGRO:
+        return _propagado(s, competencia, versao_silver)
+    linhagem = _conferir_linhagem(spark, competencia, s, versao_silver, bronze_destino)
+    if isinstance(linhagem, GoldReconciliado):
+        return linhagem
+    caminho_pacote, sha_pacote = linhagem
+
+    id_execucao = id_execucao or uuid.uuid4().hex
+    g = agregar(
+        spark, contrato, s, preparo_raiz=preparo_raiz, id_execucao=id_execucao,
+        versao_camada_anterior=versao_silver,
+    )
+    if g.estado != INTEGRO:
+        return g
+    desfecho = orquestracao.Desfecho(
+        veredito=evidencia.ACEITO, causa="JULGADO", codigo_saida=0,
+        caminho_pacote=caminho_pacote, duracao_segundos=0.0, autorizado_publicar=True,
+    )
+    return publicar(
+        spark, contrato, g, desfecho, destino=destino, id_execucao=id_execucao,
+        evolucao_aditiva=evolucao_aditiva,
+        metadados_extra={
+            "versao_silver": versao_silver,
+            "caminho_pacote": str(caminho_pacote),
+            "sha256_pacote": sha_pacote,
+        },
     )
