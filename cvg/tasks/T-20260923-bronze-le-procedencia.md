@@ -28,10 +28,14 @@ execution_backend: any
 signed_off: true
 signed_off_by: nobru
 signed_off_at: 2026-09-23T19:34:51Z
-accepted: false
-accepted_by: (none)
-accepted_at: (none)
+accepted: true
+accepted_by: converge-loop
+accepted_at: 2026-09-23T20:46:16Z
 signed_off_sig: hmac-sha256-v3:85d3c104:00d2647046c583d7596be872cd2396e1fabac065f6fde396a6675780e180e346
+accepted_tier: 1
+accepted_attempt_id: 8d6b7090-d94f-4aaa-a3f1-d3c7b17b25fc
+accepted_authorization_ref: hmac-sha256-v3:85d3c104:00d2647046c583d7596be872cd2396e1fabac065f6fde396a6675780e180e346
+acceptance_record_digest: sha256:6b176c09dc8ea6a39bd1a0fe211fdbb043bf1db25ab121e4f96134a7f269763b
 ---
 
 # Bronze confere _PROCEDENCIA.json da partição

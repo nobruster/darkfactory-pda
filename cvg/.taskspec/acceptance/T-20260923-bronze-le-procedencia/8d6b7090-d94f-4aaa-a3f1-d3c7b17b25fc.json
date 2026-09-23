@@ -1,0 +1,40 @@
+{
+  "acceptance_tier": 1,
+  "accepted_at": "2026-09-23T20:46:16Z",
+  "accepted_by": "converge-loop",
+  "contract": "AcceptanceRecord/v1",
+  "gate_outcomes": {
+    "authorization": {
+      "code": "AUTHORIZATION_VALID",
+      "status": "pass"
+    },
+    "evaluation": {
+      "code": "EVAL_PASSED",
+      "status": "pass"
+    },
+    "evidence": {
+      "code": "EVIDENCE_SATISFIED",
+      "proof": [
+        "format v3 or earlier: v4 policy receipts are not required"
+      ],
+      "status": "pass"
+    },
+    "preflight": {
+      "code": "PREFLIGHT_PASSED",
+      "status": "pass",
+      "warnings": []
+    }
+  },
+  "outcome": {
+    "code": "ACCEPTED_TIER_1",
+    "status": "accepted"
+  },
+  "receipts": [],
+  "subject": {
+    "attempt_id": "8d6b7090-d94f-4aaa-a3f1-d3c7b17b25fc",
+    "authorization_ref": "hmac-sha256-v3:85d3c104:00d2647046c583d7596be872cd2396e1fabac065f6fde396a6675780e180e346",
+    "base_commit": "21b91dc56f1fd158b6deabf782da5001f2b6c343",
+    "task_id": "T-20260923-bronze-le-procedencia",
+    "task_revision_digest": "sha256:8a189615732c71e875f89027afba83042c99a62ef375763c3743de443b902a66"
+  }
+}
