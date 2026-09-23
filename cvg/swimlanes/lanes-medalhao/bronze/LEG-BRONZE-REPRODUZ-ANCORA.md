@@ -1,6 +1,6 @@
 > Projetado de `LEG-BRONZE-REPRODUZ-ANCORA.md` pelo Seamwise.
 > **Não edite aqui** — edite a recipe e rode `seamwise plan`.
-> origem sha256: `212096e435f6d95ab4fdb2deae6472d280a09465a037937c9a00820119917f84`
+> origem sha256: `6306832c750cd0966b95568f8ed79464a6b5ad4169685b94cc6b7d40216ef1a7`
 
 ---
 
@@ -136,10 +136,10 @@ tasks:
   - id: eval_2
     description: Ausente e vazia devolvem NAO_MEDIDO; medida e divergente devolve DIVERGE
     bash: docker compose -f infra/docker-compose.yml exec -T spark sh -c 'n=$(python3 -m pytest --collect-only
-      -q tests/test_bronze.py -k "particao_ausente or particao_vazia or presente_sem_ancora or diverge_nao_e_nao_medido"
-      2>/dev/null | grep -c "::"); [ "$n" -lt 4 ] && { echo "EVAL=COLETOU_${n}_DE_4"; exit 1; }; python3
-      -m pytest -q tests/test_bronze.py -k "particao_ausente or particao_vazia or presente_sem_ancora
-      or diverge_nao_e_nao_medido"'
+      -q tests/test_bronze.py -k "particao_ausente or particao_vazia or presente_sem_ancora or diverge_nao_e_nao_medido
+      or objeto_orfao_na_listagem" 2>/dev/null | grep -c "::"); [ "$n" -lt 5 ] && { echo "EVAL=COLETOU_${n}_DE_5";
+      exit 1; }; python3 -m pytest -q tests/test_bronze.py -k "particao_ausente or particao_vazia or presente_sem_ancora
+      or diverge_nao_e_nao_medido or objeto_orfao_na_listagem"'
     verifies:
     - B-2
   - id: eval_3
@@ -169,7 +169,7 @@ tasks:
   - contracts
   rollback: Remover o leitor Bronze e seus testes.
   observability: partições recusadas por controle divergente
-source_seam_sha256: eb4170d5d366072c7592b93eacec62a43ff1103264fdc6b4b87ab04ac6935d46
+source_seam_sha256: b61c1980bce2b3eee349e09f80afd9dcae93983a40051dd1b05afbd4af93e4ba
 ---
 # Bronze só existe quando reproduz a âncora do contrato
 
