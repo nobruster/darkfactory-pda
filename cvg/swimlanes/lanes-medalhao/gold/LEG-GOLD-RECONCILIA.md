@@ -1,6 +1,6 @@
 > Projetado de `LEG-GOLD-RECONCILIA.md` pelo Seamwise.
 > **Não edite aqui** — edite a recipe e rode `seamwise plan`.
-> origem sha256: `cf7954b93726ebc60846ceddb00a21d385f147330132c7eeac5ec53086882add`
+> origem sha256: `23be25a8a0562b3cc5a1329b84fff8f72195c093a6b733a53cb178d7c84579b7`
 
 ---
 
@@ -91,22 +91,27 @@ tasks:
       em Decimal exato, o veredito da reconciliação, a competência e as marcas de limitação. A reconciliação
       de Gold é a conferência DO PRODUTOR, e não basta para publicar: o ADR 0006 preserva a separação
       de motores — Spark grava, Python puro confere — e Gold reconciliando sobre o próprio Spark é o produtor
-      conferindo a si mesmo. Por isso Gold EMITE O ENVELOPE da SEAM-FRONTEIRA, conforme o ENVELOPE_SCHEMA
+      conferindo a si mesmo. Por isso Gold EMITE O ENVELOPE da SEAM-FRONTEIRA com os controles de DETALHE
+      e o sha256 que recebeu de Bronze através de Silver — jamais recalculando count, min e max sobre
+      as próprias 65 linhas agregadas, que não são os controles da âncora, conforme o ENVELOPE_SCHEMA
       declarado em src/pda/envelope.py, e a publicação exige o veredito do JUIZ INDEPENDENTE: validar_envelope(envelope,
       capacidade_leitura, contrato), em que a capacidade de leitura é a leitura PRÓPRIA do juiz sobre
       o CSV, e julgar() devolvendo ACEITO. Gold importa o juiz, jamais o edita, e o juiz nunca importa
-      Gold. A publicação é um passo POSTERIOR e condicionado aos dois vereditos, e o veredito CONSOME
-      a marca PROCEDENCIA_NAO_VINCULADA que Bronze emite e Silver preserva — Gold recusa publicar sob
-      ela, e a recusa tem eval próprio, senão cada camada cumpre o seu e a marca se perde na transformação:
-      se as candidatas fossem escritas no destino para depois serem relidas, o dado divergente já teria
-      ficado exposto antes de qualquer veredito, e remover depois não desfaz a exposição. Um teste que
-      confira só o resultado final ou a ausência de arquivos ao término não vê isso — o eval observa que
-      o caminho de destino permanece inalterado DURANTE a reconciliação. E a publicação em si é uma transição
-      INDIVISÍVEL de visibilidade: o conjunto publicado é exatamente o conjunto reconciliado, tudo ou
-      nada. Copiar vários arquivos expondo-os à medida que chegam deixaria um consumidor lendo parte das
-      candidatas, ou misturadas com as da execução anterior, com a reconciliação correta e o total lido
-      por ninguém aprovado — e uma interrupção no meio congela esse estado. Publicação interrompida deixa
-      o destino como estava antes'
+      Gold. E antes de publicar, o PACOTE DE EVIDÊNCIA da execução é gravado por gravar_pacote, e rederivar_veredito
+      — que recalcula o veredito dos controles, dos hashes e das classificações, sem confiar no rótulo
+      — precisa bater com ACEITO: publicar sem evidência persistida deixa o resultado sem prova de por
+      que foi aceito. A publicação é um passo POSTERIOR e condicionado aos três — as duas reconciliações
+      e a evidência, e o veredito CONSOME a marca PROCEDENCIA_NAO_VINCULADA que Bronze emite e Silver
+      preserva — Gold recusa publicar sob ela, e a recusa tem eval próprio, senão cada camada cumpre o
+      seu e a marca se perde na transformação: se as candidatas fossem escritas no destino para depois
+      serem relidas, o dado divergente já teria ficado exposto antes de qualquer veredito, e remover depois
+      não desfaz a exposição. Um teste que confira só o resultado final ou a ausência de arquivos ao término
+      não vê isso — o eval observa que o caminho de destino permanece inalterado DURANTE a reconciliação.
+      E a publicação em si é uma transição INDIVISÍVEL de visibilidade: o conjunto publicado é exatamente
+      o conjunto reconciliado, tudo ou nada. Copiar vários arquivos expondo-os à medida que chegam deixaria
+      um consumidor lendo parte das candidatas, ou misturadas com as da execução anterior, com a reconciliação
+      correta e o total lido por ninguém aprovado — e uma interrupção no meio congela esse estado. Publicação
+      interrompida deixa o destino como estava antes'
   - id: B-2
     given: um Silver cujo total não reproduz a âncora, ou uma competência sem âncora no contrato
     when: Gold agrega
@@ -148,12 +153,13 @@ tasks:
     description: Reconcilia recalculando, compara o mapa por código e confere os 65
     bash: docker compose -f infra/docker-compose.yml exec -T spark sh -c 'for c in reconcilia_recalculando
       mapa_por_codigo redistribuicao_compensada contagem_de_codigos competencia_bate_com_o_contrato uma_linha_por_codigo
-      recusa_silver_nao_integro consome_saida_real_de_silver publicar_exige_juiz_independente descricao_publicada_bate_com_a_original;
-      do python3 -m pytest --collect-only -q tests/test_gold.py -k "$c" 2>/dev/null | grep -q "::" ||
-      { echo "EVAL=CENARIO_AUSENTE_$c"; exit 1; }; done; python3 -m pytest -q tests/test_gold.py -k "reconcilia_recalculando
-      or mapa_por_codigo or redistribuicao_compensada or contagem_de_codigos or competencia_bate_com_o_contrato
-      or uma_linha_por_codigo or recusa_silver_nao_integro or consome_saida_real_de_silver or publicar_exige_juiz_independente
-      or descricao_publicada_bate_com_a_original"'
+      recusa_silver_nao_integro consome_saida_real_de_silver publicar_exige_juiz_independente descricao_publicada_bate_com_a_original
+      publicar_exige_evidencia_gravada; do python3 -m pytest --collect-only -q tests/test_gold.py -k "$c"
+      2>/dev/null | grep -q "::" || { echo "EVAL=CENARIO_AUSENTE_$c"; exit 1; }; done; python3 -m pytest
+      -q tests/test_gold.py -k "reconcilia_recalculando or mapa_por_codigo or redistribuicao_compensada
+      or contagem_de_codigos or competencia_bate_com_o_contrato or uma_linha_por_codigo or recusa_silver_nao_integro
+      or consome_saida_real_de_silver or publicar_exige_juiz_independente or descricao_publicada_bate_com_a_original
+      or publicar_exige_evidencia_gravada"'
     verifies:
     - B-1
     - B-2
@@ -185,7 +191,7 @@ tasks:
   - contracts
   rollback: Remover a camada Gold e seus testes.
   observability: agregados recusados por não reconciliar
-source_seam_sha256: a094362d76ae656e75342289ffaf565016c24cecf9eb6c7c1e0b640eee6941ae
+source_seam_sha256: 4cbd634a6a1e0433275034d72cc997dd8b794a3d39716770c2b9ad81460ad409
 ---
 # Gold só publica quando reconcilia com a âncora
 

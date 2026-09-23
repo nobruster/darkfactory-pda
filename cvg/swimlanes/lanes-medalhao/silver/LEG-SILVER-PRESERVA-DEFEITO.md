@@ -1,6 +1,6 @@
 > Projetado de `LEG-SILVER-PRESERVA-DEFEITO.md` pelo Seamwise.
 > **Não edite aqui** — edite a recipe e rode `seamwise plan`.
-> origem sha256: `59e7f2a577b6364744b4ef5264f34636153b670819d05aa8fd7187cdfb4d0146`
+> origem sha256: `4c32c54066f5b779e302ef41b6efc03592c3e8fab727c51f0a554eb7e3730522`
 
 ---
 
@@ -88,8 +88,11 @@ tasks:
       INTEGRO — DIVERGE, NAO_MEDIDO e ERRO_LEITURA PARAM a cadeia aqui, com o estado propagado sem tradução,
       porque um Bronze que divergiu por máximo alterado preserva soma, cardinalidades e identidades, e
       todas as provas de conservação de Silver passariam sobre linhas que Bronze já reprovou. A COMPETÊNCIA
-      que Bronze leu e a marca PROCEDENCIA_NAO_VINCULADA, quando Bronze a emite, atravessam Silver SEM
-      serem removidas e segue em ''silver classificado'' — remover uma marca de limitação é apagar prova,
+      que Bronze leu, os CINCO CONTROLES que Bronze mediu sobre as linhas de detalhe, o HASH da procedência
+      apresentada a Bronze e a marca PROCEDENCIA_NAO_VINCULADA, quando Bronze a emite, atravessam Silver
+      SEM serem removidos — Gold os precisa para emitir o envelope, cujo ENVELOPE_SCHEMA exige sha256_arquivo_lido
+      e controles, e os controles do envelope são os do DETALHE, medidos por Bronze, nunca os das 65 linhas
+      agregadas de Gold e segue em ''silver classificado'' — remover uma marca de limitação é apagar prova,
       não normalizar. A capacidade ''silver classificado'' tem FORMA declarada, como a de Bronze, e COLUNAS
       NOMEADAS que Gold consome pelos mesmos nomes — especie_codigo, especie_descricao (a original), especie_descricao_normalizada,
       vl_liquido, competencia e classificacao — porque conteúdo sem nome deixa Silver emitir codigo/valor
@@ -141,15 +144,16 @@ tasks:
       ''descrição que diverge do contrato'' não é verificável, porque trocar a descrição de um código
       mantém todas as quatro cardinalidades. Silver então NÃO INVENTA referencial e NÃO aceita o grupo
       novo por default: sem o mapa declarado no contrato, a comparação por identidade devolve NAO_MEDIDO,
-      distinto de bloquear por defeito — e esse NAO_MEDIDO IMPEDE produzir ''silver classificado'', porque
-      uma capacidade chamada ''classificado'' que sai com a identidade não medida mente no próprio nome.
-      A cadeia para aqui com o motivo nomeado, em vez de seguir e publicar com a identidade em aberto.
-      Declarar esse mapa é trabalho do contrato, com aprovador e data, não desta camada — e ENQUANTO ele
-      não existir, esta tarefa entrega apenas a capacidade CONDICIONAL: o caminho NAO_MEDIDO provado,
-      e o caminho positivo provado contra contrato de teste, jamais contra a competência contratada. Concluir
-      Bronze NÃO habilita a prova positiva de Silver sobre 2026-01, e o plano não finge que habilita.
-      scripts/medir_colapso.py já mede os 11 grupos na competência inteira; falta a aprovação, que é decisão
-      de negócio.'
+      distinto de bloquear por defeito — e esse NAO_MEDIDO impede a capacidade POSITIVA — ''silver classificado''
+      é SEMPRE entregue, como objeto, mas com estado NAO_MEDIDO e nunca INTEGRO, porque um ''classificado''
+      INTEGRO com a identidade não medida mentiria no próprio nome, e porque Gold precisa RECEBER o estado
+      para propagá-lo: devolver ausência quebraria o consumidor. A cadeia para aqui com o motivo nomeado,
+      em vez de seguir e publicar com a identidade em aberto. Declarar esse mapa é trabalho do contrato,
+      com aprovador e data, não desta camada — e ENQUANTO ele não existir, esta tarefa entrega apenas
+      a capacidade CONDICIONAL: o caminho NAO_MEDIDO provado, e o caminho positivo provado contra contrato
+      de teste, jamais contra a competência contratada. Concluir Bronze NÃO habilita a prova positiva
+      de Silver sobre 2026-01, e o plano não finge que habilita. scripts/medir_colapso.py já mede os 11
+      grupos na competência inteira; falta a aprovação, que é decisão de negócio.'
   evals:
   - id: eval_1
     description: Chave é o código; contagem, mapa e soma preservados, inclusive linha de valor zero
@@ -178,11 +182,12 @@ tasks:
   - id: eval_3
     description: Defeito não classificado bloqueia em vez de passar
     bash: docker compose -f infra/docker-compose.yml exec -T spark sh -c 'for c in nao_classificado_bloqueia
-      valor_intacto atravessa_sem_descartar unresolved_bloqueia marca_atravessa sem_mapa_nao_produz_capacidade
-      bloqueio_sai_como_bloqueado; do python3 -m pytest --collect-only -q tests/test_silver.py -k "$c"
-      2>/dev/null | grep -q "::" || { echo "EVAL=CENARIO_AUSENTE_$c"; exit 1; }; done; python3 -m pytest
-      -q tests/test_silver.py -k "nao_classificado_bloqueia or valor_intacto or atravessa_sem_descartar
-      or unresolved_bloqueia or marca_atravessa or sem_mapa_nao_produz_capacidade or bloqueio_sai_como_bloqueado"'
+      valor_intacto atravessa_sem_descartar unresolved_bloqueia marca_atravessa sem_mapa_entrega_estado_nao_medido
+      bloqueio_sai_como_bloqueado controles_e_hash_atravessam; do python3 -m pytest --collect-only -q
+      tests/test_silver.py -k "$c" 2>/dev/null | grep -q "::" || { echo "EVAL=CENARIO_AUSENTE_$c"; exit
+      1; }; done; python3 -m pytest -q tests/test_silver.py -k "nao_classificado_bloqueia or valor_intacto
+      or atravessa_sem_descartar or unresolved_bloqueia or marca_atravessa or sem_mapa_entrega_estado_nao_medido
+      or bloqueio_sai_como_bloqueado or controles_e_hash_atravessam"'
     verifies:
     - B-2
   anti_patterns:
@@ -203,7 +208,7 @@ tasks:
   - contracts
   rollback: Remover a camada Silver e seus testes.
   observability: colapsos classificados por competência
-source_seam_sha256: e3f89e80222561a70ec53f9292bf783c6a6b509badba4da667fadf8bbe01a84f
+source_seam_sha256: 3bf1b63fbed61c6a4cee94f5f8e2def03a2283e407ee0362289277eb8a121371
 ---
 # Silver classifica o defeito e conserva o total
 
