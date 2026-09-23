@@ -1,0 +1,23 @@
+{
+  "evaluation": {
+    "output_sha256": "9ccb364035f6d672a2090dbd719aaf8b21e992377201a9427d3ac83a87415273",
+    "path_policy": "not-run"
+  },
+  "execution_profile": {
+    "path": "cvg/execution/T-20260922-bronze-confere-ancora/execution-profile.yaml",
+    "sha256": "a380813779be77d1a04a8685da115f6e6e802bb2aff9ef494377aae4bb92fe46"
+  },
+  "generated_by": "task-loop",
+  "recorded_at": "2026-09-23T04:03:22Z",
+  "result": "blocked",
+  "runtime": {
+    "agent": "claude",
+    "branch": "task/bronze-confere-ancora"
+  },
+  "schema": "cvg.execution-receipt.v1",
+  "task_id": "T-20260922-bronze-confere-ancora",
+  "task_spec": {
+    "path": "cvg/tasks/T-20260922-bronze-confere-ancora.md",
+    "sha256": "2e357e660cacc89cdc203c173de75a20f364a5968b87f44567b2088113716ea4"
+  }
+}
