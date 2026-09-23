@@ -1,6 +1,6 @@
 > Projetado de `LEG-SILVER-PRESERVA-DEFEITO.md` pelo Seamwise.
 > **Não edite aqui** — edite a recipe e rode `seamwise plan`.
-> origem sha256: `4c32c54066f5b779e302ef41b6efc03592c3e8fab727c51f0a554eb7e3730522`
+> origem sha256: `17c6ab7510ff7066cca0b31c44e33a2aadedc2f9c29794ae003dba1f9054e746`
 
 ---
 
@@ -84,16 +84,23 @@ tasks:
       é preservação. O valor monetário atravessa como Decimal sob um contexto construído INTEIRO a partir
       da politica_decimal do contrato — Context(prec, rounding, traps=[], Emax, Emin) — pelo mesmo motivo
       que vale em Bronze e Gold: Silver SOMA, e declarar só a precisão deixa traps e limites de expoente
-      virem do DefaultContext, que é mutável. Silver só transforma sobre ''bronze conferido'' com estado
-      INTEGRO — DIVERGE, NAO_MEDIDO e ERRO_LEITURA PARAM a cadeia aqui, com o estado propagado sem tradução,
-      porque um Bronze que divergiu por máximo alterado preserva soma, cardinalidades e identidades, e
-      todas as provas de conservação de Silver passariam sobre linhas que Bronze já reprovou. A COMPETÊNCIA
-      que Bronze leu, os CINCO CONTROLES que Bronze mediu sobre as linhas de detalhe, o HASH da procedência
-      apresentada a Bronze e a marca PROCEDENCIA_NAO_VINCULADA, quando Bronze a emite, atravessam Silver
-      SEM serem removidos — Gold os precisa para emitir o envelope, cujo ENVELOPE_SCHEMA exige sha256_arquivo_lido
-      e controles, e os controles do envelope são os do DETALHE, medidos por Bronze, nunca os das 65 linhas
-      agregadas de Gold e segue em ''silver classificado'' — remover uma marca de limitação é apagar prova,
-      não normalizar. A capacidade ''silver classificado'' tem FORMA declarada, como a de Bronze, e COLUNAS
+      virem do DefaultContext, que é mutável. Quando mais de uma falha vale ao mesmo tempo, a PRECEDÊNCIA
+      de Silver é DIVERGE, depois BLOQUEADO, depois NAO_MEDIDO — o estado reporta a falha MEDIDA mais
+      próxima da fonte, e o que não se mediu não esconde o que se mediu: cardinalidade divergente diz
+      que a entrada não é a ancorada, colapso introduzido diz que a camada errou, e a falta do mapa só
+      diz que uma comparação não pôde ser feita. É diferente de Bronze sem âncora, que vira NAO_MEDIDO
+      por inteiro porque ali NENHUM controle tem referencial; aqui a cardinalidade e a normalização são
+      medidas sem o mapa. Toda falha medida sai NOMEADA no diagnóstico, qualquer que seja o estado que
+      vença. Silver só transforma sobre ''bronze conferido'' com estado INTEGRO — DIVERGE, NAO_MEDIDO
+      e ERRO_LEITURA PARAM a cadeia aqui, com o estado propagado sem tradução, porque um Bronze que divergiu
+      por máximo alterado preserva soma, cardinalidades e identidades, e todas as provas de conservação
+      de Silver passariam sobre linhas que Bronze já reprovou. A COMPETÊNCIA que Bronze leu, os CINCO
+      CONTROLES que Bronze mediu sobre as linhas de detalhe, o HASH da procedência apresentada a Bronze
+      e a marca PROCEDENCIA_NAO_VINCULADA, quando Bronze a emite, atravessam Silver SEM serem removidos
+      — Gold os precisa para emitir o envelope, cujo ENVELOPE_SCHEMA exige sha256_arquivo_lido e controles,
+      e os controles do envelope são os do DETALHE, medidos por Bronze, nunca os das 65 linhas agregadas
+      de Gold e segue em ''silver classificado'' — remover uma marca de limitação é apagar prova, não
+      normalizar. A capacidade ''silver classificado'' tem FORMA declarada, como a de Bronze, e COLUNAS
       NOMEADAS que Gold consome pelos mesmos nomes — especie_codigo, especie_descricao (a original), especie_descricao_normalizada,
       vl_liquido, competencia e classificacao — porque conteúdo sem nome deixa Silver emitir codigo/valor
       e Gold esperar especie_codigo/vl_liquido, com as duas passando nos próprios testes. Silver prova
@@ -130,25 +137,29 @@ tasks:
     given: um código cuja descrição diverge do contrato, ou um colapso não declarado
     when: Silver normaliza
     then: 'a linha atravessa com o VALOR intacto e o defeito registrado, nunca descartada nem corrigida
-      — descartar mudaria o total e corrigir destruiria a prova. Defeito não classificado BLOQUEIA a camada,
-      e bloquear tem ESTADO de saída declarado: ''silver classificado'' sai com estado BLOQUEADO, nunca
-      INTEGRO, e a lista dos defeitos que bloquearam — porque Gold só agrega sobre INTEGRO, e um INTEGRO
-      com UNRESOLVED dentro seria agregado sem que ninguém olhasse as classificações. Defeito não classificado
-      BLOQUEIA a camada, e UNRESOLVED — que é uma das seis — BLOQUEIA igualmente: classificação preenchida
-      não é defeito resolvido, e uma descrição divergente que recebesse UNRESOLVED conservaria o valor
-      e satisfaria literalmente a condição de conclusão enquanto a diferença segue sem dono, porque a
-      classificação é o que transforma um erro da origem em cobrança rastreável; e nenhuma classificação
-      é inferida em silêncio, já que atribuir CONFIRMED_SOURCE_DEFECT sem aprovador transformaria juízo
-      em default. MEDIDO no contrato: existem as cardinalidades 65/52/11/24 e a classificação global,
-      mas NÃO existe mapa código→descrição nem a lista dos 11 grupos aprovados — e sem esse referencial
-      ''descrição que diverge do contrato'' não é verificável, porque trocar a descrição de um código
-      mantém todas as quatro cardinalidades. Silver então NÃO INVENTA referencial e NÃO aceita o grupo
-      novo por default: sem o mapa declarado no contrato, a comparação por identidade devolve NAO_MEDIDO,
-      distinto de bloquear por defeito — e esse NAO_MEDIDO impede a capacidade POSITIVA — ''silver classificado''
-      é SEMPRE entregue, como objeto, mas com estado NAO_MEDIDO e nunca INTEGRO, porque um ''classificado''
-      INTEGRO com a identidade não medida mentiria no próprio nome, e porque Gold precisa RECEBER o estado
-      para propagá-lo: devolver ausência quebraria o consumidor. A cadeia para aqui com o motivo nomeado,
-      em vez de seguir e publicar com a identidade em aberto. Declarar esse mapa é trabalho do contrato,
+      — descartar mudaria o total e corrigir destruiria a prova. Os colapsos classificados por Silver
+      têm a MESMA granularidade que a leitura independente usa — um registro por GRUPO colapsado, com
+      a descrição ORIGINAL e a lista ordenada dos códigos que ela cobre, onze nesta competência —, e não
+      um por linha nem um por código, porque o juiz confronta os dois lados e granularidades diferentes
+      divergiriam sem nenhum defeito real. Defeito não classificado BLOQUEIA a camada, e bloquear tem
+      ESTADO de saída declarado: ''silver classificado'' sai com estado BLOQUEADO, nunca INTEGRO, e a
+      lista dos defeitos que bloquearam — porque Gold só agrega sobre INTEGRO, e um INTEGRO com UNRESOLVED
+      dentro seria agregado sem que ninguém olhasse as classificações. Defeito não classificado BLOQUEIA
+      a camada, e UNRESOLVED — que é uma das seis — BLOQUEIA igualmente: classificação preenchida não
+      é defeito resolvido, e uma descrição divergente que recebesse UNRESOLVED conservaria o valor e satisfaria
+      literalmente a condição de conclusão enquanto a diferença segue sem dono, porque a classificação
+      é o que transforma um erro da origem em cobrança rastreável; e nenhuma classificação é inferida
+      em silêncio, já que atribuir CONFIRMED_SOURCE_DEFECT sem aprovador transformaria juízo em default.
+      MEDIDO no contrato: existem as cardinalidades 65/52/11/24 e a classificação global, mas NÃO existe
+      mapa código→descrição nem a lista dos 11 grupos aprovados — e sem esse referencial ''descrição que
+      diverge do contrato'' não é verificável, porque trocar a descrição de um código mantém todas as
+      quatro cardinalidades. Silver então NÃO INVENTA referencial e NÃO aceita o grupo novo por default:
+      sem o mapa declarado no contrato, a comparação por identidade devolve NAO_MEDIDO, distinto de bloquear
+      por defeito — e esse NAO_MEDIDO impede a capacidade POSITIVA — ''silver classificado'' é SEMPRE
+      entregue, como objeto, mas com estado NAO_MEDIDO e nunca INTEGRO, porque um ''classificado'' INTEGRO
+      com a identidade não medida mentiria no próprio nome, e porque Gold precisa RECEBER o estado para
+      propagá-lo: devolver ausência quebraria o consumidor. A cadeia para aqui com o motivo nomeado, em
+      vez de seguir e publicar com a identidade em aberto. Declarar esse mapa é trabalho do contrato,
       com aprovador e data, não desta camada — e ENQUANTO ele não existir, esta tarefa entrega apenas
       a capacidade CONDICIONAL: o caminho NAO_MEDIDO provado, e o caminho positivo provado contra contrato
       de teste, jamais contra a competência contratada. Concluir Bronze NÃO habilita a prova positiva
@@ -172,22 +183,23 @@ tasks:
     description: Os 11 colapsos saem classificados e a contagem confere
     bash: docker compose -f infra/docker-compose.yml exec -T spark sh -c 'for c in colapso_classificado
       quatro_cardinalidades classificacao_unica colapsos_na_descricao_original colapso_da_normalizacao_classificado
-      recusa_bronze_nao_integro colapso_introduzido_por_codigo_bloqueia; do python3 -m pytest --collect-only
-      -q tests/test_silver.py -k "$c" 2>/dev/null | grep -q "::" || { echo "EVAL=CENARIO_AUSENTE_$c";
-      exit 1; }; done; python3 -m pytest -q tests/test_silver.py -k "colapso_classificado or quatro_cardinalidades
-      or classificacao_unica or colapsos_na_descricao_original or colapso_da_normalizacao_classificado
-      or recusa_bronze_nao_integro or colapso_introduzido_por_codigo_bloqueia"'
+      recusa_bronze_nao_integro colapso_introduzido_por_codigo_bloqueia precedencia_dos_estados_de_falha;
+      do python3 -m pytest --collect-only -q tests/test_silver.py -k "$c" 2>/dev/null | grep -q "::" ||
+      { echo "EVAL=CENARIO_AUSENTE_$c"; exit 1; }; done; python3 -m pytest -q tests/test_silver.py -k
+      "colapso_classificado or quatro_cardinalidades or classificacao_unica or colapsos_na_descricao_original
+      or colapso_da_normalizacao_classificado or recusa_bronze_nao_integro or colapso_introduzido_por_codigo_bloqueia
+      or precedencia_dos_estados_de_falha"'
     verifies:
     - B-1
   - id: eval_3
     description: Defeito não classificado bloqueia em vez de passar
     bash: docker compose -f infra/docker-compose.yml exec -T spark sh -c 'for c in nao_classificado_bloqueia
       valor_intacto atravessa_sem_descartar unresolved_bloqueia marca_atravessa sem_mapa_entrega_estado_nao_medido
-      bloqueio_sai_como_bloqueado controles_e_hash_atravessam; do python3 -m pytest --collect-only -q
-      tests/test_silver.py -k "$c" 2>/dev/null | grep -q "::" || { echo "EVAL=CENARIO_AUSENTE_$c"; exit
-      1; }; done; python3 -m pytest -q tests/test_silver.py -k "nao_classificado_bloqueia or valor_intacto
+      bloqueio_sai_como_bloqueado controles_e_hash_atravessam colapso_um_registro_por_grupo; do python3
+      -m pytest --collect-only -q tests/test_silver.py -k "$c" 2>/dev/null | grep -q "::" || { echo "EVAL=CENARIO_AUSENTE_$c";
+      exit 1; }; done; python3 -m pytest -q tests/test_silver.py -k "nao_classificado_bloqueia or valor_intacto
       or atravessa_sem_descartar or unresolved_bloqueia or marca_atravessa or sem_mapa_entrega_estado_nao_medido
-      or bloqueio_sai_como_bloqueado or controles_e_hash_atravessam"'
+      or bloqueio_sai_como_bloqueado or controles_e_hash_atravessam or colapso_um_registro_por_grupo"'
     verifies:
     - B-2
   anti_patterns:
@@ -208,7 +220,7 @@ tasks:
   - contracts
   rollback: Remover a camada Silver e seus testes.
   observability: colapsos classificados por competência
-source_seam_sha256: 3bf1b63fbed61c6a4cee94f5f8e2def03a2283e407ee0362289277eb8a121371
+source_seam_sha256: 4774f4aa3d1dbdfedcfc17fa65e0911bf8fe66532f82246b9d05779d6dd002e3
 ---
 # Silver classifica o defeito e conserva o total
 
