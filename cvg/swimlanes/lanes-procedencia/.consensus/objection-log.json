@@ -13,23 +13,23 @@
     "family": "anthropic"
   },
   "verdict": "REVISE",
-  "prompt_sha256": "023a5178c375a4cfd9ebd85ba8f6f602c54a502e3a4435e0336579a1b6af1051",
+  "prompt_sha256": "453ab981b1dd69d694727a0e14352cf3cb6568c2145e4091ae88128caf807412",
   "inputs": [
     {
       "path": "bronze-le-procedencia/LEG-BRONZE-LE-PROCEDENCIA.md",
-      "sha256": "e2628fa99127c48cffa57f723917149b47c266fd373455c06f665dda040a7dd6"
+      "sha256": "a39b3da1579a65f671261eeb07ccdda836e6cb7550875520ec5778759ab9181b"
     },
     {
       "path": "bronze-le-procedencia/_lane.md",
-      "sha256": "150c00967b1df4a30acd4d18157b8bc88084dfdaf104a082a3d922cdfdf7fabb"
+      "sha256": "9c107c1e7fe623a756217707c527e5f635e8655ba24ec29edba768ce7e2fdd2a"
     },
     {
       "path": "vincula-procedencia/LEG-VINCULA-PROCEDENCIA.md",
-      "sha256": "176dd228eba5888572950ba06e09add33955a1edfd2f3efb0b592e8b89f22f29"
+      "sha256": "3d9db472c4a30a6f2ec20cb198e739ca5b76a88df1e2e63fb501d9ef37fe3fb0"
     },
     {
       "path": "vincula-procedencia/_lane.md",
-      "sha256": "cfc91ce318b2e88676304f9e502c335346659349887b636b1ec6fc13be73aa32"
+      "sha256": "fe6775018157ce20c7c8b46d617df04a20cbc9cb9158a2a7c47b27fa6fdb831f"
     }
   ],
   "objections": [
@@ -38,132 +38,154 @@
       "severity": "high",
       "rank": 1,
       "attack_class": "race",
-      "swimlane": "LANE-VINCULA-PROCEDENCIA",
-      "leg": "LEG-VINCULA-PROCEDENCIA",
+      "swimlane": "LANE-BRONZE-LE-PROCEDENCIA",
+      "leg": "LEG-BRONZE-LE-PROCEDENCIA",
       "location": {
-        "plan_file": "cvg/swimlanes/lanes-procedencia/vincula-procedencia/LEG-VINCULA-PROCEDENCIA.md",
-        "section": "tasks / behavior / B-1"
+        "plan_file": "cvg/swimlanes/lanes-procedencia/bronze-le-procedencia/LEG-BRONZE-LE-PROCEDENCIA.md",
+        "section": "tasks[0].behavior[B-1]"
       },
-      "title": "A compara\u00e7\u00e3o e o manifesto podem provar vers\u00f5es diferentes",
-      "body": "A igualdade do multiconjunto \u00e9 suficiente sobre entradas est\u00e1veis, mas o plano n\u00e3o estabelece essa estabilidade entre compara\u00e7\u00e3o, contagens e hash dos objetos. Se um objeto for substitu\u00eddo ap\u00f3s a compara\u00e7\u00e3o e antes do manifesto, a prova pode registrar bytes que nunca foram comparados ao CSV. Uma altera\u00e7\u00e3o que preserve os cinco controles pode tamb\u00e9m escapar da confer\u00eancia posterior da Bronze. \u00c9 uma hip\u00f3tese de concorr\u00eancia n\u00e3o fechada pelo plano, n\u00e3o um defeito observado em execu\u00e7\u00e3o.",
-      "evidence": "B-1 compara o MULTICONJUNTO e, depois, grava o MANIFESTO com sha256 do conte\u00fado; n\u00e3o declara exclus\u00e3o de escritores nem v\u00ednculo de vers\u00e3o entre essas leituras.",
+      "title": "Manifesto conferido n\u00e3o identifica necessariamente os bytes consumidos",
+      "body": "O plano exige conferir manifesto e controles, mas n\u00e3o estabelece uma vis\u00e3o est\u00e1vel entre essas leituras e a entrega das linhas. Se um objeto mudar depois do c\u00e1lculo do hash e antes da leitura dos dados, a Bronze pode consumir conte\u00fado diferente do certificado. Uma altera\u00e7\u00e3o apenas em especie_codigo ou especie_descricao preserva os cinco controles monet\u00e1rios e de contagem; assim, conferir esses controles n\u00e3o fecha a lacuna. Sem uma garantia declarada de estabilidade, a marca pode sair de linhas cuja proced\u00eancia n\u00e3o foi provada.",
+      "evidence": "B-1: 'o MANIFESTO contra os objetos de dado que ela mesma lista' e 'os controles do arquivo contra os que ela mede'. N\u00e3o h\u00e1 v\u00ednculo temporal expl\u00edcito entre os bytes dessas opera\u00e7\u00f5es.",
       "cites": [
-        "cvg/docs/tech-spec/tech-spec-pda-beneficios.md \u00a7 Problem restated",
-        "cvg/docs/tech-spec/tech-spec-pda-beneficios.md \u00a7 Requirements / R-7"
-      ]
+        "cvg/swimlanes/lanes-procedencia/bronze-le-procedencia/LEG-BRONZE-LE-PROCEDENCIA.md \u00a7 behavior B-1/B-2",
+        "cvg/docs/tech-spec/tech-spec-pda-beneficios.md \u00a7 Success metrics: compet\u00eancias publicadas sem prova do conte\u00fado"
+      ],
+      "resolution": {
+        "disposition": "ACCEPT",
+        "decided_by": "Bruno Nunes",
+        "decided_at": "2026-09-23T19:34:12Z",
+        "owner": "Bruno Nunes",
+        "risk_residual": "Storage, escritor unico: a landing tem um so escritor, e o vinculador roda uma vez por competencia, conduzido por quem opera. A garantia de visao estavel ou publicacao exclusiva depende do mecanismo de armazenamento, que o plano nao escolhe; hoje nada escreve na particao entre o vinculador e a Bronze. A Bronze confere o sha256 de cada objeto que ela mesma lista; objeto trocado depois disso exige escritor concorrente. Decidido pelo dono ao fechar o Pass 4 da procedencia na R2, sem editar o plano."
+      }
     },
     {
       "id": "C2",
       "severity": "high",
       "rank": 2,
-      "attack_class": "cross-lane-interface",
-      "swimlane": "LANE-BRONZE-LE-PROCEDENCIA",
-      "leg": "LEG-BRONZE-LE-PROCEDENCIA",
-      "location": {
-        "plan_file": "cvg/swimlanes/lanes-procedencia/bronze-le-procedencia/LEG-BRONZE-LE-PROCEDENCIA.md",
-        "section": "tasks / behavior / B-1"
-      },
-      "title": "A compet\u00eancia declarada na prova n\u00e3o participa da valida\u00e7\u00e3o",
-      "body": "A Bronze verifica hash, manifesto e controles, mas n\u00e3o exige igualdade entre compet\u00eancia solicitada, compet\u00eancia do contrato e compet\u00eancia registrada no JSON. Uma prova com compet\u00eancia adulterada e todos os demais campos intactos satisfaz as verifica\u00e7\u00f5es enumeradas. A marca pode sair apesar de a identidade da evid\u00eancia contradizer a parti\u00e7\u00e3o. O produtor tamb\u00e9m recebe competencia=<c> sem explicitar sua igualdade com a compet\u00eancia contratada.",
-      "evidence": "O vinculador grava compet\u00eancia; B-1 da Bronze enumera somente sha256 do CSV, MANIFESTO e controles como confer\u00eancias.",
-      "cites": [
-        "contracts/competencia-202601.yaml \u00a7 competencia",
-        "cvg/docs/tech-spec/tech-spec-pda-beneficios.md \u00a7 Requirements / R-1",
-        "cvg/swimlanes/lanes-procedencia/vincula-procedencia/LEG-VINCULA-PROCEDENCIA.md \u00a7 tasks / behavior / B-1"
-      ]
-    },
-    {
-      "id": "C3",
-      "severity": "high",
-      "rank": 3,
       "attack_class": "race",
       "swimlane": "LANE-VINCULA-PROCEDENCIA",
       "leg": "LEG-VINCULA-PROCEDENCIA",
       "location": {
         "plan_file": "cvg/swimlanes/lanes-procedencia/vincula-procedencia/LEG-VINCULA-PROCEDENCIA.md",
-        "section": "tasks / behavior / B-1 e B-2"
+        "section": "tasks[0].behavior[B-1/B-2]"
       },
-      "title": "A proibi\u00e7\u00e3o de sobrescrita n\u00e3o cobre duas primeiras execu\u00e7\u00f5es",
-      "body": "B-2 s\u00f3 descreve o caso em que a prova j\u00e1 existe. Duas execu\u00e7\u00f5es podem observar aus\u00eancia, produzir documentos com ids distintos e gravar no mesmo endere\u00e7o. Sem uma garantia de publica\u00e7\u00e3o exclusiva, a segunda pode substituir a primeira mesmo que ambas releiam com sucesso em momentos diferentes. Isso viola a preserva\u00e7\u00e3o da evid\u00eancia prometida pelo plano.",
-      "evidence": "B-1 grava no prefixo da parti\u00e7\u00e3o; B-2 come\u00e7a com 'uma parti\u00e7\u00e3o que j\u00e1 tem _PROCEDENCIA.json' e promete nunca sobrescrever a prova anterior.",
+      "title": "Duas primeiras execu\u00e7\u00f5es podem sobrescrever a prova uma da outra",
+      "body": "B-2 protege a prova que j\u00e1 existe quando a execu\u00e7\u00e3o a consulta. N\u00e3o cobre duas execu\u00e7\u00f5es que observam aus\u00eancia simultaneamente. Ambas podem validar e gravar no mesmo caminho; a segunda substitui a primeira, inclusive seu id de execu\u00e7\u00e3o. Rel\u00ea-la depois n\u00e3o impede a substitui\u00e7\u00e3o. A promessa de n\u00e3o sobrescrever evid\u00eancia depende de uma garantia de publica\u00e7\u00e3o concorrente que o plano n\u00e3o declara.",
+      "evidence": "B-1: 'grava _PROCEDENCIA.json no prefixo da parti\u00e7\u00e3o'; B-2 tem como precondi\u00e7\u00e3o 'uma parti\u00e7\u00e3o que j\u00e1 tem _PROCEDENCIA.json'.",
       "cites": [
-        "cvg/docs/tech-spec/tech-spec-pda-beneficios.md \u00a7 Requirements / W-2"
-      ]
+        "cvg/swimlanes/lanes-procedencia/vincula-procedencia/LEG-VINCULA-PROCEDENCIA.md \u00a7 behavior B-1/B-2",
+        "cvg/docs/tech-spec/tech-spec-pda-beneficios.md \u00a7 Requirements W-2"
+      ],
+      "resolution": {
+        "disposition": "ACCEPT",
+        "decided_by": "Bruno Nunes",
+        "decided_at": "2026-09-23T19:34:12Z",
+        "owner": "Bruno Nunes",
+        "risk_residual": "Storage, escritor unico: a landing tem um so escritor, e o vinculador roda uma vez por competencia, conduzido por quem opera. A garantia de visao estavel ou publicacao exclusiva depende do mecanismo de armazenamento, que o plano nao escolhe; hoje nada escreve na particao entre o vinculador e a Bronze. Decidido pelo dono ao fechar o Pass 4 da procedencia na R2, sem editar o plano."
+      }
+    },
+    {
+      "id": "C3",
+      "severity": "high",
+      "rank": 3,
+      "attack_class": "cross-lane-interface",
+      "swimlane": "LANE-BRONZE-LE-PROCEDENCIA",
+      "leg": "LEG-BRONZE-LE-PROCEDENCIA",
+      "location": {
+        "plan_file": "cvg/swimlanes/lanes-procedencia/bronze-le-procedencia/LEG-BRONZE-LE-PROCEDENCIA.md",
+        "section": "tasks[0].behavior[B-1/B-2]"
+      },
+      "title": "O JSON compartilhado tem conte\u00fado descrito, mas formato indefinido",
+      "body": "O produtor promete compet\u00eancia, hash, manifesto e controles, mas n\u00e3o fixa chaves, estrutura, campos obrigat\u00f3rios ou representa\u00e7\u00e3o dos nomes dos objetos. O consumidor pressup\u00f5e um arquivo v\u00e1lido sem definir essa validade. Implementa\u00e7\u00f5es independentes podem usar nomes relativos versus completos, ou controles agrupados versus planos, e passar seus testes isolados sem interoperar. Tamb\u00e9m falta determinar o resultado para JSON sintaticamente v\u00e1lido, mas estruturalmente incompleto, como {} ou um manifesto com nomes repetidos. A regra 'JSON inv\u00e1lido \u00e9 ERRO_LEITURA' n\u00e3o distingue esses casos.",
+      "evidence": "Produtor B-1: 'com compet\u00eancia, nome e sha256 do CSV, o MANIFESTO ... os cinco controles como texto'; consumidor B-2: 'JSON inv\u00e1lido \u00e9 ERRO_LEITURA'. Nenhum dos dois declara a estrutura compartilhada.",
+      "cites": [
+        "cvg/swimlanes/lanes-procedencia/vincula-procedencia/LEG-VINCULA-PROCEDENCIA.md \u00a7 behavior B-1",
+        "cvg/swimlanes/lanes-procedencia/bronze-le-procedencia/LEG-BRONZE-LE-PROCEDENCIA.md \u00a7 behavior B-1/B-2"
+      ],
+      "resolution": {
+        "disposition": "ACCEPT",
+        "decided_by": "Bruno Nunes",
+        "decided_at": "2026-09-23T19:34:13Z",
+        "owner": "Bruno Nunes",
+        "risk_residual": "Aceito, coberto pela ordem do Pass 8: a Bronze estendida parte da branch do vinculador JA ENTREGUE e le o formato do modulo que existe, nao uma fixture inventada; e a execucao real confere a Bronze lendo o _PROCEDENCIA.json REAL gravado pelo vinculador. Formato incompativel aparece ali, antes da Gold. Decidido pelo dono ao fechar o Pass 4 da procedencia na R2, sem editar o plano."
+      }
     },
     {
       "id": "C4",
-      "severity": "medium",
+      "severity": "high",
       "rank": 4,
       "attack_class": "cross-lane-interface",
       "swimlane": "LANE-VINCULA-PROCEDENCIA",
       "leg": "LEG-VINCULA-PROCEDENCIA",
       "location": {
         "plan_file": "cvg/swimlanes/lanes-procedencia/vincula-procedencia/LEG-VINCULA-PROCEDENCIA.md",
-        "section": "tasks / behavior / B-1 e B-2"
+        "section": "tasks[0].behavior[B-1]"
       },
-      "title": "O id da execu\u00e7\u00e3o torna amb\u00edgua a prova id\u00eantica",
-      "body": "A prova inclui o id da execu\u00e7\u00e3o, mas a reexecu\u00e7\u00e3o s\u00f3 retorna INTEGRO se a prova nova for id\u00eantica. Com ids diferentes, os mesmos dados produzem documentos diferentes. O plano n\u00e3o distingue igualdade do v\u00ednculo de igualdade do documento completo; uma implementa\u00e7\u00e3o literal reprovaria uma repeti\u00e7\u00e3o leg\u00edtima. O teste nomeado n\u00e3o especifica duas execu\u00e7\u00f5es com ids distintos.",
-      "evidence": "B-1 inclui 'o id da execu\u00e7\u00e3o'; B-2 exige 'a prova nova \u00e9 id\u00eantica \u00e0 gravada'.",
+      "title": "O vinculador n\u00e3o exige que a compet\u00eancia solicitada seja a do contrato",
+      "body": "O vinculador escolhe competencia=<c>, valida o hash e compara tr\u00eas campos que n\u00e3o incluem compet\u00eancia. N\u00e3o exige igualdade entre c e contrato.competencia. Se outra parti\u00e7\u00e3o contiver uma c\u00f3pia integral dos mesmos dados, todas as verifica\u00e7\u00f5es descritas podem passar e uma prova ser\u00e1 gravada para a compet\u00eancia errada. A Bronze exige essa igualdade explicitamente e recusar\u00e1 a prova produzida. O produtor pode, portanto, declarar proced\u00eancia vinculada para um artefato que seu consumidor obrigatoriamente rejeita.",
+      "evidence": "Produtor B-1: 'parti\u00e7\u00e3o competencia=<c>' e multiconjunto de '(especie_codigo, especie_descricao, vl_liquido)'; consumidor B-1 exige 'a COMPET\u00caNCIA do arquivo contra a solicitada e a do contrato'.",
       "cites": [
-        "cvg/swimlanes/lanes-procedencia/vincula-procedencia/LEG-VINCULA-PROCEDENCIA.md \u00a7 tasks / evals / eval_3"
-      ]
+        "cvg/swimlanes/lanes-procedencia/vincula-procedencia/LEG-VINCULA-PROCEDENCIA.md \u00a7 behavior B-1",
+        "cvg/swimlanes/lanes-procedencia/bronze-le-procedencia/LEG-BRONZE-LE-PROCEDENCIA.md \u00a7 behavior B-1",
+        "contracts/competencia-202601.yaml \u00a7 competencia",
+        "cvg/docs/tech-spec/tech-spec-pda-beneficios.md \u00a7 Requirements R-1"
+      ],
+      "resolution": {
+        "disposition": "ACCEPT",
+        "decided_by": "Bruno Nunes",
+        "decided_at": "2026-09-23T19:34:13Z",
+        "owner": "Bruno Nunes",
+        "risk_residual": "Aceito: a Bronze exige a igualdade entre a competencia da prova, a solicitada e a do contrato (R1 C2), e barra uma prova de competencia errada antes da Gold. Hoje a outra particao do lago (fatia-teste) tem dado diferente. Decidido pelo dono ao fechar o Pass 4 da procedencia na R2, sem editar o plano."
+      }
     },
     {
       "id": "C5",
-      "severity": "high",
-      "rank": 5,
-      "attack_class": "drift",
-      "swimlane": "LANE-BRONZE-LE-PROCEDENCIA",
-      "leg": "LEG-BRONZE-LE-PROCEDENCIA",
-      "location": {
-        "plan_file": "cvg/swimlanes/lanes-procedencia/bronze-le-procedencia/LEG-BRONZE-LE-PROCEDENCIA.md",
-        "section": "tasks / anti_patterns / contar _PROCEDENCIA.json como objeto de dado"
-      },
-      "title": "Ignorar auxiliares por prefixo amplia a exclus\u00e3o contratada",
-      "body": "O contrato enumera _SUCCESS como auxiliar ignorado; o plano orienta ignorar a proced\u00eancia como os demais objetos auxiliares com _. Se isso virar exclus\u00e3o por prefixo, um objeto adicional como _extra.parquet fica fora do manifesto. A promessa de acusar objeto a mais passa a depender de uma regra de exclus\u00e3o mais ampla que a declarada no contrato. A condi\u00e7\u00e3o que torna um objeto auxiliar est\u00e1 aberta.",
-      "evidence": "Plano: 'ignor\u00e1-lo como os demais objetos auxiliares com _'. Contrato: objetos_auxiliares_ignorados cont\u00e9m apenas _SUCCESS.",
-      "cites": [
-        "contracts/competencia-202601.yaml \u00a7 particionamento / objetos_auxiliares_ignorados",
-        "cvg/swimlanes/lanes-procedencia/bronze-le-procedencia/LEG-BRONZE-LE-PROCEDENCIA.md \u00a7 tasks / behavior / B-2"
-      ]
-    },
-    {
-      "id": "C6",
       "severity": "medium",
-      "rank": 6,
+      "rank": 5,
       "attack_class": "unverified-assumption",
       "swimlane": "LANE-BRONZE-LE-PROCEDENCIA",
       "leg": "LEG-BRONZE-LE-PROCEDENCIA",
       "location": {
         "plan_file": "cvg/swimlanes/lanes-procedencia/bronze-le-procedencia/LEG-BRONZE-LE-PROCEDENCIA.md",
-        "section": "tasks / done_condition e evals / eval_3"
+        "section": "tasks[0].done_condition e evals[eval_3]"
       },
-      "title": "O comando de regress\u00e3o n\u00e3o verifica toda a su\u00edte prometida",
-      "body": "A condi\u00e7\u00e3o de conclus\u00e3o exige toda a su\u00edte existente passando, mas eval_3 executa apenas testes selecionados por tr\u00eas express\u00f5es. Os outros evals tamb\u00e9m usam filtros. Uma regress\u00e3o em qualquer teste fora desses filtros pode coexistir com todos os comandos declarados verdes. A proibi\u00e7\u00e3o de editar testes n\u00e3o cobre essa lacuna de execu\u00e7\u00e3o.",
-      "evidence": "done_condition: 'toda a su\u00edte j\u00e1 existente'. eval_3: pytest com -k 'cinco_controles or particao_ausente or centavo_a_mais'.",
+      "title": "O eval de regress\u00e3o n\u00e3o verifica a su\u00edte que promete preservar",
+      "body": "A condi\u00e7\u00e3o de conclus\u00e3o exige toda a su\u00edte existente passando. Entretanto, eval_3 executa somente testes selecionados por tr\u00eas express\u00f5es. A lista atual cont\u00e9m testes de isolamento de parti\u00e7\u00e3o, recusa de float, escala, negativos, metadados e publica\u00e7\u00e3o que n\u00e3o s\u00e3o selecionados. Uma mudan\u00e7a pode quebrar esses comportamentos e ainda passar todos os evals declarados. N\u00e3o editar os testes existentes n\u00e3o impede regress\u00f5es no c\u00f3digo.",
+      "evidence": "done_condition: 'toda a su\u00edte j\u00e1 existente ... continua passando'; eval_3: pytest ... -k 'cinco_controles or particao_ausente or centavo_a_mais'. Exemplos exclu\u00eddos: test_recusa_float_na_entrada_pelo_tipo e test_isola_particao_e_conta_as_outras.",
       "cites": [
-        "cvg/swimlanes/lanes-procedencia/bronze-le-procedencia/LEG-BRONZE-LE-PROCEDENCIA.md \u00a7 tasks / done_condition",
-        "cvg/swimlanes/lanes-procedencia/bronze-le-procedencia/LEG-BRONZE-LE-PROCEDENCIA.md \u00a7 tasks / evals / eval_3"
-      ]
+        "cvg/swimlanes/lanes-procedencia/bronze-le-procedencia/LEG-BRONZE-LE-PROCEDENCIA.md \u00a7 done_condition e eval_3",
+        "tests/test_bronze.py \u00a7 nomes dos testes existentes",
+        "cvg/docs/tech-spec/tech-spec-pda-beneficios.md \u00a7 Requirements R-4"
+      ],
+      "resolution": {
+        "disposition": "ACCEPT",
+        "decided_by": "Bruno Nunes",
+        "decided_at": "2026-09-23T19:34:13Z",
+        "owner": "Bruno Nunes",
+        "risk_residual": "Aceito, coberto por fora: a suite inteira de tests/test_bronze.py leva mais de 20 minutos e estouraria o teto do loop; ela roda inteira depois do assentamento, como a do contrato-ext rodou (139 testes). Decidido pelo dono ao fechar o Pass 4 da procedencia na R2, sem editar o plano."
+      }
     }
   ],
-  "cross_lane_interfaces": [],
+  "cross_lane_interfaces": [
+    {
+      "producer": "LANE-VINCULA-PROCEDENCIA",
+      "consumer": "LANE-BRONZE-LE-PROCEDENCIA",
+      "survived": false
+    }
+  ],
   "fork": {
     "choice": "B",
-    "reason": "Transcri\u00e7\u00e3o da rota j\u00e1 declarada nos dois _lane.md; nenhuma escolha feita pelo advers\u00e1rio.",
+    "reason": "Declara\u00e7\u00e3o j\u00e1 presente nos dois _lane.md; transcrita, n\u00e3o escolhida pelo advers\u00e1rio.",
     "per_plan_declared": true
   },
   "open_questions": [
     {
-      "q": "Qual garantia vigente mant\u00e9m a mesma vers\u00e3o dos objetos entre compara\u00e7\u00e3o, manifesto e leitura da Bronze?",
+      "q": "Qual garantia existente impede muta\u00e7\u00e3o dos objetos durante a leitura da Bronze e disputa entre publica\u00e7\u00f5es de _PROCEDENCIA.json? Os planos fornecidos n\u00e3o a declaram.",
       "blocks_build": true
     },
     {
-      "q": "Qual regra vigente define os objetos auxiliares exclu\u00eddos do manifesto al\u00e9m de _SUCCESS e _PROCEDENCIA.json?",
-      "blocks_build": true
-    },
-    {
-      "q": "Como o despacho representa obje\u00e7\u00f5es ainda abertas se o schema local exige resolution com decis\u00e3o humana?",
+      "q": "O schema local exige resolution com decis\u00e3o humana, enquanto o dispatcher deliberadamente omite esse campo em obje\u00e7\u00f5es abertas. Este registro segue o comportamento do dispatcher: n\u00e3o conforma ao schema final at\u00e9 decis\u00f5es reais serem acrescentadas, e n\u00e3o deve passar o gate.",
       "blocks_build": true
     }
   ],

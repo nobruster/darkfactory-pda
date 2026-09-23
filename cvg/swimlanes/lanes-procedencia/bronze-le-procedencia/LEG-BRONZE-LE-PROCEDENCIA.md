@@ -1,6 +1,6 @@
 > Projetado de `LEG-BRONZE-LE-PROCEDENCIA.md` pelo Seamwise.
 > **Não edite aqui** — edite a recipe e rode `seamwise plan`.
-> origem sha256: `86f80675eff3107b3510b92063f82651116998977f92df7fad18c97859b61bda`
+> origem sha256: `8b7434e739edd9e972f99cac833874872696b6cee751b82a3eca8586b9b7bae6`
 
 ---
 
@@ -43,10 +43,14 @@ tasks:
   - id: B-1
     given: a partição com _PROCEDENCIA.json gravado pelo vinculador
     when: a Bronze lê a competência
-    then: lê o arquivo do prefixo da partição, confere o sha256 do CSV contra o contrato, o MANIFESTO
-      contra os objetos de dado que ela mesma lista — nome, tamanho e sha256 do conteúdo — e os controles
-      do arquivo contra os que ela mede; conferindo tudo, sai sem a marca PROCEDENCIA_NAO_VINCULADA e
-      com hash_procedencia preenchido, e o estado INTEGRO segue as regras que já existem.
+    then: 'lê o arquivo do prefixo da partição, confere o sha256 do CSV contra o contrato, a COMPETÊNCIA
+      do arquivo contra a solicitada e a do contrato, o MANIFESTO contra os objetos de dado que ela mesma
+      lista — nome, tamanho e sha256 do conteúdo, com a mesma definição de objeto de dado do vinculador:
+      objeto de dado é todo objeto sob o prefixo da partição EXCETO os auxiliares que o contrato nomeia
+      em objetos_auxiliares_ignorados e o próprio _PROCEDENCIA.json — isenções nomeadas uma a uma, nunca
+      exclusão por prefixo, para um _extra.parquet contar como objeto a mais — e os controles do arquivo
+      contra os que ela mede; conferindo tudo, sai sem a marca PROCEDENCIA_NAO_VINCULADA e com hash_procedencia
+      preenchido, e o estado INTEGRO segue as regras que já existem.'
   - id: B-2
     given: uma partição sem _PROCEDENCIA.json, com um JSON inválido, ou com manifesto que não bate com
       os objetos
@@ -59,19 +63,21 @@ tasks:
   - id: eval_1
     description: A marca sai só com prova conferida
     bash: docker compose -f infra/docker-compose.yml exec -T spark sh -c 'for c in procedencia_confere_tira_a_marca
-      manifesto_confere_objetos_listados controles_da_procedencia_conferidos; do python3 -m pytest --collect-only
-      -q tests/test_bronze.py -k "$c" 2>/dev/null | grep -q "::" || { echo "EVAL=CENARIO_AUSENTE_$c";
-      exit 1; }; done; python3 -m pytest -q tests/test_bronze.py -k "procedencia_confere_tira_a_marca
-      or manifesto_confere_objetos_listados or controles_da_procedencia_conferidos"'
+      manifesto_confere_objetos_listados controles_da_procedencia_conferidos competencia_da_prova_conferida;
+      do python3 -m pytest --collect-only -q tests/test_bronze.py -k "$c" 2>/dev/null | grep -q "::" ||
+      { echo "EVAL=CENARIO_AUSENTE_$c"; exit 1; }; done; python3 -m pytest -q tests/test_bronze.py -k
+      "procedencia_confere_tira_a_marca or manifesto_confere_objetos_listados or controles_da_procedencia_conferidos
+      or competencia_da_prova_conferida"'
     verifies:
     - B-1
   - id: eval_2
     description: Ausente, inválida ou divergente
     bash: docker compose -f infra/docker-compose.yml exec -T spark sh -c 'for c in sem_procedencia_mantem_a_marca
-      procedencia_json_invalido_e_erro objeto_a_mais_diverge hash_da_procedencia_diverge; do python3 -m
-      pytest --collect-only -q tests/test_bronze.py -k "$c" 2>/dev/null | grep -q "::" || { echo "EVAL=CENARIO_AUSENTE_$c";
-      exit 1; }; done; python3 -m pytest -q tests/test_bronze.py -k "sem_procedencia_mantem_a_marca or
-      procedencia_json_invalido_e_erro or objeto_a_mais_diverge or hash_da_procedencia_diverge"'
+      procedencia_json_invalido_e_erro objeto_a_mais_diverge hash_da_procedencia_diverge objeto_com_underscore_a_mais_diverge;
+      do python3 -m pytest --collect-only -q tests/test_bronze.py -k "$c" 2>/dev/null | grep -q "::" ||
+      { echo "EVAL=CENARIO_AUSENTE_$c"; exit 1; }; done; python3 -m pytest -q tests/test_bronze.py -k
+      "sem_procedencia_mantem_a_marca or procedencia_json_invalido_e_erro or objeto_a_mais_diverge or
+      hash_da_procedencia_diverge or objeto_com_underscore_a_mais_diverge"'
     verifies:
     - B-2
   - id: eval_3
@@ -87,9 +93,9 @@ tasks:
   - action: aceitar o hash do arquivo sem conferir o manifesto
     reason: hash certo sem vínculo com os objetos lidos não prova nada
     instead: conferir nome, tamanho e sha256 de cada objeto listado
-  - action: contar _PROCEDENCIA.json como objeto de dado
-    reason: mudaria a contagem e o fechamento do lago
-    instead: ignorá-lo como os demais objetos auxiliares com _
+  - action: ignorar objetos pelo prefixo _ em vez de nomeá-los
+    reason: um _extra.parquet ficaria fora do manifesto sem acusar
+    instead: isentar só os auxiliares do contrato e o _PROCEDENCIA.json, um a um
   - action: editar um teste já existente de tests/test_bronze.py
     reason: teste selado que precisa mudar denuncia mudança de comportamento
     instead: só acrescentar testes novos
@@ -99,7 +105,7 @@ tasks:
   - contracts
   rollback: Reverter src/medalhao/bronze.py e tests/test_bronze.py ao commit assentado.
   observability: leituras com a marca PROCEDENCIA_NAO_VINCULADA
-source_seam_sha256: a03962bc0f395433ef3bea4982503379732e1a23b3ec82148405bacbf99e26da
+source_seam_sha256: f270284063cd4d649abcdfdae50fb41ae05d4e7552a3b8072ef13baa8c4c9478
 ---
 # A Bronze sai sem a marca quando a procedência confere
 

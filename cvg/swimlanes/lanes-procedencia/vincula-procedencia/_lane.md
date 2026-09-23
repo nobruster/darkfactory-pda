@@ -2,7 +2,7 @@ FORK: B (task-driven) — rota única desde a v3.4 — o consenso sempre entrega
 
 > Projetado de `LANE-VINCULA-PROCEDENCIA.md` pelo Seamwise.
 > **Não edite aqui** — edite a recipe e rode `seamwise plan`.
-> origem sha256: `b846cb727ed7a0149fe876e7989af075a0d2efa1ac54f1e5a86dbfa46c76635f`
+> origem sha256: `0aa215d4f91684197d92d9f138da90bcf86240b5ad5d23d1cc3cd9542597cf5d`
 
 ---
 
@@ -14,7 +14,7 @@ id: LANE-VINCULA-PROCEDENCIA
 name: Vinculador de procedência lane
 owner: medalhao
 seam_id: SEAM-VINCULA-PROCEDENCIA
-source_seam_sha256: 2b30ea2b5c5bbdbbcdd566390a434c911d47de0e28ebfd950f2b616afc427b96
+source_seam_sha256: 146229732fd00bb7e6dca66ed07d49cb20f829e3e790d53baa79d778d9758088
 legs:
 - LEG-VINCULA-PROCEDENCIA
 ---
