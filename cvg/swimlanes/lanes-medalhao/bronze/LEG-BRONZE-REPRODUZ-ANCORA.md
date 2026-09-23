@@ -1,6 +1,6 @@
 > Projetado de `LEG-BRONZE-REPRODUZ-ANCORA.md` pelo Seamwise.
 > **Não edite aqui** — edite a recipe e rode `seamwise plan`.
-> origem sha256: `b4b39196ce4fb7a5e0854eb0dfde11e383dc7d3114611941337dfcb5490c3309`
+> origem sha256: `9f533d54caf1155310da417c33ec4ce775e0cd5123f9e4e2ad9e5a275b76339a`
 
 ---
 
@@ -103,24 +103,27 @@ tasks:
       da ancorada, porque o hash correto num pacote sem vínculo verificável com a partição lida satisfaz
       a comparação textual e não prova nada. Partição que diverge é DIVERGE, e Bronze não escreve nada'
   - id: B-2
-    given: uma competência cuja partição não existe no lago, ou existe com zero linhas
+    given: uma competência cuja partição não existe no lago, existe com zero linhas, ou existe e não está
+      vazia mas NÃO tem âncora declarada no contrato
     when: Bronze lê a partição
-    then: 'retorna NAO_MEDIDO como valor, sem escrever camada nenhuma e sem encerrar o processo; partição
-      ausente e partição vazia são casos distintos e ambos NAO_MEDIDO, porque ler o lago e não encontrar
-      nada não é o mesmo que medir e encontrar zero — a Regra 9 existe porque o segundo caminho é o que
-      veste NAO_MEDIDO de MEDIDO. As outras partições do lago são nomeadas E CONTADAS na saída, e a soma
-      das contagens por partição é conferida contra o total lido — nomear sem contar afirma isolação sem
-      medi-la, e a lista de nomes continuaria idêntica se as linhas de uma partição tivessem migrado para
-      outra. A PRECEDÊNCIA é declarada e não negociável: o estado da competência SOLICITADA decide primeiro.
-      Ausente ou vazia devolve NAO_MEDIDO mesmo que o lago tenha outros problemas, porque não se reprova
-      o que não se mediu. Só quando a competência existe e foi medida é que o fechamento do lago entra
-      — e aí, se a soma das partições não fecha com o total, é DIVERGE, porque linha que não pertence
-      a partição nenhuma é contaminação — e o total vem de um UNIVERSO INDEPENDENTE, a listagem dos objetos
-      do lago, nunca da mesma leitura agrupada: somar contagens agrupadas pela própria relação lida é
-      identidade, fecha sempre, inclusive somando o grupo nulo, e não veria arquivo que as DUAS leituras
-      ignoraram. As chaves que constituem partição válida são as declaradas no contrato; objeto fora delas,
-      ou linha cuja chave de partição é nula, conta como não pertencente e faz o controle reprovar, e
-      foi para vê-la que este controle existe'
+    then: 'retorna NAO_MEDIDO como valor nos três casos — partição presente e não vazia SEM âncora é NAO_MEDIDO,
+      não DIVERGE, porque sem referencial não há contra o que divergir, e tentar comparar contra controles
+      ausentes falharia no acesso em vez de devolver veredito, sem escrever camada nenhuma e sem encerrar
+      o processo; partição ausente e partição vazia são casos distintos e ambos NAO_MEDIDO, porque ler
+      o lago e não encontrar nada não é o mesmo que medir e encontrar zero — a Regra 9 existe porque o
+      segundo caminho é o que veste NAO_MEDIDO de MEDIDO. As outras partições do lago são nomeadas E CONTADAS
+      na saída, e a soma das contagens por partição é conferida contra o total lido — nomear sem contar
+      afirma isolação sem medi-la, e a lista de nomes continuaria idêntica se as linhas de uma partição
+      tivessem migrado para outra. A PRECEDÊNCIA é declarada e não negociável: o estado da competência
+      SOLICITADA decide primeiro. Ausente ou vazia devolve NAO_MEDIDO mesmo que o lago tenha outros problemas,
+      porque não se reprova o que não se mediu. Só quando a competência existe e foi medida é que o fechamento
+      do lago entra — e aí, se a soma das partições não fecha com o total, é DIVERGE, porque linha que
+      não pertence a partição nenhuma é contaminação — e o total vem de um UNIVERSO INDEPENDENTE, a listagem
+      dos objetos do lago, nunca da mesma leitura agrupada: somar contagens agrupadas pela própria relação
+      lida é identidade, fecha sempre, inclusive somando o grupo nulo, e não veria arquivo que as DUAS
+      leituras ignoraram. As chaves que constituem partição válida são as declaradas no contrato; objeto
+      fora delas, ou linha cuja chave de partição é nula, conta como não pertencente e faz o controle
+      reprovar, e foi para vê-la que este controle existe'
   evals:
   - id: eval_1
     description: Os cinco controles comparados individualmente, e a partição medida isoladamente
@@ -131,7 +134,7 @@ tasks:
   - id: eval_2
     description: Ausente e vazia devolvem NAO_MEDIDO; medida e divergente devolve DIVERGE
     bash: bash infra/medalhao-evals.sh tests/test_bronze.py -k "particao_ausente or particao_vazia or
-      diverge_nao_e_nao_medido"
+      presente_sem_ancora or diverge_nao_e_nao_medido"
     verifies:
     - B-2
   - id: eval_3
@@ -159,7 +162,7 @@ tasks:
   - contracts
   rollback: Remover o leitor Bronze e seus testes.
   observability: partições recusadas por controle divergente
-source_seam_sha256: 4c74dcfd7a1b58e0d8f79ae0affbe67c7cf823baff236c63437ba72726d17154
+source_seam_sha256: cafd6348439d37f0447861eca772149f4221dcc179c84df891706266a7eb0cec
 ---
 # Bronze só existe quando reproduz a âncora do contrato
 

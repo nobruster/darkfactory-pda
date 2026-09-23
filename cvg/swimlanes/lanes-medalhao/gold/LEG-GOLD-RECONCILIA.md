@@ -1,6 +1,6 @@
 > Projetado de `LEG-GOLD-RECONCILIA.md` pelo Seamwise.
 > **Não edite aqui** — edite a recipe e rode `seamwise plan`.
-> origem sha256: `6057d76c26a9fac856b8b2b6053a22fd2067dab017b3e03e490ccea4563c69ca`
+> origem sha256: `e7c935f56193dfcb5696e9ca48971f4ddf91181f1eb684034bc2a43f74b4a74a`
 
 ---
 
@@ -48,33 +48,37 @@ tasks:
       é sistemática, não ruído — 2,345 + 2,345 dá 4,68 por campo e 4,69 no total, ambos meio-para-par.
       O modo é HALF_EVEN, decidido pelo ADR 0003 e preservado pelo 0009, lido do CONTRATO, nunca escolhido
       aqui, porque meio-para-cima empurra todo empate na mesma direção e vira tendência em volume. A precisão
-      é a declarada e o contexto é CONSTRUÍDO DO ZERO — localcontext(Context(prec, rounding)), nunca localcontext()
-      sozinho, que COPIA o contexto global e herda as traps junto: com traps[Inexact] ligada por qualquer
-      biblioteca importada, Decimal(''2.345'').quantize(Decimal(''.01'')) LEVANTA Inexact dentro de um
-      localcontext que declarou prec e rounding, e o arredondamento que o contrato PERMITE encerra a operação.
-      O ADR 0006 diz que a precisão é declarada e não herdada; as traps são herdadas do mesmo jeito, e
-      declarar prec e rounding não basta. Depois de agregar, a soma das linhas de Gold é RECONCILIADA
-      com a âncora do contrato e a igualdade é exata ao centavo. Soma e cardinalidade NÃO BASTAM: uma
-      redistribuição compensada entre códigos preserva as duas e troca os valores de lugar — {''01'':
-      10.00, ''03'': 20.00} e {''01'': 11.00, ''03'': 19.00} têm a mesma soma e as mesmas chaves, e acrescentar
-      os outros 63 códigos idênticos aos dois mantém o contraexemplo com os 65. Por isso o MAPA total_por_codigo
-      de Gold é comparado, código a código, contra o mapa que a camada anterior produziu, em soma EXATA
-      não quantizada; com um mapa só, deslocar valor entre códigos seria aprovado por comparação consigo
-      mesmo; Gold que não reconcilia devolve DIVERGE e NÃO publica, porque um agregado publicado sem reconciliar
-      é exatamente o que a âncora existe para impedir. A reconciliação é recalculada a partir das linhas
-      CANDIDATAS — materializadas em local privado, jamais no caminho que os consumidores leem — e não
-      herdada de Bronze, senão Gold provaria a conta de outra camada. A publicação é um passo POSTERIOR
-      e condicionado ao veredito, e o veredito CONSOME a marca PROCEDENCIA_NAO_VINCULADA que Bronze emite
-      e Silver preserva — Gold recusa publicar sob ela, e a recusa tem eval próprio, senão cada camada
-      cumpre o seu e a marca se perde na transformação: se as candidatas fossem escritas no destino para
-      depois serem relidas, o dado divergente já teria ficado exposto antes de qualquer veredito, e remover
-      depois não desfaz a exposição. Um teste que confira só o resultado final ou a ausência de arquivos
-      ao término não vê isso — o eval observa que o caminho de destino permanece inalterado DURANTE a
-      reconciliação. E a publicação em si é uma transição INDIVISÍVEL de visibilidade: o conjunto publicado
-      é exatamente o conjunto reconciliado, tudo ou nada. Copiar vários arquivos expondo-os à medida que
-      chegam deixaria um consumidor lendo parte das candidatas, ou misturadas com as da execução anterior,
-      com a reconciliação correta e o total lido por ninguém aprovado — e uma interrupção no meio congela
-      esse estado. Publicação interrompida deixa o destino como estava antes'
+      é a declarada e o contexto é CONSTRUÍDO DO ZERO — localcontext(Context(prec, rounding, traps=[]))
+      — as TRAPS são declaradas, não deixadas por conta do construtor. localcontext() sozinho COPIA o
+      contexto global e herda as traps junto; e Context(prec, rounding) sem declarar traps preenche o
+      que foi omitido a partir de DefaultContext, que é IGUALMENTE mutável, então uma biblioteca que ligue
+      DefaultContext.traps[Inexact] derruba também essa construção. O que não se declara, se herda: com
+      traps[Inexact] ligada por qualquer biblioteca importada, Decimal(''2.345'').quantize(Decimal(''.01''))
+      LEVANTA Inexact dentro de um localcontext que declarou prec e rounding, e o arredondamento que o
+      contrato PERMITE encerra a operação. O ADR 0006 diz que a precisão é declarada e não herdada; as
+      traps são herdadas do mesmo jeito, e declarar prec e rounding não basta. Depois de agregar, a soma
+      das linhas de Gold é RECONCILIADA com a âncora do contrato e a igualdade é exata ao centavo. Soma
+      e cardinalidade NÃO BASTAM: uma redistribuição compensada entre códigos preserva as duas e troca
+      os valores de lugar — {''01'': 10.00, ''03'': 20.00} e {''01'': 11.00, ''03'': 19.00} têm a mesma
+      soma e as mesmas chaves, e acrescentar os outros 63 códigos idênticos aos dois mantém o contraexemplo
+      com os 65. Por isso o MAPA total_por_codigo de Gold é comparado, código a código, contra o mapa
+      que a camada anterior produziu, em soma EXATA não quantizada; com um mapa só, deslocar valor entre
+      códigos seria aprovado por comparação consigo mesmo; Gold que não reconcilia devolve DIVERGE e NÃO
+      publica, porque um agregado publicado sem reconciliar é exatamente o que a âncora existe para impedir.
+      A reconciliação é recalculada a partir das linhas CANDIDATAS — materializadas em local privado,
+      jamais no caminho que os consumidores leem — e não herdada de Bronze, senão Gold provaria a conta
+      de outra camada. A publicação é um passo POSTERIOR e condicionado ao veredito, e o veredito CONSOME
+      a marca PROCEDENCIA_NAO_VINCULADA que Bronze emite e Silver preserva — Gold recusa publicar sob
+      ela, e a recusa tem eval próprio, senão cada camada cumpre o seu e a marca se perde na transformação:
+      se as candidatas fossem escritas no destino para depois serem relidas, o dado divergente já teria
+      ficado exposto antes de qualquer veredito, e remover depois não desfaz a exposição. Um teste que
+      confira só o resultado final ou a ausência de arquivos ao término não vê isso — o eval observa que
+      o caminho de destino permanece inalterado DURANTE a reconciliação. E a publicação em si é uma transição
+      INDIVISÍVEL de visibilidade: o conjunto publicado é exatamente o conjunto reconciliado, tudo ou
+      nada. Copiar vários arquivos expondo-os à medida que chegam deixaria um consumidor lendo parte das
+      candidatas, ou misturadas com as da execução anterior, com a reconciliação correta e o total lido
+      por ninguém aprovado — e uma interrupção no meio congela esse estado. Publicação interrompida deixa
+      o destino como estava antes'
   - id: B-2
     given: um Silver cujo total não reproduz a âncora, ou uma competência sem âncora no contrato
     when: Gold agrega
@@ -94,7 +98,7 @@ tasks:
   - id: eval_1
     description: Arredondamento único, precisão declarada, e recusa sob procedência não vinculada
     bash: bash infra/medalhao-evals.sh tests/test_gold.py -k "arredonda_uma_vez or half_even_do_contrato
-      or nao_arredonda_por_campo or contexto_construido_do_zero or recusa_sob_procedencia_nao_vinculada"
+      or nao_arredonda_por_campo or traps_declaradas or recusa_sob_procedencia_nao_vinculada"
     verifies:
     - B-1
   - id: eval_2
@@ -111,10 +115,12 @@ tasks:
     verifies:
     - B-2
   anti_patterns:
-  - action: usar localcontext() sozinho, declarando só prec e rounding
-    reason: localcontext() copia o contexto global e herda as traps; com traps[Inexact] ligada, quantize
-      levanta e o arredondamento permitido pelo contrato encerra a operação
-    instead: localcontext(Context(prec=..., rounding=...)), que constrói um contexto novo em vez de copiar
+  - action: construir o contexto decimal sem declarar as traps, seja com localcontext() sozinho ou com
+      Context(prec, rounding)
+    reason: localcontext() copia o contexto global, e Context() preenche o omitido a partir de DefaultContext
+      — os dois mutáveis; com traps[Inexact] ligada, quantize levanta e o arredondamento que o contrato
+      permite encerra a operação
+    instead: localcontext(Context(prec=..., rounding=..., traps=[]))
   - action: provar a agregação só com a soma total e a contagem de códigos
     reason: 'uma redistribuição compensada entre códigos preserva as duas e troca os valores de lugar
       — contraexemplo executado com {''01'': 10.00, ''03'': 20.00} contra {''01'': 11.00, ''03'': 19.00}'
@@ -129,7 +135,7 @@ tasks:
   - contracts
   rollback: Remover a camada Gold e seus testes.
   observability: agregados recusados por não reconciliar
-source_seam_sha256: e3d95c58890a7a1f04a14ef99bd80c8bd84099076dfe4ebca48d39b696cf9fec
+source_seam_sha256: c01c38c14cf3883ae1fb26c805b72d0689eeb1465f5d8e52751acf9b3211806b
 ---
 # Gold só publica quando reconcilia com a âncora
 
