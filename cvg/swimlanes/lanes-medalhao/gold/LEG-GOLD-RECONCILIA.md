@@ -1,6 +1,6 @@
 > Projetado de `LEG-GOLD-RECONCILIA.md` pelo Seamwise.
 > **Não edite aqui** — edite a recipe e rode `seamwise plan`.
-> origem sha256: `d2f4ee4cab2892293eab3b1dd0ab5febe1134cbdd14bf8d8a4f3d0d1d94b5e92`
+> origem sha256: `6efea99c855a1f8c4f16bc13ca00a1a4c00ae1cc688a57475170cb95ec38752d`
 
 ---
 
@@ -43,54 +43,55 @@ tasks:
     given: o Silver classificado e o contrato, com a política decimal declarada — HALF_EVEN, escala 2,
       e a precisão DERIVADA conforme o ADR 0009, que nesta competência dá 14
     when: Gold agrega por código
-    then: 'o arredondamento acontece UMA VEZ, sobre o total, como o ADR 0003 exige, na camada que o 0007
-      e o 0009 preservaram — arredondar cada código antes de somar dá resultado diferente, e a diferença
-      é sistemática, não ruído — 2,345 + 2,345 dá 4,68 por campo e 4,69 no total, ambos meio-para-par.
-      O modo é HALF_EVEN, decidido pelo ADR 0003 e preservado pelo 0009, lido do CONTRATO, nunca escolhido
-      aqui, porque meio-para-cima empurra todo empate na mesma direção e vira tendência em volume. A precisão
-      é a declarada e o contexto é CONSTRUÍDO DO ZERO — localcontext(Context(prec, rounding, traps=[],
-      Emax, Emin)) — o contexto INTEIRO declarado, e os cinco valores vêm da politica_decimal do CONTRATO,
-      que agora declara emax 999999 e emin -999999 com aprovador e data. Não são escolha de quem implementa:
-      são o limite que NÃO INTERFERE, declarado para que nenhuma biblioteca o imponha — as TRAPS são declaradas,
-      não deixadas por conta do construtor. localcontext() sozinho COPIA o contexto global e herda as
-      traps junto; e Context(prec, rounding) sem declarar traps preenche o que foi omitido a partir de
-      DefaultContext, que é IGUALMENTE mutável, então uma biblioteca que ligue DefaultContext.traps[Inexact]
-      derruba também essa construção. O que não se declara, se herda: com traps[Inexact] ligada por qualquer
-      biblioteca importada, Decimal(''2.345'').quantize(Decimal(''.01'')) LEVANTA Inexact dentro de um
-      localcontext que declarou prec e rounding, e o arredondamento que o contrato PERMITE encerra a operação.
-      O ADR 0006 diz que a precisão é declarada e não herdada; as traps são herdadas do mesmo jeito, e
-      declarar prec e rounding não basta. Gold só agrega sobre ''silver classificado'' com estado INTEGRO
-      — BLOQUEADO, DIVERGE, NAO_MEDIDO e ERRO_LEITURA param a cadeia com o estado propagado sem tradução,
-      pelo mesmo motivo que vale em Silver: estado negativo propagado para e cadeia para. Antes de reconciliar,
-      a COMPETÊNCIA que Silver carrega é comparada com a do contrato, e divergir é DIVERGE — a R-1 exige
-      que a âncora exista PARA AQUELA competência, não que contenha números iguais, e um Silver de outra
-      competência com os mesmos valores por código satisfaria soma, mapa e cardinalidade contra o contrato
-      errado. A competência atravessa Bronze e Silver sem ser descartada, como a marca de procedência.
-      Depois de agregar, a soma das linhas de Gold é RECONCILIADA com a âncora do contrato e a igualdade
-      é exata ao centavo. Soma e cardinalidade NÃO BASTAM: uma redistribuição compensada entre códigos
-      preserva as duas e troca os valores de lugar — {''01'': 10.00, ''03'': 20.00} e {''01'': 11.00,
-      ''03'': 19.00} têm a mesma soma e as mesmas chaves, e acrescentar os outros 63 códigos idênticos
-      aos dois mantém o contraexemplo com os 65. Por isso o MAPA total_por_codigo de Gold é comparado,
-      código a código, contra o mapa que a camada anterior produziu, em soma EXATA não quantizada; com
-      um mapa só, deslocar valor entre códigos seria aprovado por comparação consigo mesmo; Gold que não
-      reconcilia devolve DIVERGE e NÃO publica, porque um agregado publicado sem reconciliar é exatamente
-      o que a âncora existe para impedir. A reconciliação é recalculada a partir das linhas CANDIDATAS
-      — materializadas em local privado, jamais no caminho que os consumidores leem — e não herdada de
-      Bronze, senão Gold provaria a conta de outra camada. A capacidade ''gold reconciliado'' tem FORMA
-      declarada, como as de Bronze e Silver: o estado, as linhas agregadas — uma por código — o mapa total_por_codigo
-      em Decimal exato, o veredito da reconciliação, a competência e as marcas de limitação. A publicação
-      é um passo POSTERIOR e condicionado ao veredito, e o veredito CONSOME a marca PROCEDENCIA_NAO_VINCULADA
-      que Bronze emite e Silver preserva — Gold recusa publicar sob ela, e a recusa tem eval próprio,
-      senão cada camada cumpre o seu e a marca se perde na transformação: se as candidatas fossem escritas
-      no destino para depois serem relidas, o dado divergente já teria ficado exposto antes de qualquer
-      veredito, e remover depois não desfaz a exposição. Um teste que confira só o resultado final ou
-      a ausência de arquivos ao término não vê isso — o eval observa que o caminho de destino permanece
-      inalterado DURANTE a reconciliação. E a publicação em si é uma transição INDIVISÍVEL de visibilidade:
-      o conjunto publicado é exatamente o conjunto reconciliado, tudo ou nada. Copiar vários arquivos
-      expondo-os à medida que chegam deixaria um consumidor lendo parte das candidatas, ou misturadas
-      com as da execução anterior, com a reconciliação correta e o total lido por ninguém aprovado — e
-      uma interrupção no meio congela esse estado. Publicação interrompida deixa o destino como estava
-      antes'
+    then: 'A agregação por código e a comparação do mapa rodam NO MOTOR, sem coletar as linhas de Silver
+      — só as 65 linhas agregadas e os totais saem do motor. o arredondamento acontece UMA VEZ, sobre
+      o total, como o ADR 0003 exige, na camada que o 0007 e o 0009 preservaram — arredondar cada código
+      antes de somar dá resultado diferente, e a diferença é sistemática, não ruído — 2,345 + 2,345 dá
+      4,68 por campo e 4,69 no total, ambos meio-para-par. O modo é HALF_EVEN, decidido pelo ADR 0003
+      e preservado pelo 0009, lido do CONTRATO, nunca escolhido aqui, porque meio-para-cima empurra todo
+      empate na mesma direção e vira tendência em volume. A precisão é a declarada e o contexto é CONSTRUÍDO
+      DO ZERO — localcontext(Context(prec, rounding, traps=[], Emax, Emin)) — o contexto INTEIRO declarado,
+      e os cinco valores vêm da politica_decimal do CONTRATO, que agora declara emax 999999 e emin -999999
+      com aprovador e data. Não são escolha de quem implementa: são o limite que NÃO INTERFERE, declarado
+      para que nenhuma biblioteca o imponha — as TRAPS são declaradas, não deixadas por conta do construtor.
+      localcontext() sozinho COPIA o contexto global e herda as traps junto; e Context(prec, rounding)
+      sem declarar traps preenche o que foi omitido a partir de DefaultContext, que é IGUALMENTE mutável,
+      então uma biblioteca que ligue DefaultContext.traps[Inexact] derruba também essa construção. O que
+      não se declara, se herda: com traps[Inexact] ligada por qualquer biblioteca importada, Decimal(''2.345'').quantize(Decimal(''.01''))
+      LEVANTA Inexact dentro de um localcontext que declarou prec e rounding, e o arredondamento que o
+      contrato PERMITE encerra a operação. O ADR 0006 diz que a precisão é declarada e não herdada; as
+      traps são herdadas do mesmo jeito, e declarar prec e rounding não basta. Gold só agrega sobre ''silver
+      classificado'' com estado INTEGRO — BLOQUEADO, DIVERGE, NAO_MEDIDO e ERRO_LEITURA param a cadeia
+      com o estado propagado sem tradução, pelo mesmo motivo que vale em Silver: estado negativo propagado
+      para e cadeia para. Antes de reconciliar, a COMPETÊNCIA que Silver carrega é comparada com a do
+      contrato, e divergir é DIVERGE — a R-1 exige que a âncora exista PARA AQUELA competência, não que
+      contenha números iguais, e um Silver de outra competência com os mesmos valores por código satisfaria
+      soma, mapa e cardinalidade contra o contrato errado. A competência atravessa Bronze e Silver sem
+      ser descartada, como a marca de procedência. Depois de agregar, a soma das linhas de Gold é RECONCILIADA
+      com a âncora do contrato e a igualdade é exata ao centavo. Soma e cardinalidade NÃO BASTAM: uma
+      redistribuição compensada entre códigos preserva as duas e troca os valores de lugar — {''01'':
+      10.00, ''03'': 20.00} e {''01'': 11.00, ''03'': 19.00} têm a mesma soma e as mesmas chaves, e acrescentar
+      os outros 63 códigos idênticos aos dois mantém o contraexemplo com os 65. Por isso o MAPA total_por_codigo
+      de Gold é comparado, código a código, contra o mapa que a camada anterior produziu, em soma EXATA
+      não quantizada; com um mapa só, deslocar valor entre códigos seria aprovado por comparação consigo
+      mesmo; Gold que não reconcilia devolve DIVERGE e NÃO publica, porque um agregado publicado sem reconciliar
+      é exatamente o que a âncora existe para impedir. A reconciliação é recalculada a partir das linhas
+      CANDIDATAS — materializadas em local privado, jamais no caminho que os consumidores leem — e não
+      herdada de Bronze, senão Gold provaria a conta de outra camada. A capacidade ''gold reconciliado''
+      tem FORMA declarada, como as de Bronze e Silver: o estado, as linhas agregadas — uma por código
+      — o mapa total_por_codigo em Decimal exato, o veredito da reconciliação, a competência e as marcas
+      de limitação. A publicação é um passo POSTERIOR e condicionado ao veredito, e o veredito CONSOME
+      a marca PROCEDENCIA_NAO_VINCULADA que Bronze emite e Silver preserva — Gold recusa publicar sob
+      ela, e a recusa tem eval próprio, senão cada camada cumpre o seu e a marca se perde na transformação:
+      se as candidatas fossem escritas no destino para depois serem relidas, o dado divergente já teria
+      ficado exposto antes de qualquer veredito, e remover depois não desfaz a exposição. Um teste que
+      confira só o resultado final ou a ausência de arquivos ao término não vê isso — o eval observa que
+      o caminho de destino permanece inalterado DURANTE a reconciliação. E a publicação em si é uma transição
+      INDIVISÍVEL de visibilidade: o conjunto publicado é exatamente o conjunto reconciliado, tudo ou
+      nada. Copiar vários arquivos expondo-os à medida que chegam deixaria um consumidor lendo parte das
+      candidatas, ou misturadas com as da execução anterior, com a reconciliação correta e o total lido
+      por ninguém aprovado — e uma interrupção no meio congela esse estado. Publicação interrompida deixa
+      o destino como estava antes'
   - id: B-2
     given: um Silver cujo total não reproduz a âncora, ou uma competência sem âncora no contrato
     when: Gold agrega
@@ -155,7 +156,7 @@ tasks:
   - contracts
   rollback: Remover a camada Gold e seus testes.
   observability: agregados recusados por não reconciliar
-source_seam_sha256: c2d86617b619189864606c39a01ac4e4eccb489c0ba6e7134a73f3d8ee29a2f8
+source_seam_sha256: 569c35691f1ebfeed13efa57b00780681dc1281f8d8d6de69bf4e66d4ac67bbf
 ---
 # Gold só publica quando reconcilia com a âncora
 

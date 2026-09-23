@@ -1,6 +1,6 @@
 > Projetado de `LEG-SILVER-PRESERVA-DEFEITO.md` pelo Seamwise.
 > **Não edite aqui** — edite a recipe e rode `seamwise plan`.
-> origem sha256: `2effdd30126cffbc17681764e074aaedf79d157cc20f50f7b41aa72306429b43`
+> origem sha256: `651a8e98264a19c76a93b73cb1ceb8c27f09836a82cead5f02dad04ca5595aa8`
 
 ---
 
@@ -59,47 +59,56 @@ tasks:
       um colapso criado pela própria camada. A CONTAGEM DE COLAPSOS é medida sobre a descrição ORIGINAL,
       nunca sobre a normalizada, porque a normalização pode FUNDIR descrições que a fonte publica distintas:
       ''ABC'' e ''abc'' de códigos diferentes viram um grupo só depois de igualar a caixa, e o colapso
-      criado pela camada seria atribuído à fonte, ou uma partição correta receberia DIVERGE. Se as duas
-      contagens diferirem, a diferença é da normalização, sai nomeada E RECEBE uma das seis classificações
-      da R-6 como qualquer outra — identidade criada na saída normalizada é diferença, e diferença nomeada
-      sem classificação fica sem dono, que é o vício que a R-6 existe para fechar; ela não é somada aos
-      11 do contrato. E a descrição ORIGINAL é PRESERVADA no registro do defeito, não apenas usada para
-      contar — medir sobre ela e depois gravar o texto normalizado faria ''ABC'' e ''abc'' virarem indistinguíveis
-      na saída, com as contagens corretas e a prova específica perdida. A Regra 4 pede preservar o defeito,
-      e defeito de identidade sem a identidade original não é preservação. O valor monetário atravessa
-      como Decimal sob um contexto construído INTEIRO a partir da politica_decimal do contrato — Context(prec,
-      rounding, traps=[], Emax, Emin) — pelo mesmo motivo que vale em Bronze e Gold: Silver SOMA, e declarar
-      só a precisão deixa traps e limites de expoente virem do DefaultContext, que é mutável. Silver só
-      transforma sobre ''bronze conferido'' com estado INTEGRO — DIVERGE, NAO_MEDIDO e ERRO_LEITURA PARAM
-      a cadeia aqui, com o estado propagado sem tradução, porque um Bronze que divergiu por máximo alterado
-      preserva soma, cardinalidades e identidades, e todas as provas de conservação de Silver passariam
-      sobre linhas que Bronze já reprovou. A COMPETÊNCIA que Bronze leu e a marca PROCEDENCIA_NAO_VINCULADA,
-      quando Bronze a emite, atravessam Silver SEM serem removidas e segue em ''silver classificado''
-      — remover uma marca de limitação é apagar prova, não normalizar. A capacidade ''silver classificado''
-      tem FORMA declarada, como a de Bronze: o estado, AS LINHAS normalizadas e classificadas — código,
-      descrição original, descrição normalizada e valor — o mapa total_por_codigo em soma EXATA não quantizada,
-      os defeitos classificados, a competência e as marcas de limitação. Sem as linhas, Gold fica sem
-      entrada para agregar as próprias candidatas, e consumir o mapa pronto enfraqueceria a independência
-      que o plano dele exige — Gold o consome, e sem essa declaração Gold recalcularia os dois lados com
-      a mesma transformação, perdendo a independência que o próprio plano dele exige. A conservação provada
-      NÃO é só a soma global: o mapa de Silver é comparado com o de Bronze CÓDIGO A CÓDIGO, porque trocar
-      os valores de dois códigos preserva soma, chaves, cardinalidades e grupos — {''01'': 10.00, ''03'':
-      20.00} virando {''01'': 20.00, ''03'': 10.00} passa em toda prova global e altera o resultado por
-      espécie. O MULTICONJUNTO de linhas de Silver é idêntico ao de Bronze no que toca código, DESCRIÇÃO
-      ORIGINAL e valor — com a descrição dentro, porque trocar as descrições originais entre dois códigos
-      não colapsados, (''01'', ''A'', 10) e (''03'', ''B'', 20) virando (''01'', ''B'', 10) e (''03'',
-      ''A'', 20), mantém um multiconjunto de só código e valor, todos os totais e as quatro cardinalidades
-      — igualdade linha a linha, não agregada: duas linhas do MESMO código e MESMA descrição, 10.00 e
-      20.00, virando 11.00 e 19.00 preservam contagem, soma E o mapa por código, porque o mapa agrega
-      justamente por código e não separa linhas irmãs. Por isso a prova é sobre o multiconjunto, e a contagem
-      de linhas de Silver é idêntica à de Bronze — soma e mapa por código não bastam: remover uma linha
-      de valor ZERO cuja combinação código/descrição continue presente preserva a soma, o mapa, as cardinalidades
-      e os colapsos, e a perda passaria em toda prova declarada. A soma de Silver também é comparada com
-      a de Bronze e precisa ser IDÊNTICA — um pipeline que altera o total ao normalizar texto tem um defeito,
-      não uma melhoria. Cada colapso recebe EXATAMENTE UMA das seis classificações e a contagem medida
-      é conferida contra a do contrato — encontrar número diferente de 11 é DIVERGE, porque o contrato
-      mediu na competência inteira e a divergência significa fonte diferente da ancorada, não permissão
-      para ajustar o número'
+      criado pela camada seria atribuído à fonte, ou uma partição correta receberia DIVERGE. A prova de
+      que a normalização não fundiu identidades NÃO é contar grupos — é comparar, CÓDIGO A CÓDIGO, o conjunto
+      de códigos que compartilham a descrição antes e depois de normalizar. Contar falha: se ''ABC'' cobre
+      01 e 02 e ''abc'' cobre 03, há um grupo colapsado antes e um depois, e o 03 perdeu identidade sem
+      a contagem mudar. Todo código cujo grupo mudou é COLAPSO INTRODUZIDO PELA CAMADA, e ele NÃO é classificável
+      aqui: o contrato diz que defeito fora da lista conhecida bloqueia, e rotulá-lo MODERN_DEFECT deixaria
+      passar uma fusão que a própria camada criou. Silver sai BLOQUEADO, com os códigos afetados nomeados.
+      Se as contagens diferirem, a diferença também sai nomeada — identidade criada na saída normalizada
+      é diferença, e diferença nomeada sem classificação fica sem dono, que é o vício que a R-6 existe
+      para fechar; ela não é somada aos 11 do contrato. E a descrição ORIGINAL é PRESERVADA no registro
+      do defeito, não apenas usada para contar — medir sobre ela e depois gravar o texto normalizado faria
+      ''ABC'' e ''abc'' virarem indistinguíveis na saída, com as contagens corretas e a prova específica
+      perdida. A Regra 4 pede preservar o defeito, e defeito de identidade sem a identidade original não
+      é preservação. O valor monetário atravessa como Decimal sob um contexto construído INTEIRO a partir
+      da politica_decimal do contrato — Context(prec, rounding, traps=[], Emax, Emin) — pelo mesmo motivo
+      que vale em Bronze e Gold: Silver SOMA, e declarar só a precisão deixa traps e limites de expoente
+      virem do DefaultContext, que é mutável. Silver só transforma sobre ''bronze conferido'' com estado
+      INTEGRO — DIVERGE, NAO_MEDIDO e ERRO_LEITURA PARAM a cadeia aqui, com o estado propagado sem tradução,
+      porque um Bronze que divergiu por máximo alterado preserva soma, cardinalidades e identidades, e
+      todas as provas de conservação de Silver passariam sobre linhas que Bronze já reprovou. A COMPETÊNCIA
+      que Bronze leu e a marca PROCEDENCIA_NAO_VINCULADA, quando Bronze a emite, atravessam Silver SEM
+      serem removidas e segue em ''silver classificado'' — remover uma marca de limitação é apagar prova,
+      não normalizar. A capacidade ''silver classificado'' tem FORMA declarada, como a de Bronze: o estado,
+      AS LINHAS normalizadas e classificadas — código, descrição original, descrição normalizada e valor
+      — o mapa total_por_codigo em soma EXATA não quantizada, os defeitos classificados, a competência
+      e as marcas de limitação. Sem as linhas, Gold fica sem entrada para agregar as próprias candidatas,
+      e consumir o mapa pronto enfraqueceria a independência que o plano dele exige — Gold o consome,
+      e sem essa declaração Gold recalcularia os dois lados com a mesma transformação, perdendo a independência
+      que o próprio plano dele exige. A conservação provada NÃO é só a soma global: o mapa de Silver é
+      comparado com o de Bronze CÓDIGO A CÓDIGO, porque trocar os valores de dois códigos preserva soma,
+      chaves, cardinalidades e grupos — {''01'': 10.00, ''03'': 20.00} virando {''01'': 20.00, ''03'':
+      10.00} passa em toda prova global e altera o resultado por espécie. Toda comparação desta camada
+      roda NO MOTOR, sobre as 41.572.553 linhas, sem coletar: o multiconjunto é comparado como diferença
+      simétrica de contagens agrupadas por (código, descrição original, valor), e igualdade é essa diferença
+      vazia — uma coleção Python com quarenta milhões de Decimal não cabe em memória e faria o Pass 8
+      cair na primeira execução real, com os testes de fixture passando. O MULTICONJUNTO de linhas de
+      Silver é idêntico ao de Bronze no que toca código, DESCRIÇÃO ORIGINAL e valor — com a descrição
+      dentro, porque trocar as descrições originais entre dois códigos não colapsados, (''01'', ''A'',
+      10) e (''03'', ''B'', 20) virando (''01'', ''B'', 10) e (''03'', ''A'', 20), mantém um multiconjunto
+      de só código e valor, todos os totais e as quatro cardinalidades — igualdade linha a linha, não
+      agregada: duas linhas do MESMO código e MESMA descrição, 10.00 e 20.00, virando 11.00 e 19.00 preservam
+      contagem, soma E o mapa por código, porque o mapa agrega justamente por código e não separa linhas
+      irmãs. Por isso a prova é sobre o multiconjunto, e a contagem de linhas de Silver é idêntica à de
+      Bronze — soma e mapa por código não bastam: remover uma linha de valor ZERO cuja combinação código/descrição
+      continue presente preserva a soma, o mapa, as cardinalidades e os colapsos, e a perda passaria em
+      toda prova declarada. A soma de Silver também é comparada com a de Bronze e precisa ser IDÊNTICA
+      — um pipeline que altera o total ao normalizar texto tem um defeito, não uma melhoria. Cada colapso
+      recebe EXATAMENTE UMA das seis classificações e a contagem medida é conferida contra a do contrato
+      — encontrar número diferente de 11 é DIVERGE, porque o contrato mediu na competência inteira e a
+      divergência significa fonte diferente da ancorada, não permissão para ajustar o número'
   - id: B-2
     given: um código cuja descrição diverge do contrato, ou um colapso não declarado
     when: Silver normaliza
@@ -132,21 +141,22 @@ tasks:
     description: Chave é o código; contagem, mapa e soma preservados, inclusive linha de valor zero
     bash: docker compose -f infra/docker-compose.yml exec -T spark sh -c 'for c in chave_e_codigo multiconjunto_identico
       linhas_irmas_com_valores_trocados linha_de_valor_zero_nao_some mapa_por_codigo_preservado contexto_declarado
-      entrega_as_linhas_normalizadas descricao_trocada_entre_codigos; do python3 -m pytest --collect-only
-      -q tests/test_silver.py -k "$c" 2>/dev/null | grep -q "::" || { echo "EVAL=CENARIO_AUSENTE_$c";
+      entrega_as_linhas_normalizadas descricao_trocada_entre_codigos multiconjunto_sem_coletar; do python3
+      -m pytest --collect-only -q tests/test_silver.py -k "$c" 2>/dev/null | grep -q "::" || { echo "EVAL=CENARIO_AUSENTE_$c";
       exit 1; }; done; python3 -m pytest -q tests/test_silver.py -k "chave_e_codigo or multiconjunto_identico
       or linhas_irmas_com_valores_trocados or linha_de_valor_zero_nao_some or mapa_por_codigo_preservado
-      or contexto_declarado or entrega_as_linhas_normalizadas or descricao_trocada_entre_codigos"'
+      or contexto_declarado or entrega_as_linhas_normalizadas or descricao_trocada_entre_codigos or multiconjunto_sem_coletar"'
     verifies:
     - B-1
   - id: eval_2
     description: Os 11 colapsos saem classificados e a contagem confere
     bash: docker compose -f infra/docker-compose.yml exec -T spark sh -c 'for c in colapso_classificado
       quatro_cardinalidades classificacao_unica colapsos_na_descricao_original colapso_da_normalizacao_classificado
-      recusa_bronze_nao_integro; do python3 -m pytest --collect-only -q tests/test_silver.py -k "$c" 2>/dev/null
-      | grep -q "::" || { echo "EVAL=CENARIO_AUSENTE_$c"; exit 1; }; done; python3 -m pytest -q tests/test_silver.py
-      -k "colapso_classificado or quatro_cardinalidades or classificacao_unica or colapsos_na_descricao_original
-      or colapso_da_normalizacao_classificado or recusa_bronze_nao_integro"'
+      recusa_bronze_nao_integro colapso_introduzido_por_codigo_bloqueia; do python3 -m pytest --collect-only
+      -q tests/test_silver.py -k "$c" 2>/dev/null | grep -q "::" || { echo "EVAL=CENARIO_AUSENTE_$c";
+      exit 1; }; done; python3 -m pytest -q tests/test_silver.py -k "colapso_classificado or quatro_cardinalidades
+      or classificacao_unica or colapsos_na_descricao_original or colapso_da_normalizacao_classificado
+      or recusa_bronze_nao_integro or colapso_introduzido_por_codigo_bloqueia"'
     verifies:
     - B-1
   - id: eval_3
@@ -177,7 +187,7 @@ tasks:
   - contracts
   rollback: Remover a camada Silver e seus testes.
   observability: colapsos classificados por competência
-source_seam_sha256: 924e3649df445ebacc9695b930f9f657591f45f9cd079d8ad3fe778c9c9fe9c5
+source_seam_sha256: d87824046c6f4b9f7632e01daa92f5ea29afa137b5a5f3de8a54cae1d2a1b51c
 ---
 # Silver classifica o defeito e conserva o total
 
