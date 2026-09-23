@@ -1,0 +1,54 @@
+schema_version: 1
+status: DELIVERY_PLAN=READY
+seam_map_sha256: 4c59d1d331c7e8b93896a410f0e8f4b092c1c3e5747d6b7b9af27126473025ca
+swimlanes:
+- id: LANE-CONTRATO-EXT
+  seam_id: SEAM-CONTRATO-EXT
+  owner: medalhao
+  path: seamwise/swimlanes/LANE-CONTRATO-EXT.md
+  sha256: 9c0b54cd14c8bd98f954236a8c662b5ed316a9d8d264c61708e86b17dd19ac01
+- id: LANE-BRONZE
+  seam_id: SEAM-BRONZE
+  owner: medalhao
+  path: seamwise/swimlanes/LANE-BRONZE.md
+  sha256: 093ad28816d3d6050c1a2cd26ea3baf66af68ef8461b76fdaf18c9a66f631296
+- id: LANE-SILVER
+  seam_id: SEAM-SILVER
+  owner: medalhao
+  path: seamwise/swimlanes/LANE-SILVER.md
+  sha256: fc389fe288acc6c7c90a1e2099550f0a7fa8fc4541f14405864d483ddc9fa069
+- id: LANE-GOLD
+  seam_id: SEAM-GOLD
+  owner: medalhao
+  path: seamwise/swimlanes/LANE-GOLD.md
+  sha256: 034b587e61ea44414053b01209bc89f5716caa300646d2556f1eca193035307b
+legs:
+- id: LEG-CONTRATO-EXPOE-PARTICAO
+  seam_id: SEAM-CONTRATO-EXT
+  swimlane_id: LANE-CONTRATO-EXT
+  path: seamwise/legs/LEG-CONTRATO-EXPOE-PARTICAO.md
+  sha256: 2e3e4ad667ae40d7751690578d98d5f3cacaa63a1fce1fca6a42a8d4e93bb1b8
+- id: LEG-BRONZE-REPRODUZ-ANCORA
+  seam_id: SEAM-BRONZE
+  swimlane_id: LANE-BRONZE
+  path: seamwise/legs/LEG-BRONZE-REPRODUZ-ANCORA.md
+  sha256: 22d8061e2672585ec608d208c0ce7471017ea33e3b62344111a045deb2220957
+- id: LEG-SILVER-PRESERVA-DEFEITO
+  seam_id: SEAM-SILVER
+  swimlane_id: LANE-SILVER
+  path: seamwise/legs/LEG-SILVER-PRESERVA-DEFEITO.md
+  sha256: bf7fba3686a889fde4a6df55d30167b6234b73f8c86cb2abdcd15c2e5339ef58
+- id: LEG-GOLD-RECONCILIA
+  seam_id: SEAM-GOLD
+  swimlane_id: LANE-GOLD
+  path: seamwise/legs/LEG-GOLD-RECONCILIA.md
+  sha256: 20c44cb1985151f0d618708ffa410e80417f8d5a87602598572d9a06c8a837b3
+steel_thread:
+- LEG-BRONZE-REPRODUZ-ANCORA
+- LEG-SILVER-PRESERVA-DEFEITO
+- LEG-GOLD-RECONCILIA
+objections: []
+contentions: []
+steel_thread_path: seamwise/steel-thread.md
+steel_thread_sha256: bf51bef6e893fee42b1c9f7b706f1c8d32efe539d46a2c5f5953ee32e2442953
+review_authority_sha256: 7ec4dd3c3a2fac7a8d18b4b100dfc65fea6ae85bdead653704e7393f91714a7f

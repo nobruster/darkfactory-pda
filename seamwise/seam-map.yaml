@@ -1,0 +1,55 @@
+schema_version: 1
+status: SEAM_MAP=READY
+intent_id: DI-PDA-MEDALHAO
+source_recipe:
+  name: medalhao-recipe.yaml
+  sha256: 1bc13ab7c71f12fd5cc3150a18b548de2739b7e82ff6c24beb39910f9016c480
+intent_sha256: c2ca79fc25d8b7b890a37811980190e0a2f53b87b5bd473abfc729ca5e96f340
+system_map_sha256: d9c0af203fb583004eb1501a3d175b6c3e8035a076bacdf0e001d2f9a97af879
+evidence_sha256: f601d0840184c26f965db2920850c41b94472dd57c4647ccd73dff8b40a9ca3c
+decisions:
+- id: ADR-0002-POSICIONAL
+  path: seamwise/decisions/ADR-0002-POSICIONAL.md
+  status: accepted
+  sha256: 9169d73fdb90b181ed951add20e93350e3bc1627e503dcca90cc04984527a88b
+- id: ADR-0003-HALF-EVEN
+  path: seamwise/decisions/ADR-0003-HALF-EVEN.md
+  status: accepted
+  sha256: b09504c6ee425d8beb540da2be7ac9b72031c58c8e80fa20dbe6ca56f7eb35b6
+- id: ADR-0004-CODIGO-E-CHAVE
+  path: seamwise/decisions/ADR-0004-CODIGO-E-CHAVE.md
+  status: accepted
+  sha256: 6b01f69703c83af46012050459ccf9431e0bc4795c8b87fea37262696cfeb1b3
+- id: DEC-MAPA-APROVADO-OBRIGATORIO
+  path: seamwise/decisions/DEC-MAPA-APROVADO-OBRIGATORIO.md
+  status: accepted
+  sha256: da30838c48e308e844a971e784442d376e9a420a0d822d3b4a2040404b895a31
+seams:
+- id: SEAM-CONTRATO-EXT
+  path: seamwise/seams/SEAM-CONTRATO-EXT.md
+  owner: medalhao
+  evidence:
+  - E-ANCORA-202601
+  swimlane_id: LANE-CONTRATO-EXT
+  sha256: 2f73670ab88c541301ec3f39979bd682e1d741146b24e8c3d5afcde901ade7c7
+- id: SEAM-BRONZE
+  path: seamwise/seams/SEAM-BRONZE.md
+  owner: medalhao
+  evidence:
+  - E-ANCORA-202601
+  swimlane_id: LANE-BRONZE
+  sha256: 849221b29714b305887280c1d733941ee95d697bc0f9d8d347ed6cfc7c43f260
+- id: SEAM-SILVER
+  path: seamwise/seams/SEAM-SILVER.md
+  owner: medalhao
+  evidence:
+  - E-ESPECIE-TRUNCADA
+  swimlane_id: LANE-SILVER
+  sha256: 7c6310788594b11801c067ecdfe0d34beaa63c22694e6bf025d4922d77bb9997
+- id: SEAM-GOLD
+  path: seamwise/seams/SEAM-GOLD.md
+  owner: medalhao
+  evidence:
+  - E-ANCORA-202601
+  swimlane_id: LANE-GOLD
+  sha256: 7c61b88a163e814484a5d71b29df1bfdc6e2bcccfb4bea362e84b66fdec3ae10

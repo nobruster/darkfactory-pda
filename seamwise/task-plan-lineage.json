@@ -1,0 +1,55 @@
+{
+  "contract": "SeamwiseTaskPlanLineage/v1",
+  "delivery_plan_sha256": "05133b31cdb767afa1869073c9fff615396168e2983e59e176ab127e908e8fd5",
+  "engine_version": "0.2.0",
+  "intent": {
+    "id": "DI-PDA-MEDALHAO",
+    "sha256": "c2ca79fc25d8b7b890a37811980190e0a2f53b87b5bd473abfc729ca5e96f340"
+  },
+  "review": {
+    "fixture": false,
+    "plan_sha256": "05133b31cdb767afa1869073c9fff615396168e2983e59e176ab127e908e8fd5",
+    "reviewed_at": "2026-09-23T15:47:33.675949+00:00",
+    "reviewer": "Bruno Nunes",
+    "sha256": "d8d6bfb400375736844b37bb40417a926791284112051a8ee936265536929328"
+  },
+  "task_plan": {
+    "contract": "TaskPlan/v1",
+    "digest": "0729c2cae0b21c69da1240d12f6c3371c7930025cf9e0a7979f1b46227b087d4",
+    "path": "seamwise/task-plan.json"
+  },
+  "units": {
+    "T-20260922-bronze-confere-ancora": {
+      "intent": "DI-PDA-MEDALHAO",
+      "leg": "LEG-BRONZE-REPRODUZ-ANCORA",
+      "seam": "SEAM-BRONZE",
+      "source_sha256": "22d8061e2672585ec608d208c0ce7471017ea33e3b62344111a045deb2220957",
+      "swimlane": "LANE-BRONZE",
+      "unit_id": "T-20260922-bronze-confere-ancora"
+    },
+    "T-20260922-gold-reconcilia-ancora": {
+      "intent": "DI-PDA-MEDALHAO",
+      "leg": "LEG-GOLD-RECONCILIA",
+      "seam": "SEAM-GOLD",
+      "source_sha256": "20c44cb1985151f0d618708ffa410e80417f8d5a87602598572d9a06c8a837b3",
+      "swimlane": "LANE-GOLD",
+      "unit_id": "T-20260922-gold-reconcilia-ancora"
+    },
+    "T-20260922-silver-classifica-colapso": {
+      "intent": "DI-PDA-MEDALHAO",
+      "leg": "LEG-SILVER-PRESERVA-DEFEITO",
+      "seam": "SEAM-SILVER",
+      "source_sha256": "bf7fba3686a889fde4a6df55d30167b6234b73f8c86cb2abdcd15c2e5339ef58",
+      "swimlane": "LANE-SILVER",
+      "unit_id": "T-20260922-silver-classifica-colapso"
+    },
+    "T-20260923-contrato-expoe-particao": {
+      "intent": "DI-PDA-MEDALHAO",
+      "leg": "LEG-CONTRATO-EXPOE-PARTICAO",
+      "seam": "SEAM-CONTRATO-EXT",
+      "source_sha256": "2e3e4ad667ae40d7751690578d98d5f3cacaa63a1fce1fca6a42a8d4e93bb1b8",
+      "swimlane": "LANE-CONTRATO-EXT",
+      "unit_id": "T-20260923-contrato-expoe-particao"
+    }
+  }
+}

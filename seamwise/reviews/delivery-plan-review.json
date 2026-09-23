@@ -1,0 +1,10 @@
+{
+  "disposition": "accepted",
+  "draft_sha256": "e99c898644eee352dd0b195d079f71bdfa335c09a0161f5f1de4634575d78a00",
+  "fixture": false,
+  "plan_sha256": "05133b31cdb767afa1869073c9fff615396168e2983e59e176ab127e908e8fd5",
+  "reason": "Pass 4 do medalhao fechado com CHECK_CONSENSUS=OK na R30, cada objecao decidida com razao propria e procedencia verificada sobre os 8 arquivos do plano. Quatro costuras, quatro lanes, grafo fechado com seis estados produzidos.",
+  "reviewed_at": "2026-09-23T15:47:33.675949+00:00",
+  "reviewer": "Bruno Nunes",
+  "schema_version": 1
+}
