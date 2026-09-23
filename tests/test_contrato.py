@@ -302,3 +302,146 @@ def test_layout_recusa_declaracao_por_nome_em_vez_de_indice(tmp_path):
 
     with pytest.raises(ContratoRecusado):
         carregar_contrato(caminho)
+
+
+# --- Extensão: particionamento, limites de expoente e mapa de colapsos ---
+
+CONTRATO_REAL = Path(__file__).resolve().parent.parent / "contracts" / "competencia-202601.yaml"
+
+
+def _com_blocos_novos() -> dict:
+    d = _contrato_valido()
+    d["politica_decimal"]["emax"] = 999999
+    d["politica_decimal"]["emin"] = -999999
+    d["particionamento"] = {
+        "chave": "competencia",
+        "caminho": "s3a://landing/pda/beneficios-emitidos",
+        "formato": "parquet",
+        "valores_medidos": ["2026-01", "fatia-teste"],
+        "objetos_auxiliares_ignorados": ["_SUCCESS"],
+    }
+    d["mapa_colapsos"] = {
+        "grupos": [{"descricao": "APOSENTADORIA", "codigos": ["01", "02"]}],
+        "aprovado_por": "nobru",
+        "aprovado_em": "2026-09-23",
+    }
+    return d
+
+
+def _recusa(tmp_path, mutar):
+    d = _com_blocos_novos()
+    mutar(d)
+    with pytest.raises(ContratoRecusado):
+        carregar_contrato(_escrever(tmp_path, d))
+
+
+def test_expoe_particionamento(tmp_path):
+    p = carregar_contrato(_escrever(tmp_path, _com_blocos_novos())).particionamento
+    assert p.chave == "competencia"
+    assert p.caminho == "s3a://landing/pda/beneficios-emitidos"
+    assert p.formato == "parquet"
+    assert p.valores_medidos == ("2026-01", "fatia-teste")
+    assert p.objetos_auxiliares_ignorados == ("_SUCCESS",)
+
+
+def test_expoe_limites_de_expoente(tmp_path):
+    c = carregar_contrato(_escrever(tmp_path, _com_blocos_novos()))
+    assert c.politica_decimal.emax == 999999
+    assert c.politica_decimal.emin == -999999
+
+
+def test_expoe_mapa_de_colapsos(tmp_path):
+    m = carregar_contrato(_escrever(tmp_path, _com_blocos_novos())).mapa_colapsos
+    assert m.aprovado_por == "nobru" and m.aprovado_em == "2026-09-23"
+    assert m.grupos[0].descricao == "APOSENTADORIA"
+    assert m.grupos[0].codigos == ("01", "02")
+
+
+def test_campos_novos_sao_opcionais(tmp_path):
+    c = carregar_contrato(_escrever(tmp_path, _contrato_valido()))
+    assert c.particionamento is None
+    assert c.mapa_colapsos is None
+
+
+def test_ausencia_vira_none_nao_zero(tmp_path):
+    c = carregar_contrato(_escrever(tmp_path, _contrato_valido()))
+    assert c.politica_decimal.emax is None
+    assert c.politica_decimal.emin is None
+
+
+def test_fixture_sem_campos_novos(tmp_path):
+    c = carregar_contrato(_escrever(tmp_path, _contrato_valido()))
+    assert c != NAO_MEDIDO
+    assert c.ancora.count_linhas == 41572553
+
+
+def test_suite_selada_continua_passando(tmp_path):
+    # O comportamento selado segue intacto com os blocos novos presentes.
+    c = carregar_contrato(_escrever(tmp_path, _com_blocos_novos()))
+    assert c.politica_decimal.precisao == 14
+    assert c.ancora.sum_vl_liquido == Decimal("78521752562.12")
+
+
+def test_contrato_real_expoe_os_dois():
+    c = carregar_contrato(CONTRATO_REAL)
+    assert c.particionamento.chave == "competencia"
+    assert "fatia-teste" in c.particionamento.valores_medidos
+    assert c.politica_decimal.emax == 999999
+    assert c.politica_decimal.emin == -999999
+
+
+def test_limites_que_estouram_a_ancora_recusados(tmp_path):
+    _recusa(tmp_path, lambda d: d["politica_decimal"].update(emax=9, emin=-10))
+
+
+def test_nao_relaxa_recusa_de_float(tmp_path):
+    _recusa(tmp_path, lambda d: d["ancora"].update(sum_vl_liquido=78521752562.12))
+
+
+def test_nao_muda_precisao_derivada(tmp_path):
+    _recusa(tmp_path, lambda d: d["politica_decimal"].update(precisao=13))
+
+
+def test_nao_le_o_yaml_duas_vezes(tmp_path, monkeypatch):
+    import pda.contrato as mod
+
+    chamadas = []
+    original = mod.yaml.safe_load
+    monkeypatch.setattr(
+        mod.yaml, "safe_load", lambda *a, **k: chamadas.append(1) or original(*a, **k)
+    )
+    carregar_contrato(_escrever(tmp_path, _com_blocos_novos()))
+    assert len(chamadas) == 1
+
+
+def test_bloco_presente_e_invalido_recusado_emax_nao_inteiro(tmp_path):
+    _recusa(tmp_path, lambda d: d["politica_decimal"].update(emax="999999"))
+
+
+def test_bloco_presente_e_invalido_recusado_emin_maior_que_emax(tmp_path):
+    _recusa(tmp_path, lambda d: d["politica_decimal"].update(emax=-5, emin=5))
+
+
+def test_bloco_presente_e_invalido_recusado_particionamento_sem_chave(tmp_path):
+    _recusa(tmp_path, lambda d: d["particionamento"].pop("chave"))
+
+
+def test_bloco_presente_e_invalido_recusado_grupo_de_um_codigo(tmp_path):
+    _recusa(tmp_path, lambda d: d["mapa_colapsos"]["grupos"][0].update(codigos=["01"]))
+
+
+def test_bloco_presente_e_invalido_recusado_codigo_repetido(tmp_path):
+    _recusa(
+        tmp_path,
+        lambda d: d["mapa_colapsos"]["grupos"].append(
+            {"descricao": "PENSAO", "codigos": ["02", "03"]}
+        ),
+    )
+
+
+def test_bloco_presente_e_invalido_recusado_sem_aprovador(tmp_path):
+    _recusa(tmp_path, lambda d: d["mapa_colapsos"].pop("aprovado_por"))
+
+
+def test_bloco_presente_e_invalido_recusado_sem_data(tmp_path):
+    _recusa(tmp_path, lambda d: d["mapa_colapsos"].pop("aprovado_em"))

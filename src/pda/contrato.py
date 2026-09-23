@@ -10,7 +10,7 @@ vinculante (ADR) é RECUSADO no carregamento, nunca "corrigido" para passar.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from decimal import Decimal
+from decimal import ROUND_HALF_EVEN, Context, Decimal, Overflow
 from pathlib import Path
 from typing import Any, Union
 
@@ -77,6 +77,30 @@ class PoliticaDecimal:
     escala_maxima_intermediarios: int
     precisao: int
     nao_negativo: bool
+    emax: Union[int, None] = None
+    emin: Union[int, None] = None
+
+
+@dataclass(frozen=True)
+class Particionamento:
+    chave: str
+    caminho: str
+    formato: str
+    valores_medidos: tuple
+    objetos_auxiliares_ignorados: tuple
+
+
+@dataclass(frozen=True)
+class GrupoColapso:
+    descricao: str
+    codigos: tuple
+
+
+@dataclass(frozen=True)
+class MapaColapsos:
+    grupos: tuple
+    aprovado_por: str
+    aprovado_em: str
 
 
 @dataclass(frozen=True)
@@ -88,6 +112,8 @@ class Contrato:
     cardinalidade: Cardinalidade
     defeitos_conhecidos: tuple
     politica_decimal: PoliticaDecimal
+    particionamento: Union[Particionamento, None] = None
+    mapa_colapsos: Union[MapaColapsos, None] = None
 
 
 def _inteiro_nao_negativo(valor: Any, campo: str) -> int:
@@ -113,6 +139,93 @@ def _decimal_monetario(valor: Any, campo: str) -> Decimal:
     if not numero.is_finite():
         raise ContratoRecusado(f"{campo} precisa ser finito, veio {valor!r}")
     return numero
+
+
+def _texto_obrigatorio(valor: Any, campo: str) -> str:
+    if not isinstance(valor, str) or not valor.strip():
+        raise ContratoRecusado(f"{campo} precisa ser texto não vazio, veio {valor!r}")
+    return valor
+
+
+def _lista(valor: Any, campo: str) -> tuple:
+    if valor is None:
+        return ()
+    if not isinstance(valor, list):
+        raise ContratoRecusado(f"{campo} precisa ser lista, veio {valor!r}")
+    return tuple(valor)
+
+
+def _particionamento(bruto: Any) -> Union[Particionamento, None]:
+    if bruto is None:
+        return None
+    if not isinstance(bruto, dict):
+        raise ContratoRecusado(f"particionamento precisa ser mapa, veio {bruto!r}")
+    return Particionamento(
+        chave=_texto_obrigatorio(bruto.get("chave"), "particionamento.chave"),
+        caminho=bruto.get("caminho", ""),
+        formato=bruto.get("formato", ""),
+        valores_medidos=_lista(bruto.get("valores_medidos"), "particionamento.valores_medidos"),
+        objetos_auxiliares_ignorados=_lista(
+            bruto.get("objetos_auxiliares_ignorados"),
+            "particionamento.objetos_auxiliares_ignorados",
+        ),
+    )
+
+
+def _mapa_colapsos(bruto: Any) -> Union[MapaColapsos, None]:
+    if bruto is None:
+        return None
+    if not isinstance(bruto, dict):
+        raise ContratoRecusado(f"mapa_colapsos precisa ser mapa, veio {bruto!r}")
+    aprovado_por = _texto_obrigatorio(bruto.get("aprovado_por"), "mapa_colapsos.aprovado_por")
+    aprovado_em = bruto.get("aprovado_em")
+    if not aprovado_em:
+        raise ContratoRecusado("mapa_colapsos sem data de aprovação")
+    grupos = []
+    vistos = set()
+    for g in _lista(bruto.get("grupos"), "mapa_colapsos.grupos"):
+        if not isinstance(g, dict):
+            raise ContratoRecusado(f"mapa_colapsos.grupos[] precisa ser mapa, veio {g!r}")
+        descricao = _texto_obrigatorio(g.get("descricao"), "mapa_colapsos.grupos[].descricao")
+        codigos = _lista(g.get("codigos"), "mapa_colapsos.grupos[].codigos")
+        if len(codigos) < 2:
+            raise ContratoRecusado(
+                f"grupo de colapso {descricao!r} cobre menos de dois códigos — não é colapso"
+            )
+        for codigo in codigos:
+            if codigo in vistos:
+                raise ContratoRecusado(f"código {codigo!r} repetido no mapa de colapsos")
+            vistos.add(codigo)
+        grupos.append(GrupoColapso(descricao=descricao, codigos=codigos))
+    return MapaColapsos(grupos=tuple(grupos), aprovado_por=aprovado_por, aprovado_em=aprovado_em)
+
+
+def _limites_de_expoente(politica: dict, precisao: int, ancora: Ancora):
+    emax, emin = politica.get("emax"), politica.get("emin")
+    if emax is None and emin is None:
+        return None, None
+    if emax is None or emin is None:
+        raise ContratoRecusado("política decimal precisa declarar emax e emin juntos")
+    for campo, valor in (("emax", emax), ("emin", emin)):
+        if isinstance(valor, bool) or not isinstance(valor, int):
+            raise ContratoRecusado(f"politica_decimal.{campo} precisa ser inteiro, veio {valor!r}")
+    if emin > emax:
+        raise ContratoRecusado(f"emin ({emin}) maior que emax ({emax})")
+    try:
+        contexto = Context(
+            prec=precisao, rounding=ROUND_HALF_EVEN, traps=[], Emax=emax, Emin=emin
+        )
+    except (ValueError, OverflowError) as erro:
+        raise ContratoRecusado(f"Context declarado recusado pelo construtor: {erro}") from erro
+    # ADR 0009: soma monotônica sem negativos — nenhum intermediário excede o total.
+    for nome, valor in (("total", ancora.sum_vl_liquido), ("máximo", ancora.max_vl_liquido)):
+        contexto.clear_flags()
+        resultado = contexto.plus(valor)
+        if contexto.flags[Overflow] or not resultado.is_finite() or resultado != valor:
+            raise ContratoRecusado(
+                f"limites de expoente emax={emax}, emin={emin} não comportam o {nome} da âncora"
+            )
+    return emax, emin
 
 
 def _digitos_inteiros(valor: Decimal) -> int:
@@ -246,12 +359,16 @@ def carregar_contrato(caminho: Union[str, Path]) -> Union[Contrato, str]:
             f"mínimo derivado (ADR 0007) é {minimo}"
         )
 
+    emax, emin = _limites_de_expoente(politica_bruta, precisao, ancora)
+
     politica_decimal = PoliticaDecimal(
         modo=modo,
         escala=escala,
         escala_maxima_intermediarios=escala_intermediarios,
         precisao=precisao,
         nao_negativo=True,
+        emax=emax,
+        emin=emin,
     )
 
     return Contrato(
@@ -262,4 +379,6 @@ def carregar_contrato(caminho: Union[str, Path]) -> Union[Contrato, str]:
         cardinalidade=cardinalidade,
         defeitos_conhecidos=tuple(defeitos),
         politica_decimal=politica_decimal,
+        particionamento=_particionamento(bruto.get("particionamento")),
+        mapa_colapsos=_mapa_colapsos(bruto.get("mapa_colapsos")),
     )
