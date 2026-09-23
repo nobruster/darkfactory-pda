@@ -1,0 +1,10 @@
+{
+  "disposition": "accepted",
+  "draft_sha256": "2275dcf6cc60f057e5da2a0cde991149ff84fc0e17907f78c3906f01e38e119e",
+  "fixture": false,
+  "plan_sha256": "697cf1f4d5ba01287f86af136b6cef068841a523f2b350ff44ec80c668a86d5c",
+  "reason": "Pass 4 da procedencia fechado com CHECK_CONSENSUS=OK na R2, sem editar o plano. Duas costuras: o vinculador prova a particao contra o CSV de origem, e a Bronze confere a prova.",
+  "reviewed_at": "2026-09-23T19:34:37.556716+00:00",
+  "reviewer": "Bruno Nunes",
+  "schema_version": 1
+}

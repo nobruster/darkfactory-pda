@@ -1,0 +1,39 @@
+{
+  "contract": "SeamwiseTaskPlanLineage/v1",
+  "delivery_plan_sha256": "697cf1f4d5ba01287f86af136b6cef068841a523f2b350ff44ec80c668a86d5c",
+  "engine_version": "0.2.0",
+  "intent": {
+    "id": "DI-PDA-PROCEDENCIA",
+    "sha256": "8cf90cfd675180570df741c4a4498ec4ee14727d8f0e90b7c6e37d3f60aa26ba"
+  },
+  "review": {
+    "fixture": false,
+    "plan_sha256": "697cf1f4d5ba01287f86af136b6cef068841a523f2b350ff44ec80c668a86d5c",
+    "reviewed_at": "2026-09-23T19:34:37.556716+00:00",
+    "reviewer": "Bruno Nunes",
+    "sha256": "3ec6970c9b0c3f2378e3f39f677222f297969146523bea5da9771dd536e1d4d6"
+  },
+  "task_plan": {
+    "contract": "TaskPlan/v1",
+    "digest": "6f03eed143200463fe54ab991d62ed77f3e5a98c443bc0315933f9ea49b143ab",
+    "path": "seamwise/task-plan.json"
+  },
+  "units": {
+    "T-20260923-bronze-le-procedencia": {
+      "intent": "DI-PDA-PROCEDENCIA",
+      "leg": "LEG-BRONZE-LE-PROCEDENCIA",
+      "seam": "SEAM-BRONZE-LE-PROCEDENCIA",
+      "source_sha256": "8b7434e739edd9e972f99cac833874872696b6cee751b82a3eca8586b9b7bae6",
+      "swimlane": "LANE-BRONZE-LE-PROCEDENCIA",
+      "unit_id": "T-20260923-bronze-le-procedencia"
+    },
+    "T-20260923-vincula-procedencia": {
+      "intent": "DI-PDA-PROCEDENCIA",
+      "leg": "LEG-VINCULA-PROCEDENCIA",
+      "seam": "SEAM-VINCULA-PROCEDENCIA",
+      "source_sha256": "e1ce506657fdd255ce37816b624ddf3b73e34eddfcf05c33482abb66afb2b80d",
+      "swimlane": "LANE-VINCULA-PROCEDENCIA",
+      "unit_id": "T-20260923-vincula-procedencia"
+    }
+  }
+}

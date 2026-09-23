@@ -1,0 +1,33 @@
+schema_version: 1
+status: SEAM_MAP=READY
+intent_id: DI-PDA-PROCEDENCIA
+source_recipe:
+  name: procedencia-recipe.yaml
+  sha256: 0a2e92be2c5b64778cb74d2804c1d218a12ac46dbbcde158be5ccffb5629d807
+intent_sha256: 8cf90cfd675180570df741c4a4498ec4ee14727d8f0e90b7c6e37d3f60aa26ba
+system_map_sha256: 654db8e2bd580f6b8dfca82c6e4e1c8a151ef1a1eb6c2eccd8980a8fa1c062f4
+evidence_sha256: b24f1acce2da18a69f0156627622bd52a0d9b80c6a7aa3953eedd95802337ee4
+decisions:
+- id: ADR-0002-POSICIONAL
+  path: seamwise/decisions/ADR-0002-POSICIONAL.md
+  status: accepted
+  sha256: 9169d73fdb90b181ed951add20e93350e3bc1627e503dcca90cc04984527a88b
+- id: DEC-PROCEDENCIA-POR-VINCULADOR
+  path: seamwise/decisions/DEC-PROCEDENCIA-POR-VINCULADOR.md
+  status: accepted
+  sha256: 50177c97e5168488f8534e92583ad36df93015e202c1b615ba4f16b799e412a4
+seams:
+- id: SEAM-VINCULA-PROCEDENCIA
+  path: seamwise/seams/SEAM-VINCULA-PROCEDENCIA.md
+  owner: medalhao
+  evidence:
+  - E-ANCORA-202601
+  swimlane_id: LANE-VINCULA-PROCEDENCIA
+  sha256: 146229732fd00bb7e6dca66ed07d49cb20f829e3e790d53baa79d778d9758088
+- id: SEAM-BRONZE-LE-PROCEDENCIA
+  path: seamwise/seams/SEAM-BRONZE-LE-PROCEDENCIA.md
+  owner: medalhao
+  evidence:
+  - E-ANCORA-202601
+  swimlane_id: LANE-BRONZE-LE-PROCEDENCIA
+  sha256: f270284063cd4d649abcdfdae50fb41ae05d4e7552a3b8072ef13baa8c4c9478

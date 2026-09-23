@@ -1,0 +1,33 @@
+schema_version: 1
+status: DELIVERY_PLAN=READY
+seam_map_sha256: 82246f6229deca05c881c154d7f99f37052458937fe9d069234f14331cad3d73
+swimlanes:
+- id: LANE-VINCULA-PROCEDENCIA
+  seam_id: SEAM-VINCULA-PROCEDENCIA
+  owner: medalhao
+  path: seamwise/swimlanes/LANE-VINCULA-PROCEDENCIA.md
+  sha256: 0aa215d4f91684197d92d9f138da90bcf86240b5ad5d23d1cc3cd9542597cf5d
+- id: LANE-BRONZE-LE-PROCEDENCIA
+  seam_id: SEAM-BRONZE-LE-PROCEDENCIA
+  owner: medalhao
+  path: seamwise/swimlanes/LANE-BRONZE-LE-PROCEDENCIA.md
+  sha256: fc76e2018be9f5e6cd1104d7e14ae8754d7a085ea94367bb5e5319fb5d6d1078
+legs:
+- id: LEG-VINCULA-PROCEDENCIA
+  seam_id: SEAM-VINCULA-PROCEDENCIA
+  swimlane_id: LANE-VINCULA-PROCEDENCIA
+  path: seamwise/legs/LEG-VINCULA-PROCEDENCIA.md
+  sha256: e1ce506657fdd255ce37816b624ddf3b73e34eddfcf05c33482abb66afb2b80d
+- id: LEG-BRONZE-LE-PROCEDENCIA
+  seam_id: SEAM-BRONZE-LE-PROCEDENCIA
+  swimlane_id: LANE-BRONZE-LE-PROCEDENCIA
+  path: seamwise/legs/LEG-BRONZE-LE-PROCEDENCIA.md
+  sha256: 8b7434e739edd9e972f99cac833874872696b6cee751b82a3eca8586b9b7bae6
+steel_thread:
+- LEG-VINCULA-PROCEDENCIA
+- LEG-BRONZE-LE-PROCEDENCIA
+objections: []
+contentions: []
+steel_thread_path: seamwise/steel-thread.md
+steel_thread_sha256: 0728c8ba3d394968dc52aeda708b6568bca04438c3a037b8358f90adcfaf61e5
+review_authority_sha256: 86e858e3cefd67656c429db3fe21ed5c8698a60bde1a3c21667b4d29af47aa42
