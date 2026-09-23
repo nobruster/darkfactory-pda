@@ -1,0 +1,66 @@
+schema_version: 1
+status: DELIVERY_PLAN=READY
+seam_map_sha256: f512b4d0186f124b5f5be117796f9cf9a6991c436485f9dd79e3e10cc87d7603
+swimlanes:
+- id: LANE-JUIZO-NA-INGESTAO
+  seam_id: SEAM-JUIZO-NA-INGESTAO
+  owner: medalhao
+  path: seamwise/swimlanes/LANE-JUIZO-NA-INGESTAO.md
+  sha256: 8da1d7f7b9ee7c934e8b42709d14f9c4b6e5703abe3f217d1abb65c433d6c185
+- id: LANE-GOLD-LE-SILVER
+  seam_id: SEAM-GOLD-LE-SILVER
+  owner: medalhao
+  path: seamwise/swimlanes/LANE-GOLD-LE-SILVER.md
+  sha256: 8bb647cfff2fbc5561808feeb8c0975694ced0a87bccd7afcb3c75e29db68d1d
+- id: LANE-CONTRATO-GRUPOS
+  seam_id: SEAM-CONTRATO-GRUPOS
+  owner: medalhao
+  path: seamwise/swimlanes/LANE-CONTRATO-GRUPOS.md
+  sha256: cd95bd5dc44defcf2748e179eb82c2eae853b2340181caaf11c6ebd5c19beefb
+- id: LANE-GOLD-ASSUNTOS
+  seam_id: SEAM-GOLD-ASSUNTOS
+  owner: medalhao
+  path: seamwise/swimlanes/LANE-GOLD-ASSUNTOS.md
+  sha256: 5da14a58f397ce3d5b55fc9aee472a195a364cb69277d65a9eb084dc2f9a3b07
+- id: LANE-LIMPA-PREPARO
+  seam_id: SEAM-LIMPA-PREPARO
+  owner: medalhao
+  path: seamwise/swimlanes/LANE-LIMPA-PREPARO.md
+  sha256: f34548869c832ff01da10e008b700f9fcaad14e5c35f03a54c70b55944efe3ec
+legs:
+- id: LEG-JUIZO-NA-INGESTAO
+  seam_id: SEAM-JUIZO-NA-INGESTAO
+  swimlane_id: LANE-JUIZO-NA-INGESTAO
+  path: seamwise/legs/LEG-JUIZO-NA-INGESTAO.md
+  sha256: f7f7ccbf5e6a53ff9e2a06c22a1cd760ae09e05cde207753b8be78eeffef90f6
+- id: LEG-GOLD-LE-SILVER
+  seam_id: SEAM-GOLD-LE-SILVER
+  swimlane_id: LANE-GOLD-LE-SILVER
+  path: seamwise/legs/LEG-GOLD-LE-SILVER.md
+  sha256: cad61aa95f69e3d2fd0a1d784e8f388866fee67c6b774713637a1e89a5461205
+- id: LEG-CONTRATO-EXPOE-GRUPOS
+  seam_id: SEAM-CONTRATO-GRUPOS
+  swimlane_id: LANE-CONTRATO-GRUPOS
+  path: seamwise/legs/LEG-CONTRATO-EXPOE-GRUPOS.md
+  sha256: baba95afaee8706ec3fa1badb739e796265e5e6655d86ae02f16642af6beb9ee
+- id: LEG-GOLD-ASSUNTOS
+  seam_id: SEAM-GOLD-ASSUNTOS
+  swimlane_id: LANE-GOLD-ASSUNTOS
+  path: seamwise/legs/LEG-GOLD-ASSUNTOS.md
+  sha256: fb269990da7b9931c7f7e9249e797263d35a70b4ac3333d8999e0d136b7024fb
+- id: LEG-LIMPA-PREPARO
+  seam_id: SEAM-LIMPA-PREPARO
+  swimlane_id: LANE-LIMPA-PREPARO
+  path: seamwise/legs/LEG-LIMPA-PREPARO.md
+  sha256: ed74fd5d7920dc2b7e0bb8135b3e1126240b0ccddf0fafee7e58f83817ae5a60
+steel_thread:
+- LEG-JUIZO-NA-INGESTAO
+- LEG-GOLD-LE-SILVER
+- LEG-CONTRATO-EXPOE-GRUPOS
+- LEG-GOLD-ASSUNTOS
+- LEG-LIMPA-PREPARO
+objections: []
+contentions: []
+steel_thread_path: seamwise/steel-thread.md
+steel_thread_sha256: 162f653c3f3743f8469a9fd3563c28a4f6f149e796e446905c05d9508cae39c7
+review_authority_sha256: f42dda28df8266578a6a96cd22210bc2f0106877c65db794b31a98149839e0f3

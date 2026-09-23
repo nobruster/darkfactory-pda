@@ -1,0 +1,63 @@
+{
+  "contract": "SeamwiseTaskPlanLineage/v1",
+  "delivery_plan_sha256": "92cc159999c8be4e56f6dfcd8d13c11d0e2223c86a8aac4720abd9842c3df038",
+  "engine_version": "0.2.0",
+  "intent": {
+    "id": "DI-PDA-MEDALHAO-V4",
+    "sha256": "3148e7b3857889093cc8b4500a0db111d9f1f92cef667e7de52c2188ce2c75b3"
+  },
+  "review": {
+    "fixture": false,
+    "plan_sha256": "92cc159999c8be4e56f6dfcd8d13c11d0e2223c86a8aac4720abd9842c3df038",
+    "reviewed_at": "2026-09-23T21:43:55.861190+00:00",
+    "reviewer": "Bruno Nunes",
+    "sha256": "b182152e250ae379d3038d7c6fecb99824cdc3b69f39d4470d01993fcd4af583"
+  },
+  "task_plan": {
+    "contract": "TaskPlan/v1",
+    "digest": "c84f7c5a1e486c137b342c654fc98f5551fc93566edae5feba72a7d76c4abc96",
+    "path": "seamwise/task-plan.json"
+  },
+  "units": {
+    "T-20260923-contrato-expoe-grupos": {
+      "intent": "DI-PDA-MEDALHAO-V4",
+      "leg": "LEG-CONTRATO-EXPOE-GRUPOS",
+      "seam": "SEAM-CONTRATO-GRUPOS",
+      "source_sha256": "baba95afaee8706ec3fa1badb739e796265e5e6655d86ae02f16642af6beb9ee",
+      "swimlane": "LANE-CONTRATO-GRUPOS",
+      "unit_id": "T-20260923-contrato-expoe-grupos"
+    },
+    "T-20260923-gold-assuntos": {
+      "intent": "DI-PDA-MEDALHAO-V4",
+      "leg": "LEG-GOLD-ASSUNTOS",
+      "seam": "SEAM-GOLD-ASSUNTOS",
+      "source_sha256": "fb269990da7b9931c7f7e9249e797263d35a70b4ac3333d8999e0d136b7024fb",
+      "swimlane": "LANE-GOLD-ASSUNTOS",
+      "unit_id": "T-20260923-gold-assuntos"
+    },
+    "T-20260923-gold-le-silver": {
+      "intent": "DI-PDA-MEDALHAO-V4",
+      "leg": "LEG-GOLD-LE-SILVER",
+      "seam": "SEAM-GOLD-LE-SILVER",
+      "source_sha256": "cad61aa95f69e3d2fd0a1d784e8f388866fee67c6b774713637a1e89a5461205",
+      "swimlane": "LANE-GOLD-LE-SILVER",
+      "unit_id": "T-20260923-gold-le-silver"
+    },
+    "T-20260923-ingestao-julgada": {
+      "intent": "DI-PDA-MEDALHAO-V4",
+      "leg": "LEG-JUIZO-NA-INGESTAO",
+      "seam": "SEAM-JUIZO-NA-INGESTAO",
+      "source_sha256": "f7f7ccbf5e6a53ff9e2a06c22a1cd760ae09e05cde207753b8be78eeffef90f6",
+      "swimlane": "LANE-JUIZO-NA-INGESTAO",
+      "unit_id": "T-20260923-ingestao-julgada"
+    },
+    "T-20260923-limpa-preparo": {
+      "intent": "DI-PDA-MEDALHAO-V4",
+      "leg": "LEG-LIMPA-PREPARO",
+      "seam": "SEAM-LIMPA-PREPARO",
+      "source_sha256": "ed74fd5d7920dc2b7e0bb8135b3e1126240b0ccddf0fafee7e58f83817ae5a60",
+      "swimlane": "LANE-LIMPA-PREPARO",
+      "unit_id": "T-20260923-limpa-preparo"
+    }
+  }
+}

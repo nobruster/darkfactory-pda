@@ -1,0 +1,62 @@
+schema_version: 1
+status: SEAM_MAP=READY
+intent_id: DI-PDA-MEDALHAO-V4
+source_recipe:
+  name: medalhao-v4-recipe.yaml
+  sha256: 1a813dc4f8be76bacf6a26378b7054e178c84b7c1d72548c3a40d3e271b657ca
+intent_sha256: 3148e7b3857889093cc8b4500a0db111d9f1f92cef667e7de52c2188ce2c75b3
+system_map_sha256: 905c09b8bf5fd96fc0af62b6817bc5ec705114de336c9b789fc1046b42ed0710
+evidence_sha256: b24f1acce2da18a69f0156627622bd52a0d9b80c6a7aa3953eedd95802337ee4
+decisions:
+- id: ADR-0003-HALF-EVEN
+  path: seamwise/decisions/ADR-0003-HALF-EVEN.md
+  status: accepted
+  sha256: 3a5be59da4b9a7f2ef91b9252cda20f17eb3b3ab6a7af511ee7f963237aefadb
+- id: DEC-GOLD-POR-ASSUNTOS
+  path: seamwise/decisions/DEC-GOLD-POR-ASSUNTOS.md
+  status: accepted
+  sha256: 95a5382645621ca1a4dcd6718127a82aabe37a21afed82a1ef7fef5b94a1b3fb
+- id: DEC-JUIZO-NA-INGESTAO
+  path: seamwise/decisions/DEC-JUIZO-NA-INGESTAO.md
+  status: accepted
+  sha256: 41cc10396b57cf813bed82312de5b0407ca4be4142679f51f26094279149ebdf
+- id: DEC-PREPARO-APAGADO-APOS-CONFERIR
+  path: seamwise/decisions/DEC-PREPARO-APAGADO-APOS-CONFERIR.md
+  status: accepted
+  sha256: bea205f0dda697900691fbaf0c9a8d06cbefd1fd70aba77dcca650c284331e10
+seams:
+- id: SEAM-JUIZO-NA-INGESTAO
+  path: seamwise/seams/SEAM-JUIZO-NA-INGESTAO.md
+  owner: medalhao
+  evidence:
+  - E-ANCORA-202601
+  swimlane_id: LANE-JUIZO-NA-INGESTAO
+  sha256: a9a0aa86b44756693c7c6b319d4c40d5257cdd0955bfb06dc2251a825e0b9ac0
+- id: SEAM-GOLD-LE-SILVER
+  path: seamwise/seams/SEAM-GOLD-LE-SILVER.md
+  owner: medalhao
+  evidence:
+  - E-ANCORA-202601
+  swimlane_id: LANE-GOLD-LE-SILVER
+  sha256: ec1bfa4df51d2a8c0b41caa0a85f1dc256922343ec6467ce533776a542f62ef5
+- id: SEAM-CONTRATO-GRUPOS
+  path: seamwise/seams/SEAM-CONTRATO-GRUPOS.md
+  owner: medalhao
+  evidence:
+  - E-ANCORA-202601
+  swimlane_id: LANE-CONTRATO-GRUPOS
+  sha256: e299e3e4d6770f1430e5420ee61b12c5d49ff6d6af6620328968fc8b6624479a
+- id: SEAM-GOLD-ASSUNTOS
+  path: seamwise/seams/SEAM-GOLD-ASSUNTOS.md
+  owner: medalhao
+  evidence:
+  - E-ANCORA-202601
+  swimlane_id: LANE-GOLD-ASSUNTOS
+  sha256: 4a0ad0529836162b83790ac7824107b02c788898b59800f244e467aa5f2bbecf
+- id: SEAM-LIMPA-PREPARO
+  path: seamwise/seams/SEAM-LIMPA-PREPARO.md
+  owner: medalhao
+  evidence:
+  - E-ANCORA-202601
+  swimlane_id: LANE-LIMPA-PREPARO
+  sha256: 0b08c68625b689d0142e01042001eeeef4f9a5f72e41dc47dba57473b39c632b
