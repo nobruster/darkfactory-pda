@@ -1,6 +1,6 @@
 > Projetado de `LEG-GOLD-RECONCILIA.md` pelo Seamwise.
 > **Não edite aqui** — edite a recipe e rode `seamwise plan`.
-> origem sha256: `185116fbae023a250432787b00573b0a9c16fc55ed46cd5c09d20055115bdb3f`
+> origem sha256: `71c6f602b0f0c6042852cbad355a48d2c981e94ee58bc77fe10ef67d02f4cc6e`
 
 ---
 
@@ -99,29 +99,29 @@ tasks:
   evals:
   - id: eval_1
     description: Arredondamento único, precisão declarada, e recusa sob procedência não vinculada
-    bash: docker compose -f infra/docker-compose.yml exec -T spark sh -c 'n=$(python3 -m pytest --collect-only
-      -q tests/test_gold.py -k "arredonda_uma_vez or half_even_do_contrato or nao_arredonda_por_campo
-      or traps_declaradas or recusa_sob_procedencia_nao_vinculada" 2>/dev/null | grep -c "::"); [ "$n"
-      -lt 5 ] && { echo "EVAL=COLETOU_${n}_DE_5"; exit 1; }; python3 -m pytest -q tests/test_gold.py -k
-      "arredonda_uma_vez or half_even_do_contrato or nao_arredonda_por_campo or traps_declaradas or recusa_sob_procedencia_nao_vinculada"'
+    bash: docker compose -f infra/docker-compose.yml exec -T spark sh -c 'for c in arredonda_uma_vez half_even_do_contrato
+      nao_arredonda_por_campo traps_declaradas recusa_sob_procedencia_nao_vinculada; do python3 -m pytest
+      --collect-only -q tests/test_gold.py -k "$c" 2>/dev/null | grep -q "::" || { echo "EVAL=CENARIO_AUSENTE_$c";
+      exit 1; }; done; python3 -m pytest -q tests/test_gold.py -k "arredonda_uma_vez or half_even_do_contrato
+      or nao_arredonda_por_campo or traps_declaradas or recusa_sob_procedencia_nao_vinculada"'
     verifies:
     - B-1
   - id: eval_2
     description: Reconcilia recalculando, compara o mapa por código e confere os 65
-    bash: docker compose -f infra/docker-compose.yml exec -T spark sh -c 'n=$(python3 -m pytest --collect-only
-      -q tests/test_gold.py -k "reconcilia_recalculando or mapa_por_codigo or redistribuicao_compensada
-      or contagem_de_codigos or uma_linha_por_codigo" 2>/dev/null | grep -c "::"); [ "$n" -lt 5 ] && {
-      echo "EVAL=COLETOU_${n}_DE_5"; exit 1; }; python3 -m pytest -q tests/test_gold.py -k "reconcilia_recalculando
-      or mapa_por_codigo or redistribuicao_compensada or contagem_de_codigos or uma_linha_por_codigo"'
+    bash: docker compose -f infra/docker-compose.yml exec -T spark sh -c 'for c in reconcilia_recalculando
+      mapa_por_codigo redistribuicao_compensada contagem_de_codigos uma_linha_por_codigo; do python3 -m
+      pytest --collect-only -q tests/test_gold.py -k "$c" 2>/dev/null | grep -q "::" || { echo "EVAL=CENARIO_AUSENTE_$c";
+      exit 1; }; done; python3 -m pytest -q tests/test_gold.py -k "reconcilia_recalculando or mapa_por_codigo
+      or redistribuicao_compensada or contagem_de_codigos or uma_linha_por_codigo"'
     verifies:
     - B-1
     - B-2
   - id: eval_3
     description: DIVERGE e NAO_MEDIDO são estados distintos e nenhum publica
-    bash: docker compose -f infra/docker-compose.yml exec -T spark sh -c 'n=$(python3 -m pytest --collect-only
-      -q tests/test_gold.py -k "diverge_nao_publica or sem_ancora_nao_medido or destino_inalterado_durante
-      or classifica_diferenca_das_seis" 2>/dev/null | grep -c "::"); [ "$n" -lt 4 ] && { echo "EVAL=COLETOU_${n}_DE_4";
-      exit 1; }; python3 -m pytest -q tests/test_gold.py -k "diverge_nao_publica or sem_ancora_nao_medido
+    bash: docker compose -f infra/docker-compose.yml exec -T spark sh -c 'for c in diverge_nao_publica
+      sem_ancora_nao_medido destino_inalterado_durante classifica_diferenca_das_seis; do python3 -m pytest
+      --collect-only -q tests/test_gold.py -k "$c" 2>/dev/null | grep -q "::" || { echo "EVAL=CENARIO_AUSENTE_$c";
+      exit 1; }; done; python3 -m pytest -q tests/test_gold.py -k "diverge_nao_publica or sem_ancora_nao_medido
       or destino_inalterado_durante or classifica_diferenca_das_seis"'
     verifies:
     - B-2
@@ -144,7 +144,7 @@ tasks:
   - contracts
   rollback: Remover a camada Gold e seus testes.
   observability: agregados recusados por não reconciliar
-source_seam_sha256: d029c2ee2278fff989b2f43a29e66330e2ccb74bbac0643f4f3a2afc2c24a7aa
+source_seam_sha256: b0718bc47e124f9d28c55ad6adc87226acc7f069ea9f721dbf202e6f979debd8
 ---
 # Gold só publica quando reconcilia com a âncora
 

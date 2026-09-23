@@ -1,6 +1,6 @@
 > Projetado de `LEG-SILVER-PRESERVA-DEFEITO.md` pelo Seamwise.
 > **Não edite aqui** — edite a recipe e rode `seamwise plan`.
-> origem sha256: `b3932d66bae65eae27cb72644c618b82af6357c5865df326fd225be596c25df3`
+> origem sha256: `73eaf964f684c93b9e6b9a80844689d0c017070cb281cd1921f3195334f1f8a8`
 
 ---
 
@@ -110,32 +110,32 @@ tasks:
   evals:
   - id: eval_1
     description: Chave é o código; contagem, mapa e soma preservados, inclusive linha de valor zero
-    bash: docker compose -f infra/docker-compose.yml exec -T spark sh -c 'n=$(python3 -m pytest --collect-only
-      -q tests/test_silver.py -k "chave_e_codigo or multiconjunto_identico or linhas_irmas_com_valores_trocados
-      or linha_de_valor_zero_nao_some or mapa_por_codigo_preservado or contexto_declarado" 2>/dev/null
-      | grep -c "::"); [ "$n" -lt 6 ] && { echo "EVAL=COLETOU_${n}_DE_6"; exit 1; }; python3 -m pytest
-      -q tests/test_silver.py -k "chave_e_codigo or multiconjunto_identico or linhas_irmas_com_valores_trocados
-      or linha_de_valor_zero_nao_some or mapa_por_codigo_preservado or contexto_declarado"'
+    bash: docker compose -f infra/docker-compose.yml exec -T spark sh -c 'for c in chave_e_codigo multiconjunto_identico
+      linhas_irmas_com_valores_trocados linha_de_valor_zero_nao_some mapa_por_codigo_preservado contexto_declarado;
+      do python3 -m pytest --collect-only -q tests/test_silver.py -k "$c" 2>/dev/null | grep -q "::" ||
+      { echo "EVAL=CENARIO_AUSENTE_$c"; exit 1; }; done; python3 -m pytest -q tests/test_silver.py -k
+      "chave_e_codigo or multiconjunto_identico or linhas_irmas_com_valores_trocados or linha_de_valor_zero_nao_some
+      or mapa_por_codigo_preservado or contexto_declarado"'
     verifies:
     - B-1
   - id: eval_2
     description: Os 11 colapsos saem classificados e a contagem confere
-    bash: docker compose -f infra/docker-compose.yml exec -T spark sh -c 'n=$(python3 -m pytest --collect-only
-      -q tests/test_silver.py -k "colapso_classificado or quatro_cardinalidades or classificacao_unica
-      or colapsos_na_descricao_original or colapso_da_normalizacao_classificado" 2>/dev/null | grep -c
-      "::"); [ "$n" -lt 5 ] && { echo "EVAL=COLETOU_${n}_DE_5"; exit 1; }; python3 -m pytest -q tests/test_silver.py
-      -k "colapso_classificado or quatro_cardinalidades or classificacao_unica or colapsos_na_descricao_original
+    bash: docker compose -f infra/docker-compose.yml exec -T spark sh -c 'for c in colapso_classificado
+      quatro_cardinalidades classificacao_unica colapsos_na_descricao_original colapso_da_normalizacao_classificado;
+      do python3 -m pytest --collect-only -q tests/test_silver.py -k "$c" 2>/dev/null | grep -q "::" ||
+      { echo "EVAL=CENARIO_AUSENTE_$c"; exit 1; }; done; python3 -m pytest -q tests/test_silver.py -k
+      "colapso_classificado or quatro_cardinalidades or classificacao_unica or colapsos_na_descricao_original
       or colapso_da_normalizacao_classificado"'
     verifies:
     - B-1
   - id: eval_3
     description: Defeito não classificado bloqueia em vez de passar
-    bash: docker compose -f infra/docker-compose.yml exec -T spark sh -c 'n=$(python3 -m pytest --collect-only
-      -q tests/test_silver.py -k "nao_classificado_bloqueia or valor_intacto or atravessa_sem_descartar
-      or unresolved_bloqueia or marca_atravessa or sem_mapa_nao_produz_capacidade" 2>/dev/null | grep
-      -c "::"); [ "$n" -lt 6 ] && { echo "EVAL=COLETOU_${n}_DE_6"; exit 1; }; python3 -m pytest -q tests/test_silver.py
-      -k "nao_classificado_bloqueia or valor_intacto or atravessa_sem_descartar or unresolved_bloqueia
-      or marca_atravessa or sem_mapa_nao_produz_capacidade"'
+    bash: docker compose -f infra/docker-compose.yml exec -T spark sh -c 'for c in nao_classificado_bloqueia
+      valor_intacto atravessa_sem_descartar unresolved_bloqueia marca_atravessa sem_mapa_nao_produz_capacidade;
+      do python3 -m pytest --collect-only -q tests/test_silver.py -k "$c" 2>/dev/null | grep -q "::" ||
+      { echo "EVAL=CENARIO_AUSENTE_$c"; exit 1; }; done; python3 -m pytest -q tests/test_silver.py -k
+      "nao_classificado_bloqueia or valor_intacto or atravessa_sem_descartar or unresolved_bloqueia or
+      marca_atravessa or sem_mapa_nao_produz_capacidade"'
     verifies:
     - B-2
   anti_patterns:
@@ -156,7 +156,7 @@ tasks:
   - contracts
   rollback: Remover a camada Silver e seus testes.
   observability: colapsos classificados por competência
-source_seam_sha256: ac251565d46655927ac424663250c54145f7da6fbe0989d864ecc5529d88f68d
+source_seam_sha256: 9eb41b6e8802c5a9f421e8ae5de084a0463a8419f8aae5c22c2424786c16a725
 ---
 # Silver classifica o defeito e conserva o total
 
