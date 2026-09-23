@@ -36,6 +36,10 @@ evidence:
   confidence: 1.0
   summary: 'Competência 2026-01 medida na origem: 41572553 linhas, soma 78521752562.12.'
 decisions:
+- id: ADR-0002-POSICIONAL
+  status: accepted
+  owner: Bruno Nunes
+  rationale: Espécie aparece duas vezes no cabeçalho; ler por nome perde uma das duas em silêncio.
 - id: DEC-PROCEDENCIA-POR-VINCULADOR
   status: accepted
   owner: Bruno Nunes
