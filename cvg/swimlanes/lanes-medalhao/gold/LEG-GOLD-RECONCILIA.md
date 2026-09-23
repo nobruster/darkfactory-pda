@@ -1,6 +1,6 @@
 > Projetado de `LEG-GOLD-RECONCILIA.md` pelo Seamwise.
 > **Não edite aqui** — edite a recipe e rode `seamwise plan`.
-> origem sha256: `71c6f602b0f0c6042852cbad355a48d2c981e94ee58bc77fe10ef67d02f4cc6e`
+> origem sha256: `2755c4d0700cc6e7e9f36a537f7334ec5b4caefc4e55423d24af43608d835cc5`
 
 ---
 
@@ -59,28 +59,32 @@ tasks:
       biblioteca importada, Decimal(''2.345'').quantize(Decimal(''.01'')) LEVANTA Inexact dentro de um
       localcontext que declarou prec e rounding, e o arredondamento que o contrato PERMITE encerra a operação.
       O ADR 0006 diz que a precisão é declarada e não herdada; as traps são herdadas do mesmo jeito, e
-      declarar prec e rounding não basta. Depois de agregar, a soma das linhas de Gold é RECONCILIADA
-      com a âncora do contrato e a igualdade é exata ao centavo. Soma e cardinalidade NÃO BASTAM: uma
-      redistribuição compensada entre códigos preserva as duas e troca os valores de lugar — {''01'':
-      10.00, ''03'': 20.00} e {''01'': 11.00, ''03'': 19.00} têm a mesma soma e as mesmas chaves, e acrescentar
-      os outros 63 códigos idênticos aos dois mantém o contraexemplo com os 65. Por isso o MAPA total_por_codigo
-      de Gold é comparado, código a código, contra o mapa que a camada anterior produziu, em soma EXATA
-      não quantizada; com um mapa só, deslocar valor entre códigos seria aprovado por comparação consigo
-      mesmo; Gold que não reconcilia devolve DIVERGE e NÃO publica, porque um agregado publicado sem reconciliar
-      é exatamente o que a âncora existe para impedir. A reconciliação é recalculada a partir das linhas
-      CANDIDATAS — materializadas em local privado, jamais no caminho que os consumidores leem — e não
-      herdada de Bronze, senão Gold provaria a conta de outra camada. A publicação é um passo POSTERIOR
-      e condicionado ao veredito, e o veredito CONSOME a marca PROCEDENCIA_NAO_VINCULADA que Bronze emite
-      e Silver preserva — Gold recusa publicar sob ela, e a recusa tem eval próprio, senão cada camada
-      cumpre o seu e a marca se perde na transformação: se as candidatas fossem escritas no destino para
-      depois serem relidas, o dado divergente já teria ficado exposto antes de qualquer veredito, e remover
-      depois não desfaz a exposição. Um teste que confira só o resultado final ou a ausência de arquivos
-      ao término não vê isso — o eval observa que o caminho de destino permanece inalterado DURANTE a
-      reconciliação. E a publicação em si é uma transição INDIVISÍVEL de visibilidade: o conjunto publicado
-      é exatamente o conjunto reconciliado, tudo ou nada. Copiar vários arquivos expondo-os à medida que
-      chegam deixaria um consumidor lendo parte das candidatas, ou misturadas com as da execução anterior,
-      com a reconciliação correta e o total lido por ninguém aprovado — e uma interrupção no meio congela
-      esse estado. Publicação interrompida deixa o destino como estava antes'
+      declarar prec e rounding não basta. Antes de reconciliar, a COMPETÊNCIA que Silver carrega é comparada
+      com a do contrato, e divergir é DIVERGE — a R-1 exige que a âncora exista PARA AQUELA competência,
+      não que contenha números iguais, e um Silver de outra competência com os mesmos valores por código
+      satisfaria soma, mapa e cardinalidade contra o contrato errado. A competência atravessa Bronze e
+      Silver sem ser descartada, como a marca de procedência. Depois de agregar, a soma das linhas de
+      Gold é RECONCILIADA com a âncora do contrato e a igualdade é exata ao centavo. Soma e cardinalidade
+      NÃO BASTAM: uma redistribuição compensada entre códigos preserva as duas e troca os valores de lugar
+      — {''01'': 10.00, ''03'': 20.00} e {''01'': 11.00, ''03'': 19.00} têm a mesma soma e as mesmas chaves,
+      e acrescentar os outros 63 códigos idênticos aos dois mantém o contraexemplo com os 65. Por isso
+      o MAPA total_por_codigo de Gold é comparado, código a código, contra o mapa que a camada anterior
+      produziu, em soma EXATA não quantizada; com um mapa só, deslocar valor entre códigos seria aprovado
+      por comparação consigo mesmo; Gold que não reconcilia devolve DIVERGE e NÃO publica, porque um agregado
+      publicado sem reconciliar é exatamente o que a âncora existe para impedir. A reconciliação é recalculada
+      a partir das linhas CANDIDATAS — materializadas em local privado, jamais no caminho que os consumidores
+      leem — e não herdada de Bronze, senão Gold provaria a conta de outra camada. A publicação é um passo
+      POSTERIOR e condicionado ao veredito, e o veredito CONSOME a marca PROCEDENCIA_NAO_VINCULADA que
+      Bronze emite e Silver preserva — Gold recusa publicar sob ela, e a recusa tem eval próprio, senão
+      cada camada cumpre o seu e a marca se perde na transformação: se as candidatas fossem escritas no
+      destino para depois serem relidas, o dado divergente já teria ficado exposto antes de qualquer veredito,
+      e remover depois não desfaz a exposição. Um teste que confira só o resultado final ou a ausência
+      de arquivos ao término não vê isso — o eval observa que o caminho de destino permanece inalterado
+      DURANTE a reconciliação. E a publicação em si é uma transição INDIVISÍVEL de visibilidade: o conjunto
+      publicado é exatamente o conjunto reconciliado, tudo ou nada. Copiar vários arquivos expondo-os
+      à medida que chegam deixaria um consumidor lendo parte das candidatas, ou misturadas com as da execução
+      anterior, com a reconciliação correta e o total lido por ninguém aprovado — e uma interrupção no
+      meio congela esse estado. Publicação interrompida deixa o destino como estava antes'
   - id: B-2
     given: um Silver cujo total não reproduz a âncora, ou uma competência sem âncora no contrato
     when: Gold agrega
@@ -109,10 +113,11 @@ tasks:
   - id: eval_2
     description: Reconcilia recalculando, compara o mapa por código e confere os 65
     bash: docker compose -f infra/docker-compose.yml exec -T spark sh -c 'for c in reconcilia_recalculando
-      mapa_por_codigo redistribuicao_compensada contagem_de_codigos uma_linha_por_codigo; do python3 -m
-      pytest --collect-only -q tests/test_gold.py -k "$c" 2>/dev/null | grep -q "::" || { echo "EVAL=CENARIO_AUSENTE_$c";
-      exit 1; }; done; python3 -m pytest -q tests/test_gold.py -k "reconcilia_recalculando or mapa_por_codigo
-      or redistribuicao_compensada or contagem_de_codigos or uma_linha_por_codigo"'
+      mapa_por_codigo redistribuicao_compensada contagem_de_codigos competencia_bate_com_o_contrato uma_linha_por_codigo;
+      do python3 -m pytest --collect-only -q tests/test_gold.py -k "$c" 2>/dev/null | grep -q "::" ||
+      { echo "EVAL=CENARIO_AUSENTE_$c"; exit 1; }; done; python3 -m pytest -q tests/test_gold.py -k "reconcilia_recalculando
+      or mapa_por_codigo or redistribuicao_compensada or contagem_de_codigos or competencia_bate_com_o_contrato
+      or uma_linha_por_codigo"'
     verifies:
     - B-1
     - B-2
@@ -144,7 +149,7 @@ tasks:
   - contracts
   rollback: Remover a camada Gold e seus testes.
   observability: agregados recusados por não reconciliar
-source_seam_sha256: b0718bc47e124f9d28c55ad6adc87226acc7f069ea9f721dbf202e6f979debd8
+source_seam_sha256: ae2a3b3b818e01d393c9dbd9b005bbdb93f766bfa31988609bddda7f7b6d6bdd
 ---
 # Gold só publica quando reconcilia com a âncora
 

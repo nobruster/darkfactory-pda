@@ -1,6 +1,6 @@
 > Projetado de `LEG-SILVER-PRESERVA-DEFEITO.md` pelo Seamwise.
 > **Não edite aqui** — edite a recipe e rode `seamwise plan`.
-> origem sha256: `73eaf964f684c93b9e6b9a80844689d0c017070cb281cd1921f3195334f1f8a8`
+> origem sha256: `4a1b4b4000d1398819a22581cfce5e580b7fe631f12a4b474f670130b680578d`
 
 ---
 
@@ -64,26 +64,27 @@ tasks:
       e defeito de identidade sem a identidade original não é preservação. O valor monetário atravessa
       como Decimal sob um contexto construído INTEIRO a partir da politica_decimal do contrato — Context(prec,
       rounding, traps=[], Emax, Emin) — pelo mesmo motivo que vale em Bronze e Gold: Silver SOMA, e declarar
-      só a precisão deixa traps e limites de expoente virem do DefaultContext, que é mutável. A marca
-      PROCEDENCIA_NAO_VINCULADA, quando Bronze a emite, atravessa Silver SEM ser removida e segue em ''silver
-      classificado'' — remover uma marca de limitação é apagar prova, não normalizar. Silver PRODUZ o
-      mapa total_por_codigo, em soma EXATA não quantizada, e ele é parte declarada de ''silver classificado''
-      — Gold o consome, e sem essa declaração Gold recalcularia os dois lados com a mesma transformação,
-      perdendo a independência que o próprio plano dele exige. A conservação provada NÃO é só a soma global:
-      o mapa de Silver é comparado com o de Bronze CÓDIGO A CÓDIGO, porque trocar os valores de dois códigos
-      preserva soma, chaves, cardinalidades e grupos — {''01'': 10.00, ''03'': 20.00} virando {''01'':
-      20.00, ''03'': 10.00} passa em toda prova global e altera o resultado por espécie. O MULTICONJUNTO
-      de linhas de Silver é idêntico ao de Bronze no que toca código e valor — igualdade linha a linha,
-      não agregada: duas linhas do MESMO código e MESMA descrição, 10.00 e 20.00, virando 11.00 e 19.00
-      preservam contagem, soma E o mapa por código, porque o mapa agrega justamente por código e não separa
-      linhas irmãs. Por isso a prova é sobre o multiconjunto, e a contagem de linhas de Silver é idêntica
-      à de Bronze — soma e mapa por código não bastam: remover uma linha de valor ZERO cuja combinação
-      código/descrição continue presente preserva a soma, o mapa, as cardinalidades e os colapsos, e a
-      perda passaria em toda prova declarada. A soma de Silver também é comparada com a de Bronze e precisa
-      ser IDÊNTICA — um pipeline que altera o total ao normalizar texto tem um defeito, não uma melhoria.
-      Cada colapso recebe EXATAMENTE UMA das seis classificações e a contagem medida é conferida contra
-      a do contrato — encontrar número diferente de 11 é DIVERGE, porque o contrato mediu na competência
-      inteira e a divergência significa fonte diferente da ancorada, não permissão para ajustar o número'
+      só a precisão deixa traps e limites de expoente virem do DefaultContext, que é mutável. A COMPETÊNCIA
+      que Bronze leu e a marca PROCEDENCIA_NAO_VINCULADA, quando Bronze a emite, atravessam Silver SEM
+      serem removidas e segue em ''silver classificado'' — remover uma marca de limitação é apagar prova,
+      não normalizar. Silver PRODUZ o mapa total_por_codigo, em soma EXATA não quantizada, e ele é parte
+      declarada de ''silver classificado'' — Gold o consome, e sem essa declaração Gold recalcularia os
+      dois lados com a mesma transformação, perdendo a independência que o próprio plano dele exige. A
+      conservação provada NÃO é só a soma global: o mapa de Silver é comparado com o de Bronze CÓDIGO
+      A CÓDIGO, porque trocar os valores de dois códigos preserva soma, chaves, cardinalidades e grupos
+      — {''01'': 10.00, ''03'': 20.00} virando {''01'': 20.00, ''03'': 10.00} passa em toda prova global
+      e altera o resultado por espécie. O MULTICONJUNTO de linhas de Silver é idêntico ao de Bronze no
+      que toca código e valor — igualdade linha a linha, não agregada: duas linhas do MESMO código e MESMA
+      descrição, 10.00 e 20.00, virando 11.00 e 19.00 preservam contagem, soma E o mapa por código, porque
+      o mapa agrega justamente por código e não separa linhas irmãs. Por isso a prova é sobre o multiconjunto,
+      e a contagem de linhas de Silver é idêntica à de Bronze — soma e mapa por código não bastam: remover
+      uma linha de valor ZERO cuja combinação código/descrição continue presente preserva a soma, o mapa,
+      as cardinalidades e os colapsos, e a perda passaria em toda prova declarada. A soma de Silver também
+      é comparada com a de Bronze e precisa ser IDÊNTICA — um pipeline que altera o total ao normalizar
+      texto tem um defeito, não uma melhoria. Cada colapso recebe EXATAMENTE UMA das seis classificações
+      e a contagem medida é conferida contra a do contrato — encontrar número diferente de 11 é DIVERGE,
+      porque o contrato mediu na competência inteira e a divergência significa fonte diferente da ancorada,
+      não permissão para ajustar o número'
   - id: B-2
     given: um código cuja descrição diverge do contrato, ou um colapso não declarado
     when: Silver normaliza
@@ -156,7 +157,7 @@ tasks:
   - contracts
   rollback: Remover a camada Silver e seus testes.
   observability: colapsos classificados por competência
-source_seam_sha256: 9eb41b6e8802c5a9f421e8ae5de084a0463a8419f8aae5c22c2424786c16a725
+source_seam_sha256: 5ecec2645173aeb21f496af84e4dc8d4b951c5b300093c6e23267256089858ba
 ---
 # Silver classifica o defeito e conserva o total
 

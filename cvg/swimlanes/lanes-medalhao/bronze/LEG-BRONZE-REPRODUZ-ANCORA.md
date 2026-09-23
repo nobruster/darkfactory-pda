@@ -1,6 +1,6 @@
 > Projetado de `LEG-BRONZE-REPRODUZ-ANCORA.md` pelo Seamwise.
 > **Não edite aqui** — edite a recipe e rode `seamwise plan`.
-> origem sha256: `ca652bea0ae0ee952e591d4f931ffdf713c282475e6989e326d7586d0f6300a0`
+> origem sha256: `1f59a0151d065bee5f3c787c4ef27f41ae41fd2684ecc542d6a3231aa39e0f07`
 
 ---
 
@@ -99,7 +99,11 @@ tasks:
       vínculo verificável com a partição lida satisfaz a comparação textual e não prova nada. A capacidade
       ''bronze conferido'' tem FORMA declarada, não apenas nome: um objeto com estado (INTEGRO, DIVERGE,
       NAO_MEDIDO, ERRO_LEITURA), os cinco controles medidos, o mapa total_por_codigo em Decimal exato,
-      as marcas de limitação como PROCEDENCIA_NAO_VINCULADA, e a competência lida — porque ''produces''
+      as marcas de limitação como PROCEDENCIA_NAO_VINCULADA, a competência lida, e AS LINHAS CONFERIDAS
+      — código, descrição e valor, na forma que Silver consome. Sem elas a capacidade é insuficiente:
+      o multiconjunto de (código, valor) e a normalização de descrição não saem de agregado, e mandar
+      Silver reler do lago introduziria uma SEGUNDA leitura cuja identidade com a conferida não está contratada
+      — o mesmo motivo pelo qual Bronze recusa confiar no Parquet por tê-lo escrito — porque ''produces''
       com nome e sem forma deixa Silver e Bronze passarem nos próprios testes com fixtures locais e não
       encaixarem um no outro. Partição que diverge é DIVERGE, e Bronze não escreve nada'
   - id: B-2
@@ -131,10 +135,10 @@ tasks:
   - id: eval_1
     description: Os cinco controles comparados individualmente, e a partição medida isoladamente
     bash: docker compose -f infra/docker-compose.yml exec -T spark sh -c 'for c in cinco_controles alteracao_compensada
-      isola_particao nao_soma_uniao precisao_declarada; do python3 -m pytest --collect-only -q tests/test_bronze.py
-      -k "$c" 2>/dev/null | grep -q "::" || { echo "EVAL=CENARIO_AUSENTE_$c"; exit 1; }; done; python3
-      -m pytest -q tests/test_bronze.py -k "cinco_controles or alteracao_compensada or isola_particao
-      or nao_soma_uniao or precisao_declarada"'
+      isola_particao nao_soma_uniao precisao_declarada entrega_as_linhas_conferidas; do python3 -m pytest
+      --collect-only -q tests/test_bronze.py -k "$c" 2>/dev/null | grep -q "::" || { echo "EVAL=CENARIO_AUSENTE_$c";
+      exit 1; }; done; python3 -m pytest -q tests/test_bronze.py -k "cinco_controles or alteracao_compensada
+      or isola_particao or nao_soma_uniao or precisao_declarada or entrega_as_linhas_conferidas"'
     verifies:
     - B-1
   - id: eval_2
@@ -173,7 +177,7 @@ tasks:
   - contracts
   rollback: Remover o leitor Bronze e seus testes.
   observability: partições recusadas por controle divergente
-source_seam_sha256: 30a7b8ec4fa72201c39a51da362c983294940859c7b65e53a9921ba1542a009a
+source_seam_sha256: cafe7556ea32a1b7e59f01ac0b9e4f27ebad765b0a3e0bc8868e265a46885d85
 ---
 # Bronze só existe quando reproduz a âncora do contrato
 
