@@ -498,7 +498,7 @@ def _competencia_existe(spark: SparkSession, destino: str, competencia: str) -> 
 
 def _conferir_tabela(
     spark: SparkSession, caminho: str, versao: int, esperado: DataFrame, controles: Dict[str, Any],
-    competencia: str, politica,
+    competencia: str, politica, total_por_codigo: Optional[Dict[str, Decimal]] = None,
 ) -> Tuple[bool, dict]:
     """RELÊ a versão commitada e compara o MULTICONJUNTO de todas as colunas, nos dois sentidos.
 
@@ -508,8 +508,10 @@ def _conferir_tabela(
     lido = _ler_versao(spark, caminho, versao).where(F.col("competencia") == competencia).select(*cols)
     so_esperado = esperado.select(*cols).exceptAll(lido).count()
     so_lido = lido.exceptAll(esperado.select(*cols)).count()
-    observados, _ = medir_controles(lido, politica)
+    observados, por_codigo = medir_controles(lido, politica)
     divergentes = _controles_iguais(observados, controles, politica)
+    if total_por_codigo is not None and por_codigo != total_por_codigo:
+        divergentes = divergentes + ("total_por_codigo",)
     detalhe = {
         "versao": versao,
         "so_no_esperado": so_esperado,
@@ -740,10 +742,42 @@ def executar_leitura(
     )
 
 
-def _gravar(spark, contrato, medido, destino, preparo_raiz, id_execucao, versao_camada_anterior, evolucao):
+def publicar_bronze(
+    spark: SparkSession,
+    contrato,
+    medido: BronzeConferido,
+    *,
+    destino: str = DESTINO_PADRAO,
+    preparo_raiz: str = PREPARO_PADRAO,
+    id_execucao: Optional[str] = None,
+    versao_camada_anterior: Optional[int] = None,
+    evolucao_aditiva: bool = False,
+    metadados_extra: Optional[dict] = None,
+    julgado: Optional[dict] = None,
+) -> BronzeConferido:
+    """Publica um `medido` INTEGRO pelo protocolo de sempre — preparo, replaceWhere, reconferência.
+
+    `julgado` ({"controles", "total_por_codigo"}) é o que um juízo já decidiu: as duas
+    reconferências comparam contra ele, não só contra o próprio preparo.
+    `metadados_extra` entra no userMetadata do commit.
+    """
+    if medido.estado != INTEGRO or medido.linhas is None:
+        return medido
+    return _gravar(
+        spark, contrato, medido, destino, preparo_raiz, id_execucao or uuid.uuid4().hex,
+        versao_camada_anterior, evolucao_aditiva, metadados_extra, julgado,
+    )
+
+
+def _gravar(
+    spark, contrato, medido, destino, preparo_raiz, id_execucao, versao_camada_anterior, evolucao,
+    metadados_extra=None, julgado=None,
+):
     pol = contrato.politica_decimal
     comp = medido.competencia
-    meta = _metadados_do_commit(medido, id_execucao, versao_camada_anterior)
+    meta = {**_metadados_do_commit(medido, id_execucao, versao_camada_anterior), **(metadados_extra or {})}
+    controles = julgado["controles"] if julgado else medido.controles
+    por_codigo = julgado["total_por_codigo"] if julgado else None
     linhas = medido.linhas.select(*COLUNAS)
     preparo = f"{preparo_raiz.rstrip('/')}/execucao={id_execucao}"
 
@@ -764,7 +798,7 @@ def _gravar(spark, contrato, medido, destino, preparo_raiz, id_execucao, versao_
     versao_anterior = _versao_atual(spark, destino)
     publicar_competencia(spark, linhas, destino, comp, meta, evolucao_aditiva=evolucao)
     versao = _versao_atual(spark, destino)
-    ok, detalhe = _conferir_tabela(spark, destino, versao, linhas, medido.controles, comp, pol)
+    ok, detalhe = _conferir_tabela(spark, destino, versao, linhas, controles, comp, pol, por_codigo)
     if not ok:
         _reverter_competencia(spark, destino, comp, existia, versao_anterior, meta)
         return _diverge("reconferencia_publicada", detalhe)
