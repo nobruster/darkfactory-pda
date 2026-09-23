@@ -41,11 +41,20 @@ grep -E "TASK_GRAPH=|INTACTA|MUDOU" /tmp/cadeia.out | sed 's/^/  /'
 grep -q "TASK_GRAPH=READY" /tmp/cadeia.out || aborta "a cadeia nao chegou a READY"
 
 echo
-echo "=== 3. o task-plan e mais novo que a receita? ==="
-TP=$(stat -c %Y "$W/seamwise/task-plan.json" 2>/dev/null || echo 0)
-RC=$(stat -c %Y "$RECEITA")
-echo "  task-plan $(date -d @"$TP" +%H:%M:%S)   receita $(date -d @"$RC" +%H:%M:%S)"
-[ "$TP" -ge "$RC" ] || aborta "task-plan mais velho que a receita — compile defasado"
+echo "=== 3. o compile saiu DESTA receita? ==="
+# A primeira versao comparava MTIME, e abortou uma rodada correta: algo
+# do lado Windows tocou a receita 7s depois do compile sem mudar um byte
+# — disco, commit e seam-map tinham o mesmo sha. mtime e substituto; o
+# seam-map registra o sha da receita de onde veio, que e a pergunta
+# respondida na fonte.
+SHA_MAPA=$(python3 -c "
+import yaml
+m = yaml.safe_load(open('$W/seamwise/seam-map.yaml', encoding='utf-8'))
+print(m.get('source_recipe', {}).get('sha256', ''))" 2>/dev/null)
+SHA_RECEITA=$(sha256sum "$RECEITA" | cut -d' ' -f1)
+echo "  seam-map amarrou ${SHA_MAPA:0:16}   receita e ${SHA_RECEITA:0:16}"
+[ -n "$SHA_MAPA" ] || aborta "seam-map sem sha da receita — nao ha como provar a origem"
+[ "$SHA_MAPA" = "$SHA_RECEITA" ] || aborta "o compile saiu de OUTRA receita — defasado"
 
 echo
 echo "=== 4. a ponte ==="
