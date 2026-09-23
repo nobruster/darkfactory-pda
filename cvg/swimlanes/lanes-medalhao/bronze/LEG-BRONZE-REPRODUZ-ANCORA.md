@@ -1,6 +1,6 @@
 > Projetado de `LEG-BRONZE-REPRODUZ-ANCORA.md` pelo Seamwise.
 > **Não edite aqui** — edite a recipe e rode `seamwise plan`.
-> origem sha256: `1850ec1d5ee3d77bcad33094cc8e0173add314379eb4232601da56bbf626f3ae`
+> origem sha256: `212096e435f6d95ab4fdb2deae6472d280a09465a037937c9a00820119917f84`
 
 ---
 
@@ -53,47 +53,51 @@ tasks:
       da união deu 41.622.553 contra a âncora de 41.572.553 e uma contaminação inexistente foi reportada,
       quando a partição real batia exato e as 50.000 linhas estavam em competencia=fatia-teste, isolada.
       A soma é feita com a precisão DECLARADA no contrato, jamais herdada do contexto global, como o ADR
-      0009 exige, porque qualquer biblioteca importada pode alterar o contexto e o acumulador passaria
-      a perder centavos sem que uma linha deste código mude. Os CINCO controles da âncora são comparados
-      INDIVIDUALMENTE, como a R-5 da tech-spec exige — count_linhas, sum_vl_liquido, min_vl_liquido, max_vl_liquido
-      e linhas_invalidas. Contagem e soma sozinhas não bastam, e não bastam nem juntas: uma alteração
-      COMPENSADA entre duas linhas preserva as duas e ainda assim empurra o máximo acima dos 183.725,76
-      ancorados, com todos os valores finitos, não negativos e na escala permitida. Silver preservaria
-      a soma e Gold compararia soma e cardinalidade; nenhuma das três veria. Bronze PRODUZ o mapa total_por_codigo
-      — soma exata não quantizada, por código — e ele é parte declarada de ''bronze conferido''. É a ORIGEM
-      do mapa: quem lê o Parquet é quem sabe qual valor pertence a qual código, e uma camada posterior
-      que o recalcule a partir dos mesmos bytes repetiria um erro de atribuição nos dois lados da comparação,
-      aprovando-o. Cada controle que diverge é nomeado na saída, porque saber QUAL falhou é o que separa
-      investigar de adivinhar — e cada diferença recebe EXATAMENTE UMA das seis classificações da R-6
-      (CONFIRMED_SOURCE_DEFECT, CONFIRMED_LEGACY_DEFECT, APPROVED_BEHAVIOR_CHANGE, MODERN_DEFECT, CONTRACT_AMBIGUITY,
-      UNRESOLVED). DIVERGE é estado de MEDIÇÃO, não classificação: recusar a partição corretamente e entregar
-      diagnóstico sem classificação deixaria a diferença sem dono. Diferença que a camada não saiba classificar
-      recebe UNRESOLVED, que é uma das seis e BLOQUEIA — nunca fica em branco. O tipo monetário da ENTRADA
-      é recusado se não for decimal — a R-4 manda recusar float, nunca convertê-lo, e converter apaga
-      a evidência da entrada proibida: Decimal(str(1.25)) devolve 1.25, finito, não negativo e na escala
-      2, satisfazendo todas as verificações de domínio enquanto a origem era um DOUBLE. A recusa é do
-      TIPO declarado no esquema do Parquet, antes de ler valor algum. Só então a comparação monetária
-      é entre Decimal e Decimal, e a igualdade é exata — tolerância aqui seria a Regra 3 pelo avesso,
-      afrouxar o oráculo para a camada passar. Todo valor lido é conferido contra o domínio monetário
-      do contrato antes de entrar no acumulador — finito, NÃO NEGATIVO e dentro da escala declarada. A
-      não-negatividade não é preferência, e sim a premissa de soma MONOTÔNICA sob a qual o ADR 0009 deriva
-      a precisão 14 — um valor negativo quebra a premissa e a perda de centavo passa a acontecer DURANTE
-      a soma, onde a comparação final não a enxerga. Bronze lê Parquet, que não passa nem pela gramática
-      do CSV nem pela fronteira do envelope, e por isso é uma TERCEIRA porta de entrada para valores;
-      fechá-la é obrigação desta camada. Valor fora do domínio é defeito classificado com identidade,
-      valor original e posição, nunca somado em silêncio. A procedência do arquivo que originou a partição
-      é APRESENTADA a Bronze junto da leitura — hoje pelo pacote que a gravação emite, não por coluna
-      do Parquet, porque MEDIDO em gravar_lago.py a partição tem três colunas mais a de partição e nenhuma
-      é procedência; exigir que ela viesse do Parquet faria Bronze devolver NAO_MEDIDO na partição CORRETA,
-      que é o defeito da Regra 9 pelo avesso. Quando apresentada, o hash_csv_sha256 é comparado com o
-      ancorado e divergência é DIVERGE, porque reproduzir os dois controles não distingue o arquivo ancorado
-      de outro com os mesmos totais, e a âncora vale para UM arquivo. Fazer a partição carregar a procedência
-      é melhoria desejável e exige tarefa própria, por tocar em gravar_lago.py, que está sem Task-Spec
-      (Regra 11) — enquanto não existir, a ausência do vínculo tem CONSEQUÊNCIA definida e propagada —
-      ''bronze conferido'' sai marcado PROCEDENCIA_NAO_VINCULADA, Silver e Gold propagam a marca sem removê-la,
-      e Gold NÃO PUBLICA sob ela. Registrar só uma ressalva deixaria a cadeia publicar partição diferente
-      da ancorada, porque o hash correto num pacote sem vínculo verificável com a partição lida satisfaz
-      a comparação textual e não prova nada. Partição que diverge é DIVERGE, e Bronze não escreve nada'
+      0009 exige — e o contexto é construído INTEIRO a partir da politica_decimal do contrato, Context(prec,
+      rounding, traps=[], Emax, Emin), porque declarar só a precisão deixa traps e limites de expoente
+      virem do DefaultContext, que é mutável: com Emax baixo a soma vira Infinity e traps=[] silencia
+      o Overflow que denunciaria, porque qualquer biblioteca importada pode alterar o contexto e o acumulador
+      passaria a perder centavos sem que uma linha deste código mude. Os CINCO controles da âncora são
+      comparados INDIVIDUALMENTE, como a R-5 da tech-spec exige — count_linhas, sum_vl_liquido, min_vl_liquido,
+      max_vl_liquido e linhas_invalidas. Contagem e soma sozinhas não bastam, e não bastam nem juntas:
+      uma alteração COMPENSADA entre duas linhas preserva as duas e ainda assim empurra o máximo acima
+      dos 183.725,76 ancorados, com todos os valores finitos, não negativos e na escala permitida. Silver
+      preservaria a soma e Gold compararia soma e cardinalidade; nenhuma das três veria. Bronze PRODUZ
+      o mapa total_por_codigo — soma exata não quantizada, por código — e ele é parte declarada de ''bronze
+      conferido''. É a ORIGEM do mapa: quem lê o Parquet é quem sabe qual valor pertence a qual código,
+      e uma camada posterior que o recalcule a partir dos mesmos bytes repetiria um erro de atribuição
+      nos dois lados da comparação, aprovando-o. Cada controle que diverge é nomeado na saída, porque
+      saber QUAL falhou é o que separa investigar de adivinhar — e cada diferença recebe EXATAMENTE UMA
+      das seis classificações da R-6 (CONFIRMED_SOURCE_DEFECT, CONFIRMED_LEGACY_DEFECT, APPROVED_BEHAVIOR_CHANGE,
+      MODERN_DEFECT, CONTRACT_AMBIGUITY, UNRESOLVED). DIVERGE é estado de MEDIÇÃO, não classificação:
+      recusar a partição corretamente e entregar diagnóstico sem classificação deixaria a diferença sem
+      dono. Diferença que a camada não saiba classificar recebe UNRESOLVED, que é uma das seis e BLOQUEIA
+      — nunca fica em branco. O tipo monetário da ENTRADA é recusado se não for decimal — a R-4 manda
+      recusar float, nunca convertê-lo, e converter apaga a evidência da entrada proibida: Decimal(str(1.25))
+      devolve 1.25, finito, não negativo e na escala 2, satisfazendo todas as verificações de domínio
+      enquanto a origem era um DOUBLE. A recusa é do TIPO declarado no esquema do Parquet, antes de ler
+      valor algum. Só então a comparação monetária é entre Decimal e Decimal, e a igualdade é exata —
+      tolerância aqui seria a Regra 3 pelo avesso, afrouxar o oráculo para a camada passar. Todo valor
+      lido é conferido contra o domínio monetário do contrato antes de entrar no acumulador — finito,
+      NÃO NEGATIVO e dentro da escala declarada. A não-negatividade não é preferência, e sim a premissa
+      de soma MONOTÔNICA sob a qual o ADR 0009 deriva a precisão 14 — um valor negativo quebra a premissa
+      e a perda de centavo passa a acontecer DURANTE a soma, onde a comparação final não a enxerga. Bronze
+      lê Parquet, que não passa nem pela gramática do CSV nem pela fronteira do envelope, e por isso é
+      uma TERCEIRA porta de entrada para valores; fechá-la é obrigação desta camada. Valor fora do domínio
+      é defeito classificado com identidade, valor original e posição, nunca somado em silêncio. A procedência
+      do arquivo que originou a partição é APRESENTADA a Bronze junto da leitura — hoje pelo pacote que
+      a gravação emite, não por coluna do Parquet, porque MEDIDO em gravar_lago.py a partição tem três
+      colunas mais a de partição e nenhuma é procedência; exigir que ela viesse do Parquet faria Bronze
+      devolver NAO_MEDIDO na partição CORRETA, que é o defeito da Regra 9 pelo avesso. Quando apresentada,
+      o hash_csv_sha256 é comparado com o ancorado e divergência é DIVERGE, porque reproduzir os dois
+      controles não distingue o arquivo ancorado de outro com os mesmos totais, e a âncora vale para UM
+      arquivo. Fazer a partição carregar a procedência é melhoria desejável e exige tarefa própria, por
+      tocar em gravar_lago.py, que está sem Task-Spec (Regra 11) — enquanto não existir, a ausência do
+      vínculo tem CONSEQUÊNCIA definida e propagada — ''bronze conferido'' sai marcado PROCEDENCIA_NAO_VINCULADA,
+      Silver e Gold propagam a marca sem removê-la, e Gold NÃO PUBLICA sob ela. Registrar só uma ressalva
+      deixaria a cadeia publicar partição diferente da ancorada, porque o hash correto num pacote sem
+      vínculo verificável com a partição lida satisfaz a comparação textual e não prova nada. Partição
+      que diverge é DIVERGE, e Bronze não escreve nada'
   - id: B-2
     given: uma competência cuja partição não existe no lago, existe com zero linhas, ou existe e não está
       vazia mas NÃO tem âncora declarada no contrato
@@ -113,9 +117,12 @@ tasks:
       não pertence a partição nenhuma é contaminação — e o total vem de um UNIVERSO INDEPENDENTE, a listagem
       dos objetos do lago, nunca da mesma leitura agrupada: somar contagens agrupadas pela própria relação
       lida é identidade, fecha sempre, inclusive somando o grupo nulo, e não veria arquivo que as DUAS
-      leituras ignoraram. As chaves que constituem partição válida são as declaradas no contrato; objeto
-      fora delas, ou linha cuja chave de partição é nula, conta como não pertencente e faz o controle
-      reprovar, e foi para vê-la que este controle existe'
+      leituras ignoraram. A CHAVE de partição é a declarada no contrato — ''competencia'' — e os objetos
+      auxiliares que ele lista, como _SUCCESS, são ignorados no fechamento. A competência CONTRATADA não
+      é a lista exaustiva de partições válidas: tratá-la assim reprovaria competencia=fatia-teste, que
+      existe no lago e é legítima, e seria mais um gate recusando o correto; objeto fora delas, ou linha
+      cuja chave de partição é nula, conta como não pertencente e faz o controle reprovar, e foi para
+      vê-la que este controle existe'
   evals:
   - id: eval_1
     description: Os cinco controles comparados individualmente, e a partição medida isoladamente
@@ -162,7 +169,7 @@ tasks:
   - contracts
   rollback: Remover o leitor Bronze e seus testes.
   observability: partições recusadas por controle divergente
-source_seam_sha256: bc8531cdc4bcec26037e456dae02e7e7bb257daba32e6095523dcc8a6f2a3c57
+source_seam_sha256: eb4170d5d366072c7592b93eacec62a43ff1103264fdc6b4b87ab04ac6935d46
 ---
 # Bronze só existe quando reproduz a âncora do contrato
 

@@ -1,6 +1,6 @@
 > Projetado de `LEG-SILVER-PRESERVA-DEFEITO.md` pelo Seamwise.
 > **Não edite aqui** — edite a recipe e rode `seamwise plan`.
-> origem sha256: `7c0a79e84b4afd7b8cc1c256d8178aae0f9e687d6bc6ce3596cc763cca1b2688`
+> origem sha256: `7b80627547891d5b27d25f9fb61e45f7976d652b2fb5ef80201d5ad55e74cd69`
 
 ---
 
@@ -48,16 +48,19 @@ tasks:
     then: 'a CHAVE é o código, nunca a descrição, como o ADR 0008 exige — agrupar por descrição fundiria
       os 24 códigos colapsados em 11 linhas e o total continuaria batendo, com os mapas por código errados
       e nada acusando. A normalização é de FORMA e não de conteúdo — espaços à borda e caixa da descrição,
-      jamais o valor monetário. E a CONTAGEM DE COLAPSOS é medida sobre a descrição ORIGINAL, nunca sobre
-      a normalizada, porque a normalização pode FUNDIR descrições que a fonte publica distintas: ''ABC''
-      e ''abc'' de códigos diferentes viram um grupo só depois de igualar a caixa, e o colapso criado
-      pela camada seria atribuído à fonte, ou uma partição correta receberia DIVERGE. Se as duas contagens
-      diferirem, a diferença é da normalização, sai nomeada E RECEBE uma das seis classificações da R-6
-      como qualquer outra — identidade criada na saída normalizada é diferença, e diferença nomeada sem
-      classificação fica sem dono, que é o vício que a R-6 existe para fechar; ela não é somada aos 11
-      do contrato. E a descrição ORIGINAL é PRESERVADA no registro do defeito, não apenas usada para contar
-      — medir sobre ela e depois gravar o texto normalizado faria ''ABC'' e ''abc'' virarem indistinguíveis
-      na saída, com as contagens corretas e a prova específica perdida. A Regra 4 pede preservar o defeito,
+      jamais o valor monetário. e as QUATRO cardinalidades do contrato são conferidas contra o dado, não
+      apenas a de colapsos — 65 códigos, 52 descrições, 11 colapsos e 24 códigos colapsados, cada uma
+      comparada individualmente, porque um contrato com 51 descrições e 25 colapsados passaria numa conferência
+      que só olha os 11. A CONTAGEM DE COLAPSOS é medida sobre a descrição ORIGINAL, nunca sobre a normalizada,
+      porque a normalização pode FUNDIR descrições que a fonte publica distintas: ''ABC'' e ''abc'' de
+      códigos diferentes viram um grupo só depois de igualar a caixa, e o colapso criado pela camada seria
+      atribuído à fonte, ou uma partição correta receberia DIVERGE. Se as duas contagens diferirem, a
+      diferença é da normalização, sai nomeada E RECEBE uma das seis classificações da R-6 como qualquer
+      outra — identidade criada na saída normalizada é diferença, e diferença nomeada sem classificação
+      fica sem dono, que é o vício que a R-6 existe para fechar; ela não é somada aos 11 do contrato.
+      E a descrição ORIGINAL é PRESERVADA no registro do defeito, não apenas usada para contar — medir
+      sobre ela e depois gravar o texto normalizado faria ''ABC'' e ''abc'' virarem indistinguíveis na
+      saída, com as contagens corretas e a prova específica perdida. A Regra 4 pede preservar o defeito,
       e defeito de identidade sem a identidade original não é preservação, que atravessa como Decimal
       com a precisão declarada. A marca PROCEDENCIA_NAO_VINCULADA, quando Bronze a emite, atravessa Silver
       SEM ser removida e segue em ''silver classificado'' — remover uma marca de limitação é apagar prova,
@@ -116,10 +119,10 @@ tasks:
   - id: eval_2
     description: Os 11 colapsos saem classificados e a contagem confere
     bash: docker compose -f infra/docker-compose.yml exec -T spark sh -c 'n=$(python3 -m pytest --collect-only
-      -q tests/test_silver.py -k "colapso_classificado or contagem_de_colapsos or classificacao_unica
+      -q tests/test_silver.py -k "colapso_classificado or quatro_cardinalidades or classificacao_unica
       or colapsos_na_descricao_original or colapso_da_normalizacao_classificado" 2>/dev/null | grep -c
       "::"); [ "$n" -lt 5 ] && { echo "EVAL=COLETOU_${n}_DE_5"; exit 1; }; python3 -m pytest -q tests/test_silver.py
-      -k "colapso_classificado or contagem_de_colapsos or classificacao_unica or colapsos_na_descricao_original
+      -k "colapso_classificado or quatro_cardinalidades or classificacao_unica or colapsos_na_descricao_original
       or colapso_da_normalizacao_classificado"'
     verifies:
     - B-1
@@ -151,7 +154,7 @@ tasks:
   - contracts
   rollback: Remover a camada Silver e seus testes.
   observability: colapsos classificados por competência
-source_seam_sha256: 2b087f5aa40057435109b3844f66fcc5b054340f81fe664936b81a3442cdb54c
+source_seam_sha256: 4b5d865a812325b95c0935defc9a556daf11f10424d5502cf97c332514b0b69e
 ---
 # Silver classifica o defeito e conserva o total
 

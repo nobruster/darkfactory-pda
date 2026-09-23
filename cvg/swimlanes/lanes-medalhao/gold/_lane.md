@@ -2,7 +2,7 @@ FORK: B (task-driven) — rota única desde a v3.4 — o consenso sempre entrega
 
 > Projetado de `LANE-GOLD.md` pelo Seamwise.
 > **Não edite aqui** — edite a recipe e rode `seamwise plan`.
-> origem sha256: `5947951f6cd9fa4ca8e0b0cc2b0fc1e3289bf5831b506085b541897f79f04333`
+> origem sha256: `d7de8ecd9fd220dbc30ab26b57b070faca28c5a5ae3228e86e5e815624153cea`
 
 ---
 
@@ -14,7 +14,7 @@ id: LANE-GOLD
 name: Gold lane
 owner: medalhao
 seam_id: SEAM-GOLD
-source_seam_sha256: 639d23d78838a8e8e129e6653407b0a84abed92954ed6b87208c64673effb0b7
+source_seam_sha256: d029c2ee2278fff989b2f43a29e66330e2ccb74bbac0643f4f3a2afc2c24a7aa
 legs:
 - LEG-GOLD-RECONCILIA
 ---
