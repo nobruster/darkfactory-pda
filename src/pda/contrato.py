@@ -104,6 +104,20 @@ class MapaColapsos:
 
 
 @dataclass(frozen=True)
+class GrupoEspecie:
+    grupo: str
+    codigos: tuple
+
+
+@dataclass(frozen=True)
+class GruposEspecie:
+    grupos: tuple
+    aprovado_por: str
+    aprovado_em: str
+    regra: str
+
+
+@dataclass(frozen=True)
 class Contrato:
     competencia: str
     procedencia: Procedencia
@@ -114,6 +128,7 @@ class Contrato:
     politica_decimal: PoliticaDecimal
     particionamento: Union[Particionamento, None] = None
     mapa_colapsos: Union[MapaColapsos, None] = None
+    grupos_especie: Union[GruposEspecie, None] = None
 
 
 def _inteiro_nao_negativo(valor: Any, campo: str) -> int:
@@ -198,6 +213,48 @@ def _mapa_colapsos(bruto: Any) -> Union[MapaColapsos, None]:
             vistos.add(codigo)
         grupos.append(GrupoColapso(descricao=descricao, codigos=codigos))
     return MapaColapsos(grupos=tuple(grupos), aprovado_por=aprovado_por, aprovado_em=aprovado_em)
+
+
+def _grupos_especie(bruto: Any, codigos_distintos: int) -> Union[GruposEspecie, None]:
+    # Opcional: contratos sem o bloco carregam com None; quem o exige é o consumidor.
+    if bruto is None:
+        return None
+    if not isinstance(bruto, dict):
+        raise ContratoRecusado(f"grupos_especie precisa ser mapa, veio {bruto!r}")
+    aprovado_por = bruto.get("aprovado_por")
+    aprovado_em = bruto.get("aprovado_em")
+    if not isinstance(aprovado_por, str) or not aprovado_por.strip() or not aprovado_em:
+        raise ContratoRecusado("grupos_especie sem aprovador ou data de aprovação")
+    grupos = []
+    vistos = set()
+    for g in _lista(bruto.get("grupos"), "grupos_especie.grupos"):
+        if not isinstance(g, dict):
+            raise ContratoRecusado(f"grupos_especie.grupos[] precisa ser mapa, veio {g!r}")
+        nome = _texto_obrigatorio(g.get("grupo"), "grupos_especie.grupos[].grupo")
+        codigos = _lista(g.get("codigos"), "grupos_especie.grupos[].codigos")
+        if not codigos:
+            raise ContratoRecusado(f"grupo de espécie {nome!r} sem códigos")
+        for codigo in codigos:
+            if not isinstance(codigo, str):
+                raise ContratoRecusado(
+                    f"código {codigo!r} do grupo {nome!r} precisa ser texto — "
+                    "sem aspas o YAML lê 01 como o inteiro 1"
+                )
+            if codigo in vistos:
+                raise ContratoRecusado(f"código {codigo!r} repetido entre grupos de espécie")
+            vistos.add(codigo)
+        grupos.append(GrupoEspecie(grupo=nome, codigos=codigos))
+    if len(vistos) != codigos_distintos:
+        raise ContratoRecusado(
+            f"grupos_especie cobre {len(vistos)} códigos distintos, mas "
+            f"cardinalidade.codigos_distintos declara {codigos_distintos}"
+        )
+    return GruposEspecie(
+        grupos=tuple(grupos),
+        aprovado_por=aprovado_por,
+        aprovado_em=aprovado_em,
+        regra=bruto.get("regra", ""),
+    )
 
 
 def _limites_de_expoente(politica: dict, precisao: int, ancora: Ancora):
@@ -381,4 +438,7 @@ def carregar_contrato(caminho: Union[str, Path]) -> Union[Contrato, str]:
         politica_decimal=politica_decimal,
         particionamento=_particionamento(bruto.get("particionamento")),
         mapa_colapsos=_mapa_colapsos(bruto.get("mapa_colapsos")),
+        grupos_especie=_grupos_especie(
+            bruto.get("grupos_especie"), cardinalidade.codigos_distintos
+        ),
     )

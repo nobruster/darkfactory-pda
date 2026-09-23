@@ -445,3 +445,82 @@ def test_bloco_presente_e_invalido_recusado_sem_aprovador(tmp_path):
 
 def test_bloco_presente_e_invalido_recusado_sem_data(tmp_path):
     _recusa(tmp_path, lambda d: d["mapa_colapsos"].pop("aprovado_em"))
+
+
+# --- Extensão: grupos_especie ---
+
+
+def _com_grupos_especie() -> dict:
+    d = _contrato_valido()
+    codigos = [f"{i:02d}" for i in range(1, 66)]
+    cortes = [(0, 20), (20, 44), (44, 55), (55, 59), (59, 65)]
+    nomes = ["Pensao", "Aposentadoria", "Auxilio", "Amparo_BPC", "Outros"]
+    d["grupos_especie"] = {
+        "aprovado_por": "nobru",
+        "aprovado_em": "2026-09-23",
+        "regra": "palavra inicial da descricao da especie",
+        "grupos": [{"grupo": n, "codigos": codigos[a:b]} for n, (a, b) in zip(nomes, cortes)],
+    }
+    return d
+
+
+def _recusa_grupos(tmp_path, mutar):
+    d = _com_grupos_especie()
+    mutar(d)
+    with pytest.raises(ContratoRecusado):
+        carregar_contrato(_escrever(tmp_path, d))
+
+
+def test_expoe_grupos_especie(tmp_path):
+    g = carregar_contrato(_escrever(tmp_path, _com_grupos_especie())).grupos_especie
+    assert g.aprovado_por == "nobru" and g.aprovado_em == "2026-09-23"
+    assert g.regra == "palavra inicial da descricao da especie"
+    assert len(g.grupos) == 5
+    assert g.grupos[0].grupo == "Pensao"
+    assert sum(len(x.codigos) for x in g.grupos) == 65
+
+
+def test_expoe_grupos_especie_do_contrato_real():
+    g = carregar_contrato(CONTRATO_REAL).grupos_especie
+    assert len(g.grupos) == 5
+    assert sum(len(x.codigos) for x in g.grupos) == 65
+
+
+def test_grupos_ausentes_viram_none(tmp_path):
+    c = carregar_contrato(_escrever(tmp_path, _contrato_valido()))
+    assert c.grupos_especie is None
+
+
+def test_codigos_de_grupo_sao_texto(tmp_path):
+    g = carregar_contrato(_escrever(tmp_path, _com_grupos_especie())).grupos_especie
+    assert all(isinstance(c, str) for x in g.grupos for c in x.codigos)
+    assert g.grupos[0].codigos[0] == "01"
+
+
+def test_grupos_codigo_inteiro_recusado(tmp_path):
+    _recusa_grupos(
+        tmp_path, lambda d: d["grupos_especie"]["grupos"][0]["codigos"].__setitem__(0, 1)
+    )
+
+
+def test_grupos_grupo_sem_codigos_recusado(tmp_path):
+    _recusa_grupos(tmp_path, lambda d: d["grupos_especie"]["grupos"][4].update(codigos=[]))
+
+
+def test_grupo_codigo_repetido_recusado(tmp_path):
+    _recusa_grupos(
+        tmp_path,
+        lambda d: d["grupos_especie"]["grupos"][1]["codigos"].__setitem__(0, "01"),
+    )
+
+
+def test_grupos_cobertura_diferente_recusada(tmp_path):
+    _recusa_grupos(tmp_path, lambda d: d["grupos_especie"]["grupos"][4]["codigos"].pop())
+
+
+def test_grupos_sem_aprovacao_recusado(tmp_path):
+    _recusa_grupos(tmp_path, lambda d: d["grupos_especie"].pop("aprovado_por"))
+
+
+def test_grupos_sem_data_recusado(tmp_path):
+    _recusa_grupos(tmp_path, lambda d: d["grupos_especie"].pop("aprovado_em"))
