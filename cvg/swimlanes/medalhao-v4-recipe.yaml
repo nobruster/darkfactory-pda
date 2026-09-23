@@ -108,7 +108,7 @@ seams:
         - id: B-1
           given: a landing vinculada ao CSV, o contrato e o CSV original em _raw/
           when: a ingestão roda para a competência
-          then: chama orquestracao.conduzir com um executar_leitura que mede a Bronze no motor Spark SEM gravar e lê o CSV pelo segundo motor, o leitor posicional em Python já selado, montando InsumosExecucao; só com Desfecho.autorizado_publicar a Bronze publica pelo protocolo que já existe — preparo, replaceWhere, reconferência —, e o userMetadata do commit nomeia o caminho_pacote e o sha256 do pacote do juízo. O orquestrador e o juiz selados são reusados, nunca alterados.
+          then: chama orquestracao.conduzir com um executar_leitura que mede a Bronze no motor Spark SEM gravar e lê o CSV pelo segundo motor, o leitor posicional em Python já selado, montando InsumosExecucao; só com Desfecho.autorizado_publicar a Bronze publica pelo protocolo que já existe — preparo, replaceWhere, reconferência —, e o userMetadata do commit nomeia o caminho_pacote e o sha256 do pacote do juízo. O orquestrador e o juiz selados são reusados, nunca alterados. O que publica é o MESMO resultado medido dentro do executar_leitura — nunca uma segunda leitura da landing —, e a reconferência depois de publicar compara a Bronze publicada com os cinco controles e o total_por_codigo que o pacote JULGOU, não só com o próprio preparo.
         - id: B-2
           given: um juízo que não autoriza — RECUSADO, ERRO ou ACEITO_SEM_ANCORA
           when: a ingestão termina
@@ -116,7 +116,7 @@ seams:
         evals:
         - id: eval_1
           description: O juízo acontece na ingestão, com os dois motores
-          bash: docker compose -f infra/docker-compose.yml exec -T spark sh -c 'for c in julga_na_ingestao_com_segundo_motor publica_bronze_so_com_aceito commit_da_bronze_nomeia_o_pacote; do python3 -m pytest --collect-only -q tests/test_ingestao.py -k "$c" 2>/dev/null | grep -q "::" || { echo "EVAL=CENARIO_AUSENTE_$c"; exit 1; }; done; python3 -m pytest -q tests/test_ingestao.py -k "julga_na_ingestao_com_segundo_motor or publica_bronze_so_com_aceito or commit_da_bronze_nomeia_o_pacote"'
+          bash: docker compose -f infra/docker-compose.yml exec -T spark sh -c 'for c in julga_na_ingestao_com_segundo_motor publica_bronze_so_com_aceito commit_da_bronze_nomeia_o_pacote publicado_confere_com_o_julgado; do python3 -m pytest --collect-only -q tests/test_ingestao.py -k "$c" 2>/dev/null | grep -q "::" || { echo "EVAL=CENARIO_AUSENTE_$c"; exit 1; }; done; python3 -m pytest -q tests/test_ingestao.py -k "julga_na_ingestao_com_segundo_motor or publica_bronze_so_com_aceito or commit_da_bronze_nomeia_o_pacote or publicado_confere_com_o_julgado"'
           verifies:
           - B-1
         - id: eval_2
@@ -196,7 +196,7 @@ seams:
         - id: B-1
           given: a Silver publicada INTEGRO e a Bronze que ela leu, com pacote ACEITO no commit
           when: a Gold principal roda pela entrada nova
-          then: resolve UMA vez a versão da Silver, lê com versionAsOf, segue a versão da Bronze nos metadados da Silver e confere que o commit dessa Bronze nomeia um pacote ACEITO da mesma competência e do mesmo sha256 do CSV; agrega por código reusando agregar, confere exato contra os controles persistidos da Silver e a âncora, e publica pelo protocolo que já existe, com o userMetadata nomeando a versão da Silver e o pacote. NÃO abre a landing nem o CSV.
+          then: resolve UMA vez a versão da Silver, lê com versionAsOf, segue a versão da Bronze nos metadados da Silver e confere que o commit dessa Bronze nomeia um pacote ACEITO da mesma competência e do mesmo sha256 do CSV; agrega por código reusando agregar, confere exato contra os controles persistidos da Silver e a âncora, e publica pelo protocolo que já existe, com o userMetadata nomeando a versão da Silver e o pacote. NÃO abre a landing nem o CSV. Antes de confiar no pacote, recalcula o sha256 dos BYTES do arquivo em caminho_pacote e compara com o sha256 que o commit da Bronze registrou; bytes diferentes são DIVERGE.
         - id: B-2
           given: uma Silver sem linhagem até um pacote ACEITO, ou com estado diferente de INTEGRO
           when: a Gold principal roda pela entrada nova
@@ -204,7 +204,7 @@ seams:
         evals:
         - id: eval_1
           description: Lê só a Silver e segue a linhagem
-          bash: docker compose -f infra/docker-compose.yml exec -T spark sh -c 'for c in gold_le_so_a_silver nao_abre_landing_nem_csv linhagem_ate_pacote_aceito; do python3 -m pytest --collect-only -q tests/test_gold.py -k "$c" 2>/dev/null | grep -q "::" || { echo "EVAL=CENARIO_AUSENTE_$c"; exit 1; }; done; python3 -m pytest -q tests/test_gold.py -k "gold_le_so_a_silver or nao_abre_landing_nem_csv or linhagem_ate_pacote_aceito"'
+          bash: docker compose -f infra/docker-compose.yml exec -T spark sh -c 'for c in gold_le_so_a_silver nao_abre_landing_nem_csv linhagem_ate_pacote_aceito sha256_do_pacote_conferido; do python3 -m pytest --collect-only -q tests/test_gold.py -k "$c" 2>/dev/null | grep -q "::" || { echo "EVAL=CENARIO_AUSENTE_$c"; exit 1; }; done; python3 -m pytest -q tests/test_gold.py -k "gold_le_so_a_silver or nao_abre_landing_nem_csv or linhagem_ate_pacote_aceito or sha256_do_pacote_conferido"'
           verifies:
           - B-1
         - id: eval_2
@@ -370,7 +370,7 @@ seams:
         - id: B-1
           given: a Silver publicada com estado INTEGRO, a Gold principal da competência publicada, e grupos_especie no Contrato
           when: a Gold por assuntos roda para a competência
-          then: 'resolve UMA vez a versão da Silver e lê com versionAsOf; num único groupBy por especie_codigo monta fat_especie — grão (especie_codigo, competencia), com descrição, grupo_especie do mapa, qtd_beneficios, vl_total em soma EXATA no DecimalType declarado, vl_minimo, vl_maximo, qtd_vl_zero, vl_medio arredondado meio-para-par com bround, vl_mediano_aprox e vl_p90_aprox — nomes que dizem que são aproximados — com a precisão do percentil declarada, rank_no_grupo e percentuais nacionais —; kpis_nacionais sai SOMANDO fat_especie, grão competência, uma linha, e só os percentis nacionais exigem outra passada. Antes de publicar, confere EXATO: soma de qtd_beneficios igual a count_linhas da âncora, soma de vl_total igual a sum_vl_liquido, kpis_nacionais com os mesmos totais, 65 códigos, cada um em um grupo. Grava em preparo e publica com replaceWhere na competência em s3a://gold/pda/assuntos/fat_especie e s3a://gold/pda/assuntos/kpis_nacionais, DecimalType do contrato, ansi.enabled=true, CHECK >= 0 nas colunas monetárias, imposição de schema ligada e evolução só aditiva com mergeSchema — nunca overwriteSchema —, e o userMetadata do commit nomeia a versão da Silver e a da Gold principal lidas.'
+          then: 'lê a versão da Silver NOMEADA no commit da Gold principal publicada da competência — nunca a mais recente —, com versionAsOf; num único groupBy por especie_codigo monta fat_especie — grão (especie_codigo, competencia), com descrição, grupo_especie do mapa, qtd_beneficios, vl_total em soma EXATA no DecimalType declarado, vl_minimo, vl_maximo, qtd_vl_zero, vl_medio arredondado meio-para-par com bround, vl_mediano_aprox e vl_p90_aprox — nomes que dizem que são aproximados — com a precisão do percentil declarada, rank_no_grupo e percentuais nacionais —; kpis_nacionais sai de fat_especie, grão competência, uma linha, com colunas ENUMERADAS — total_beneficios e vl_total como somas, vl_medio = bround(vl_total / total_beneficios, 2), NUNCA a média das médias por espécie, vl_minimo o menor dos mínimos, vl_maximo o maior dos máximos, total_especies_ativas, qtd_vl_zero somado —, e só vl_mediano_aprox e vl_p90_aprox nacionais exigem outra passada. Antes de publicar, confere EXATO: soma de qtd_beneficios igual a count_linhas da âncora, soma de vl_total igual a sum_vl_liquido, o menor vl_minimo igual a min_vl_liquido e o maior vl_maximo igual a max_vl_liquido da âncora, linhas_invalidas zero — os CINCO controles —, kpis_nacionais com os mesmos totais, 65 códigos, cada um em um grupo. Grava em preparo e publica com replaceWhere na competência em s3a://gold/pda/assuntos/fat_especie e s3a://gold/pda/assuntos/kpis_nacionais, DecimalType do contrato, ansi.enabled=true, CHECK >= 0 nas colunas monetárias, imposição de schema ligada e evolução só aditiva com mergeSchema — nunca overwriteSchema —, e o userMetadata do commit nomeia a versão da Silver e a da Gold principal lidas.'
         - id: B-2
           given: uma competência sem Gold principal publicada, sem grupos_especie, com código fora do mapa, ou cujas somas não fecham
           when: a Gold por assuntos roda
@@ -378,7 +378,7 @@ seams:
         evals:
         - id: eval_1
           description: Grão, colunas e fechamento exato
-          bash: docker compose -f infra/docker-compose.yml exec -T spark sh -c 'for c in fat_especie_fecha_com_a_ancora kpis_somam_fat_especie medio_arredonda_meio_para_par percentis_rotulados_aprox le_silver_por_versao; do python3 -m pytest --collect-only -q tests/test_gold_assuntos.py -k "$c" 2>/dev/null | grep -q "::" || { echo "EVAL=CENARIO_AUSENTE_$c"; exit 1; }; done; python3 -m pytest -q tests/test_gold_assuntos.py -k "fat_especie_fecha_com_a_ancora or kpis_somam_fat_especie or medio_arredonda_meio_para_par or percentis_rotulados_aprox or le_silver_por_versao"'
+          bash: docker compose -f infra/docker-compose.yml exec -T spark sh -c 'for c in fat_especie_fecha_com_a_ancora kpis_somam_fat_especie medio_arredonda_meio_para_par percentis_rotulados_aprox le_silver_por_versao usa_a_silver_nomeada_pela_gold extremos_conferem_com_a_ancora medio_nacional_nao_e_media_das_medias; do python3 -m pytest --collect-only -q tests/test_gold_assuntos.py -k "$c" 2>/dev/null | grep -q "::" || { echo "EVAL=CENARIO_AUSENTE_$c"; exit 1; }; done; python3 -m pytest -q tests/test_gold_assuntos.py -k "fat_especie_fecha_com_a_ancora or kpis_somam_fat_especie or medio_arredonda_meio_para_par or percentis_rotulados_aprox or le_silver_por_versao or usa_a_silver_nomeada_pela_gold or extremos_conferem_com_a_ancora or medio_nacional_nao_e_media_das_medias"'
           verifies:
           - B-1
         - id: eval_2
@@ -456,7 +456,7 @@ seams:
         - id: B-1
           given: o preparo de uma execução cujo commit está no histórico da tabela publicada
           when: a limpeza roda para a camada e a execução
-          then: confere o commit pelo id da execução no userMetadata, apaga SÓ o prefixo <camada>/_preparo/.../execucao=<id> — um caminho montado de partes validadas, recusado se vier vazio ou fora de _preparo —, e confere depois que a tabela publicada mantém a mesma versão, a mesma contagem e a mesma soma.
+          then: confere que o ÚLTIMO commit que nomeia a competência no userMetadata é o dessa execução, com estado de publicação e NÃO de reversão — um commit revertido ou seguido de outro não é publicação conferida —, apaga SÓ o prefixo <camada>/_preparo/.../execucao=<id> — um caminho montado de partes validadas, recusado se vier vazio ou fora de _preparo —, e confere depois que a tabela publicada mantém a mesma versão, a mesma contagem e a mesma soma.
         - id: B-2
           given: uma execução sem commit no histórico, um id vazio ou um caminho fora do preparo
           when: a limpeza roda
@@ -469,7 +469,7 @@ seams:
           - B-1
         - id: eval_2
           description: Guarda de caminho
-          bash: docker compose -f infra/docker-compose.yml exec -T spark sh -c 'for c in id_vazio_recusado caminho_fora_do_preparo_recusado execucao_nao_publicada_preserva; do python3 -m pytest --collect-only -q tests/test_limpeza.py -k "$c" 2>/dev/null | grep -q "::" || { echo "EVAL=CENARIO_AUSENTE_$c"; exit 1; }; done; python3 -m pytest -q tests/test_limpeza.py -k "id_vazio_recusado or caminho_fora_do_preparo_recusado or execucao_nao_publicada_preserva"'
+          bash: docker compose -f infra/docker-compose.yml exec -T spark sh -c 'for c in id_vazio_recusado caminho_fora_do_preparo_recusado execucao_nao_publicada_preserva commit_revertido_preserva; do python3 -m pytest --collect-only -q tests/test_limpeza.py -k "$c" 2>/dev/null | grep -q "::" || { echo "EVAL=CENARIO_AUSENTE_$c"; exit 1; }; done; python3 -m pytest -q tests/test_limpeza.py -k "id_vazio_recusado or caminho_fora_do_preparo_recusado or execucao_nao_publicada_preserva or commit_revertido_preserva"'
           verifies:
           - B-2
         - id: eval_3
