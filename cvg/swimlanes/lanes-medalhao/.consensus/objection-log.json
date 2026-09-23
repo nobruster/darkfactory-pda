@@ -13,23 +13,23 @@
     "family": "anthropic"
   },
   "verdict": "REVISE",
-  "prompt_sha256": "564f38a455c676dbb856d15c60f0dafd9ad2ab872736850e1e4b86c80c6f7542",
+  "prompt_sha256": "334ea6dbb888f94c7082965a0b7a00ad57d5f59d10e5a2cdd79740c773c68e46",
   "inputs": [
     {
       "path": "bronze/LEG-BRONZE-REPRODUZ-ANCORA.md",
-      "sha256": "ebae2eb747e88045f16fd9c6933d498c703ecd4ee3133c6fc74d8d8a8381ffab"
+      "sha256": "cb0f3f2137ebd9021ea674903e89e04f3705921d38bd38ff38ac8a5798c09523"
     },
     {
       "path": "bronze/_lane.md",
-      "sha256": "babf1b2b08602a3ded73097338da7740e3045e5bebf4f60eef5742307185da7a"
+      "sha256": "6c0bcce502ec928baf7d5a170c2cf518fe0dc118cf1702d04e623d220ad2640f"
     },
     {
       "path": "gold/LEG-GOLD-RECONCILIA.md",
-      "sha256": "c25803a1364c957665985303bccb7249b1c21d7caeab65170cc99ed168fa3c61"
+      "sha256": "d09d84ef394eaf54e13071526df860b46f9413a3c9d812af2b3c71a466c3925f"
     },
     {
       "path": "gold/_lane.md",
-      "sha256": "db8f5871d7917c90b449d38a0657a0cf9e779d7d19aa98a080fe84024c3710be"
+      "sha256": "c2d3369f00c373213faf8366009ced14de8644bf4a377f7b0c13515c7f337502"
     },
     {
       "path": "silver/LEG-SILVER-PRESERVA-DEFEITO.md",
@@ -48,18 +48,18 @@
       "attack_class": "cross-lane-interface",
       "swimlane": "LANE-GOLD",
       "leg": "LEG-GOLD-RECONCILIA",
+      "title": "O contrato entregue pelo orquestrador n\u00e3o cont\u00e9m campos obrigat\u00f3rios para executar a cadeia",
       "location": {
         "plan_file": "cvg/swimlanes/lanes-medalhao/gold/LEG-GOLD-RECONCILIA.md",
-        "section": "B-1 \u2014 envelope e adapta\u00e7\u00e3o para InsumosExecucao"
+        "section": "tasks/B-1 \u2014 contexto decimal e executar_leitura"
       },
-      "title": "Chamar conduzir n\u00e3o demonstra que o envelope passou pela fronteira",
-      "body": "O plano atribui a publica\u00e7\u00e3o ao orquestrador e descreve o pareamento de hashes, defeitos e mapas, mas n\u00e3o declara a valida\u00e7\u00e3o do envelope antes de convert\u00ea-lo em InsumosExecucao. A interface existente recebe campos j\u00e1 extra\u00eddos, n\u00e3o o envelope completo; conduzir chama julgar sobre insumos.agregado e n\u00e3o chama validar_envelope. Tamb\u00e9m n\u00e3o est\u00e1 declarado se agregado representa os controles independentes ou os controles validados do produtor. Uma adapta\u00e7\u00e3o pode fornecer o agregado independente correto, copiar hashes e mapas corretos e omitir controles incorretos do envelope. A autoriza\u00e7\u00e3o resultante n\u00e3o provaria que os cinco controles declarados pelo produtor foram conferidos.",
-      "evidence": "B-1: executar_leitura entrega um InsumosExecucao que pareia a leitura pr\u00f3pria com o envelope. InsumosExecucao possui apenas um agregado; conduzir compara esse agregado com a \u00e2ncora.",
+      "evidence": "Gold exige Emax e Emin vindos do contrato e manda executar a cadeia inteira dentro de executar_leitura. A interface atual passa um objeto Contrato; PoliticaDecimal n\u00e3o declara emax nem emin, e Contrato n\u00e3o declara particionamento. Esses campos existem no YAML, mas n\u00e3o atravessam o carregador.",
+      "body": "Bronze precisa da chave e dos auxiliares de particionamento; as tr\u00eas camadas exigem limites de expoente declarados. Uma implementa\u00e7\u00e3o que consuma o objeto real recebido pelo callback n\u00e3o encontra esses atributos. Fixtures que exponham diretamente o YAML esconderiam a incompatibilidade. Reler o arquivo ou introduzir outro objeto exigiria uma fronteira que o plano n\u00e3o declara. O problema aparece antes da reconcilia\u00e7\u00e3o e afeta toda a cadeia.",
       "cites": [
-        "cvg/docs/tech-spec/tech-spec-pda-beneficios.md \u2014 R-5",
-        "cvg/docs/adrs/0006-the-judge-ships-before-the-spark-producer-that-it-will-judge.md \u2014 Consequences: produtor nasce contra o envelope",
-        "src/pda/orquestracao.py \u2014 InsumosExecucao e conduzir",
-        "src/pda/envelope.py \u2014 ENVELOPE_SCHEMA e validar_envelope"
+        "src/pda/contrato.py \u2014 PoliticaDecimal, Contrato e carregar_contrato",
+        "src/pda/orquestracao.py \u2014 conduzir e executar_leitura(contrato_carregado)",
+        "contracts/competencia-202601.yaml \u2014 politica_decimal e particionamento",
+        "cvg/swimlanes/lanes-medalhao/bronze/LEG-BRONZE-REPRODUZ-ANCORA.md \u2014 B-2"
       ],
       "proposal": null
     },
@@ -67,20 +67,20 @@
       "id": "C2",
       "severity": "high",
       "rank": 2,
-      "attack_class": "drift",
+      "attack_class": "observability",
       "swimlane": "LANE-GOLD",
       "leg": "LEG-GOLD-RECONCILIA",
+      "title": "Paradas classificadas viram exce\u00e7\u00f5es sem contrato de preserva\u00e7\u00e3o do diagn\u00f3stico",
       "location": {
         "plan_file": "cvg/swimlanes/lanes-medalhao/gold/LEG-GOLD-RECONCILIA.md",
-        "section": "B-1 \u2014 propaga\u00e7\u00e3o de estados; B-2 \u2014 primeiro estado que para a cadeia"
+        "section": "tasks/B-1 \u2014 parada antecipada e evento_falha"
       },
-      "title": "Os caminhos que param antes da agrega\u00e7\u00e3o n\u00e3o t\u00eam grava\u00e7\u00e3o de evid\u00eancia contratada",
-      "body": "Gold manda parar e propagar BLOQUEADO, DIVERGE, NAO_MEDIDO e ERRO_LEITURA. A chamada que grava evid\u00eancia aparece depois da agrega\u00e7\u00e3o e emiss\u00e3o do envelope. N\u00e3o h\u00e1 respons\u00e1vel declarado por chamar o orquestrador nos retornos anteriores, nem adapta\u00e7\u00e3o desses estados \u00e0 sua interface. O caso real j\u00e1 previsto \u2014 Silver sem mapa aprovado \u2014 pode terminar corretamente em NAO_MEDIDO sem pacote por execu\u00e7\u00e3o. Dizer que conduzir grava em qualquer desfecho n\u00e3o cobre caminhos que n\u00e3o o invocam. Pelo mesmo motivo, seu rel\u00f3gio interno n\u00e3o inclui Bronze e Silver caso sejam executados antes da chamada.",
-      "evidence": "B-1: estados negativos 'param a cadeia com o estado propagado sem tradu\u00e7\u00e3o'. B-2: enquanto faltar aprova\u00e7\u00e3o do mapa, 'a cadeia real para em Silver com NAO_MEDIDO'.",
+      "evidence": "O plano exige que qualquer camada fora de INTEGRO suba como exce\u00e7\u00e3o que nomeia camada e estado. No caminho de exce\u00e7\u00e3o, conduzir grava apenas evento_falha com tipo e mensagem; n\u00e3o recebe InsumosExecucao com diferen\u00e7as, classifica\u00e7\u00f5es ou controles.",
+      "body": "Uma exce\u00e7\u00e3o com mensagem 'Bronze DIVERGE' satisfaz o plano, mas descarta quais controles divergiram, os valores observados e suas classifica\u00e7\u00f5es. O pacote existe, por\u00e9m n\u00e3o permite reconstruir por que houve recusa. Al\u00e9m disso, o resultado externo passa a ERRO, embora os planos exijam propaga\u00e7\u00e3o dos estados sem tradu\u00e7\u00e3o. Falta definir a rela\u00e7\u00e3o entre o estado da camada, o Desfecho e o diagn\u00f3stico persistido; testar apenas a exist\u00eancia do pacote n\u00e3o cobre isso.",
       "cites": [
-        "cvg/docs/tech-spec/tech-spec-pda-beneficios.md \u2014 Scope: pacote de evid\u00eancia por execu\u00e7\u00e3o",
-        "cvg/docs/tech-spec/tech-spec-pda-beneficios.md \u2014 R-9 e W-2",
-        "src/pda/orquestracao.py \u2014 conduzir: in\u00edcio do cron\u00f4metro imediatamente antes de executar_leitura"
+        "cvg/docs/tech-spec/tech-spec-pda-beneficios.md \u2014 Scope: pacote com veredito, causa e n\u00fameros; R-6",
+        "src/pda/orquestracao.py \u2014 conduzir, tratamento de exce\u00e7\u00e3o em executar_leitura",
+        "cvg/swimlanes/lanes-medalhao/gold/LEG-GOLD-RECONCILIA.md \u2014 B-1: estados propagados sem tradu\u00e7\u00e3o; eval_3"
       ],
       "proposal": null
     },
@@ -91,17 +91,17 @@
       "attack_class": "cross-lane-interface",
       "swimlane": "LANE-BRONZE",
       "leg": "LEG-BRONZE-REPRODUZ-ANCORA",
+      "title": "A identidade posicional exigida para defeitos n\u00e3o est\u00e1 dispon\u00edvel na entrada declarada",
       "location": {
         "plan_file": "cvg/swimlanes/lanes-medalhao/bronze/LEG-BRONZE-REPRODUZ-ANCORA.md",
-        "section": "B-1 \u2014 forma declarada de bronze conferido"
+        "section": "tasks/B-1 \u2014 dom\u00ednio monet\u00e1rio e forma de bronze conferido"
       },
-      "title": "Silver exige transportar um hash que a sa\u00edda declarada de Bronze omite",
-      "body": "Bronze compara o hash apresentado com o ancorado, mas sua enumera\u00e7\u00e3o expl\u00edcita da capacidade de sa\u00edda cont\u00e9m estado, controles, mapa, marcas, compet\u00eancia e linhas; n\u00e3o cont\u00e9m o hash recebido. Silver exige que esse hash atravesse a camada e Gold depende dele para sha256_arquivo_lido. Uma implementa\u00e7\u00e3o fiel \u00e0 forma declarada de Bronze pode descartar o hash depois da compara\u00e7\u00e3o. O consumidor ent\u00e3o falha ou preenche a lacuna copiando o contrato, perdendo a distin\u00e7\u00e3o entre proced\u00eancia apresentada e refer\u00eancia ancorada. Os nomes de campos e a representa\u00e7\u00e3o de hash ausente tamb\u00e9m n\u00e3o est\u00e3o contratados.",
-      "evidence": "Bronze B-1 enumera a forma do objeto sem hash. Silver B-1 exige preservar 'o HASH da proced\u00eancia apresentada a Bronze'. Gold B-1 exige emitir o sha256 recebido atrav\u00e9s de Silver.",
+      "evidence": "Bronze exige defeito com identidade, valor original e posi\u00e7\u00e3o, mas declara somente especie_codigo, especie_descricao, vl_liquido e competencia nas linhas. O pacote de proced\u00eancia fornece o hash do arquivo, n\u00e3o uma correspond\u00eancia entre linha CSV e registro Parquet.",
+      "body": "Para uma linha negativa ou fora da escala, n\u00e3o h\u00e1 informa\u00e7\u00e3o declarada que identifique sua posi\u00e7\u00e3o original no CSV. Numerar a leitura do Parquet n\u00e3o estabelece essa correspond\u00eancia, especialmente com duplicatas. Gold exige posteriormente posi\u00e7\u00e3o inteira compat\u00edvel com a leitura independente. O caminho atual bloqueia esses defeitos antes de Gold, mas nem mesmo o diagn\u00f3stico de Bronze tem sem\u00e2ntica posicional definida. A exig\u00eancia de preservar identidade n\u00e3o \u00e9 implement\u00e1vel de forma inequ\u00edvoca a partir da entrada contratada.",
       "cites": [
-        "cvg/swimlanes/lanes-medalhao/silver/LEG-SILVER-PRESERVA-DEFEITO.md \u2014 B-1: controles e hash atravessam",
-        "cvg/swimlanes/lanes-medalhao/gold/LEG-GOLD-RECONCILIA.md \u2014 B-1: envelope",
-        "src/pda/envelope.py \u2014 ENVELOPE_SCHEMA.required"
+        "cvg/docs/adrs/0009-the-derived-precision-assumes-a-monotonic-sum-with-no-negative-values.md \u2014 Consequences",
+        "cvg/swimlanes/lanes-medalhao/gold/LEG-GOLD-RECONCILIA.md \u2014 B-1: defeitos de linha e posi\u00e7\u00e3o",
+        "src/pda/envelope.py \u2014 DefeitoLeitura e CapacidadeLeitura"
       ],
       "proposal": null
     },
@@ -109,20 +109,20 @@
       "id": "C4",
       "severity": "medium",
       "rank": 4,
-      "attack_class": "unverified-assumption",
+      "attack_class": "drift",
       "swimlane": "LANE-SILVER",
       "leg": "LEG-SILVER-PRESERVA-DEFEITO",
+      "title": "A aprova\u00e7\u00e3o de um mapa por identidade tornou-se requisito bloqueante sem decis\u00e3o superior citada",
       "location": {
         "plan_file": "cvg/swimlanes/lanes-medalhao/silver/LEG-SILVER-PRESERVA-DEFEITO.md",
-        "section": "B-2 \u2014 contrato de teste e futura aprova\u00e7\u00e3o do mapa"
+        "section": "tasks/B-2 \u2014 aus\u00eancia de mapa aprovado"
       },
-      "title": "O caminho positivo depende de uma extens\u00e3o de contrato sem forma definida",
-      "body": "A aus\u00eancia do mapa est\u00e1 corretamente reconhecida e bloqueia a compet\u00eancia real. Por\u00e9m, o caminho positivo ser\u00e1 provado contra contrato de teste sem que se declare o nome, formato, localiza\u00e7\u00e3o ou representa\u00e7\u00e3o da aprova\u00e7\u00e3o desse mapa e dos grupos conhecidos. O contrato atual n\u00e3o possui esses campos. Testes podem inventar uma estrutura que a aprova\u00e7\u00e3o futura n\u00e3o produzir\u00e1, fazendo a capacidade condicional passar localmente e falhar quando o referencial leg\u00edtimo chegar. A quest\u00e3o aberta \u00e9 qual interface de contrato autoriza esse caminho positivo; a decis\u00e3o pertence ao contrato, n\u00e3o ao implementador de Silver.",
-      "evidence": "B-2: 'o caminho positivo provado contra contrato de teste' e 'Declarar esse mapa \u00e9 trabalho do contrato, com aprovador e data, n\u00e3o desta camada'.",
+      "evidence": "Silver torna obrigat\u00f3rio um mapa c\u00f3digo\u2192descri\u00e7\u00e3o aprovado e declara NAO_MEDIDO enquanto ele n\u00e3o existir. R-3 e ADR 0008 exigem chave por c\u00f3digo, preserva\u00e7\u00e3o e cardinalidades medidas; o contrato atual aprova o defeito por tipo e quantidade, sem declarar essa nova condi\u00e7\u00e3o.",
+      "body": "O bloqueio \u00e9 conservador e est\u00e1 explicitamente reconhecido pelo plano, mas isso n\u00e3o resolve sua autoridade. Uma compet\u00eancia que satisfaz os controles e as decis\u00f5es vigentes passa a depender de outra aprova\u00e7\u00e3o para avan\u00e7ar. \u00c9 uma pergunta de requisito a devolver a Pass 1/2/3: a aprova\u00e7\u00e3o individual das identidades \u00e9 condi\u00e7\u00e3o obrigat\u00f3ria de publica\u00e7\u00e3o? Esta obje\u00e7\u00e3o n\u00e3o autoriza retirar o bloqueio nem inventar o mapa.",
       "cites": [
-        "contracts/competencia-202601.yaml \u2014 cardinalidade e defeitos_conhecidos",
-        "cvg/swimlanes/lanes-medalhao/silver/LEG-SILVER-PRESERVA-DEFEITO.md \u2014 B-2",
-        "cvg/docs/tech-spec/tech-spec-pda-beneficios.md \u2014 R-3 e R-6"
+        "cvg/docs/tech-spec/tech-spec-pda-beneficios.md \u2014 R-3 e R-6",
+        "cvg/docs/adrs/0008-the-description-defect-is-collapsed-identity-not-field-width.md \u2014 Decision e Consequences",
+        "contracts/competencia-202601.yaml \u2014 cardinalidade e defeitos_conhecidos"
       ],
       "proposal": null
     },
@@ -133,17 +133,16 @@
       "attack_class": "unverified-assumption",
       "swimlane": "LANE-GOLD",
       "leg": "LEG-GOLD-RECONCILIA",
+      "title": "Publica\u00e7\u00e3o indivis\u00edvel n\u00e3o tem destino nem prova de interrup\u00e7\u00e3o definidos",
       "location": {
         "plan_file": "cvg/swimlanes/lanes-medalhao/gold/LEG-GOLD-RECONCILIA.md",
-        "section": "B-1 \u2014 publica\u00e7\u00e3o indivis\u00edvel; eval_2 e eval_3"
+        "section": "tasks/B-1 \u2014 publica\u00e7\u00e3o indivis\u00edvel; eval_3"
       },
-      "title": "Os evals n\u00e3o exigem exercitar uma publica\u00e7\u00e3o interrompida",
-      "body": "O plano exige visibilidade indivis\u00edvel e preserva\u00e7\u00e3o do destino ap\u00f3s interrup\u00e7\u00e3o, mas os cen\u00e1rios obrigat\u00f3rios verificam autoriza\u00e7\u00e3o, exist\u00eancia do pacote e destino inalterado durante a reconcilia\u00e7\u00e3o. Nenhum exige interrup\u00e7\u00e3o durante a publica\u00e7\u00e3o nem leitura concorrente nesse intervalo. Uma implementa\u00e7\u00e3o que aguarde a autoriza\u00e7\u00e3o e depois copie arquivos um a um pode satisfazer todos esses cen\u00e1rios e expor um conjunto parcial. A promessa existe; sua prova execut\u00e1vel n\u00e3o est\u00e1 exigida.",
-      "evidence": "B-1: 'Publica\u00e7\u00e3o interrompida deixa o destino como estava antes'. eval_3 exige destino_inalterado_durante, descrito no pr\u00f3prio B-1 como observa\u00e7\u00e3o DURANTE a reconcilia\u00e7\u00e3o.",
+      "evidence": "O plano exige visibilidade tudo ou nada e preserva\u00e7\u00e3o do destino ap\u00f3s interrup\u00e7\u00e3o. Os evals nomeiam destino_inalterado_durante, mas n\u00e3o exigem cen\u00e1rio de interrup\u00e7\u00e3o durante a publica\u00e7\u00e3o. Tamb\u00e9m n\u00e3o declaram o armazenamento de destino nem sua unidade de visibilidade.",
+      "body": "Manter o destino intacto durante a reconcilia\u00e7\u00e3o n\u00e3o demonstra atomicidade depois da autoriza\u00e7\u00e3o. Uma implementa\u00e7\u00e3o que copie arquivos sequencialmente ap\u00f3s o veredito pode passar nessa prova e expor um conjunto parcial quando interrompida. Sem definir a fronteira de publica\u00e7\u00e3o e a observa\u00e7\u00e3o durante esse passo, uma propriedade central fica afirmada, mas n\u00e3o provada.",
       "cites": [
-        "cvg/swimlanes/lanes-medalhao/gold/LEG-GOLD-RECONCILIA.md \u2014 B-1, eval_2 e eval_3",
-        "cvg/docs/tech-spec/tech-spec-pda-beneficios.md \u2014 Problem restated: comparar o resultado antes de publicar",
-        "cvg/docs/tech-spec/tech-spec-pda-beneficios.md \u2014 Success metrics: compet\u00eancias publicadas sem prova do conte\u00fado"
+        "cvg/swimlanes/lanes-medalhao/gold/LEG-GOLD-RECONCILIA.md \u2014 B-1 e eval_3",
+        "cvg/docs/tech-spec/tech-spec-pda-beneficios.md \u2014 Problem restated e R-7"
       ],
       "proposal": null
     }
@@ -151,9 +150,18 @@
   "cross_lane_interfaces": [],
   "fork": {
     "choice": "B",
-    "reason": "Transcrito dos tr\u00eas arquivos _lane.md; n\u00e3o decidido pelo advers\u00e1rio.",
+    "reason": "Escolha j\u00e1 declarada nos tr\u00eas _lane.md; apenas transcrita.",
     "per_plan_declared": true
   },
-  "open_questions": [],
+  "open_questions": [
+    {
+      "q": "Qual decis\u00e3o de Pass 1/2/3 torna a aprova\u00e7\u00e3o individual do mapa c\u00f3digo\u2192descri\u00e7\u00e3o obrigat\u00f3ria para publicar?",
+      "blocks_build": true
+    },
+    {
+      "q": "Qual \u00e9 o armazenamento de destino de Gold e qual opera\u00e7\u00e3o delimita a visibilidade do conjunto publicado?",
+      "blocks_build": true
+    }
+  ],
   "rounds_run": 1
 }

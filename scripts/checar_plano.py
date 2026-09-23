@@ -184,9 +184,27 @@ def _simetria(seams, falhas):
     TERMOS = ["FORMA declarada", "estado INTEGRO", "traps=[]",
               "uma das seis", "NO MOTOR", "ansi.enabled", "especie_codigo"]
 
+    # A simetria vale entre as CAMADAS DE DADO do medalhão — são elas que
+    # somam dinheiro, rodam no motor e trocam linhas entre si. Costura que
+    # não é camada fica FORA, nomeada, com o motivo: isenção genérica
+    # devolveria o mesmo furo com outro nome (Regra 11).
+    CAMADAS = {"SEAM-BRONZE", "SEAM-SILVER", "SEAM-GOLD"}
+    FORA = {
+        "SEAM-CONTRATO-EXT": "estende o carregador do contrato; não soma "
+                             "dinheiro, não roda no motor, não troca linhas",
+    }
+    for s in seams:
+        sid = s.get("id")
+        if sid not in CAMADAS and sid not in FORA:
+            falhas.append(f"{sid}: costura nova sem classificação — é camada "
+                          f"de dado ou fica fora da simetria? Declare em "
+                          f"CAMADAS ou em FORA, com o motivo")
+
     corpos = {}
     for s in seams:
         sid = s.get("id", "?")
+        if sid not in CAMADAS:
+            continue
         texto = []
         for leg in s.get("swimlane", {}).get("legs", []):
             for t in leg.get("tasks", []):
@@ -204,6 +222,9 @@ def _simetria(seams, falhas):
 
     print()
     print("  simetria entre as camadas:")
+    for s in seams:
+        if s.get("id") in FORA:
+            print(f"    -- {s.get('id')} fora da simetria: {FORA[s.get('id')]}")
     for termo in TERMOS:
         tem = {sid for sid, c in corpos.items() if termo.lower() in c}
         se_nao = set(corpos) - tem

@@ -1,6 +1,6 @@
 > Projetado de `LEG-BRONZE-REPRODUZ-ANCORA.md` pelo Seamwise.
 > **Não edite aqui** — edite a recipe e rode `seamwise plan`.
-> origem sha256: `385521028703a598cca9f778a591c08f2d944ca0baa9ed4f95857d5ae1ac0c83`
+> origem sha256: `7a168891bc21987a1e6d22252295fd0b75eff969d124f8a8f85f649028cf0f76`
 
 ---
 
@@ -107,15 +107,17 @@ tasks:
       vínculo verificável com a partição lida satisfaz a comparação textual e não prova nada. A capacidade
       ''bronze conferido'' tem FORMA declarada, não apenas nome: um objeto com estado (INTEGRO, DIVERGE,
       NAO_MEDIDO, ERRO_LEITURA), os cinco controles medidos, o mapa total_por_codigo em Decimal exato,
-      as marcas de limitação como PROCEDENCIA_NAO_VINCULADA, a competência lida, e AS LINHAS CONFERIDAS,
-      com os nomes de coluna MEDIDOS no lago — especie_codigo, especie_descricao, vl_liquido e competencia
-      — que Silver consome pelos mesmos nomes, porque conteúdo sem nome deixa Bronze entregar codigo/descricao/valor
-      e Silver esperar outra coisa, com as duas satisfazendo a descrição. Sem elas a capacidade é insuficiente:
-      o multiconjunto de (código, valor) e a normalização de descrição não saem de agregado, e mandar
-      Silver reler do lago introduziria uma SEGUNDA leitura cuja identidade com a conferida não está contratada
-      — o mesmo motivo pelo qual Bronze recusa confiar no Parquet por tê-lo escrito — porque ''produces''
-      com nome e sem forma deixa Silver e Bronze passarem nos próprios testes com fixtures locais e não
-      encaixarem um no outro. Partição que diverge é DIVERGE, e Bronze não escreve nada'
+      as marcas de limitação como PROCEDENCIA_NAO_VINCULADA, o HASH da procedência que lhe foi apresentada
+      — que Silver transporta e Gold usa como sha256_arquivo_lido do envelope, e que por isso não pode
+      ser descartado na origem —, a competência lida, e AS LINHAS CONFERIDAS, com os nomes de coluna MEDIDOS
+      no lago — especie_codigo, especie_descricao, vl_liquido e competencia — que Silver consome pelos
+      mesmos nomes, porque conteúdo sem nome deixa Bronze entregar codigo/descricao/valor e Silver esperar
+      outra coisa, com as duas satisfazendo a descrição. Sem elas a capacidade é insuficiente: o multiconjunto
+      de (código, valor) e a normalização de descrição não saem de agregado, e mandar Silver reler do
+      lago introduziria uma SEGUNDA leitura cuja identidade com a conferida não está contratada — o mesmo
+      motivo pelo qual Bronze recusa confiar no Parquet por tê-lo escrito — porque ''produces'' com nome
+      e sem forma deixa Silver e Bronze passarem nos próprios testes com fixtures locais e não encaixarem
+      um no outro. Partição que diverge é DIVERGE, e Bronze não escreve nada'
   - id: B-2
     given: uma competência cuja partição não existe no lago, existe com zero linhas, ou existe e não está
       vazia mas NÃO tem âncora declarada no contrato
@@ -151,11 +153,12 @@ tasks:
   - id: eval_1
     description: Os cinco controles comparados individualmente, e a partição medida isoladamente
     bash: docker compose -f infra/docker-compose.yml exec -T spark sh -c 'for c in cinco_controles alteracao_compensada
-      isola_particao nao_soma_uniao precisao_declarada entrega_as_linhas_conferidas ansi_declarado_estouro_nao_vira_nulo;
-      do python3 -m pytest --collect-only -q tests/test_bronze.py -k "$c" 2>/dev/null | grep -q "::" ||
-      { echo "EVAL=CENARIO_AUSENTE_$c"; exit 1; }; done; python3 -m pytest -q tests/test_bronze.py -k
-      "cinco_controles or alteracao_compensada or isola_particao or nao_soma_uniao or precisao_declarada
-      or entrega_as_linhas_conferidas or ansi_declarado_estouro_nao_vira_nulo"'
+      isola_particao nao_soma_uniao precisao_declarada entrega_as_linhas_conferidas ansi_declarado_estouro_nao_vira_nulo
+      entrega_o_hash_da_procedencia; do python3 -m pytest --collect-only -q tests/test_bronze.py -k "$c"
+      2>/dev/null | grep -q "::" || { echo "EVAL=CENARIO_AUSENTE_$c"; exit 1; }; done; python3 -m pytest
+      -q tests/test_bronze.py -k "cinco_controles or alteracao_compensada or isola_particao or nao_soma_uniao
+      or precisao_declarada or entrega_as_linhas_conferidas or ansi_declarado_estouro_nao_vira_nulo or
+      entrega_o_hash_da_procedencia"'
     verifies:
     - B-1
   - id: eval_2
@@ -197,7 +200,7 @@ tasks:
   - contracts
   rollback: Remover o leitor Bronze e seus testes.
   observability: partições recusadas por controle divergente
-source_seam_sha256: fe970e339a5576cbf4091a5d0c5925eec7b60563fcb94c6c39b1c1f55abb7df5
+source_seam_sha256: 006db70942e756aa470cf895cdf4c5e94511c3026cc6b564569109f9ec81b8e9
 ---
 # Bronze só existe quando reproduz a âncora do contrato
 

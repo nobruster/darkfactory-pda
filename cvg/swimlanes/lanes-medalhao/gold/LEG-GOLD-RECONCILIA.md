@@ -1,6 +1,6 @@
 > Projetado de `LEG-GOLD-RECONCILIA.md` pelo Seamwise.
 > **Não edite aqui** — edite a recipe e rode `seamwise plan`.
-> origem sha256: `36d807c1b1d6e6c64101a6729e1cdaea0b5b1f6b079f903ffb720980e6efe1f2`
+> origem sha256: `a74e63c13cb34e05a52398b919783132af330523c48e6a2aa8ec62498628a7f3`
 
 ---
 
@@ -101,12 +101,18 @@ tasks:
       o ENVELOPE_SCHEMA declarado em src/pda/envelope.py, e a publicação é decidida pelo ORQUESTRADOR
       já selado da primeira descida, nunca por uma reimplementação dele dentro de Gold: orquestracao.conduzir(diretorio_evidencia,
       competencia_solicitada, caminho_contrato, executar_leitura), em que executar_leitura é o ponto de
-      injeção por onde Gold entrega um InsumosExecucao que PAREIA a leitura PRÓPRIA do juiz sobre o CSV
-      com o envelope de Gold — hash_ancorado, hash_observado pela leitura, hash_declarado no envelope,
-      defeitos_leitura contra defeitos_envelope, totais_leitura contra totais_envelope. conduzir carrega
-      o contrato, julga, grava o pacote de evidência em QUALQUER desfecho e devolve um Desfecho; Gold
-      publica se e somente se Desfecho.autorizado_publicar for verdadeiro E Desfecho.caminho_pacote existir
-      em disco. Não se compara string ''ACEITO'' contra o retorno de julgar(), que devolve Veredito(aceito,
+      injeção, e é DENTRO dele que roda a cadeia INTEIRA — Bronze, Silver e Gold — e que Gold chama envelope.validar_envelope(envelope,
+      capacidade_leitura, contrato) ANTES de montar os insumos, porque, MEDIDO, conduzir() NÃO valida
+      o envelope: ele só chama julgar() sobre insumos.agregado. Recusa do envelope, e qualquer camada
+      que PARE a cadeia — Bronze ou Silver fora de INTEGRO, inclusive Silver sem o mapa aprovado —, sobe
+      como exceção que NOMEIA a camada e o estado; conduzir a captura, grava o pacote com evento_falha
+      e devolve um Desfecho sem autorização de publicar. Assim TODO caminho deixa evidência, e não só
+      o que chega à agregação. Pelo ponto de injeção Gold entrega um InsumosExecucao que PAREIA a leitura
+      PRÓPRIA do juiz sobre o CSV com o envelope de Gold — hash_ancorado, hash_observado pela leitura,
+      hash_declarado no envelope, defeitos_leitura contra defeitos_envelope, totais_leitura contra totais_envelope.
+      conduzir carrega o contrato, julga, grava o pacote de evidência em QUALQUER desfecho e devolve um
+      Desfecho; Gold publica se e somente se Desfecho.autorizado_publicar for verdadeiro E Desfecho.caminho_pacote
+      existir em disco. Não se compara string ''ACEITO'' contra o retorno de julgar(), que devolve Veredito(aceito,
       classificacoes), nem contra rederivar_veredito(), que devolve o par (veredito, causa) — descrever
       essas assinaturas em prosa errou um detalhe a cada rodada, e o orquestrador já as fala. Gold importa
       o orquestrador e o juiz, jamais os edita, e nenhum dos dois importa Gold. A publicação é um passo
@@ -164,22 +170,24 @@ tasks:
     bash: docker compose -f infra/docker-compose.yml exec -T spark sh -c 'for c in reconcilia_recalculando
       mapa_por_codigo redistribuicao_compensada contagem_de_codigos competencia_bate_com_o_contrato uma_linha_por_codigo
       recusa_silver_nao_integro consome_saida_real_de_silver publica_so_com_autorizado_publicar descricao_publicada_bate_com_a_original
-      publica_so_com_pacote_em_disco envelope_so_defeitos_de_linha; do python3 -m pytest --collect-only
-      -q tests/test_gold.py -k "$c" 2>/dev/null | grep -q "::" || { echo "EVAL=CENARIO_AUSENTE_$c"; exit
-      1; }; done; python3 -m pytest -q tests/test_gold.py -k "reconcilia_recalculando or mapa_por_codigo
-      or redistribuicao_compensada or contagem_de_codigos or competencia_bate_com_o_contrato or uma_linha_por_codigo
-      or recusa_silver_nao_integro or consome_saida_real_de_silver or publica_so_com_autorizado_publicar
-      or descricao_publicada_bate_com_a_original or publica_so_com_pacote_em_disco or envelope_so_defeitos_de_linha"'
+      publica_so_com_pacote_em_disco envelope_so_defeitos_de_linha envelope_validado_antes_dos_insumos;
+      do python3 -m pytest --collect-only -q tests/test_gold.py -k "$c" 2>/dev/null | grep -q "::" ||
+      { echo "EVAL=CENARIO_AUSENTE_$c"; exit 1; }; done; python3 -m pytest -q tests/test_gold.py -k "reconcilia_recalculando
+      or mapa_por_codigo or redistribuicao_compensada or contagem_de_codigos or competencia_bate_com_o_contrato
+      or uma_linha_por_codigo or recusa_silver_nao_integro or consome_saida_real_de_silver or publica_so_com_autorizado_publicar
+      or descricao_publicada_bate_com_a_original or publica_so_com_pacote_em_disco or envelope_so_defeitos_de_linha
+      or envelope_validado_antes_dos_insumos"'
     verifies:
     - B-1
     - B-2
   - id: eval_3
     description: DIVERGE e NAO_MEDIDO são estados distintos e nenhum publica
     bash: docker compose -f infra/docker-compose.yml exec -T spark sh -c 'for c in diverge_nao_publica
-      sem_ancora_nao_medido destino_inalterado_durante classifica_diferenca_das_seis orcamento_leitura_ao_veredito_medido;
-      do python3 -m pytest --collect-only -q tests/test_gold.py -k "$c" 2>/dev/null | grep -q "::" ||
-      { echo "EVAL=CENARIO_AUSENTE_$c"; exit 1; }; done; python3 -m pytest -q tests/test_gold.py -k "diverge_nao_publica
-      or sem_ancora_nao_medido or destino_inalterado_durante or classifica_diferenca_das_seis or orcamento_leitura_ao_veredito_medido"'
+      sem_ancora_nao_medido destino_inalterado_durante classifica_diferenca_das_seis orcamento_leitura_ao_veredito_medido
+      parada_antecipada_grava_evidencia; do python3 -m pytest --collect-only -q tests/test_gold.py -k
+      "$c" 2>/dev/null | grep -q "::" || { echo "EVAL=CENARIO_AUSENTE_$c"; exit 1; }; done; python3 -m
+      pytest -q tests/test_gold.py -k "diverge_nao_publica or sem_ancora_nao_medido or destino_inalterado_durante
+      or classifica_diferenca_das_seis or orcamento_leitura_ao_veredito_medido or parada_antecipada_grava_evidencia"'
     verifies:
     - B-2
   anti_patterns:
@@ -201,7 +209,7 @@ tasks:
   - contracts
   rollback: Remover a camada Gold e seus testes.
   observability: agregados recusados por não reconciliar
-source_seam_sha256: 5c99f5ebb107d4fd04930a846e0a2f6205322551fca945b76affb45013e4caa4
+source_seam_sha256: 86ff4eccb3354a9296c4c9be5905e44ea6df79c688fd86c5f5d3e8acb2aee28c
 ---
 # Gold só publica quando reconcilia com a âncora
 
