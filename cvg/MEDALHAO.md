@@ -17,11 +17,103 @@ O medalhão desce pela cadeia. É o que a regra passou a exigir.
 
 | Passe | Gate | Veredito |
 |---|---|---|
-| 3 · Decompose | `seamwise map` | 🟢 3 costuras inseridas, schema OK |
-| 4 · Consensus | `cvg review` + agentes | 🟡 **em curso** |
-| 5 · Tasking | `taskspec gate --stamp` | ⬜ |
-| 7 · Bind | `cvg bind` | ⬜ |
-| 8 · Loop | `cvg loop` | ⬜ |
+| 3 · Decompose | `seamwise map` | 🟢 `SEAM_MAP=READY` — 3 costuras |
+| 4 · Consensus | `cvg review --check` | 🟢 `CHECK_CONSENSUS=OK` — 10 rodadas, 51 objeções |
+| 5 · Tasking | `taskspec gate --stamp` | 🟢 `TIER=1` ×3, HMAC v3 |
+| 7 · Bind | `cvg bind --check` | 🟢 `CHECK_RUNTIME_CONTRACT=PASS` ×3 |
+| 8 · Loop | `cvg loop` | 🟡 Bronze em curso |
+
+### O que o Pass 7 impôs ao Pass 8
+
+Lido do `execution-profile.yaml`, não da tela:
+
+| | |
+|---|---|
+| `net.egress` / `vcs.push` | **False** — não sai para a rede, não publica |
+| `external_writes` | `deny` |
+| `fs.write` deny_scope | `_raw`, `contracts`, `cvg/docs/adrs` — o oráculo |
+| `authority.epoch` | inclui o **hash da folha** |
+| `revoke_on` | `settle`, `block`, `budget_exhausted`, `epoch_change` |
+
+A autoridade é ligada a um epoch que carrega o hash da folha. **Mudar a folha
+revoga a autoridade** — o mesmo princípio que bloqueou o Pass 5 quando editei
+o `pda-recipe.yaml`, agora aplicado à execução.
+
+### ⚠️ O `RED` do gate-only é esperado, e provar isso importa
+
+```
+bash: infra/medalhao-evals.sh: No such file or directory
+RED — The task's own eval exited non-zero. Do NOT open a PR.
+```
+
+Medido antes de despachar: o eval invoca `infra/medalhao-evals.sh`, e a própria
+tarefa **declara criá-lo** em `creates_paths`. Antes de construir, ele não
+existe — e o gate reprova, como deve. *"fails are expected for unbuilt work."*
+
+A distinção não é acadêmica: se fosse defeito de desenho, o loop bateria no
+mesmo muro cinco vezes e sairia `EXHAUSTED`. O guard é explícito — **"Do not
+hack the eval"**, e um eval que passasse antes da obra não provaria nada.
+
+## 🛑 Pass 8 · Bronze — `result: blocked`, e o defeito é do plano
+
+```
+ITER=2  STRIKES=1  ELAPSED_PRIOR=601
+[engine timed out after 600s — the attempt was killed]
+```
+
+A tentativa 1 gastou **os 600s inteiros e escreveu ZERO arquivos**. Não é
+lentidão do agente. Medido:
+
+| O que a tarefa exige | O que o contrato de runtime permite |
+|---|---|
+| `infra/medalhao-evals.sh` instala `pytest` no contêiner | `net.egress: False` |
+| — | `policy.network: deny` |
+
+**O contrato de runtime proíbe o que a tarefa exige.** Instalar qualquer coisa
+precisa de rede, e o Pass 7 — corretamente — negou rede a um agente que escreve
+código. Nenhuma das 5 tentativas poderia ter sucesso.
+
+E o escopo é grande demais para 600s de qualquer jeito: um leitor Parquet em
+Spark, uma suíte pytest e um orquestrador de contêiner, com um `then` de
+**1.110 palavras** só no B-1.
+
+### De onde veio o defeito
+
+Da **minha correção da rodada 3**. O adversário disse que "montar o ambiente é
+parte da tarefa" não tinha caminho declarado; eu subi `effort` S→M e acrescentei
+`infra/medalhao-evals.sh` ao `creates_paths`.
+
+Resolvi o `path_policy` e **não perguntei se o trabalho cabia no orçamento, nem
+se o contrato permitiria fazê-lo.** É a mesma classe dos outros: corrigi a junta
+apontada sem olhar o que ela implicava duas camadas adiante.
+
+### O que o motor fez certo
+
+| | |
+|---|---|
+| worktree isolada | a árvore principal ficou **intacta** |
+| `result: blocked` no receipt | não fingiu sucesso |
+| `path_policy: not-run` | honesto — nada foi escrito, nada foi avaliado |
+| brief-002 | trouxe o erro da tentativa 1 e proibiu repetir |
+
+⚠️ **Parei o loop na tentativa 2 em vez de deixar queimar as 5.** O detector de
+estagnação teria parado em 3 falhas idênticas, mas eu já sabia que as 5 eram
+impossíveis — esperar seria gastar motor para confirmar o que a medição já
+mostrava.
+
+### O que precisa mudar, e em que passe
+
+A correção **não é** afrouxar o contrato de runtime (isso é a Regra 3 pelo
+avesso) nem editar o eval (o guard proíbe, e com razão). É reconhecer que
+**preparar o ambiente não é tarefa de agente sem rede**:
+
+- o ambiente de eval vira **pré-requisito do host**, como `docker` e `pytest`
+  já são — montado uma vez, fora do loop
+- `infra/medalhao-evals.sh` passa a **usar** o ambiente, não a construí-lo
+- e aí Bronze volta a caber: um módulo e seus testes
+
+Isso é mudança de **Pass 3** (o plano), que obriga a re-selar no Pass 5 — e é
+exatamente o que a Regra 10 manda fazer em vez de ampliar a cerca.
 
 ## As três costuras
 
