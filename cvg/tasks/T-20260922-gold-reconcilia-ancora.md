@@ -28,10 +28,14 @@ execution_backend: any
 signed_off: true
 signed_off_by: nobru
 signed_off_at: 2026-09-23T16:28:17Z
-accepted: false
-accepted_by: (none)
-accepted_at: (none)
+accepted: true
+accepted_by: converge-loop
+accepted_at: 2026-09-23T19:28:11Z
 signed_off_sig: hmac-sha256-v3:85d3c104:2b59babf7ad5b17ea2d39cd456eb1587189d423f729f8fbc02a8cbd7fec6bf08
+accepted_tier: 1
+accepted_attempt_id: a60fca5f-26fe-4e88-9cd4-d93c2924984d
+accepted_authorization_ref: hmac-sha256-v3:85d3c104:2b59babf7ad5b17ea2d39cd456eb1587189d423f729f8fbc02a8cbd7fec6bf08
+acceptance_record_digest: sha256:31eb0f42fb61877892a50a31217a151da69aff16300f472b439ee3fcf4c6f84d
 ---
 
 # Agregar por código e reconciliar com a âncora
