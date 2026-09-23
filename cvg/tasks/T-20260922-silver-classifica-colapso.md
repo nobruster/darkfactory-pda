@@ -28,10 +28,14 @@ execution_backend: any
 signed_off: true
 signed_off_by: nobru
 signed_off_at: 2026-09-23T16:28:19Z
-accepted: false
-accepted_by: (none)
-accepted_at: (none)
+accepted: true
+accepted_by: converge-loop
+accepted_at: 2026-09-23T17:54:25Z
 signed_off_sig: hmac-sha256-v3:85d3c104:336775602c3e6dda26a472b32a6c04b5772e525e891797f18d29ef535f0c4168
+accepted_tier: 1
+accepted_attempt_id: 0f990c5c-34bb-4565-b3d0-db03890e6f1d
+accepted_authorization_ref: hmac-sha256-v3:85d3c104:336775602c3e6dda26a472b32a6c04b5772e525e891797f18d29ef535f0c4168
+acceptance_record_digest: sha256:272a58d18b1eb208341131156d764d771b2252e839a8982fe33e00e006d30406
 ---
 
 # Normalizar a forma e classificar a identidade colapsada

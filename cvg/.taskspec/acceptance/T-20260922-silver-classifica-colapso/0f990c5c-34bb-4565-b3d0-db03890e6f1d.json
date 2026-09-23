@@ -1,0 +1,40 @@
+{
+  "acceptance_tier": 1,
+  "accepted_at": "2026-09-23T17:54:25Z",
+  "accepted_by": "converge-loop",
+  "contract": "AcceptanceRecord/v1",
+  "gate_outcomes": {
+    "authorization": {
+      "code": "AUTHORIZATION_VALID",
+      "status": "pass"
+    },
+    "evaluation": {
+      "code": "EVAL_PASSED",
+      "status": "pass"
+    },
+    "evidence": {
+      "code": "EVIDENCE_SATISFIED",
+      "proof": [
+        "format v3 or earlier: v4 policy receipts are not required"
+      ],
+      "status": "pass"
+    },
+    "preflight": {
+      "code": "PREFLIGHT_PASSED",
+      "status": "pass",
+      "warnings": []
+    }
+  },
+  "outcome": {
+    "code": "ACCEPTED_TIER_1",
+    "status": "accepted"
+  },
+  "receipts": [],
+  "subject": {
+    "attempt_id": "0f990c5c-34bb-4565-b3d0-db03890e6f1d",
+    "authorization_ref": "hmac-sha256-v3:85d3c104:336775602c3e6dda26a472b32a6c04b5772e525e891797f18d29ef535f0c4168",
+    "base_commit": "018597e770148f8688e73a708776226e9ece8dbb",
+    "task_id": "T-20260922-silver-classifica-colapso",
+    "task_revision_digest": "sha256:45caac8b366f0d4dd98582ca5659c09fb17fb751d558f3280850f44713524f56"
+  }
+}
