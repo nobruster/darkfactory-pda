@@ -13,15 +13,15 @@
     "family": "anthropic"
   },
   "verdict": "REVISE",
-  "prompt_sha256": "20762a9550816d6519f82c555530e0cdbcf851f0aa63a3d865ce4bb5623f9b6c",
+  "prompt_sha256": "5faa32e1059afa81e0d451ab8b7b387acc5313d852abdd4c5156fbb37a86c0eb",
   "inputs": [
     {
       "path": "bronze/LEG-BRONZE-REPRODUZ-ANCORA.md",
-      "sha256": "4b803b5c59892a93ff5b2608aa9943cdc57c7ce1f3732606d004099805b4c257"
+      "sha256": "4e6c3f1d80643cd7ca95254ccd6a9887584c35b9b53d69681b44f8a8ad121d50"
     },
     {
       "path": "bronze/_lane.md",
-      "sha256": "e51346a639df35257a5063b133534f282455645774a8c9244267dc9e14b3ae21"
+      "sha256": "bd5425f5d0a22653ced0f989ec08817c6e32e7c52ac3920bde2f6ede59369cf5"
     },
     {
       "path": "contrato-ext/LEG-CONTRATO-EXPOE-PARTICAO.md",
@@ -33,137 +33,137 @@
     },
     {
       "path": "gold/LEG-GOLD-RECONCILIA.md",
-      "sha256": "4d216428fa57148eafa072a84c27cb3ede19876d232513a12b82e7543a0e8146"
+      "sha256": "becf360fafdbf156d54d187c405d65a9da3604caa25c16a59ef2edc7b805a9e3"
     },
     {
       "path": "gold/_lane.md",
-      "sha256": "8908a24e825cc50a525de838f1be0ac934887b4434004cdc6b7710b5c58fa93f"
+      "sha256": "2073df36719830482ce723792aa0aab1aa618fe044a3890fe46c7afe25cb797f"
     },
     {
       "path": "silver/LEG-SILVER-PRESERVA-DEFEITO.md",
-      "sha256": "dec4ffcd5a4f7036602504ca3acfb305d4829e7c84abd3057207da0bfbf82afb"
+      "sha256": "4a071a72573d5595e2b6f05861a7bc9a902ed1814ed0f078ab889a9580e903a4"
     },
     {
       "path": "silver/_lane.md",
-      "sha256": "95a99255201141aaae67aed34bc253a6907cc059bd7d8e241279faa17e4cc5c8"
+      "sha256": "62779c6041e2d76a4f10d470a831b256f50102d8e1793c372dbd0e86e05a8691"
     }
   ],
   "objections": [
     {
       "id": "C1",
-      "severity": "high",
+      "severity": "critical",
       "rank": 1,
-      "attack_class": "data-loss",
-      "swimlane": "LANE-BRONZE",
-      "leg": "LEG-BRONZE-REPRODUZ-ANCORA",
+      "attack_class": "drift",
+      "swimlane": "LANE-GOLD",
+      "leg": "LEG-GOLD-RECONCILIA",
+      "title": "A diverg\u00eancia de persist\u00eancia \u00e9 descoberta depois de tornar Gold p\u00fablico",
       "location": {
-        "plan_file": "cvg/swimlanes/lanes-medalhao/bronze/LEG-BRONZE-REPRODUZ-ANCORA.md",
-        "section": "B-1 \u2014 GRAVA\u00c7\u00c3O NO MINIO; reconfer\u00eancia ap\u00f3s escrita"
+        "plan_file": "cvg/swimlanes/lanes-medalhao/gold/LEG-GOLD-RECONCILIA.md",
+        "section": "B-1 \u2014 publica\u00e7\u00e3o indivis\u00edvel e reconfer\u00eancia depois do commit"
       },
-      "title": "Os cinco controles n\u00e3o provam preserva\u00e7\u00e3o das linhas persistidas",
-      "body": "A reconfer\u00eancia p\u00f3s-escrita permite alterar c\u00f3digo ou descri\u00e7\u00e3o sem alterar nenhum dos cinco controles. Mesmo conservar o mapa por c\u00f3digo n\u00e3o detectaria duas linhas irm\u00e3s de 10 e 20 transformadas em 11 e 19, mantendo m\u00ednimos e m\u00e1ximos por outras linhas. Silver passa a tomar o Bronze persistido como refer\u00eancia; sua compara\u00e7\u00e3o de multiconjuntos n\u00e3o recupera a refer\u00eancia anterior \u00e0 escrita. A afirma\u00e7\u00e3o de que foram gravadas as linhas conferidas fica sem prova correspondente.",
-      "evidence": "B-1 exige reler o que gravou e reconferir os cinco controles contra a \u00e2ncora; Silver B-1 exige ler Bronze pelo ponteiro _ATUAL.",
+      "evidence": "B-1 define que 'a publica\u00e7\u00e3o \u00e9 esse commit' e depois manda reler a vers\u00e3o commitada; se divergir, devolver DIVERGE e executar RESTORE.",
+      "body": "Contraexemplo admitido pelo pr\u00f3prio plano: as candidatas passam, a grava\u00e7\u00e3o produz conte\u00fado diferente e a reconfer\u00eancia detecta a diferen\u00e7a. Entre o commit e o RESTORE, consumidores podem ler a vers\u00e3o divergente. Uma interrup\u00e7\u00e3o nesse intervalo a mant\u00e9m publicada. A atomicidade do commit impede leitura parcial, mas n\u00e3o impede leitura de uma vers\u00e3o inteira incorreta. O protocolo contradiz tanto a proibi\u00e7\u00e3o interna de expor candidatas divergentes quanto R-7, que exige recusa antes da publica\u00e7\u00e3o. O pacote autorizado anteriormente tamb\u00e9m n\u00e3o demonstra o resultado dessa reconfer\u00eancia posterior.",
       "cites": [
-        "cvg/swimlanes/lanes-medalhao/bronze/LEG-BRONZE-REPRODUZ-ANCORA.md \u00a7 B-1",
-        "cvg/swimlanes/lanes-medalhao/silver/LEG-SILVER-PRESERVA-DEFEITO.md \u00a7 B-1 \u2014 multiconjunto",
-        "cvg/docs/tech-spec/tech-spec-pda-beneficios.md \u00a7 Success metrics \u2014 prova do conte\u00fado publicado"
-      ],
-      "proposal": null
+        "cvg/docs/tech-spec/tech-spec-pda-beneficios.md \u00a7 Requirements, R-7",
+        "cvg/docs/tech-spec/tech-spec-pda-beneficios.md \u00a7 Problem restated",
+        "[Delta Lake \u2014 restaura\u00e7\u00e3o e vers\u00f5es](https://delta.io/blog/2022-10-03-rollback-delta-lake-restore/)"
+      ]
     },
     {
       "id": "C2",
       "severity": "high",
       "rank": 2,
       "attack_class": "cross-lane-interface",
-      "swimlane": "LANE-SILVER",
-      "leg": "LEG-SILVER-PRESERVA-DEFEITO",
+      "swimlane": "LANE-GOLD",
+      "leg": "LEG-GOLD-RECONCILIA",
+      "title": "A constraint monet\u00e1ria de Gold referencia uma coluna ausente",
       "location": {
-        "plan_file": "cvg/swimlanes/lanes-medalhao/silver/LEG-SILVER-PRESERVA-DEFEITO.md",
-        "section": "B-1 \u2014 capacidade silver classificado e GRAVA\u00c7\u00c3O NO MINIO"
+        "plan_file": "cvg/swimlanes/lanes-medalhao/gold/LEG-GOLD-RECONCILIA.md",
+        "section": "B-1 \u2014 colunas da capacidade e imposi\u00e7\u00e3o de schema Delta"
       },
-      "title": "A capacidade em mem\u00f3ria n\u00e3o tem contrato equivalente na persist\u00eancia",
-      "body": "Silver deve transportar hash, cinco controles de detalhe, limita\u00e7\u00f5es, defeitos e mapa exato. Entretanto, o protocolo persistido s\u00f3 explicita estado e cobertura no manifesto; as colunas Parquet n\u00e3o cont\u00eam esses metadados. Gold deve ler pelo ponteiro, mas n\u00e3o est\u00e1 definido de onde reconstr\u00f3i a capacidade completa. Uma implementa\u00e7\u00e3o que satisfa\u00e7a literalmente o manifesto descrito pode perder PROCEDENCIA_NAO_VINCULADA ou impossibilitar a emiss\u00e3o do envelope. A mesma lacuna existe na entrada persistida de Bronze.",
-      "evidence": "O manifesto Bronze enumera estado, controles e execu\u00e7\u00e3o; o manifesto Silver enumera estado e cobertura. Gold exige hash e controles de detalhe recebidos atrav\u00e9s de Silver.",
+      "evidence": "As colunas declaradas s\u00e3o especie_codigo, especie_descricao, vl_liquido_total e competencia; a mesma se\u00e7\u00e3o exige CHECK vl_liquido >= 0.",
+      "body": "O schema publicado n\u00e3o cont\u00e9m vl_liquido. A express\u00e3o obrigat\u00f3ria da constraint n\u00e3o pode ser resolvida contra esse schema, impedindo instalar a prote\u00e7\u00e3o e concluir o caminho positivo tal como especificado. Acrescentar silenciosamente a coluna de detalhe ou omitir a constraint faria a implementa\u00e7\u00e3o escolher qual trecho do contrato descumprir. O cen\u00e1rio check_nao_negativo precisa considerar o schema real de Gold para revelar esse conflito.",
       "cites": [
-        "cvg/swimlanes/lanes-medalhao/bronze/LEG-BRONZE-REPRODUZ-ANCORA.md \u00a7 B-1 \u2014 manifesto",
-        "cvg/swimlanes/lanes-medalhao/silver/LEG-SILVER-PRESERVA-DEFEITO.md \u00a7 B-1 \u2014 controles e hash atravessam",
-        "cvg/swimlanes/lanes-medalhao/gold/LEG-GOLD-RECONCILIA.md \u00a7 B-1 \u2014 envelope e leitura pelo ponteiro"
-      ],
-      "proposal": null
+        "cvg/docs/adrs/0009-the-derived-precision-assumes-a-monotonic-sum-with-no-negative-values.md \u00a7 Decision",
+        "[Delta Lake \u2014 CHECK constraints](https://docs.delta.io/delta-constraints/)"
+      ]
     },
     {
       "id": "C3",
       "severity": "high",
       "rank": 3,
-      "attack_class": "race",
-      "swimlane": "LANE-GOLD",
-      "leg": "LEG-GOLD-RECONCILIA",
+      "attack_class": "cross-lane-interface",
+      "swimlane": "LANE-SILVER",
+      "leg": "LEG-SILVER-PRESERVA-DEFEITO",
+      "title": "Uma vers\u00e3o da tabela n\u00e3o identifica sozinha os metadados da compet\u00eancia consumida",
       "location": {
-        "plan_file": "cvg/swimlanes/lanes-medalhao/gold/LEG-GOLD-RECONCILIA.md",
-        "section": "B-1 \u2014 consumo de Silver por _ATUAL"
+        "plan_file": "cvg/swimlanes/lanes-medalhao/silver/LEG-SILVER-PRESERVA-DEFEITO.md",
+        "section": "B-1 \u2014 leitura de Bronze por vers\u00e3o e reconstru\u00e7\u00e3o por userMetadata"
       },
-      "title": "PUT at\u00f4mico n\u00e3o vincula linhas, manifesto e controles \u00e0 mesma execu\u00e7\u00e3o",
-      "body": "N\u00e3o h\u00e1 regra expl\u00edcita para resolver _ATUAL uma \u00fanica vez e vincular todas as leituras \u00e0 execu\u00e7\u00e3o selecionada, nem restri\u00e7\u00e3o declarada que impe\u00e7a sua mudan\u00e7a durante o consumo. Se o consumidor obtiver o manifesto da execu\u00e7\u00e3o A e resolver novamente o ponteiro para ler dados, poder\u00e1 consumir B com estado, hash e cobertura de A. Cada PUT continua at\u00f4mico, mas a capacidade composta deixa de ser a que foi conferida. O risco tamb\u00e9m vale para Silver consumindo Bronze.",
-      "evidence": "O plano exige ler pelo ponteiro _ATUAL e um PUT \u00fanico na publica\u00e7\u00e3o, mas n\u00e3o declara o v\u00ednculo entre a resolu\u00e7\u00e3o do ponteiro e todas as leituras da capacidade.",
+      "evidence": "Silver l\u00ea Bronze numa vers\u00e3o resolvida uma vez e s\u00f3 se o commit dessa vers\u00e3o diz INTEGRO. Bronze preserva outras compet\u00eancias via replaceWhere, mas registra compet\u00eancia, estado, hash e controles no userMetadata do pr\u00f3prio commit.",
+      "body": "Contraexemplo sequencial, sem concorr\u00eancia: v10 grava janeiro e seus metadados; v11 grava fevereiro e preserva as linhas de janeiro. Ler janeiro em versionAsOf=11 encontra seus dados, mas o userMetadata do commit v11 descreve fevereiro. Resolver a vers\u00e3o uma vez n\u00e3o estabelece qual commit cont\u00e9m a capacidade da parti\u00e7\u00e3o solicitada. O consumidor pode parear linhas e controles de compet\u00eancias diferentes ou recusar janeiro correto. O plano n\u00e3o determina a sele\u00e7\u00e3o do commit por compet\u00eancia nem o tratamento de commits que n\u00e3o carreguem essa capacidade. A mesma ambiguidade aparece entre Silver e Gold.",
       "cites": [
-        "cvg/swimlanes/lanes-medalhao/gold/LEG-GOLD-RECONCILIA.md \u00a7 B-1",
-        "cvg/swimlanes/lanes-medalhao/silver/LEG-SILVER-PRESERVA-DEFEITO.md \u00a7 B-1",
-        "cvg/swimlanes/medalhao-recipe.yaml \u00a7 DEC-CAMADAS-GRAVAM-NO-MINIO"
-      ],
-      "proposal": null
+        "cvg/swimlanes/lanes-medalhao/bronze/LEG-BRONZE-REPRODUZ-ANCORA.md \u00a7 B-1 \u2014 replaceWhere e userMetadata",
+        "cvg/swimlanes/lanes-medalhao/gold/LEG-GOLD-RECONCILIA.md \u00a7 B-1 \u2014 consumo da vers\u00e3o de Silver",
+        "cvg/docs/tech-spec/tech-spec-pda-beneficios.md \u00a7 Requirements, R-1",
+        "[Delta Lake \u2014 vers\u00f5es, metadados de commit e replaceWhere](https://docs.delta.io/delta-batch/)"
+      ]
     },
     {
       "id": "C4",
       "severity": "high",
       "rank": 4,
-      "attack_class": "unverified-assumption",
-      "swimlane": "LANE-CONTRATO-EXT",
-      "leg": "LEG-CONTRATO-EXPOE-PARTICAO",
+      "attack_class": "race",
+      "swimlane": "LANE-BRONZE",
+      "leg": "LEG-BRONZE-REPRODUZ-ANCORA",
+      "title": "RESTORE n\u00e3o tem destino na primeira grava\u00e7\u00e3o nem isolamento declarado entre escritores",
       "location": {
-        "plan_file": "cvg/swimlanes/lanes-medalhao/contrato-ext/LEG-CONTRATO-EXPOE-PARTICAO.md",
-        "section": "B-1 \u2014 valida\u00e7\u00e3o do mapa de colapsos aprovado"
+        "plan_file": "cvg/swimlanes/lanes-medalhao/bronze/LEG-BRONZE-REPRODUZ-ANCORA.md",
+        "section": "B-1 \u2014 reconfer\u00eancia e RESTORE para a vers\u00e3o anterior"
       },
-      "title": "Mapa presente e aprovado ainda pode estar incompleto",
-      "body": "As recusas enumeradas cobrem grupo unit\u00e1rio, c\u00f3digo repetido e aprova\u00e7\u00e3o incompleta, mas n\u00e3o cobrem mapa vazio ou parcial com aprova\u00e7\u00e3o v\u00e1lida. Um mapa contendo apenas um dos onze grupos satisfaz essas valida\u00e7\u00f5es. Silver declara que o mapa cobre os 24 c\u00f3digos e trata aus\u00eancia do mapa, mas n\u00e3o explicita a recusa por cobertura parcial. Assim, presen\u00e7a pode ser confundida com aprova\u00e7\u00e3o individual de todos os colapsos, condi\u00e7\u00e3o exigida pela decis\u00e3o do dono.",
-      "evidence": "B-1 recusa mapa com grupo de um c\u00f3digo s\u00f3 ou c\u00f3digo repetido entre grupos; Silver B-2 afirma que o mapa aprovado cobre os 24 c\u00f3digos colapsados.",
+      "evidence": "Toda diverg\u00eancia depois do commit exige RESTORE para a vers\u00e3o anterior; a escrita promete n\u00e3o tocar outras compet\u00eancias. N\u00e3o h\u00e1 exce\u00e7\u00e3o para cria\u00e7\u00e3o da tabela nem exclus\u00e3o m\u00fatua declarada.",
+      "body": "Na primeira grava\u00e7\u00e3o, v0, n\u00e3o existe vers\u00e3o anterior para restaurar. Portanto, justamente o caminho de falha previsto deixa uma tabela divergente sem recupera\u00e7\u00e3o especificada. H\u00e1 ainda um segundo contraexemplo condicionado \u00e0 concorr\u00eancia: A grava janeiro em v10; B grava fevereiro em v11; A detecta diverg\u00eancia e restaura v9. RESTORE atua sobre a tabela e desfaz tamb\u00e9m fevereiro, contrariando a preserva\u00e7\u00e3o das outras compet\u00eancias. Os planos n\u00e3o fornecem um invariante que exclua essa execu\u00e7\u00e3o. Silver e Gold repetem o mesmo protocolo.",
       "cites": [
-        "cvg/swimlanes/lanes-medalhao/contrato-ext/LEG-CONTRATO-EXPOE-PARTICAO.md \u00a7 B-1",
-        "cvg/swimlanes/lanes-medalhao/silver/LEG-SILVER-PRESERVA-DEFEITO.md \u00a7 B-2 \u2014 alcance do referencial",
-        "seamwise/decisions/DEC-MAPA-APROVADO-OBRIGATORIO.md \u00a7 Rationale \u2014 aprova\u00e7\u00e3o individual dos 11 colapsos"
-      ],
-      "proposal": null
+        "cvg/swimlanes/lanes-medalhao/bronze/LEG-BRONZE-REPRODUZ-ANCORA.md \u00a7 B-1 \u2014 overwrite restrito \u00e0 compet\u00eancia",
+        "cvg/swimlanes/lanes-medalhao/silver/LEG-SILVER-PRESERVA-DEFEITO.md \u00a7 B-1 \u2014 RESTORE",
+        "cvg/swimlanes/lanes-medalhao/gold/LEG-GOLD-RECONCILIA.md \u00a7 B-1 \u2014 RESTORE",
+        "[Delta Lake \u2014 RESTORE de tabela](https://docs.delta.io/delta-utility/)"
+      ]
     },
     {
       "id": "C5",
-      "severity": "medium",
+      "severity": "high",
       "rank": 5,
-      "attack_class": "drift",
-      "swimlane": "LANE-BRONZE",
-      "leg": "LEG-BRONZE-REPRODUZ-ANCORA",
+      "attack_class": "unverified-assumption",
+      "swimlane": "LANE-SILVER",
+      "leg": "LEG-SILVER-PRESERVA-DEFEITO",
+      "title": "A reconfer\u00eancia persistida n\u00e3o verifica as colunas que Silver acrescenta",
       "location": {
-        "plan_file": "cvg/swimlanes/lanes-medalhao/bronze/LEG-BRONZE-REPRODUZ-ANCORA.md",
-        "section": "B-1 \u2014 given; caminho da parti\u00e7\u00e3o"
+        "plan_file": "cvg/swimlanes/lanes-medalhao/silver/LEG-SILVER-PRESERVA-DEFEITO.md",
+        "section": "B-1 \u2014 forma de silver classificado e multiconjunto ap\u00f3s grava\u00e7\u00e3o"
       },
-      "title": "O caminho atribu\u00eddo ao contrato n\u00e3o \u00e9 o caminho que ele declara",
-      "body": "O given identifica o caminho terminado em competencia=2026-01 como particionamento.caminho. O contrato real declara a raiz beneficios-emitidos, sem esse sufixo. Ler literalmente o atributo pode trazer a uni\u00e3o de parti\u00e7\u00f5es; tratar o atributo como parti\u00e7\u00e3o pronta pode impedir localizar a compet\u00eancia. A proibi\u00e7\u00e3o de somar a uni\u00e3o est\u00e1 clara, mas a interpreta\u00e7\u00e3o do endere\u00e7o contradiz o dado de entrada real.",
-      "evidence": "Plano: s3a://landing/pda/beneficios-emitidos/competencia=2026-01 como caminho declarado. Contrato: particionamento.caminho = s3a://landing/pda/beneficios-emitidos; chave = competencia.",
+      "evidence": "A capacidade inclui especie_descricao_normalizada e classificacao, mas a reconfer\u00eancia ap\u00f3s grava\u00e7\u00e3o compara somente (c\u00f3digo, descri\u00e7\u00e3o, valor) e controles.",
+      "body": "Uma sa\u00edda persistida com c\u00f3digo, descri\u00e7\u00e3o original e valor intactos, mas classificacao trocada ou descri\u00e7\u00e3o normalizada incorreta, satisfaz a reconfer\u00eancia declarada. Os defeitos no userMetadata podem continuar corretos enquanto as classifica\u00e7\u00f5es nas linhas divergem deles; n\u00e3o h\u00e1 compara\u00e7\u00e3o entre essas duas representa\u00e7\u00f5es. Gold verifica a descri\u00e7\u00e3o original e os valores, portanto suas provas tamb\u00e9m n\u00e3o cobrem essa altera\u00e7\u00e3o. O plano prova conserva\u00e7\u00e3o da proje\u00e7\u00e3o herdada de Bronze, mas n\u00e3o a integridade persistida da classifica\u00e7\u00e3o e normaliza\u00e7\u00e3o que constituem a entrega espec\u00edfica de Silver.",
       "cites": [
-        "cvg/swimlanes/lanes-medalhao/bronze/LEG-BRONZE-REPRODUZ-ANCORA.md \u00a7 B-1 \u2014 given",
-        "contracts/competencia-202601.yaml \u00a7 particionamento",
-        "cvg/docs/tech-spec/tech-spec-pda-beneficios.md \u00a7 R-1 e R-5"
-      ],
-      "proposal": null
+        "cvg/swimlanes/lanes-medalhao/silver/LEG-SILVER-PRESERVA-DEFEITO.md \u00a7 B-1 \u2014 colunas nomeadas e classifica\u00e7\u00e3o",
+        "cvg/swimlanes/lanes-medalhao/silver/LEG-SILVER-PRESERVA-DEFEITO.md \u00a7 B-2 \u2014 classifica\u00e7\u00e3o obrigat\u00f3ria",
+        "cvg/docs/tech-spec/tech-spec-pda-beneficios.md \u00a7 Requirements, R-6"
+      ]
     }
   ],
   "cross_lane_interfaces": [],
   "fork": {
     "choice": "B",
-    "reason": "Transcri\u00e7\u00e3o do FORK j\u00e1 declarado nos quatro arquivos _lane.md; nenhuma escolha feita pelo advers\u00e1rio.",
+    "reason": "Declara\u00e7\u00e3o j\u00e1 presente nos quatro _lane.md; reproduzida como proveni\u00eancia, sem nova escolha pelo advers\u00e1rio.",
     "per_plan_declared": true
   },
   "open_questions": [
     {
-      "q": "Como registrar obje\u00e7\u00f5es ainda abertas no schema 1.1, que exige resolution com decis\u00e3o humana, sem fabricar FIX ou ACCEPT?",
+      "q": "Qual invariante j\u00e1 aprovado impede escritores concorrentes durante grava\u00e7\u00e3o, reconfer\u00eancia e eventual RESTORE? Os planos fornecidos n\u00e3o o declaram.",
+      "blocks_build": true
+    },
+    {
+      "q": "Como o fluxo de dispatch representa obje\u00e7\u00f5es ainda abertas sem inventar resolution, decided_by e decided_at, obrigat\u00f3rios no schema local?",
       "blocks_build": true
     }
   ],

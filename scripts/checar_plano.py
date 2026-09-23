@@ -184,7 +184,7 @@ def _simetria(seams, falhas):
     TERMOS = ["FORMA declarada", "estado INTEGRO", "traps=[]",
               "uma das seis", "NO MOTOR", "ansi.enabled", "especie_codigo",
               "versionAsOf", "RELÊ", "replaceWhere",
-              "mergeSchema", "RESTORE"]
+              "mergeSchema", "_preparo", "REVERTE SÓ A COMPETÊNCIA"]
 
     # A simetria vale entre as CAMADAS DE DADO do medalhão — são elas que
     # somam dinheiro, rodam no motor e trocam linhas entre si. Costura que

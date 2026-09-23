@@ -1,6 +1,6 @@
 > Projetado de `LEG-GOLD-RECONCILIA.md` pelo Seamwise.
 > **Não edite aqui** — edite a recipe e rode `seamwise plan`.
-> origem sha256: `ffb2ba843950138ecfee86647f0fa5a6893401c0c06d2830eee27e43e130db52`
+> origem sha256: `2c1dac21ad25087a7e3957b4c78b856a477ea6a4843da4d67156d02b2d07e3c5`
 
 ---
 
@@ -145,14 +145,26 @@ tasks:
       o conjunto reconciliado, tudo ou nada. Copiar vários arquivos expondo-os à medida que chegam deixaria
       um consumidor lendo parte das candidatas, ou misturadas com as da execução anterior, com a reconciliação
       correta e o total lido por ninguém aprovado — e uma interrupção no meio congela esse estado. Publicação
-      interrompida deixa o destino como estava antes. GRAVAÇÃO NO MINIO, pela decisão DEC-CAMADAS-GRAVAM-NO-MINIO,
-      e é ela que define o destino e o protocolo da publicação: Gold lê Silver pelo ponteiro _ATUAL e
-      grava as candidatas em s3a://gold/pda/beneficios-emitidos/competencia=<c>/execucao=<id>/, invisíveis
-      a quem lê pelo ponteiro; relê e reconcilia sobre o que gravou; e só com Desfecho.autorizado_publicar
-      E o anexo conferido grava o manifesto e, por ÚLTIMO, o ponteiro _ATUAL — um PUT único. Interrupção
-      antes do ponteiro deixa publicado o que estava; a execução órfã fica no prefixo dela, nomeada, nunca
-      apagada em silêncio. O destino é parâmetro com esse padrão, e os testes gravam sob um prefixo de
-      teste próprio, nunca no destino real'
+      interrompida deixa o destino como estava antes. GRAVAÇÃO EM DELTA NO MINIO, pelas decisões DEC-CAMADAS-GRAVAM-NO-MINIO
+      e DEC-CAMADAS-EM-DELTA, e é ela que define o destino e o protocolo da publicação: Gold lê Silver
+      numa versão resolvida UMA vez, reconcilia sobre as candidatas, e só com Desfecho.autorizado_publicar
+      E o anexo conferido grava na tabela Delta s3a://gold/pda/beneficios-emitidos, com replaceWhere,
+      num ÚNICO commit — a publicação é esse commit, visível inteiro ou não visível. Interrupção antes
+      do commit deixa publicado o que estava. O DecimalType da coluna monetária é o declarado a partir
+      do contrato, e a IMPOSIÇÃO DE SCHEMA do Delta fica ligada; EVOLUÇÃO de schema só ADITIVA e explícita,
+      com mergeSchema — mudança de tipo, sobretudo monetário, é recusada, e overwriteSchema nunca é usado.
+      A tabela declara CHECK vl_liquido >= 0, o domínio da ADR 0009, e NOT NULL nas chaves. O que a capacidade
+      carrega além das linhas — estado, competência, hash da procedência, os cinco controles, marcas de
+      limitação, defeitos classificados, total_por_codigo em Decimal serializado como texto, cobertura
+      do referencial quando houver, id da execução e a VERSÃO lida da camada anterior — vai no userMetadata
+      do PRÓPRIO commit: a capacidade persistida se reconstrói de uma versão, linhas mais commit. O consumidor
+      resolve a versão UMA vez e lê tudo dela com versionAsOf, nunca o ''mais recente'' no meio do consumo.
+      Depois de gravar, RELÊ a versão commitada e compara o MULTICONJUNTO de (código, descrição, valor)
+      com o que produziu — exceptAll nos dois sentidos, ambos vazios — e os controles, porque trocar 10
+      e 20 por 11 e 19 preserva os cinco controles; divergência depois do commit é DIVERGE, e a camada
+      faz RESTORE para a versão anterior, que é commit novo e preserva o histórico. Nenhum VACUUM abaixo
+      da retenção padrão: o histórico é evidência. O destino é parâmetro com esse padrão, e os testes
+      gravam sob um prefixo de teste próprio, nunca no destino real'
   - id: B-2
     given: um Silver cujo total não reproduz a âncora, ou uma competência sem âncora no contrato
     when: Gold agrega
@@ -186,12 +198,14 @@ tasks:
     description: Arredondamento único, precisão declarada, e recusa sob procedência não vinculada
     bash: docker compose -f infra/docker-compose.yml exec -T spark sh -c 'for c in arredonda_uma_vez half_even_do_contrato
       nao_arredonda_por_campo traps_declaradas recusa_sob_procedencia_nao_vinculada ansi_declarado_estouro_nao_vira_nulo
-      cobertura_anexada_ao_pacote publica_pelo_ponteiro_atual interrompida_antes_do_ponteiro_nao_publica;
-      do python3 -m pytest --collect-only -q tests/test_gold.py -k "$c" 2>/dev/null | grep -q "::" ||
-      { echo "EVAL=CENARIO_AUSENTE_$c"; exit 1; }; done; python3 -m pytest -q tests/test_gold.py -k "arredonda_uma_vez
-      or half_even_do_contrato or nao_arredonda_por_campo or traps_declaradas or recusa_sob_procedencia_nao_vinculada
-      or ansi_declarado_estouro_nao_vira_nulo or cobertura_anexada_ao_pacote or publica_pelo_ponteiro_atual
-      or interrompida_antes_do_ponteiro_nao_publica"'
+      cobertura_anexada_ao_pacote publica_em_um_unico_commit interrompida_antes_do_commit_nao_publica
+      reconfere_multiconjunto_das_linhas commit_carrega_a_forma resolve_versao_uma_vez schema_evolucao_so_aditiva
+      check_nao_negativo; do python3 -m pytest --collect-only -q tests/test_gold.py -k "$c" 2>/dev/null
+      | grep -q "::" || { echo "EVAL=CENARIO_AUSENTE_$c"; exit 1; }; done; python3 -m pytest -q tests/test_gold.py
+      -k "arredonda_uma_vez or half_even_do_contrato or nao_arredonda_por_campo or traps_declaradas or
+      recusa_sob_procedencia_nao_vinculada or ansi_declarado_estouro_nao_vira_nulo or cobertura_anexada_ao_pacote
+      or publica_em_um_unico_commit or interrompida_antes_do_commit_nao_publica or reconfere_multiconjunto_das_linhas
+      or commit_carrega_a_forma or resolve_versao_uma_vez or schema_evolucao_so_aditiva or check_nao_negativo"'
     verifies:
     - B-1
   - id: eval_2
@@ -241,7 +255,7 @@ tasks:
   - contracts
   rollback: Remover a camada Gold e seus testes.
   observability: agregados recusados por não reconciliar
-source_seam_sha256: bbe01e22d328e3359e7983c1457cb730d614b12301ab8bff2e7f0e607c03c679
+source_seam_sha256: ca76acf0625ea07c3cbf050ffc6dd8e6695f8b1c7d35ec9e8b7427b4e6a13826
 ---
 # Gold só publica quando reconcilia com a âncora
 

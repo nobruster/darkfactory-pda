@@ -2,7 +2,7 @@ FORK: B (task-driven) — rota única desde a v3.4 — o consenso sempre entrega
 
 > Projetado de `LANE-BRONZE.md` pelo Seamwise.
 > **Não edite aqui** — edite a recipe e rode `seamwise plan`.
-> origem sha256: `6229a03ffcd49292e02a7c0e3b56617ccacf07e7b4b6f1ab521eda03f5da954d`
+> origem sha256: `6038698668b7ac1e5feb65c339d20161435c0e219a57bd4512049bd17080f4a4`
 
 ---
 
@@ -14,7 +14,7 @@ id: LANE-BRONZE
 name: Bronze lane
 owner: medalhao
 seam_id: SEAM-BRONZE
-source_seam_sha256: 7c2690802325e1272bbe8fdf643d3f6ad9a7b273bf8727f00bcdcbc13d304d59
+source_seam_sha256: e8762ba4072e51f4d7f60d34fb4a2056c9b83931c52a23475223f095f0f416d2
 legs:
 - LEG-BRONZE-REPRODUZ-ANCORA
 ---
