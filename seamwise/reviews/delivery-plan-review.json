@@ -1,0 +1,10 @@
+{
+  "disposition": "accepted",
+  "draft_sha256": "cff289decf785fad72bc9e7565f70b119d11bc88ba4cfdbfcf616a60cadbe27b",
+  "fixture": false,
+  "plan_sha256": "9be8ee3feaa57eece5f47452b9f8581df1691c535bca9ce4d74bff4ce2ea7933",
+  "reason": "Pass 4 do medalhao v3 fechado com CHECK_CONSENSUS=OK na R33, sem editar o plano, cada objecao decidida com razao propria. As camadas gravam em Delta no MinIO (DEC-CAMADAS-EM-DELTA), com preparo antes de publicar. Quatro costuras, grafo fechado.",
+  "reviewed_at": "2026-09-23T16:28:14.597596+00:00",
+  "reviewer": "Bruno Nunes",
+  "schema_version": 1
+}

@@ -1,0 +1,63 @@
+schema_version: 1
+status: SEAM_MAP=READY
+intent_id: DI-PDA-MEDALHAO
+source_recipe:
+  name: medalhao-recipe.yaml
+  sha256: f6aeafa261d6a4c6a6789d102c13ea543aba97143accb09930531b38b7b8efbf
+intent_sha256: c2ca79fc25d8b7b890a37811980190e0a2f53b87b5bd473abfc729ca5e96f340
+system_map_sha256: d9c0af203fb583004eb1501a3d175b6c3e8035a076bacdf0e001d2f9a97af879
+evidence_sha256: f601d0840184c26f965db2920850c41b94472dd57c4647ccd73dff8b40a9ca3c
+decisions:
+- id: ADR-0002-POSICIONAL
+  path: seamwise/decisions/ADR-0002-POSICIONAL.md
+  status: accepted
+  sha256: 9169d73fdb90b181ed951add20e93350e3bc1627e503dcca90cc04984527a88b
+- id: ADR-0003-HALF-EVEN
+  path: seamwise/decisions/ADR-0003-HALF-EVEN.md
+  status: accepted
+  sha256: b09504c6ee425d8beb540da2be7ac9b72031c58c8e80fa20dbe6ca56f7eb35b6
+- id: ADR-0004-CODIGO-E-CHAVE
+  path: seamwise/decisions/ADR-0004-CODIGO-E-CHAVE.md
+  status: accepted
+  sha256: 6b01f69703c83af46012050459ccf9431e0bc4795c8b87fea37262696cfeb1b3
+- id: DEC-MAPA-APROVADO-OBRIGATORIO
+  path: seamwise/decisions/DEC-MAPA-APROVADO-OBRIGATORIO.md
+  status: accepted
+  sha256: da30838c48e308e844a971e784442d376e9a420a0d822d3b4a2040404b895a31
+- id: DEC-CAMADAS-GRAVAM-NO-MINIO
+  path: seamwise/decisions/DEC-CAMADAS-GRAVAM-NO-MINIO.md
+  status: accepted
+  sha256: 42ce629ecdc8e740d0830710507483fa8f7fbbc534ef17bd7864378ccdb8b051
+- id: DEC-CAMADAS-EM-DELTA
+  path: seamwise/decisions/DEC-CAMADAS-EM-DELTA.md
+  status: accepted
+  sha256: 4a7bf62ff3284d508a4ff52136672cd41c10e77c3324a4446f76e56c8551efe9
+seams:
+- id: SEAM-CONTRATO-EXT
+  path: seamwise/seams/SEAM-CONTRATO-EXT.md
+  owner: medalhao
+  evidence:
+  - E-ANCORA-202601
+  swimlane_id: LANE-CONTRATO-EXT
+  sha256: 2f73670ab88c541301ec3f39979bd682e1d741146b24e8c3d5afcde901ade7c7
+- id: SEAM-BRONZE
+  path: seamwise/seams/SEAM-BRONZE.md
+  owner: medalhao
+  evidence:
+  - E-ANCORA-202601
+  swimlane_id: LANE-BRONZE
+  sha256: 42da3dee23b236a676de8eb3e8f1a6a3629e33b5a0282af670440fa5cdef3311
+- id: SEAM-SILVER
+  path: seamwise/seams/SEAM-SILVER.md
+  owner: medalhao
+  evidence:
+  - E-ESPECIE-TRUNCADA
+  swimlane_id: LANE-SILVER
+  sha256: 978dfad9600a68228651b2e8ef9f640c7ae66d6e09cce1f70ae949f99ae00041
+- id: SEAM-GOLD
+  path: seamwise/seams/SEAM-GOLD.md
+  owner: medalhao
+  evidence:
+  - E-ANCORA-202601
+  swimlane_id: LANE-GOLD
+  sha256: 371dedb0af3be5ef69637caf15d13a44846819594d572ff8446c378533ded455
