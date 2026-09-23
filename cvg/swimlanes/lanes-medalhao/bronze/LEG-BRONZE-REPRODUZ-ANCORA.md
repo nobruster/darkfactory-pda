@@ -1,6 +1,6 @@
 > Projetado de `LEG-BRONZE-REPRODUZ-ANCORA.md` pelo Seamwise.
 > **Não edite aqui** — edite a recipe e rode `seamwise plan`.
-> origem sha256: `df5b5ca4ad5ede9b4eeb1cb9883142f83b6726c1a66143859326f26e5553bfa1`
+> origem sha256: `22d8061e2672585ec608d208c0ce7471017ea33e3b62344111a045deb2220957`
 
 ---
 
@@ -125,39 +125,42 @@ tasks:
       próprios testes com fixtures locais e não encaixarem um no outro. Partição que diverge é DIVERGE,
       e Bronze não escreve nada'
   - id: B-2
-    given: uma competência cuja partição não existe no lago, existe com zero linhas, ou existe e não está
-      vazia mas NÃO tem âncora declarada no contrato
+    given: uma competência cuja partição não existe no lago ou existe com zero linhas, ou cujo contrato
+      NÃO declara âncora
     when: Bronze lê a partição
-    then: 'retorna NAO_MEDIDO como valor nos três casos — partição presente e não vazia SEM âncora é NAO_MEDIDO,
-      não DIVERGE, porque sem referencial não há contra o que divergir, e tentar comparar contra controles
-      ausentes falharia no acesso em vez de devolver veredito, sem escrever camada nenhuma e sem encerrar
-      o processo; partição ausente e partição vazia são casos distintos e ambos NAO_MEDIDO, porque ler
-      o lago e não encontrar nada não é o mesmo que medir e encontrar zero — a Regra 9 existe porque o
-      segundo caminho é o que veste NAO_MEDIDO de MEDIDO. As outras partições do lago são nomeadas E CONTADAS
-      na saída, e a soma das contagens por partição é conferida contra o total lido — nomear sem contar
-      afirma isolação sem medi-la, e a lista de nomes continuaria idêntica se as linhas de uma partição
-      tivessem migrado para outra. ERRO_LEITURA é o estado de quem NÃO CONSEGUIU medir — objeto ilegível,
-      esquema inesperado, credencial ausente, listagem que falhou — e é distinto de NAO_MEDIDO, que é
-      ter medido e não achar dado: não conseguir listar uma partição não prova que ela está ausente, e
-      não conseguir ler um objeto não prova que ele tem zero linhas. Colapsar os dois faria a fábrica
+    then: 'o desfecho é NAO_MEDIDO nos três casos, por DOIS caminhos. Sem âncora o caminho é EXTERNO,
+      e MEDIDO: o carregador real devolve o sentinela NAO_MEDIDO antes de existir Contrato, e conduzir
+      fecha CONTRATO_NAO_MEDIDO antes de chamar executar_leitura — Bronze NUNCA é invocado, e por isso
+      não recebe nem simula um Contrato sem âncora. A prova usa o carregador REAL sobre um contrato-fixture
+      sem âncora e confere que o callback não foi chamado: um Contrato artificial passaria sem demonstrar
+      entrada que o carregador produz. Não é DIVERGE — sem referencial não há contra o que divergir. Partição
+      ausente e partição vazia são de Bronze, que devolve NAO_MEDIDO como valor, sem escrever camada nenhuma
+      e sem encerrar o processo; partição ausente e partição vazia são casos distintos e ambos NAO_MEDIDO,
+      porque ler o lago e não encontrar nada não é o mesmo que medir e encontrar zero — a Regra 9 existe
+      porque o segundo caminho é o que veste NAO_MEDIDO de MEDIDO. As outras partições do lago são nomeadas
+      E CONTADAS na saída, e a soma das contagens por partição é conferida contra o total lido — nomear
+      sem contar afirma isolação sem medi-la, e a lista de nomes continuaria idêntica se as linhas de
+      uma partição tivessem migrado para outra. ERRO_LEITURA é o estado de quem NÃO CONSEGUIU medir —
+      objeto ilegível, esquema inesperado, credencial ausente, listagem que falhou — e é distinto de NAO_MEDIDO,
+      que é ter medido e não achar dado: não conseguir listar uma partição não prova que ela está ausente,
+      e não conseguir ler um objeto não prova que ele tem zero linhas. Colapsar os dois faria a fábrica
       registrar ''não medido'' para um lago que nunca abriu. A PRECEDÊNCIA é declarada e não negociável:
       o estado da competência SOLICITADA decide primeiro. Ausente ou vazia devolve NAO_MEDIDO mesmo que
-      o lago tenha outros problemas, porque não se reprova o que não se mediu. Partição presente SEM âncora
-      é NAO_MEDIDO mesmo que o fechamento do lago diverja: sem referencial não há contra o que divergir,
-      e o objeto órfão sai NOMEADO no diagnóstico sem mudar o estado. Só quando a competência existe,
-      foi medida e TEM âncora é que o fechamento do lago entra no estado — e aí, se a soma das partições
-      não fecha com o total, é DIVERGE, porque linha que não pertence a partição nenhuma é contaminação
-      — e o total vem de um UNIVERSO INDEPENDENTE, a listagem dos objetos do lago, nunca da mesma leitura
-      agrupada: somar contagens agrupadas pela própria relação lida é identidade, fecha sempre, inclusive
-      somando o grupo nulo, e não veria arquivo que as DUAS leituras ignoraram. Se o Contrato carregado
-      trouxer particionamento ou os limites de expoente como None — contrato que não os declara —, Bronze
-      devolve NAO_MEDIDO: é o CONSUMIDOR que exige esses campos, e ausência declarada não é valor padrão.
-      A CHAVE de partição é a declarada no contrato — ''competencia'' — e os objetos auxiliares que ele
-      lista, como _SUCCESS, são ignorados no fechamento. A competência CONTRATADA não é a lista exaustiva
-      de partições válidas: tratá-la assim reprovaria competencia=fatia-teste, que existe no lago e é
-      legítima, e seria mais um gate recusando o correto; objeto fora delas, ou linha cuja chave de partição
-      é nula, conta como não pertencente e faz o controle reprovar, e foi para vê-la que este controle
-      existe'
+      o lago tenha outros problemas, porque não se reprova o que não se mediu. Sem âncora a precedência
+      é ESTRUTURAL: Bronze nem roda, então o fechamento do lago não chega a ser medido — e nada nesta
+      camada precisa decidir entre os dois. Só quando a competência existe, foi medida e TEM âncora é
+      que o fechamento do lago entra no estado — e aí, se a soma das partições não fecha com o total,
+      é DIVERGE, porque linha que não pertence a partição nenhuma é contaminação — e o total vem de um
+      UNIVERSO INDEPENDENTE, a listagem dos objetos do lago, nunca da mesma leitura agrupada: somar contagens
+      agrupadas pela própria relação lida é identidade, fecha sempre, inclusive somando o grupo nulo,
+      e não veria arquivo que as DUAS leituras ignoraram. Se o Contrato carregado trouxer particionamento
+      ou os limites de expoente como None — contrato que não os declara —, Bronze devolve NAO_MEDIDO:
+      é o CONSUMIDOR que exige esses campos, e ausência declarada não é valor padrão. A CHAVE de partição
+      é a declarada no contrato — ''competencia'' — e os objetos auxiliares que ele lista, como _SUCCESS,
+      são ignorados no fechamento. A competência CONTRATADA não é a lista exaustiva de partições válidas:
+      tratá-la assim reprovaria competencia=fatia-teste, que existe no lago e é legítima, e seria mais
+      um gate recusando o correto; objeto fora delas, ou linha cuja chave de partição é nula, conta como
+      não pertencente e faz o controle reprovar, e foi para vê-la que este controle existe'
   evals:
   - id: eval_1
     description: Os cinco controles comparados individualmente, e a partição medida isoladamente
@@ -173,11 +176,11 @@ tasks:
   - id: eval_2
     description: Ausente e vazia devolvem NAO_MEDIDO; medida e divergente devolve DIVERGE
     bash: docker compose -f infra/docker-compose.yml exec -T spark sh -c 'for c in particao_ausente particao_vazia
-      presente_sem_ancora diverge_nao_e_nao_medido objeto_orfao_na_listagem erro_leitura_nao_e_nao_medido
-      sem_ancora_vence_o_fechamento; do python3 -m pytest --collect-only -q tests/test_bronze.py -k "$c"
-      2>/dev/null | grep -q "::" || { echo "EVAL=CENARIO_AUSENTE_$c"; exit 1; }; done; python3 -m pytest
-      -q tests/test_bronze.py -k "particao_ausente or particao_vazia or presente_sem_ancora or diverge_nao_e_nao_medido
-      or objeto_orfao_na_listagem or erro_leitura_nao_e_nao_medido or sem_ancora_vence_o_fechamento"'
+      diverge_nao_e_nao_medido objeto_orfao_na_listagem erro_leitura_nao_e_nao_medido sem_ancora_para_antes_de_bronze;
+      do python3 -m pytest --collect-only -q tests/test_bronze.py -k "$c" 2>/dev/null | grep -q "::" ||
+      { echo "EVAL=CENARIO_AUSENTE_$c"; exit 1; }; done; python3 -m pytest -q tests/test_bronze.py -k
+      "particao_ausente or particao_vazia or diverge_nao_e_nao_medido or objeto_orfao_na_listagem or erro_leitura_nao_e_nao_medido
+      or sem_ancora_para_antes_de_bronze"'
     verifies:
     - B-2
   - id: eval_3
@@ -209,7 +212,7 @@ tasks:
   - contracts
   rollback: Remover o leitor Bronze e seus testes.
   observability: partições recusadas por controle divergente
-source_seam_sha256: dd5bd712869f55d46b021cfba60d2c6a96183bc8379133a78c691ea7c21d1d61
+source_seam_sha256: 849221b29714b305887280c1d733941ee95d697bc0f9d8d347ed6cfc7c43f260
 ---
 # Bronze só existe quando reproduz a âncora do contrato
 

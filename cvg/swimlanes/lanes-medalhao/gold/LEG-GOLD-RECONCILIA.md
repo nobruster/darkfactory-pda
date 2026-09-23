@@ -1,6 +1,6 @@
 > Projetado de `LEG-GOLD-RECONCILIA.md` pelo Seamwise.
 > **Não edite aqui** — edite a recipe e rode `seamwise plan`.
-> origem sha256: `93f835d7ba6c82f4c231014e31f11543cd4d016370b376683903a24242d9005f`
+> origem sha256: `20c44cb1985151f0d618708ffa410e80417f8d5a87602598572d9a06c8a837b3`
 
 ---
 
@@ -124,57 +124,65 @@ tasks:
       hash_observado pela leitura, hash_declarado no envelope, defeitos_leitura contra defeitos_envelope,
       totais_leitura contra totais_envelope. conduzir carrega o contrato, julga, grava o pacote de evidência
       em QUALQUER desfecho e devolve um Desfecho; Gold publica se e somente se Desfecho.autorizado_publicar
-      for verdadeiro E Desfecho.caminho_pacote existir em disco. Não se compara string ''ACEITO'' contra
-      o retorno de julgar(), que devolve Veredito(aceito, classificacoes), nem contra rederivar_veredito(),
-      que devolve o par (veredito, causa) — descrever essas assinaturas em prosa errou um detalhe a cada
-      rodada, e o orquestrador já as fala. Gold importa o orquestrador e o juiz, jamais os edita, e nenhum
-      dos dois importa Gold. A publicação é um passo POSTERIOR e condicionado a autorizado_publicar, e
-      o veredito CONSOME a marca PROCEDENCIA_NAO_VINCULADA que Bronze emite e Silver preserva — Gold recusa
-      publicar sob ela, e a recusa tem eval próprio, senão cada camada cumpre o seu e a marca se perde
-      na transformação: se as candidatas fossem escritas no destino para depois serem relidas, o dado
-      divergente já teria ficado exposto antes de qualquer veredito, e remover depois não desfaz a exposição.
-      Um teste que confira só o resultado final ou a ausência de arquivos ao término não vê isso — o eval
-      observa que o caminho de destino permanece inalterado DURANTE a reconciliação. E a publicação em
-      si é uma transição INDIVISÍVEL de visibilidade: o conjunto publicado é exatamente o conjunto reconciliado,
-      tudo ou nada. Copiar vários arquivos expondo-os à medida que chegam deixaria um consumidor lendo
-      parte das candidatas, ou misturadas com as da execução anterior, com a reconciliação correta e o
-      total lido por ninguém aprovado — e uma interrupção no meio congela esse estado. Publicação interrompida
-      deixa o destino como estava antes'
+      for verdadeiro E Desfecho.caminho_pacote existir em disco. A COBERTURA DA IDENTIDADE que Silver
+      declara — códigos verificados pelo mapa aprovado e códigos só por cardinalidade — não cabe no ENVELOPE_SCHEMA,
+      que proíbe propriedades adicionais, nem em InsumosExecucao, nem no pacote do caminho positivo, que
+      não tem campo livre: MEDIDO em gravar_pacote. Nas paradas ela já viaja no diagnóstico serializado;
+      no caminho positivo Gold grava um ANEXO ao lado de caminho_pacote, com o sha256 do pacote e as duas
+      listas de códigos, e só publica com autorizado_publicar E o anexo gravado e conferido contra o sha256
+      do pacote — sem ele, o pacote registraria aceitação sem a limitação que Silver prometeu mostrar.
+      Não se compara string ''ACEITO'' contra o retorno de julgar(), que devolve Veredito(aceito, classificacoes),
+      nem contra rederivar_veredito(), que devolve o par (veredito, causa) — descrever essas assinaturas
+      em prosa errou um detalhe a cada rodada, e o orquestrador já as fala. Gold importa o orquestrador
+      e o juiz, jamais os edita, e nenhum dos dois importa Gold. A publicação é um passo POSTERIOR e condicionado
+      a autorizado_publicar, e o veredito CONSOME a marca PROCEDENCIA_NAO_VINCULADA que Bronze emite e
+      Silver preserva — Gold recusa publicar sob ela, e a recusa tem eval próprio, senão cada camada cumpre
+      o seu e a marca se perde na transformação: se as candidatas fossem escritas no destino para depois
+      serem relidas, o dado divergente já teria ficado exposto antes de qualquer veredito, e remover depois
+      não desfaz a exposição. Um teste que confira só o resultado final ou a ausência de arquivos ao término
+      não vê isso — o eval observa que o caminho de destino permanece inalterado DURANTE a reconciliação.
+      E a publicação em si é uma transição INDIVISÍVEL de visibilidade: o conjunto publicado é exatamente
+      o conjunto reconciliado, tudo ou nada. Copiar vários arquivos expondo-os à medida que chegam deixaria
+      um consumidor lendo parte das candidatas, ou misturadas com as da execução anterior, com a reconciliação
+      correta e o total lido por ninguém aprovado — e uma interrupção no meio congela esse estado. Publicação
+      interrompida deixa o destino como estava antes'
   - id: B-2
     given: um Silver cujo total não reproduz a âncora, ou uma competência sem âncora no contrato
     when: Gold agrega
-    then: 'devolve DIVERGE quando o total não bate e NAO_MEDIDO quando não há âncora, dois estados distintos
-      que nunca colapsam num só — sem âncora não é divergência, é ausência de referencial, e tratá-los
-      igual faria a fábrica parecer que mediu quando não tinha contra o que medir. O orçamento da R-9
-      é MEDIDO, não presumido: do início da leitura de Bronze ao VEREDITO da cadeia, sobre a partição
-      real de 41.572.553 linhas, a cadeia termina em até 20 minutos — e o veredito é o primeiro estado
-      que PARA a cadeia, qualquer que seja. Enquanto o mapa código→descrição não estiver aprovado no contrato,
-      a cadeia real para em Silver com NAO_MEDIDO, e é até ESSE veredito que se mede: exigir que Gold
-      agregasse a competência real antes da aprovação tornaria o eval impossível por construção, e a duração
-      sai no veredito. A tech-spec registra esse número como ''não medido'' — meta declarada sem medição
-      é a Regra 9, e executar no motor não garante o orçamento: uma execução distribuída pode preservar
-      todas as propriedades funcionais e ainda estourá-lo. Nenhum dos dois publica, o motivo sai nomeado,
-      e cada diferença recebe EXATAMENTE UMA das seis classificações da R-6 — inclusive a introduzida
-      DEPOIS de Bronze, que é justamente a que nenhuma camada anterior viu. Devolver só estado e motivo
-      cumpriria este plano e violaria a especificação; diferença que Gold não saiba classificar recebe
-      UNRESOLVED, que bloqueia; a contagem de códigos de Gold é conferida contra os 65 do contrato, e
-      a especie_descricao publicada de cada código é conferida contra a descrição ORIGINAL que Silver
-      entregou para aquele código — trocar as descrições de dois códigos não colapsados mantém códigos,
-      valores, soma, competência e cardinalidade, e passaria em todas as outras provas. O GRÃO das linhas
-      publicadas é UMA por código — reagrupar candidatas para construir o mapa esconderia código duplicado
-      no resultado materializado, já que (''01'', 30.00) e o par (''01'', 10.00) mais (''01'', 20.00)
-      produzem o mesmo mapa e a mesma contagem de códigos distintos; a prova é sobre as linhas EFETIVAMENTE
-      publicadas, não sobre o mapa derivado delas, porque um agregado com menos códigos que a fonte pode
-      somar o mesmo total e ainda assim ter perdido uma categoria inteira'
+    then: 'devolve DIVERGE quando o total não bate e NAO_MEDIDO quando uma camada anterior o propaga —
+      sem âncora no contrato Gold nem é invocado, porque conduzir fecha CONTRATO_NAO_MEDIDO antes do callback,
+      e Gold não fabrica um Contrato sem âncora para provar o contrário —, dois estados distintos que
+      nunca colapsam num só — sem âncora não é divergência, é ausência de referencial, e tratá-los igual
+      faria a fábrica parecer que mediu quando não tinha contra o que medir. O orçamento da R-9 é MEDIDO,
+      não presumido: do início da leitura de Bronze ao VEREDITO da cadeia, sobre a partição real de 41.572.553
+      linhas, a cadeia termina em até 20 minutos — e o veredito é o primeiro estado que PARA a cadeia,
+      qualquer que seja. Enquanto o mapa código→descrição não estiver aprovado no contrato, a cadeia real
+      para em Silver com NAO_MEDIDO, e é até ESSE veredito que se mede: exigir que Gold agregasse a competência
+      real antes da aprovação tornaria o eval impossível por construção, e a duração sai no veredito.
+      A tech-spec registra esse número como ''não medido'' — meta declarada sem medição é a Regra 9, e
+      executar no motor não garante o orçamento: uma execução distribuída pode preservar todas as propriedades
+      funcionais e ainda estourá-lo. Nenhum dos dois publica, o motivo sai nomeado, e cada diferença recebe
+      EXATAMENTE UMA das seis classificações da R-6 — inclusive a introduzida DEPOIS de Bronze, que é
+      justamente a que nenhuma camada anterior viu. Devolver só estado e motivo cumpriria este plano e
+      violaria a especificação; diferença que Gold não saiba classificar recebe UNRESOLVED, que bloqueia;
+      a contagem de códigos de Gold é conferida contra os 65 do contrato, e a especie_descricao publicada
+      de cada código é conferida contra a descrição ORIGINAL que Silver entregou para aquele código —
+      trocar as descrições de dois códigos não colapsados mantém códigos, valores, soma, competência e
+      cardinalidade, e passaria em todas as outras provas. O GRÃO das linhas publicadas é UMA por código
+      — reagrupar candidatas para construir o mapa esconderia código duplicado no resultado materializado,
+      já que (''01'', 30.00) e o par (''01'', 10.00) mais (''01'', 20.00) produzem o mesmo mapa e a mesma
+      contagem de códigos distintos; a prova é sobre as linhas EFETIVAMENTE publicadas, não sobre o mapa
+      derivado delas, porque um agregado com menos códigos que a fonte pode somar o mesmo total e ainda
+      assim ter perdido uma categoria inteira'
   evals:
   - id: eval_1
     description: Arredondamento único, precisão declarada, e recusa sob procedência não vinculada
     bash: docker compose -f infra/docker-compose.yml exec -T spark sh -c 'for c in arredonda_uma_vez half_even_do_contrato
-      nao_arredonda_por_campo traps_declaradas recusa_sob_procedencia_nao_vinculada ansi_declarado_estouro_nao_vira_nulo;
-      do python3 -m pytest --collect-only -q tests/test_gold.py -k "$c" 2>/dev/null | grep -q "::" ||
-      { echo "EVAL=CENARIO_AUSENTE_$c"; exit 1; }; done; python3 -m pytest -q tests/test_gold.py -k "arredonda_uma_vez
-      or half_even_do_contrato or nao_arredonda_por_campo or traps_declaradas or recusa_sob_procedencia_nao_vinculada
-      or ansi_declarado_estouro_nao_vira_nulo"'
+      nao_arredonda_por_campo traps_declaradas recusa_sob_procedencia_nao_vinculada ansi_declarado_estouro_nao_vira_nulo
+      cobertura_anexada_ao_pacote; do python3 -m pytest --collect-only -q tests/test_gold.py -k "$c" 2>/dev/null
+      | grep -q "::" || { echo "EVAL=CENARIO_AUSENTE_$c"; exit 1; }; done; python3 -m pytest -q tests/test_gold.py
+      -k "arredonda_uma_vez or half_even_do_contrato or nao_arredonda_por_campo or traps_declaradas or
+      recusa_sob_procedencia_nao_vinculada or ansi_declarado_estouro_nao_vira_nulo or cobertura_anexada_ao_pacote"'
     verifies:
     - B-1
   - id: eval_2
@@ -196,12 +204,13 @@ tasks:
   - id: eval_3
     description: DIVERGE e NAO_MEDIDO são estados distintos e nenhum publica
     bash: docker compose -f infra/docker-compose.yml exec -T spark sh -c 'for c in diverge_nao_publica
-      sem_ancora_nao_medido destino_inalterado_durante classifica_diferenca_das_seis orcamento_leitura_ao_veredito_medido
+      sem_ancora_gold_nao_invocado destino_inalterado_durante classifica_diferenca_das_seis orcamento_leitura_ao_veredito_medido
       parada_antecipada_grava_evidencia diagnostico_estruturado_no_pacote marca_de_procedencia_vira_evidencia;
       do python3 -m pytest --collect-only -q tests/test_gold.py -k "$c" 2>/dev/null | grep -q "::" ||
       { echo "EVAL=CENARIO_AUSENTE_$c"; exit 1; }; done; python3 -m pytest -q tests/test_gold.py -k "diverge_nao_publica
-      or sem_ancora_nao_medido or destino_inalterado_durante or classifica_diferenca_das_seis or orcamento_leitura_ao_veredito_medido
-      or parada_antecipada_grava_evidencia or diagnostico_estruturado_no_pacote or marca_de_procedencia_vira_evidencia"'
+      or sem_ancora_gold_nao_invocado or destino_inalterado_durante or classifica_diferenca_das_seis or
+      orcamento_leitura_ao_veredito_medido or parada_antecipada_grava_evidencia or diagnostico_estruturado_no_pacote
+      or marca_de_procedencia_vira_evidencia"'
     verifies:
     - B-2
   anti_patterns:
@@ -223,7 +232,7 @@ tasks:
   - contracts
   rollback: Remover a camada Gold e seus testes.
   observability: agregados recusados por não reconciliar
-source_seam_sha256: 209793270e3e5fbe2440235b560a50ed9cc86c385460ccc9b575101b75a3e92a
+source_seam_sha256: 7c61b88a163e814484a5d71b29df1bfdc6e2bcccfb4bea362e84b66fdec3ae10
 ---
 # Gold só publica quando reconcilia com a âncora
 
