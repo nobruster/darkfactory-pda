@@ -1,6 +1,6 @@
 > Projetado de `LEG-BRONZE-REPRODUZ-ANCORA.md` pelo Seamwise.
 > **Não edite aqui** — edite a recipe e rode `seamwise plan`.
-> origem sha256: `0a832e2b822b03d35f7d991947b05ae08a55988d6fa5852746c74d1d5e36daab`
+> origem sha256: `1850ec1d5ee3d77bcad33094cc8e0173add314379eb4232601da56bbf626f3ae`
 
 ---
 
@@ -119,23 +119,29 @@ tasks:
   evals:
   - id: eval_1
     description: Os cinco controles comparados individualmente, e a partição medida isoladamente
-    bash: docker compose -f infra/docker-compose.yml exec -T spark sh -c 'python3 -m pytest -q tests/test_bronze.py
-      -k "cinco_controles or alteracao_compensada or isola_particao or nao_soma_uniao or precisao_declarada";
-      rc=$?; [ $rc -eq 5 ] && { echo "EVAL=NADA_COLETADO"; exit 1; }; exit $rc'
+    bash: docker compose -f infra/docker-compose.yml exec -T spark sh -c 'n=$(python3 -m pytest --collect-only
+      -q tests/test_bronze.py -k "cinco_controles or alteracao_compensada or isola_particao or nao_soma_uniao
+      or precisao_declarada" 2>/dev/null | grep -c "::"); [ "$n" -lt 5 ] && { echo "EVAL=COLETOU_${n}_DE_5";
+      exit 1; }; python3 -m pytest -q tests/test_bronze.py -k "cinco_controles or alteracao_compensada
+      or isola_particao or nao_soma_uniao or precisao_declarada"'
     verifies:
     - B-1
   - id: eval_2
     description: Ausente e vazia devolvem NAO_MEDIDO; medida e divergente devolve DIVERGE
-    bash: docker compose -f infra/docker-compose.yml exec -T spark sh -c 'python3 -m pytest -q tests/test_bronze.py
-      -k "particao_ausente or particao_vazia or presente_sem_ancora or diverge_nao_e_nao_medido"; rc=$?;
-      [ $rc -eq 5 ] && { echo "EVAL=NADA_COLETADO"; exit 1; }; exit $rc'
+    bash: docker compose -f infra/docker-compose.yml exec -T spark sh -c 'n=$(python3 -m pytest --collect-only
+      -q tests/test_bronze.py -k "particao_ausente or particao_vazia or presente_sem_ancora or diverge_nao_e_nao_medido"
+      2>/dev/null | grep -c "::"); [ "$n" -lt 4 ] && { echo "EVAL=COLETOU_${n}_DE_4"; exit 1; }; python3
+      -m pytest -q tests/test_bronze.py -k "particao_ausente or particao_vazia or presente_sem_ancora
+      or diverge_nao_e_nao_medido"'
     verifies:
     - B-2
   - id: eval_3
     description: Float recusado na entrada, e toda diferença com uma das seis classificações
-    bash: docker compose -f infra/docker-compose.yml exec -T spark sh -c 'python3 -m pytest -q tests/test_bronze.py
-      -k "centavo_a_mais or maximo_acima_do_ancorado or recusa_float_na_entrada or classificacao_das_seis";
-      rc=$?; [ $rc -eq 5 ] && { echo "EVAL=NADA_COLETADO"; exit 1; }; exit $rc'
+    bash: docker compose -f infra/docker-compose.yml exec -T spark sh -c 'n=$(python3 -m pytest --collect-only
+      -q tests/test_bronze.py -k "centavo_a_mais or maximo_acima_do_ancorado or recusa_float_na_entrada
+      or classificacao_das_seis" 2>/dev/null | grep -c "::"); [ "$n" -lt 4 ] && { echo "EVAL=COLETOU_${n}_DE_4";
+      exit 1; }; python3 -m pytest -q tests/test_bronze.py -k "centavo_a_mais or maximo_acima_do_ancorado
+      or recusa_float_na_entrada or classificacao_das_seis"'
     verifies:
     - B-1
   anti_patterns:
@@ -156,7 +162,7 @@ tasks:
   - contracts
   rollback: Remover o leitor Bronze e seus testes.
   observability: partições recusadas por controle divergente
-source_seam_sha256: 6cda8c11b7f6ca2d007142395609280a4eeebda3554693515252c0ba37c60fd5
+source_seam_sha256: bc8531cdc4bcec26037e456dae02e7e7bb257daba32e6095523dcc8a6f2a3c57
 ---
 # Bronze só existe quando reproduz a âncora do contrato
 

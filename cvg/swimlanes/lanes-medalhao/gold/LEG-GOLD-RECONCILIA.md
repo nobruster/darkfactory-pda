@@ -1,6 +1,6 @@
 > Projetado de `LEG-GOLD-RECONCILIA.md` pelo Seamwise.
 > **Não edite aqui** — edite a recipe e rode `seamwise plan`.
-> origem sha256: `ddd695dc993ee4072b748c4c859d251135c28780cbe865659256ec61dc556a8a`
+> origem sha256: `2aab0eb4d7462ed9fd047b626c4bd23d41960285c70e7c9668ae9f28094c6e29`
 
 ---
 
@@ -48,12 +48,12 @@ tasks:
       é sistemática, não ruído — 2,345 + 2,345 dá 4,68 por campo e 4,69 no total, ambos meio-para-par.
       O modo é HALF_EVEN, decidido pelo ADR 0003 e preservado pelo 0009, lido do CONTRATO, nunca escolhido
       aqui, porque meio-para-cima empurra todo empate na mesma direção e vira tendência em volume. A precisão
-      é a declarada e o contexto é CONSTRUÍDO DO ZERO — localcontext(Context(prec, rounding, traps=[]))
-      — as TRAPS são declaradas, não deixadas por conta do construtor. localcontext() sozinho COPIA o
-      contexto global e herda as traps junto; e Context(prec, rounding) sem declarar traps preenche o
-      que foi omitido a partir de DefaultContext, que é IGUALMENTE mutável, então uma biblioteca que ligue
-      DefaultContext.traps[Inexact] derruba também essa construção. O que não se declara, se herda: com
-      traps[Inexact] ligada por qualquer biblioteca importada, Decimal(''2.345'').quantize(Decimal(''.01''))
+      é a declarada e o contexto é CONSTRUÍDO DO ZERO — localcontext(Context(prec, rounding, traps=[],
+      Emax, Emin)) — o contexto INTEIRO declarado — as TRAPS são declaradas, não deixadas por conta do
+      construtor. localcontext() sozinho COPIA o contexto global e herda as traps junto; e Context(prec,
+      rounding) sem declarar traps preenche o que foi omitido a partir de DefaultContext, que é IGUALMENTE
+      mutável, então uma biblioteca que ligue DefaultContext.traps[Inexact] derruba também essa construção.
+      O que não se declara, se herda: com traps[Inexact] ligada por qualquer biblioteca importada, Decimal(''2.345'').quantize(Decimal(''.01''))
       LEVANTA Inexact dentro de um localcontext que declarou prec e rounding, e o arredondamento que o
       contrato PERMITE encerra a operação. O ADR 0006 diz que a precisão é declarada e não herdada; as
       traps são herdadas do mesmo jeito, e declarar prec e rounding não basta. Depois de agregar, a soma
@@ -97,34 +97,37 @@ tasks:
   evals:
   - id: eval_1
     description: Arredondamento único, precisão declarada, e recusa sob procedência não vinculada
-    bash: docker compose -f infra/docker-compose.yml exec -T spark sh -c 'python3 -m pytest -q tests/test_gold.py
-      -k "arredonda_uma_vez or half_even_do_contrato or nao_arredonda_por_campo or traps_declaradas or
-      recusa_sob_procedencia_nao_vinculada"; rc=$?; [ $rc -eq 5 ] && { echo "EVAL=NADA_COLETADO"; exit
-      1; }; exit $rc'
+    bash: docker compose -f infra/docker-compose.yml exec -T spark sh -c 'n=$(python3 -m pytest --collect-only
+      -q tests/test_gold.py -k "arredonda_uma_vez or half_even_do_contrato or nao_arredonda_por_campo
+      or traps_declaradas or recusa_sob_procedencia_nao_vinculada" 2>/dev/null | grep -c "::"); [ "$n"
+      -lt 5 ] && { echo "EVAL=COLETOU_${n}_DE_5"; exit 1; }; python3 -m pytest -q tests/test_gold.py -k
+      "arredonda_uma_vez or half_even_do_contrato or nao_arredonda_por_campo or traps_declaradas or recusa_sob_procedencia_nao_vinculada"'
     verifies:
     - B-1
   - id: eval_2
     description: Reconcilia recalculando, compara o mapa por código e confere os 65
-    bash: docker compose -f infra/docker-compose.yml exec -T spark sh -c 'python3 -m pytest -q tests/test_gold.py
-      -k "reconcilia_recalculando or mapa_por_codigo or redistribuicao_compensada or contagem_de_codigos
-      or uma_linha_por_codigo"; rc=$?; [ $rc -eq 5 ] && { echo "EVAL=NADA_COLETADO"; exit 1; }; exit $rc'
+    bash: docker compose -f infra/docker-compose.yml exec -T spark sh -c 'n=$(python3 -m pytest --collect-only
+      -q tests/test_gold.py -k "reconcilia_recalculando or mapa_por_codigo or redistribuicao_compensada
+      or contagem_de_codigos or uma_linha_por_codigo" 2>/dev/null | grep -c "::"); [ "$n" -lt 5 ] && {
+      echo "EVAL=COLETOU_${n}_DE_5"; exit 1; }; python3 -m pytest -q tests/test_gold.py -k "reconcilia_recalculando
+      or mapa_por_codigo or redistribuicao_compensada or contagem_de_codigos or uma_linha_por_codigo"'
     verifies:
     - B-1
     - B-2
   - id: eval_3
     description: DIVERGE e NAO_MEDIDO são estados distintos e nenhum publica
-    bash: docker compose -f infra/docker-compose.yml exec -T spark sh -c 'python3 -m pytest -q tests/test_gold.py
-      -k "diverge_nao_publica or sem_ancora_nao_medido or destino_inalterado_durante or classifica_diferenca_das_seis";
-      rc=$?; [ $rc -eq 5 ] && { echo "EVAL=NADA_COLETADO"; exit 1; }; exit $rc'
+    bash: docker compose -f infra/docker-compose.yml exec -T spark sh -c 'n=$(python3 -m pytest --collect-only
+      -q tests/test_gold.py -k "diverge_nao_publica or sem_ancora_nao_medido or destino_inalterado_durante
+      or classifica_diferenca_das_seis" 2>/dev/null | grep -c "::"); [ "$n" -lt 4 ] && { echo "EVAL=COLETOU_${n}_DE_4";
+      exit 1; }; python3 -m pytest -q tests/test_gold.py -k "diverge_nao_publica or sem_ancora_nao_medido
+      or destino_inalterado_durante or classifica_diferenca_das_seis"'
     verifies:
     - B-2
   anti_patterns:
-  - action: construir o contexto decimal sem declarar as traps, seja com localcontext() sozinho ou com
-      Context(prec, rounding)
-    reason: localcontext() copia o contexto global, e Context() preenche o omitido a partir de DefaultContext
-      — os dois mutáveis; com traps[Inexact] ligada, quantize levanta e o arredondamento que o contrato
-      permite encerra a operação
-    instead: localcontext(Context(prec=..., rounding=..., traps=[]))
+  - action: construir o contexto decimal sem declarar traps, Emax e Emin
+    reason: localcontext() copia o global e Context() preenche o omitido do DefaultContext, os dois mutáveis;
+      com Emax baixo a âncora vira Infinity e traps=[] silencia o Overflow que denunciaria
+    instead: Context(prec=..., rounding=..., traps=[], Emax=..., Emin=...) — o contexto inteiro
   - action: provar a agregação só com a soma total e a contagem de códigos
     reason: 'uma redistribuição compensada entre códigos preserva as duas e troca os valores de lugar
       — contraexemplo executado com {''01'': 10.00, ''03'': 20.00} contra {''01'': 11.00, ''03'': 19.00}'
@@ -139,7 +142,7 @@ tasks:
   - contracts
   rollback: Remover a camada Gold e seus testes.
   observability: agregados recusados por não reconciliar
-source_seam_sha256: 870c26d1d84c85d2dcea61b03dfd2ac375e283d73be0c39925fddc683b8fa5ac
+source_seam_sha256: 639d23d78838a8e8e129e6653407b0a84abed92954ed6b87208c64673effb0b7
 ---
 # Gold só publica quando reconcilia com a âncora
 
