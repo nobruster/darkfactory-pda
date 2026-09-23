@@ -1,0 +1,40 @@
+{
+  "acceptance_tier": 1,
+  "accepted_at": "2026-09-23T22:30:29Z",
+  "accepted_by": "converge-loop",
+  "contract": "AcceptanceRecord/v1",
+  "gate_outcomes": {
+    "authorization": {
+      "code": "AUTHORIZATION_VALID",
+      "status": "pass"
+    },
+    "evaluation": {
+      "code": "EVAL_PASSED",
+      "status": "pass"
+    },
+    "evidence": {
+      "code": "EVIDENCE_SATISFIED",
+      "proof": [
+        "format v3 or earlier: v4 policy receipts are not required"
+      ],
+      "status": "pass"
+    },
+    "preflight": {
+      "code": "PREFLIGHT_PASSED",
+      "status": "pass",
+      "warnings": []
+    }
+  },
+  "outcome": {
+    "code": "ACCEPTED_TIER_1",
+    "status": "accepted"
+  },
+  "receipts": [],
+  "subject": {
+    "attempt_id": "db692ee9-452f-49f1-ac7a-88994ab96b33",
+    "authorization_ref": "hmac-sha256-v3:85d3c104:c2e9353ee0a482e255ca08ba369c7000a8f143545268ff06026cde3bdb18e8e1",
+    "base_commit": "05c3098e506f9fdbf51da139f5ec8e7532a35bf9",
+    "task_id": "T-20260923-contrato-expoe-grupos",
+    "task_revision_digest": "sha256:11cceda5d8789bb5d54a2d9daa76e8e7eca0727b7e68526d77f87889be479df4"
+  }
+}

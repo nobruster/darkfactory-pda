@@ -28,10 +28,14 @@ execution_backend: any
 signed_off: true
 signed_off_by: nobru
 signed_off_at: 2026-09-23T21:44:02Z
-accepted: false
-accepted_by: (none)
-accepted_at: (none)
+accepted: true
+accepted_by: converge-loop
+accepted_at: 2026-09-23T22:30:29Z
 signed_off_sig: hmac-sha256-v3:85d3c104:c2e9353ee0a482e255ca08ba369c7000a8f143545268ff06026cde3bdb18e8e1
+accepted_tier: 1
+accepted_attempt_id: db692ee9-452f-49f1-ac7a-88994ab96b33
+accepted_authorization_ref: hmac-sha256-v3:85d3c104:c2e9353ee0a482e255ca08ba369c7000a8f143545268ff06026cde3bdb18e8e1
+acceptance_record_digest: sha256:96613f808cf96e43801f54712d9d529bad4d76c409672918fd9b5619a94c6088
 ---
 
 # Expor grupos_especie no Contrato carregado
