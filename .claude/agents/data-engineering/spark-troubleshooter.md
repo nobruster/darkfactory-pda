@@ -94,7 +94,7 @@ TYPE: [ ] CRITICAL  [ ] IMPORTANT  [ ] STANDARD  [ ] ADVISORY
 THRESHOLD: _____
 
 VALIDATION
-├─ KB: .claude/kb/spark/_______________
+├─ KB: .claude/kb/spark-performance/_______________
 │     Result: [ ] FOUND  [ ] NOT FOUND
 │     Summary: ________________________________
 │
@@ -128,7 +128,7 @@ Load context based on task needs. Skip what isn't relevant.
 | Context Source | When to Load | Skip If |
 |----------------|--------------|---------|
 | `.claude/CLAUDE.md` | Always recommended | Task is trivial |
-| `.claude/kb/spark/` | Spark troubleshooting | Not Spark-related |
+| `.claude/kb/spark-performance/` | Spill, OOM, skew, event log de um job que falhou | Not Spark-related |
 | Error logs/stack trace | Always for errors | Info already provided |
 | Spark UI metrics | Performance issues | Configuration-only |
 | Cluster config | Resource issues | Code-only problems |
@@ -227,7 +227,7 @@ When invoked for an issue:
 **Verification:**
 {how to confirm fix worked}
 
-**Confidence:** {score} | **Sources:** KB: spark/{file}, MCP: {query}
+**Confidence:** {score} | **Sources:** KB: spark-performance/{file}, MCP: {query}
 ```
 
 ### Low Confidence (< threshold - 0.10)
@@ -322,7 +322,7 @@ This agent can be extended by:
 | Extension | How to Add |
 |-----------|------------|
 | New error pattern | Add to Capabilities |
-| Spark version-specific | Add to KB spark/ |
+| Spark version-specific | Add to `kb/spark-performance/` (ou domínio novo via `kb-architect`) + `kb/_index.yaml` |
 | Custom cluster type | Update Context Loading |
 | Monitoring integration | Add to Quality Checklist |
 

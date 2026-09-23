@@ -1,0 +1,115 @@
+schema_version: "1.0"
+domain: spark-performance
+file_type: gate-contract
+last_validated: "2026-09-23"
+source: >-
+  JsonProtocol.scala, config/package.scala, SQLConf.scala, Executor.scala,
+  EventLogFileWriters.scala e Optimizer.scala na tag v3.5.5 de apache/spark;
+  DeltaSQLConf.scala, DeltaOperations.scala e TransactionalWrite.scala na tag
+  v3.2.1 de delta-io/delta; nomes de evento e de campo conferidos contra
+  event logs reais de apache/spark:3.5.9.
+
+# O contrato do gate de performance. O script de referência é
+# .claude/skills/spark-perf/medir_eventlog.py; uma fábrica pode reimplementá-lo,
+# mas não pode afrouxar nada abaixo sem ADR (Regra 3).
+
+environment:
+  container: "apache/spark:3.5.9-scala2.12-java17"
+  spark: "3.5.9"
+  delta: "3.2.1"
+  master: "local[*]"
+
+event_log:
+  session_required:
+    spark.eventLog.enabled: "true"
+    spark.eventLog.dir: "file:///app/trabalho/eventlog/<run_id>   # um diretório por execução"
+    spark.eventLog.compress: "false"
+  app_name: "único por job do pipeline (spark.app.name); o gate casa apps por nome"
+  must_call: "spark.stop()   # senão o arquivo fica .inprogress"
+  file_names:
+    single: "<appId>[.<codec>][.inprogress]"
+    rolling_dir: "eventlog_v2_<appId>/events_<n>_<appId>[.<codec>] + appstatus_<appId>[.inprogress]"
+  events:
+    SparkListenerLogStart: ["Spark Version"]
+    SparkListenerApplicationStart: ["App Name", "App ID", "Timestamp"]
+    SparkListenerApplicationEnd: ["Timestamp"]
+    SparkListenerEnvironmentUpdate: ["Spark Properties"]
+    SparkListenerStageCompleted:
+      "Stage Info": ["Stage ID", "Stage Attempt ID", "Stage Name", "Number of Tasks",
+                     "Submission Time", "Completion Time", "Failure Reason"]
+    SparkListenerTaskEnd:
+      top: ["Stage ID", "Stage Attempt ID", "Task End Reason.Reason", "Task Info", "Task Metrics"]
+      "Task Metrics":
+        - "Executor Run Time            # ms, System.nanoTime (monotônico)"
+        - "Executor CPU Time            # ns"
+        - "JVM GC Time                  # ms"
+        - "Memory Bytes Spilled         # desserializado"
+        - "Disk Bytes Spilled           # serializado"
+        - "Shuffle Read Metrics.Remote Bytes Read"
+        - "Shuffle Read Metrics.Local Bytes Read"
+        - "Shuffle Read Metrics.Total Records Read"
+        - "Shuffle Write Metrics.Shuffle Bytes Written"
+        - "Shuffle Write Metrics.Shuffle Records Written"
+        - "Input Metrics.Bytes Read"
+        - "Output Metrics.Bytes Written"
+  wall_clock:
+    trusted_only_if: "nenhum timestamp retrocede > 1 s em ordem de arquivo, e nenhum passa do ApplicationEnd"
+    excluded_from_check: "SparkListenerApplicationStart (carrega o startTime do contexto; ~1,1 s estrutural)"
+    measured_anomaly: "WSL2: JobStart 34 s antes do JobEnd anterior"
+
+nao_medido:   # Regra 9: nenhum destes vira IGUAL
+  - "caminho inexistente ou diretório sem log"
+  - "arquivo .inprogress ou appstatus_*.inprogress"
+  - "log comprimido (.zstd/.lz4/.lzf/.snappy) — leitor stdlib"
+  - "linha JSON ilegível (descartes contados; > 0 invalida)"
+  - "sem SparkListenerApplicationEnd"
+  - "zero tasks concluídas com métricas"
+  - "nomes de app repetidos no diretório"
+  - "resultado ausente, sem controles, com float, ou com linhas = 0"
+  - "comparar: resultado sem multiconjunto {so_baseline, so_atual}"
+  - "comparar: baseline ausente; apps diferentes; Spark, master ou memória diferentes"
+
+result_identity:   # antes de qualquer métrica de tempo
+  controles: "dict de strings (str(Decimal)); igualdade exata com a baseline"
+  multiconjunto: "so_baseline == 0 e so_atual == 0 (exceptAll ou passada única equivalente)"
+  on_difference: "PIOR — otimização que muda o resultado é defeito"
+
+metrics:   # chave, piso absoluto de ruído
+  parede_ms: {floor: 2000, only_if_clock_consistent: true}
+  executor_run_ms: {floor: 2000}
+  shuffle_bytes: {floor: 16777216}
+  spill_disco_bytes: {floor: 1}
+  spill_memoria_bytes: {floor: 67108864}
+  tolerance_default: 0.10
+  scopes: ["TOTAL", "cada app"]   # ganho num app não esconde perda noutro
+
+verdict:
+  PIOR: "resultado diferente, ou qualquer métrica > +tolerância (acima do piso) em qualquer escopo"
+  MELHOR: "alguma métrica < -tolerância (acima do piso) e nenhuma pior"
+  IGUAL: "nenhuma mudança além da tolerância ou do piso"
+  NAO_MEDIDO: "ver nao_medido"
+
+report_signals:   # heurísticas; calibre no ambiente
+  SKEW: "max/mediana de Executor Run Time >= 5.0, com >= 4 tasks"
+  SPILL: "Memory ou Disk Bytes Spilled > 0 no stage"
+  GC: "JVM GC Time / Executor Run Time >= 0.10"
+  FALHA: "task não-Success ou Failure Reason no stage"
+  RELOGIO: "parede do stage maior que a do app"
+
+baseline:
+  overwrite: "recusada sem --substituir (BASELINE=RECUSADA)"
+  rebaseline_when: "mudança aceita e registrada; nunca para um PIOR passar"
+
+forbidden_as_optimization:
+  - "remover a reconferência (exceptAll/multiconjunto) ou os controles"
+  - "trocar exceptAll por subtract, count, amostra ou hash"
+  - "VACUUM"
+  - "overwriteSchema"
+  - "spark.sql.ansi.enabled=false"
+  - "DoubleType / float em campo monetário"
+  - "rand() como sal"
+
+tokens:
+  - "MEDICAO=OK|NAO_MEDIDO"
+  - "BASELINE=GRAVADA|RECUSADA|NAO_MEDIDO"
+  - "PERF=MELHOR|IGUAL|PIOR|NAO_MEDIDO"

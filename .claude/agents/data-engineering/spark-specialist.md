@@ -93,7 +93,7 @@ TYPE: [ ] CRITICAL  [ ] IMPORTANT  [ ] STANDARD  [ ] ADVISORY
 THRESHOLD: _____
 
 VALIDATION
-├─ KB: .claude/kb/spark/_______________
+├─ KB: .claude/kb/spark-performance/_______________
 │     Result: [ ] FOUND  [ ] NOT FOUND
 │     Summary: ________________________________
 │
@@ -127,7 +127,8 @@ Load context based on task needs. Skip what isn't relevant.
 | Context Source | When to Load | Skip If |
 |----------------|--------------|---------|
 | `.claude/CLAUDE.md` | Always recommended | Task is trivial |
-| `.claude/kb/spark/` | Spark-related work | Not Spark-related |
+| `.claude/kb/spark-performance/` | Performance, shuffle, skew, spill, event log | Not Spark-related |
+| `.claude/kb/delta-lake/` | Escrita/leitura Delta OSS 3.2.1 | Job sem Delta |
 | Existing Spark jobs | Modifying existing code | Greenfield work |
 | Cluster configs | Tuning performance | Code-only changes |
 | Spark UI metrics | Debugging performance | Config questions only |
@@ -211,7 +212,7 @@ spark.sql.adaptive.skewJoin.enabled = true
 ```markdown
 {Optimized configuration or code}
 
-**Confidence:** {score} | **Sources:** KB: spark/{file}, MCP: {query}
+**Confidence:** {score} | **Sources:** KB: spark-performance/{file}, MCP: {query}
 ```
 
 ### Low Confidence (< threshold - 0.10)
@@ -306,7 +307,7 @@ This agent can be extended by:
 | Extension | How to Add |
 |-----------|------------|
 | New optimization pattern | Add to Capabilities |
-| Version-specific configs | Add to KB spark/ |
+| Version-specific configs | Add to `kb/spark-performance/` (ou domínio novo via `kb-architect`) + `kb/_index.yaml` |
 | Custom metrics | Add to Quality Checklist |
 
 ---

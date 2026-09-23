@@ -1,0 +1,92 @@
+schema_version: "1.0"
+domain: delta-lake
+file_type: environment-contract
+last_validated: "2026-09-23"
+source: "docs/source/*.md e python/delta/*.py na tag v3.2.1 de github.com/delta-io/delta; versões do contêiner medidas pelo operador"
+
+# O que uma fábrica desta bancada pode assumir, e o que ela declara.
+# Um script pode carregar este arquivo e conferir a sessão contra ele.
+
+environment:
+  container: "apache/spark:3.5.9-scala2.12-java17-python3"
+  spark: "3.5.9"
+  scala: "2.12"
+  java: "17"
+  python: "3.10"
+  hadoop_aws: "3.3.4"
+  storage: "MinIO via s3a://, path-style, sem TLS"
+
+delta:
+  version: "3.2.1"
+  jvm_packages:
+    - "io.delta:delta-spark_2.12:3.2.1"
+    - "io.delta:delta-storage:3.2.1"
+  pip: "delta-spark==3.2.1 --no-deps"
+  pip_notes:
+    - "configure_spark_with_delta_pip importa importlib_metadata; com --no-deps ela falha. Declare spark.jars.packages."
+    - "delta-spark 3.2.1 exige pyspark>=3.5.3,<3.6.0 — o 3.5.9 do contêiner atende."
+  log_store:
+    mode: "single-driver"
+    premise: "exatamente um escritor por tabela"
+    multi_writer_requires:
+      package: "io.delta:delta-storage-s3-dynamodb:3.2.1"
+      configs:
+        spark.delta.logStore.s3a.impl: "io.delta.storage.S3DynamoDBLogStore"
+        spark.io.delta.storage.S3DynamoDBLogStore.ddb.tableName: "<tabela>"
+        spark.io.delta.storage.S3DynamoDBLogStore.ddb.region: "<região>"
+      notes: "experimental; TODOS os escritores com o mesmo LogStore e a mesma tabela DynamoDB"
+
+session:
+  required:
+    spark.sql.extensions: "io.delta.sql.DeltaSparkSessionExtension"
+    spark.sql.catalog.spark_catalog: "org.apache.spark.sql.delta.catalog.DeltaCatalog"
+    spark.sql.ansi.enabled: "true"
+    spark.databricks.delta.schema.autoMerge.enabled: "false"
+    spark.databricks.delta.retentionDurationCheck.enabled: "true"
+    spark.databricks.delta.replaceWhere.constraintCheck.enabled: "true"
+    spark.hadoop.fs.s3a.path.style.access: "true"
+    spark.hadoop.fs.s3a.connection.ssl.enabled: "false"
+    spark.hadoop.fs.s3a.impl: "org.apache.hadoop.fs.s3a.S3AFileSystem"
+  forbidden:
+    - key: spark.sql.ansi.enabled
+      value: "false"
+      why: "estouro de decimal vira NULL sem erro (Regra 5)"
+    - key: spark.databricks.delta.schema.autoMerge.enabled
+      value: "true"
+      why: "evolução de schema deixa de ser opt-in por escrita"
+    - key: spark.databricks.delta.retentionDurationCheck.enabled
+      value: "false"
+      why: "permite VACUUM abaixo da retenção; destrói evidência (Regra 4)"
+    - key: spark.databricks.delta.replaceWhere.constraintCheck.enabled
+      value: "false"
+      why: "grava linhas fora do predicado sem erro"
+    - key: spark.databricks.delta.commitInfo.userMetadata
+      value: "*"
+      why: "vaza para todo commit da sessão; use a opção por escrita"
+
+write_options:
+  allowed:
+    replaceWhere: "predicado de competência validado por regex"
+    userMetadata: "JSON com run_id, camada, fonte, fonte_versao"
+    mergeSchema: "só com EVOLUCAO=ADITIVA e colunas nomeadas no contrato"
+  forbidden_without_adr:
+    overwriteSchema: "substitui o schema da tabela"
+    partitionOverwriteMode: "a partição apagada é decidida pelo dado"
+  table_properties_forbidden:
+    delta.enableTypeWidening: "true"
+
+tables:
+  money_type: "DecimalType(precisao, escala) do contrato; nunca inferido, nunca DoubleType"
+  not_null: "declarado na criação (addColumn nullable=False)"
+  check_constraints: "hipóteses de domínio medidas na competência inteira"
+  retention:
+    delta.logRetentionDuration: "da política de evidência (ADR); default 30 days é insuficiente"
+    delta.deletedFileRetentionDuration: "da política de evidência (ADR); default 7 days"
+
+tokens:
+  - "TABELA=CRIADA|CONFERE|DIVERGE|ERRO"
+  - "GRAVACAO=OK|RECUSADO|ERRO"
+  - "LINHAGEM=OK|DIVERGE|ERRO"
+  - "RECONFERENCIA=CONFERE|DIVERGE|NAO_MEDIDO|ERRO"
+  - "EVOLUCAO=NENHUMA|ADITIVA|RECUSADA"
+  - "OPTIMIZE=OK|DIVERGE|ERRO"

@@ -26,6 +26,14 @@ color: yellow
 > **Domain:** Bottleneck detection, memory analysis, throughput optimization
 > **Default Threshold:** 0.90
 
+Nesta bancada, o diagnóstico mede pelo **event log** com a skill
+[`/spark-perf`](../../skills/spark-perf/SKILL.md), e o KB é
+[`kb/spark-performance/`](../../kb/spark-performance/index.md). Aceitar uma
+otimização é papel do
+[`pipeline-performance-guardian`](pipeline-performance-guardian.md): ganho só
+com `PERF=MELHOR` **e** resultado idêntico (controles em Decimal e
+multiconjunto). Performance nunca troca resultado (Regras 3 e 5 do `AGENTS.md`).
+
 ---
 
 ## Quick Reference
@@ -93,7 +101,7 @@ TYPE: [ ] CRITICAL  [ ] IMPORTANT  [ ] STANDARD  [ ] ADVISORY
 THRESHOLD: _____
 
 VALIDATION
-├─ KB: .claude/kb/spark/_______________
+├─ KB: .claude/kb/spark-performance/_______________
 │     Result: [ ] FOUND  [ ] NOT FOUND
 │     Summary: ________________________________
 │
@@ -127,7 +135,9 @@ Load context based on task needs. Skip what isn't relevant.
 | Context Source | When to Load | Skip If |
 |----------------|--------------|---------|
 | `.claude/CLAUDE.md` | Always recommended | Task is trivial |
-| `.claude/kb/spark/` | Performance work | Not Spark-related |
+| `.claude/kb/spark-performance/` | Performance work (event log, skew, spill, shuffle, tamanho de arquivo) | Not Spark-related |
+| `.claude/kb/spark-performance/specs/perf-gate.yaml` | Qualquer veredito de ganho | Só diagnóstico |
+| `.claude/kb/delta-lake/` | Escrita Delta, `OPTIMIZE`, reconferência | Job sem Delta |
 | Spark UI metrics | Performance analysis | Metrics provided |
 | Job configurations | Tuning work | Default configs used |
 | Execution plans | Query optimization | Code-level issues |
@@ -236,7 +246,7 @@ def detect_skew(task_durations):
 ### Configuration Changes
 {before/after configs}
 
-**Confidence:** {score} | **Sources:** KB: spark/{file}, MCP: {query}
+**Confidence:** {score} | **Sources:** KB: spark-performance/{file}, MCP: {query}
 ```
 
 ### Low Confidence (< threshold - 0.10)
@@ -333,7 +343,7 @@ This agent can be extended by:
 | New analysis type | Add to Capabilities |
 | Platform-specific metrics | Add to Context Loading |
 | Custom performance indicator | Add to Performance Indicators |
-| Optimization pattern | Add to KB spark/ |
+| Optimization pattern | Add to `kb/spark-performance/patterns/` + `kb/_index.yaml` |
 
 ---
 

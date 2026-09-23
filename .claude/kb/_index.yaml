@@ -2,7 +2,7 @@
 # Machine-readable registry for KB domains
 
 version: "1.0"
-last_updated: "2026-01-28"
+last_updated: "2026-09-23"
 
 # File Size Limits (SINGLE SOURCE OF TRUTH)
 limits:
@@ -345,3 +345,81 @@ domains:
         path: patterns/provider-routing.md
       - name: langchain-integration
         path: patterns/langchain-integration.md
+
+  delta-lake:
+    name: Delta Lake (OSS)
+    description: Delta Lake open-source 3.2.1 sobre Spark 3.5 + S3A/MinIO para camadas de medalhão com prova — commit atômico, schema imposto, DecimalType, replaceWhere idempotente, linhagem por versão, reconferência. Não é Databricks/DLT
+    path: delta-lake/
+    mcp_validated: "2026-09-23"
+    entry_points:
+      index: index.md
+      quick_reference: quick-reference.md
+    concepts:
+      - name: transaction-log
+        path: concepts/transaction-log.md
+        confidence: 0.95
+      - name: schema-enforcement
+        path: concepts/schema-enforcement.md
+        confidence: 0.95
+      - name: constraints
+        path: concepts/constraints.md
+        confidence: 0.95
+      - name: time-travel-retention
+        path: concepts/time-travel-retention.md
+        confidence: 0.95
+    patterns:
+      - name: session-s3a-minio
+        path: patterns/session-s3a-minio.md
+      - name: contract-table-bootstrap
+        path: patterns/contract-table-bootstrap.md
+      - name: idempotent-partition-overwrite
+        path: patterns/idempotent-partition-overwrite.md
+      - name: snapshot-lineage
+        path: patterns/snapshot-lineage.md
+      - name: write-and-reconcile
+        path: patterns/write-and-reconcile.md
+      - name: additive-schema-evolution
+        path: patterns/additive-schema-evolution.md
+      - name: maintenance-optimize-vacuum
+        path: patterns/maintenance-optimize-vacuum.md
+    specs:
+      - name: delta-oss-env
+        path: specs/delta-oss-env.yaml
+
+  spark-performance:
+    name: Spark Performance
+    description: Performance de jobs e pipelines Spark 3.5 + Delta 3.2.1 medida pelo event log — skew, spill, shuffle, passes sobre o dado, tamanho de arquivo — e o gate PERF=MELHOR|IGUAL|PIOR|NAO_MEDIDO que só aceita ganho com resultado idêntico (controles em Decimal + multiconjunto)
+    path: spark-performance/
+    mcp_validated: "2026-09-23"
+    entry_points:
+      index: index.md
+      quick_reference: quick-reference.md
+    concepts:
+      - name: event-log
+        path: concepts/event-log.md
+        confidence: 0.95
+      - name: skew
+        path: concepts/skew.md
+        confidence: 0.90
+      - name: spill
+        path: concepts/spill.md
+        confidence: 0.90
+      - name: shuffle
+        path: concepts/shuffle.md
+        confidence: 0.90
+    patterns:
+      - name: measure-before-after
+        path: patterns/measure-before-after.md
+      - name: single-pass-controls
+        path: patterns/single-pass-controls.md
+      - name: one-pass-reconciliation
+        path: patterns/one-pass-reconciliation.md
+      - name: skew-mitigation
+        path: patterns/skew-mitigation.md
+      - name: shuffle-partition-sizing
+        path: patterns/shuffle-partition-sizing.md
+      - name: delta-write-file-sizing
+        path: patterns/delta-write-file-sizing.md
+    specs:
+      - name: perf-gate
+        path: specs/perf-gate.yaml

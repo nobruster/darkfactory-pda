@@ -93,7 +93,7 @@ TYPE: [ ] CRITICAL  [ ] IMPORTANT  [ ] STANDARD  [ ] ADVISORY
 THRESHOLD: _____
 
 VALIDATION
-├─ KB: .claude/kb/spark/_______________
+├─ KB: .claude/kb/spark-performance/_______________
 │     Result: [ ] FOUND  [ ] NOT FOUND
 │     Summary: ________________________________
 │
@@ -127,7 +127,7 @@ Load context based on task needs. Skip what isn't relevant.
 | Context Source | When to Load | Skip If |
 |----------------|--------------|---------|
 | `.claude/CLAUDE.md` | Always recommended | Task is trivial |
-| `.claude/kb/spark/` | Streaming work | Not streaming-related |
+| `.claude/kb/spark-performance/` | Custo por micro-batch (shuffle, spill, partições, event log) | Not streaming-related |
 | Kafka configs | Kafka integration | File-based streaming |
 | Checkpoint location | State management | Stateless processing |
 | Sink configuration | Output design | Source-only questions |
@@ -261,7 +261,7 @@ stream.selectExpr("to_json(struct(*)) AS value") \
 - {rationale for trigger}
 - {rationale for checkpoint}
 
-**Confidence:** {score} | **Sources:** KB: spark/{file}, MCP: {query}
+**Confidence:** {score} | **Sources:** KB: spark-performance/{file}, MCP: {query}
 ```
 
 ### Low Confidence (< threshold - 0.10)

@@ -61,10 +61,12 @@ Os mais diretamente aplicáveis a uma fábrica.
 |---|---|
 | [`data-engineering/medallion-architect`](agents/data-engineering/medallion-architect.md) | **Bronze → Silver → Gold.** O padrão de camadas da fábrica |
 | [`data-engineering/spark-specialist`](agents/data-engineering/spark-specialist.md) | Spark em geral |
-| [`data-engineering/spark-performance-analyzer`](agents/data-engineering/spark-performance-analyzer.md) | Gargalos e custo |
+| [`data-engineering/spark-performance-analyzer`](agents/data-engineering/spark-performance-analyzer.md) | Gargalos e custo (diagnóstico) |
+| [`data-engineering/pipeline-performance-guardian`](agents/data-engineering/pipeline-performance-guardian.md) | **Performance com prova**: mede jobs e o pipeline inteiro pelo event log (skew, spill, shuffle) e só aceita otimização com `PERF=MELHOR` **e** resultado idêntico. Nunca tira reconferência |
 | [`data-engineering/spark-troubleshooter`](agents/data-engineering/spark-troubleshooter.md) | Job que falha ou trava |
 | [`data-engineering/spark-streaming-architect`](agents/data-engineering/spark-streaming-architect.md) | Ingestão contínua |
-| [`data-engineering/lakeflow-architect`](agents/data-engineering/lakeflow-architect.md) | Desenho de pipeline declarativo |
+| [`data-engineering/delta-lake-specialist`](agents/data-engineering/delta-lake-specialist.md) | **Delta Lake open-source** (3.2.1, Spark + S3A/MinIO): gravar/ler medalhão com commit atômico, `replaceWhere`, linhagem por versão e reconferência. Não é Databricks |
+| [`data-engineering/lakeflow-architect`](agents/data-engineering/lakeflow-architect.md) | Desenho de pipeline declarativo (Databricks) |
 | [`data-engineering/lakeflow-pipeline-builder`](agents/data-engineering/lakeflow-pipeline-builder.md) | Construção do pipeline |
 | [`domain/pipeline-architect`](agents/domain/pipeline-architect.md) | Arquitetura de pipeline ponta a ponta |
 | [`domain/extraction-specialist`](agents/domain/extraction-specialist.md) | Extração de fonte difícil |
@@ -123,10 +125,12 @@ progresso) e o `telemetry/` registra as sessões.
 
 | Skill | Para quê |
 |---|---|
+| [`delta-lake`](skills/delta-lake/SKILL.md) | Gravar, ler, reconferir, evoluir e manter camadas de medalhão em Delta OSS — `/delta-lake gravar silver 2026-01` |
+| [`spark-perf`](skills/spark-perf/SKILL.md) | Medir job/pipeline Spark pelo event log e decidir com `PERF=MELHOR\|IGUAL\|PIOR\|NAO_MEDIDO` contra baseline — `/spark-perf comparar <eventlog> <job>`. Script de referência testado em [`medir_eventlog.py`](skills/spark-perf/medir_eventlog.py) |
 | [`audit`](skills/audit/SKILL.md) | Auditoria técnica com severidade P0–P3 |
 | [`harden`](skills/harden/SKILL.md) | Endurecer código contra falhas |
 | [`critique`](skills/critique/SKILL.md) | Crítica estruturada |
-| [`optimize`](skills/optimize/SKILL.md) | Performance |
+| [`optimize`](skills/optimize/SKILL.md) | Performance **de UI** (frontend). Para Spark, use `spark-perf` |
 | [`clarify`](skills/clarify/SKILL.md) | Desambiguar requisito |
 | [`distill`](skills/distill/SKILL.md) | Reduzir ao essencial |
 | [`shape`](skills/shape/SKILL.md) | Dar forma a um problema aberto |
@@ -136,6 +140,8 @@ progresso) e o `telemetry/` registra as sessões.
 
 | Domínio | Conteúdo |
 |---|---|
+| [`kb/delta-lake`](kb/delta-lake/) | Delta Lake OSS 3.2.1: log de transações, schema imposto, constraints, time travel/retenção, `replaceWhere`, linhagem, reconferência |
+| [`kb/spark-performance`](kb/spark-performance/) | Spark 3.5 + Delta 3.2.1: event log (campos exatos), skew, spill, shuffle, `exceptAll` por dentro, controles numa passada, tamanho de arquivo, gate `PERF=` |
 | [`kb/terraform`](kb/terraform/) · [`kb/terragrunt`](kb/terragrunt/) | Infraestrutura como código |
 | [`kb/gcp`](kb/gcp/) | Google Cloud |
 | [`kb/python`](kb/python/) | Padrões e idiomas |
