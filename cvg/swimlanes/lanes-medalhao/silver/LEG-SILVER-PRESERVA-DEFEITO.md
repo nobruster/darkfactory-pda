@@ -1,6 +1,6 @@
 > Projetado de `LEG-SILVER-PRESERVA-DEFEITO.md` pelo Seamwise.
 > **Não edite aqui** — edite a recipe e rode `seamwise plan`.
-> origem sha256: `0942e584ebb5d46ea77931e31e12dd1c26e97a4e6070761499d54159a181ade3`
+> origem sha256: `508035fa39e8bf68b23be5a2329e38eb8078bcac5a9ebc6f10173616367a080c`
 
 ---
 
@@ -134,7 +134,7 @@ tasks:
       de 11 é DIVERGE, porque o contrato mediu na competência inteira e a divergência significa fonte
       diferente da ancorada, não permissão para ajustar o número'
   - id: B-2
-    given: um código cuja descrição diverge do contrato, ou um colapso não declarado
+    given: um código COLAPSADO cuja descrição diverge do mapa aprovado, ou um colapso não declarado
     when: Silver normaliza
     then: 'a linha atravessa com o VALOR intacto e o defeito registrado, nunca descartada nem corrigida
       — descartar mudaria o total e corrigir destruiria a prova. Os colapsos classificados por Silver
@@ -166,7 +166,14 @@ tasks:
       o caminho NAO_MEDIDO provado, e o caminho positivo provado contra contrato de teste, jamais contra
       a competência contratada. Concluir Bronze NÃO habilita a prova positiva de Silver sobre 2026-01,
       e o plano não finge que habilita. scripts/medir_colapso.py já mede os 11 grupos na competência inteira;
-      falta a aprovação, que é decisão de negócio.'
+      falta a aprovação, que é decisão de negócio. O referencial tem ALCANCE e Silver o declara: o mapa
+      aprovado cobre os 24 códigos colapsados; para os outros 41 o contrato só carrega cardinalidade,
+      então Silver confere que cada um tem UMA descrição e que nenhuma se repete fora dos grupos, mas
+      NÃO verifica o conteúdo — a troca de descrição entre dois códigos não colapsados preserva as quatro
+      cardinalidades e passa. Estender a decisão do dono aos 41 seria requisito novo, não correção. O
+      estado de ''silver classificado'' carrega essa cobertura — códigos verificados pelo mapa e códigos
+      só por cardinalidade — para que a limitação apareça na evidência em vez de se esconder atrás de
+      um INTEGRO. O dinheiro não depende disso: os totais são por código.'
   evals:
   - id: eval_1
     description: Chave é o código; contagem, mapa e soma preservados, inclusive linha de valor zero
@@ -197,11 +204,12 @@ tasks:
     description: Defeito não classificado bloqueia em vez de passar
     bash: docker compose -f infra/docker-compose.yml exec -T spark sh -c 'for c in nao_classificado_bloqueia
       valor_intacto atravessa_sem_descartar unresolved_bloqueia marca_atravessa sem_mapa_entrega_estado_nao_medido
-      bloqueio_sai_como_bloqueado controles_e_hash_atravessam colapso_um_registro_por_grupo; do python3
-      -m pytest --collect-only -q tests/test_silver.py -k "$c" 2>/dev/null | grep -q "::" || { echo "EVAL=CENARIO_AUSENTE_$c";
-      exit 1; }; done; python3 -m pytest -q tests/test_silver.py -k "nao_classificado_bloqueia or valor_intacto
-      or atravessa_sem_descartar or unresolved_bloqueia or marca_atravessa or sem_mapa_entrega_estado_nao_medido
-      or bloqueio_sai_como_bloqueado or controles_e_hash_atravessam or colapso_um_registro_por_grupo"'
+      bloqueio_sai_como_bloqueado controles_e_hash_atravessam colapso_um_registro_por_grupo cobertura_do_referencial_declarada;
+      do python3 -m pytest --collect-only -q tests/test_silver.py -k "$c" 2>/dev/null | grep -q "::" ||
+      { echo "EVAL=CENARIO_AUSENTE_$c"; exit 1; }; done; python3 -m pytest -q tests/test_silver.py -k
+      "nao_classificado_bloqueia or valor_intacto or atravessa_sem_descartar or unresolved_bloqueia or
+      marca_atravessa or sem_mapa_entrega_estado_nao_medido or bloqueio_sai_como_bloqueado or controles_e_hash_atravessam
+      or colapso_um_registro_por_grupo or cobertura_do_referencial_declarada"'
     verifies:
     - B-2
   anti_patterns:
@@ -222,7 +230,7 @@ tasks:
   - contracts
   rollback: Remover a camada Silver e seus testes.
   observability: colapsos classificados por competência
-source_seam_sha256: 1610243402f966bfd17310d9a3032fc55279ecaa75cb5f10a599faecf631ec9d
+source_seam_sha256: 7acc181f11c92c53d111283d0e5f4017b55aff9e8e01688c77b31cf329ab4377
 ---
 # Silver classifica o defeito e conserva o total
 

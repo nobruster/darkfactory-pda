@@ -1,6 +1,6 @@
 > Projetado de `LEG-BRONZE-REPRODUZ-ANCORA.md` pelo Seamwise.
 > **Não edite aqui** — edite a recipe e rode `seamwise plan`.
-> origem sha256: `44df3f103790cdd4bb6b0f88ee0a6d9e9bd87aea9ab5dd5617b3fe64d3dae9ed`
+> origem sha256: `df5b5ca4ad5ede9b4eeb1cb9883142f83b6726c1a66143859326f26e5553bfa1`
 
 ---
 
@@ -94,32 +94,36 @@ tasks:
       e a perda de centavo passa a acontecer DURANTE a soma, onde a comparação final não a enxerga. Bronze
       lê Parquet, que não passa nem pela gramática do CSV nem pela fronteira do envelope, e por isso é
       uma TERCEIRA porta de entrada para valores; fechá-la é obrigação desta camada. Valor fora do domínio
-      é defeito classificado com identidade, valor original e posição, nunca somado em silêncio. A procedência
-      do arquivo que originou a partição é APRESENTADA a Bronze junto da leitura — hoje pelo pacote que
-      a gravação emite, não por coluna do Parquet, porque MEDIDO em gravar_lago.py a partição tem três
-      colunas mais a de partição e nenhuma é procedência; exigir que ela viesse do Parquet faria Bronze
-      devolver NAO_MEDIDO na partição CORRETA, que é o defeito da Regra 9 pelo avesso. Quando apresentada,
-      o hash_csv_sha256 é comparado com o ancorado e divergência é DIVERGE, porque reproduzir os dois
-      controles não distingue o arquivo ancorado de outro com os mesmos totais, e a âncora vale para UM
-      arquivo. Fazer a partição carregar a procedência é melhoria desejável e exige tarefa própria, por
-      tocar em gravar_lago.py, que está sem Task-Spec (Regra 11) — enquanto não existir, a ausência do
-      vínculo tem CONSEQUÊNCIA definida e propagada — ''bronze conferido'' sai marcado PROCEDENCIA_NAO_VINCULADA,
-      Silver e Gold propagam a marca sem removê-la, e Gold NÃO PUBLICA sob ela. Registrar só uma ressalva
-      deixaria a cadeia publicar partição diferente da ancorada, porque o hash correto num pacote sem
-      vínculo verificável com a partição lida satisfaz a comparação textual e não prova nada. A capacidade
-      ''bronze conferido'' tem FORMA declarada, não apenas nome: um objeto com estado (INTEGRO, DIVERGE,
-      NAO_MEDIDO, ERRO_LEITURA), os cinco controles medidos, o mapa total_por_codigo em Decimal exato,
-      as marcas de limitação como PROCEDENCIA_NAO_VINCULADA, o HASH da procedência que lhe foi apresentada
-      — que Silver transporta e Gold usa como sha256_arquivo_lido do envelope, e que por isso não pode
-      ser descartado na origem —, a competência lida, e AS LINHAS CONFERIDAS, com os nomes de coluna MEDIDOS
-      no lago — especie_codigo, especie_descricao, vl_liquido e competencia — que Silver consome pelos
-      mesmos nomes, porque conteúdo sem nome deixa Bronze entregar codigo/descricao/valor e Silver esperar
-      outra coisa, com as duas satisfazendo a descrição. Sem elas a capacidade é insuficiente: o multiconjunto
-      de (código, valor) e a normalização de descrição não saem de agregado, e mandar Silver reler do
-      lago introduziria uma SEGUNDA leitura cuja identidade com a conferida não está contratada — o mesmo
-      motivo pelo qual Bronze recusa confiar no Parquet por tê-lo escrito — porque ''produces'' com nome
-      e sem forma deixa Silver e Bronze passarem nos próprios testes com fixtures locais e não encaixarem
-      um no outro. Partição que diverge é DIVERGE, e Bronze não escreve nada'
+      é defeito classificado com identidade, valor original e posição, nunca somado em silêncio. A posição
+      é a do LAGO — o objeto Parquet e o ordinal da linha dentro dele —, nomeada assim, porque o Parquet
+      não carrega a linha do CSV e uma numeração inventada fingiria localizar a origem. Ela nunca preenche
+      o campo posicao do envelope, que é a linha do CSV: com defeito de domínio Bronze não fica INTEGRO,
+      e sem INTEGRO não há envelope. A procedência do arquivo que originou a partição é APRESENTADA a
+      Bronze junto da leitura — hoje pelo pacote que a gravação emite, não por coluna do Parquet, porque
+      MEDIDO em gravar_lago.py a partição tem três colunas mais a de partição e nenhuma é procedência;
+      exigir que ela viesse do Parquet faria Bronze devolver NAO_MEDIDO na partição CORRETA, que é o defeito
+      da Regra 9 pelo avesso. Quando apresentada, o hash_csv_sha256 é comparado com o ancorado e divergência
+      é DIVERGE, porque reproduzir os dois controles não distingue o arquivo ancorado de outro com os
+      mesmos totais, e a âncora vale para UM arquivo. Fazer a partição carregar a procedência é melhoria
+      desejável e exige tarefa própria, por tocar em gravar_lago.py, que está sem Task-Spec (Regra 11)
+      — enquanto não existir, a ausência do vínculo tem CONSEQUÊNCIA definida e propagada — ''bronze conferido''
+      sai marcado PROCEDENCIA_NAO_VINCULADA, Silver e Gold propagam a marca sem removê-la, e Gold NÃO
+      PUBLICA sob ela. Registrar só uma ressalva deixaria a cadeia publicar partição diferente da ancorada,
+      porque o hash correto num pacote sem vínculo verificável com a partição lida satisfaz a comparação
+      textual e não prova nada. A capacidade ''bronze conferido'' tem FORMA declarada, não apenas nome:
+      um objeto com estado (INTEGRO, DIVERGE, NAO_MEDIDO, ERRO_LEITURA), os cinco controles medidos, o
+      mapa total_por_codigo em Decimal exato, as marcas de limitação como PROCEDENCIA_NAO_VINCULADA, o
+      HASH da procedência que lhe foi apresentada — que Silver transporta e Gold usa como sha256_arquivo_lido
+      do envelope, e que por isso não pode ser descartado na origem —, a competência lida, e AS LINHAS
+      CONFERIDAS, com os nomes de coluna MEDIDOS no lago — especie_codigo, especie_descricao, vl_liquido
+      e competencia — que Silver consome pelos mesmos nomes, porque conteúdo sem nome deixa Bronze entregar
+      codigo/descricao/valor e Silver esperar outra coisa, com as duas satisfazendo a descrição. Sem elas
+      a capacidade é insuficiente: o multiconjunto de (código, valor) e a normalização de descrição não
+      saem de agregado, e mandar Silver reler do lago introduziria uma SEGUNDA leitura cuja identidade
+      com a conferida não está contratada — o mesmo motivo pelo qual Bronze recusa confiar no Parquet
+      por tê-lo escrito — porque ''produces'' com nome e sem forma deixa Silver e Bronze passarem nos
+      próprios testes com fixtures locais e não encaixarem um no outro. Partição que diverge é DIVERGE,
+      e Bronze não escreve nada'
   - id: B-2
     given: uma competência cuja partição não existe no lago, existe com zero linhas, ou existe e não está
       vazia mas NÃO tem âncora declarada no contrato
@@ -159,11 +163,11 @@ tasks:
     description: Os cinco controles comparados individualmente, e a partição medida isoladamente
     bash: docker compose -f infra/docker-compose.yml exec -T spark sh -c 'for c in cinco_controles alteracao_compensada
       isola_particao nao_soma_uniao precisao_declarada entrega_as_linhas_conferidas ansi_declarado_estouro_nao_vira_nulo
-      entrega_o_hash_da_procedencia; do python3 -m pytest --collect-only -q tests/test_bronze.py -k "$c"
-      2>/dev/null | grep -q "::" || { echo "EVAL=CENARIO_AUSENTE_$c"; exit 1; }; done; python3 -m pytest
-      -q tests/test_bronze.py -k "cinco_controles or alteracao_compensada or isola_particao or nao_soma_uniao
-      or precisao_declarada or entrega_as_linhas_conferidas or ansi_declarado_estouro_nao_vira_nulo or
-      entrega_o_hash_da_procedencia"'
+      entrega_o_hash_da_procedencia posicao_no_lago_nomeada; do python3 -m pytest --collect-only -q tests/test_bronze.py
+      -k "$c" 2>/dev/null | grep -q "::" || { echo "EVAL=CENARIO_AUSENTE_$c"; exit 1; }; done; python3
+      -m pytest -q tests/test_bronze.py -k "cinco_controles or alteracao_compensada or isola_particao
+      or nao_soma_uniao or precisao_declarada or entrega_as_linhas_conferidas or ansi_declarado_estouro_nao_vira_nulo
+      or entrega_o_hash_da_procedencia or posicao_no_lago_nomeada"'
     verifies:
     - B-1
   - id: eval_2
@@ -205,7 +209,7 @@ tasks:
   - contracts
   rollback: Remover o leitor Bronze e seus testes.
   observability: partições recusadas por controle divergente
-source_seam_sha256: 8fb3685923b93d3cc2233e2079f0421b523d3f2d70e3324ff0f626320e2171b0
+source_seam_sha256: dd5bd712869f55d46b021cfba60d2c6a96183bc8379133a78c691ea7c21d1d61
 ---
 # Bronze só existe quando reproduz a âncora do contrato
 

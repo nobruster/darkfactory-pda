@@ -1,6 +1,6 @@
 > Projetado de `LEG-CONTRATO-EXPOE-PARTICAO.md` pelo Seamwise.
 > **Não edite aqui** — edite a recipe e rode `seamwise plan`.
-> origem sha256: `a531351f1e8bbc5f917214da60aa1d57d61d1fb4cb89d690bfdfd917e42685bc`
+> origem sha256: `2e3e4ad667ae40d7751690578d98d5f3cacaa63a1fce1fca6a42a8d4e93bb1b8`
 
 ---
 
@@ -54,10 +54,15 @@ tasks:
       que Bronze, e não o carregador, trata como NAO_MEDIDO. Exigi-los aqui recusaria os contratos-fixture
       da primeira descida, que não os têm, e quebraria a suíte selada: o requisito é do consumidor, e
       é ele que o impõe. Já um bloco PRESENTE E INVÁLIDO é RECUSADO no carregamento, como o carregador
-      selado já faz com política contraditória — emax que não é inteiro, emin maior que emax, particionamento
-      sem chave, mapa com grupo de um código só ou código repetido entre grupos, aprovação sem aprovador
-      ou sem data. Entregar o bloco e deixar a camada tropeçar ao construir o Context trocaria uma recusa
-      com motivo por uma exceção longe da causa'
+      selado já faz com política contraditória — emax que não é inteiro, emin maior que emax, e — porque
+      ordem entre inteiros é proxy e não garante contexto utilizável — o carregador CONSTRÓI o Context
+      declarado inteiro (precisão, arredondamento, traps=[], emax, emin) e RECUSA quando o construtor
+      recusa ou quando o total e o máximo da âncora não o atravessam intactos, sem Overflow: MEDIDO, emin=-10
+      com emax=9 leva a âncora, de expoente ajustado 10, a Infinity em silêncio. Conferir o total e o
+      máximo basta pela ADR 0009 — soma monotônica sem negativos, nenhum intermediário excede o total;
+      particionamento sem chave, mapa com grupo de um código só ou código repetido entre grupos, aprovação
+      sem aprovador ou sem data. Entregar o bloco e deixar a camada tropeçar ao construir o Context trocaria
+      uma recusa com motivo por uma exceção longe da causa'
   - id: B-2
     given: a suíte já existente de tests/test_contrato.py, selada na primeira descida
     when: o carregador estendido é testado
@@ -70,11 +75,11 @@ tasks:
   - id: eval_1
     description: Os dois blocos expostos, opcionais, e None não é zero
     bash: docker compose -f infra/docker-compose.yml exec -T spark sh -c 'for c in expoe_particionamento
-      expoe_limites_de_expoente campos_novos_sao_opcionais ausencia_vira_none_nao_zero expoe_mapa_de_colapsos;
-      do python3 -m pytest --collect-only -q tests/test_contrato.py -k "$c" 2>/dev/null | grep -q "::"
-      || { echo "EVAL=CENARIO_AUSENTE_$c"; exit 1; }; done; python3 -m pytest -q tests/test_contrato.py
-      -k "expoe_particionamento or expoe_limites_de_expoente or campos_novos_sao_opcionais or ausencia_vira_none_nao_zero
-      or expoe_mapa_de_colapsos"'
+      expoe_limites_de_expoente campos_novos_sao_opcionais ausencia_vira_none_nao_zero expoe_mapa_de_colapsos
+      limites_que_estouram_a_ancora_recusados; do python3 -m pytest --collect-only -q tests/test_contrato.py
+      -k "$c" 2>/dev/null | grep -q "::" || { echo "EVAL=CENARIO_AUSENTE_$c"; exit 1; }; done; python3
+      -m pytest -q tests/test_contrato.py -k "expoe_particionamento or expoe_limites_de_expoente or campos_novos_sao_opcionais
+      or ausencia_vira_none_nao_zero or expoe_mapa_de_colapsos or limites_que_estouram_a_ancora_recusados"'
     verifies:
     - B-1
   - id: eval_2
@@ -112,7 +117,7 @@ tasks:
   - contracts
   rollback: Reverter src/pda/contrato.py e tests/test_contrato.py ao commit selado.
   observability: contratos carregados sem os blocos novos
-source_seam_sha256: b6d66332cce9197264260fdf1b7855795ca94547013c7834db298b303541812d
+source_seam_sha256: 2f73670ab88c541301ec3f39979bd682e1d741146b24e8c3d5afcde901ade7c7
 ---
 # O Contrato carregado expõe particionamento e limites de expoente
 
