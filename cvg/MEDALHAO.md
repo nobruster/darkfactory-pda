@@ -179,13 +179,58 @@ visto.
 *"dava para concluir a cadeia sem nunca conectar o produtor que será
 julgado"*. Precisa ser medido antes de decidir como ligar.
 
-## O adversário cross-family — o que os agentes não alcançaram
+## O adversário cross-family — dez rodadas
 
-| Rodada | Objeções | O que trouxe |
-|---|---|---|
-| 1 | 5 (4 high, 1 medium) | nenhuma repetia achado de agente |
-| 2 | 6 (1 critical, 4 high, 1 medium) | **contraexemplo executado** |
-| 3 | em curso | contra o texto já corrigido duas vezes |
+| | R1 | R2 | R3 | R4 | R5 | R6 | R7 | R8 | R9 |
+|---|---|---|---|---|---|---|---|---|---|
+| objeções | 5 | 6 | 5 | 5 | 5 | 5 | 5 | 5 | 5 |
+| **classes novas** | **5** | **6** | **5** | **5** | **3** | **1** | **1** | **2** | **2** |
+| `high` | 4 | 4 | 4 | 3 | 3 | 4 | 4 | 3 | 3 |
+| `critical` | 0 | **1** | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
+
+**46 objeções.** A linha que decide é *classes novas*: caiu de 5–6 para 1–2, e
+as repetições convergiram em duas famílias que **não são do plano resolver**.
+
+### ⚠️ O padrão que custou cinco rodadas para eu enxergar
+
+```
+R2  mando Gold comparar o mapa    → R3: Silver não o produz
+R3  mando Silver produzir          → R4: Bronze não o produz
+R3  crio infra/medalhao-evals.sh   → R4: nenhum eval o chama
+R2  ponho pyspark em required_tools → R5: impasse de bootstrap
+R8  declaro localcontext(Context()) → R9: herda do DefaultContext
+```
+
+Cada correção minha virava o achado da rodada seguinte. **Eu estava tapando a
+junta que o adversário apontava, em vez de declarar o contrato na origem.**
+
+A R5 foi o ponto de virada: o mapa chegou em **Bronze**, que é a origem, e
+parou de subir. Da R6 em diante o adversário passou a ramificar das minhas
+próprias correções, não a encontrar camadas novas.
+
+### Os contraexemplos executados que derrubaram o que eu achava rigoroso
+
+| O que eu escrevi | O que o contraexemplo mostrou |
+|---|---|
+| *"os DOIS controles precisam bater"* | a R-5 exige os **cinco**; `max` acima do ancorado passa |
+| *"comparação entre Decimal e Decimal"* | `Decimal(str(1.25))` é finito, não negativo, escala 2 — e a entrada era float |
+| soma + cardinalidade provam o agregado | `{'01':10,'03':20}` e `{'01':11,'03':19}` têm as duas iguais |
+| contagem de linhas idêntica | duas linhas do **mesmo código** trocando valores passam |
+| `localcontext()` com `prec` e `rounding` | copia o global, **traps inclusive** |
+| `localcontext(Context(prec, rounding))` | `Context()` herda de `DefaultContext`, também mutável |
+
+As duas últimas são a mesma lição, e ela generalizou para a
+[Regra 5](../../darkfactory-template/AGENTS.md) da bancada:
+**o que você não declara, você herda.**
+
+### ⚠️ Regra 7 aplicada a mim, duas vezes
+
+Na R8 o adversário deu contraexemplo executado para as traps. Eu escrevi a
+solução, publiquei no template — e **não executei contraexemplo contra a
+solução**. A R9 a refutou.
+
+Antes disso, eu tinha reportado contaminação no lago que não existia: medi a
+união das partições e culpei a parte. Objeção minha também é hipótese.
 
 ### Os dois contraexemplos que derrubaram o que eu achava rigoroso
 
