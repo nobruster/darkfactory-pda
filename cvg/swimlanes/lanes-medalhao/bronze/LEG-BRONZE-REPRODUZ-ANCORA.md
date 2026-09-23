@@ -1,6 +1,6 @@
 > Projetado de `LEG-BRONZE-REPRODUZ-ANCORA.md` pelo Seamwise.
 > **Não edite aqui** — edite a recipe e rode `seamwise plan`.
-> origem sha256: `1f59a0151d065bee5f3c787c4ef27f41ae41fd2684ecc542d6a3231aa39e0f07`
+> origem sha256: `e728ecf57ea26451a79c7aa4962a7ec31f180a015a295f62def0496ec861aae5`
 
 ---
 
@@ -118,19 +118,23 @@ tasks:
       segundo caminho é o que veste NAO_MEDIDO de MEDIDO. As outras partições do lago são nomeadas E CONTADAS
       na saída, e a soma das contagens por partição é conferida contra o total lido — nomear sem contar
       afirma isolação sem medi-la, e a lista de nomes continuaria idêntica se as linhas de uma partição
-      tivessem migrado para outra. A PRECEDÊNCIA é declarada e não negociável: o estado da competência
-      SOLICITADA decide primeiro. Ausente ou vazia devolve NAO_MEDIDO mesmo que o lago tenha outros problemas,
-      porque não se reprova o que não se mediu. Só quando a competência existe e foi medida é que o fechamento
-      do lago entra — e aí, se a soma das partições não fecha com o total, é DIVERGE, porque linha que
-      não pertence a partição nenhuma é contaminação — e o total vem de um UNIVERSO INDEPENDENTE, a listagem
-      dos objetos do lago, nunca da mesma leitura agrupada: somar contagens agrupadas pela própria relação
-      lida é identidade, fecha sempre, inclusive somando o grupo nulo, e não veria arquivo que as DUAS
-      leituras ignoraram. A CHAVE de partição é a declarada no contrato — ''competencia'' — e os objetos
-      auxiliares que ele lista, como _SUCCESS, são ignorados no fechamento. A competência CONTRATADA não
-      é a lista exaustiva de partições válidas: tratá-la assim reprovaria competencia=fatia-teste, que
-      existe no lago e é legítima, e seria mais um gate recusando o correto; objeto fora delas, ou linha
-      cuja chave de partição é nula, conta como não pertencente e faz o controle reprovar, e foi para
-      vê-la que este controle existe'
+      tivessem migrado para outra. ERRO_LEITURA é o estado de quem NÃO CONSEGUIU medir — objeto ilegível,
+      esquema inesperado, credencial ausente, listagem que falhou — e é distinto de NAO_MEDIDO, que é
+      ter medido e não achar dado: não conseguir listar uma partição não prova que ela está ausente, e
+      não conseguir ler um objeto não prova que ele tem zero linhas. Colapsar os dois faria a fábrica
+      registrar ''não medido'' para um lago que nunca abriu. A PRECEDÊNCIA é declarada e não negociável:
+      o estado da competência SOLICITADA decide primeiro. Ausente ou vazia devolve NAO_MEDIDO mesmo que
+      o lago tenha outros problemas, porque não se reprova o que não se mediu. Só quando a competência
+      existe e foi medida é que o fechamento do lago entra — e aí, se a soma das partições não fecha com
+      o total, é DIVERGE, porque linha que não pertence a partição nenhuma é contaminação — e o total
+      vem de um UNIVERSO INDEPENDENTE, a listagem dos objetos do lago, nunca da mesma leitura agrupada:
+      somar contagens agrupadas pela própria relação lida é identidade, fecha sempre, inclusive somando
+      o grupo nulo, e não veria arquivo que as DUAS leituras ignoraram. A CHAVE de partição é a declarada
+      no contrato — ''competencia'' — e os objetos auxiliares que ele lista, como _SUCCESS, são ignorados
+      no fechamento. A competência CONTRATADA não é a lista exaustiva de partições válidas: tratá-la assim
+      reprovaria competencia=fatia-teste, que existe no lago e é legítima, e seria mais um gate recusando
+      o correto; objeto fora delas, ou linha cuja chave de partição é nula, conta como não pertencente
+      e faz o controle reprovar, e foi para vê-la que este controle existe'
   evals:
   - id: eval_1
     description: Os cinco controles comparados individualmente, e a partição medida isoladamente
@@ -144,10 +148,11 @@ tasks:
   - id: eval_2
     description: Ausente e vazia devolvem NAO_MEDIDO; medida e divergente devolve DIVERGE
     bash: docker compose -f infra/docker-compose.yml exec -T spark sh -c 'for c in particao_ausente particao_vazia
-      presente_sem_ancora diverge_nao_e_nao_medido objeto_orfao_na_listagem; do python3 -m pytest --collect-only
-      -q tests/test_bronze.py -k "$c" 2>/dev/null | grep -q "::" || { echo "EVAL=CENARIO_AUSENTE_$c";
-      exit 1; }; done; python3 -m pytest -q tests/test_bronze.py -k "particao_ausente or particao_vazia
-      or presente_sem_ancora or diverge_nao_e_nao_medido or objeto_orfao_na_listagem"'
+      presente_sem_ancora diverge_nao_e_nao_medido objeto_orfao_na_listagem erro_leitura_nao_e_nao_medido;
+      do python3 -m pytest --collect-only -q tests/test_bronze.py -k "$c" 2>/dev/null | grep -q "::" ||
+      { echo "EVAL=CENARIO_AUSENTE_$c"; exit 1; }; done; python3 -m pytest -q tests/test_bronze.py -k
+      "particao_ausente or particao_vazia or presente_sem_ancora or diverge_nao_e_nao_medido or objeto_orfao_na_listagem
+      or erro_leitura_nao_e_nao_medido"'
     verifies:
     - B-2
   - id: eval_3
@@ -177,7 +182,7 @@ tasks:
   - contracts
   rollback: Remover o leitor Bronze e seus testes.
   observability: partições recusadas por controle divergente
-source_seam_sha256: cafe7556ea32a1b7e59f01ac0b9e4f27ebad765b0a3e0bc8868e265a46885d85
+source_seam_sha256: 365802a507ccc5f9e6816f67873d155dbc168d3552f34b145dcecd7d9774b955
 ---
 # Bronze só existe quando reproduz a âncora do contrato
 
