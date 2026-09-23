@@ -22,9 +22,16 @@ set -e
 
 pip install --quiet --no-cache-dir pyyaml==6.0.2 pytest==8.3.4
 
+# Delta Lake — as camadas do medalhão gravam em Delta (decisão do dono,
+# 2026-09-23). 3.2.1 é a linha do Delta para Spark 3.5 / Scala 2.12; o
+# pip vai SEM dependências, porque puxaria outro pyspark por cima do 3.5.9.
+pip install --quiet --no-cache-dir --no-deps delta-spark==3.2.1
+
 MAVEN=https://repo1.maven.org/maven2
 JARS="org/apache/hadoop/hadoop-aws/3.3.4/hadoop-aws-3.3.4.jar
-com/amazonaws/aws-java-sdk-bundle/1.12.262/aws-java-sdk-bundle-1.12.262.jar"
+com/amazonaws/aws-java-sdk-bundle/1.12.262/aws-java-sdk-bundle-1.12.262.jar
+io/delta/delta-spark_2.12/3.2.1/delta-spark_2.12-3.2.1.jar
+io/delta/delta-storage/3.2.1/delta-storage-3.2.1.jar"
 
 echo "$JARS" | while read -r caminho; do
   [ -n "$caminho" ] || continue
@@ -41,5 +48,11 @@ n=$(ls /opt/spark/jars/ | grep -cE "hadoop-aws|aws-java-sdk-bundle" || true)
 echo "S3A_JARS=$n"
 [ "$n" -eq 2 ] || { echo "S3A=INCOMPLETO"; exit 1; }
 echo "S3A=OK"
+
+d=$(ls /opt/spark/jars/ | grep -cE "^delta-(spark_2\.12|storage)-3\.2\.1\.jar$" || true)
+echo "DELTA_JARS=$d"
+[ "$d" -eq 2 ] || { echo "DELTA=INCOMPLETO"; exit 1; }
+python3 -c "import delta" || { echo "DELTA=SEM_PYTHON"; exit 1; }
+echo "DELTA=OK"
 
 exec sleep infinity
