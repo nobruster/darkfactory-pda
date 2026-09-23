@@ -28,10 +28,14 @@ execution_backend: any
 signed_off: true
 signed_off_by: nobru
 signed_off_at: 2026-09-23T16:28:16Z
-accepted: false
-accepted_by: (none)
-accepted_at: (none)
+accepted: true
+accepted_by: converge-loop
+accepted_at: 2026-09-23T17:18:01Z
 signed_off_sig: hmac-sha256-v3:85d3c104:f083aa9f2e213f632862cec6951c19cdb57a87eb7e0260280d10af6db023d6d7
+accepted_tier: 1
+accepted_attempt_id: 6bd7903f-0bd5-4379-8608-1415852582dc
+accepted_authorization_ref: hmac-sha256-v3:85d3c104:f083aa9f2e213f632862cec6951c19cdb57a87eb7e0260280d10af6db023d6d7
+acceptance_record_digest: sha256:f3740ac9baa0a64b424daba531dfe0319c8f6c93c8ffeed824b6a7fb6c0de062
 ---
 
 # Ler a partição do lago e conferi-la contra a âncora
