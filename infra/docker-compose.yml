@@ -41,6 +41,9 @@ services:
       /bin/sh -c "
       mc alias set local http://minio:9000 $${MINIO_USER} $${MINIO_PASSWORD} &&
       mc mb --ignore-existing local/landing &&
+      mc mb --ignore-existing local/bronze &&
+      mc mb --ignore-existing local/silver &&
+      mc mb --ignore-existing local/gold &&
       mc ls local &&
       echo 'BUCKET=OK'
       "
