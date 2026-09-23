@@ -28,10 +28,14 @@ execution_backend: any
 signed_off: true
 signed_off_by: nobru
 signed_off_at: 2026-09-23T21:44:00Z
-accepted: false
-accepted_by: (none)
-accepted_at: (none)
+accepted: true
+accepted_by: converge-loop
+accepted_at: 2026-09-23T22:29:12Z
 signed_off_sig: hmac-sha256-v3:85d3c104:3f52074eb672e2a2b46049cee055a0909bac0bbcf34400ac172d10fb83855411
+accepted_tier: 1
+accepted_attempt_id: ad5f2639-51d0-41e8-b971-05a42b68332d
+accepted_authorization_ref: hmac-sha256-v3:85d3c104:3f52074eb672e2a2b46049cee055a0909bac0bbcf34400ac172d10fb83855411
+acceptance_record_digest: sha256:33d32d9036b68f5a9e1e0fc5d0476ae0dd0b7a19095329aa3b6f812514cfe88f
 ---
 
 # Gold principal a partir da versão da Silver
