@@ -2,7 +2,7 @@ FORK: B (task-driven) — rota única desde a v3.4 — o consenso sempre entrega
 
 > Projetado de `LANE-JUIZO-NA-INGESTAO.md` pelo Seamwise.
 > **Não edite aqui** — edite a recipe e rode `seamwise plan`.
-> origem sha256: `54df369fddbe26839b0158232a9274001953962e9cc492b799d91bf52e666715`
+> origem sha256: `8da1d7f7b9ee7c934e8b42709d14f9c4b6e5703abe3f217d1abb65c433d6c185`
 
 ---
 
@@ -14,7 +14,7 @@ id: LANE-JUIZO-NA-INGESTAO
 name: Ingestão julgada lane
 owner: medalhao
 seam_id: SEAM-JUIZO-NA-INGESTAO
-source_seam_sha256: d43dcaf7d30366fd452f5f731ddde362f6b884ec328aad9eea8944a420c284dc
+source_seam_sha256: a9a0aa86b44756693c7c6b319d4c40d5257cdd0955bfb06dc2251a825e0b9ac0
 legs:
 - LEG-JUIZO-NA-INGESTAO
 ---

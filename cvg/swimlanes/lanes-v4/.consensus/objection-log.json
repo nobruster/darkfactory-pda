@@ -13,7 +13,7 @@
     "family": "anthropic"
   },
   "verdict": "REVISE",
-  "prompt_sha256": "fee0dce5fb24ecead7740755a445da3304f3b53289609e9271908fdad34f00c3",
+  "prompt_sha256": "b197264104f4836070b3ad3bb8729a212095bb414b5b6e33a48622624de4ff77",
   "inputs": [
     {
       "path": "contrato-grupos/LEG-CONTRATO-EXPOE-GRUPOS.md",
@@ -25,35 +25,35 @@
     },
     {
       "path": "gold-assuntos/LEG-GOLD-ASSUNTOS.md",
-      "sha256": "42f645ce70bda436af26c1f812f3b4dc1ac4506f87cb2cc0f86ef89d983ba000"
+      "sha256": "991cc57086e3ca107925f67da15e36541bb81c8b0395281775d3266addca657e"
     },
     {
       "path": "gold-assuntos/_lane.md",
-      "sha256": "fd4758970ea9a4d8ee9e839c518d870da72172717d2ce70301838745bacfad75"
+      "sha256": "20bdb7add01e6f2189894c0c4449da8a2f106a1ae8a25e50bc01f2fd863d72ee"
     },
     {
       "path": "gold-le-silver/LEG-GOLD-LE-SILVER.md",
-      "sha256": "68083d7945ed9e998b11a283426d357f0316876dc74ca80f41e4ed113e286f13"
+      "sha256": "6e561b0ee47a3e139bf89a6eacf6064c3c5c0af09f20815ffdea3499c23ba032"
     },
     {
       "path": "gold-le-silver/_lane.md",
-      "sha256": "ba07e5b34c6d66a9134302d90aa63898319e640c13a0e1bbd3aa837e60f16535"
+      "sha256": "1083712e3a070c2527cd68b69810959abbe59e54ea241023376cc330e0c4ef5a"
     },
     {
       "path": "juizo-na-ingestao/LEG-JUIZO-NA-INGESTAO.md",
-      "sha256": "d8f7b9a76e6eebac624eb4f54f78c80c9e15a298f561592847e7c70b2997e4d0"
+      "sha256": "309fc6b9ac700a38727b4464f5f72ed542bbd3104720c8ff0a2941d896b8d00e"
     },
     {
       "path": "juizo-na-ingestao/_lane.md",
-      "sha256": "bbf252067912da468169a5fe2745b6bab86218a717eeed629e10ad3345b9374a"
+      "sha256": "eb2dc5576a110222a68f1c24b89103d2a5a532e065fe0be4413faa8b217af1e0"
     },
     {
       "path": "limpa-preparo/LEG-LIMPA-PREPARO.md",
-      "sha256": "ef4f8e602ee0f380dedf301848056ff12a12bbc579ca39aedc9488febb1d37a6"
+      "sha256": "267ddf7544495d73b1967c413a82c37b53ad725c6982106651edc94396d1b5d4"
     },
     {
       "path": "limpa-preparo/_lane.md",
-      "sha256": "b4c01c0a77da581f12be6fb7b53011fd247bc43e095cdd6994a926556beaa7e7"
+      "sha256": "b4e3c09117a2828761976ae33fc05e695b2e6680044f401a3c3bdf25d52afbd6"
     }
   ],
   "objections": [
@@ -61,145 +61,181 @@
       "id": "C1",
       "severity": "high",
       "rank": 1,
-      "attack_class": "unverified-assumption",
-      "swimlane": "juizo-na-ingestao",
-      "leg": "LEG-JUIZO-NA-INGESTAO",
+      "attack_class": "cross-lane-interface",
+      "swimlane": "limpa-preparo",
+      "leg": "LEG-LIMPA-PREPARO",
       "location": {
-        "plan_file": "cvg/swimlanes/lanes-v4/juizo-na-ingestao/LEG-JUIZO-NA-INGESTAO.md",
-        "section": "tasks/B-1"
+        "plan_file": "cvg/swimlanes/lanes-v4/limpa-preparo/LEG-LIMPA-PREPARO.md",
+        "section": "behavior/B-1"
       },
-      "title": "O conte\u00fado publicado n\u00e3o est\u00e1 explicitamente vinculado ao conte\u00fado julgado",
-      "evidence": "O executar_leitura mede a Bronze no motor Spark SEM gravar; s\u00f3 depois da autoriza\u00e7\u00e3o a Bronze publica pelo protocolo existente.",
-      "body": "O plano separa medi\u00e7\u00e3o e publica\u00e7\u00e3o, mas n\u00e3o declara qual snapshot ou resultado imut\u00e1vel atravessa essa separa\u00e7\u00e3o. Se a publica\u00e7\u00e3o reconstruir a Bronze de uma landing alterada, o pacote pode aprovar A e o commit publicar B. Reconferir B contra o pr\u00f3prio preparo n\u00e3o demonstra que B foi o conte\u00fado julgado. A proced\u00eancia vinculada \u00e9 uma pr\u00e9-condi\u00e7\u00e3o, mas o texto n\u00e3o exige verificar sua perman\u00eancia entre as duas etapas. Trata-se de uma hip\u00f3tese de falha ainda sem prova negativa nas evals.",
+      "title": "Commit publicado n\u00e3o comprova reconfer\u00eancia conclu\u00edda",
+      "evidence": "A limpeza exige o \u00faltimo commit da execu\u00e7\u00e3o com 'estado de publica\u00e7\u00e3o e N\u00c3O de revers\u00e3o'. A ingest\u00e3o declara 'a reconfer\u00eancia depois de publicar'.",
+      "body": "Existe um intervalo entre o commit de publica\u00e7\u00e3o e o t\u00e9rmino da reconfer\u00eancia. Se o processo cair nesse intervalo, o hist\u00f3rico ter\u00e1 exatamente o commit aceito por B-1, sem revers\u00e3o, embora a publica\u00e7\u00e3o ainda n\u00e3o tenha sido conferida. Nenhum produtor desta revis\u00e3o promete uma evid\u00eancia persistida que distinga esse caso do sucesso completo. Conferir vers\u00e3o, contagem e soma depois de apagar s\u00f3 prova que a remo\u00e7\u00e3o n\u00e3o mudou a tabela; n\u00e3o prova que ela corresponde ao resultado julgado. A limpeza pode apagar preparo antes da condi\u00e7\u00e3o aprovada pelo dono.",
       "cites": [
-        "cvg/docs/tech-spec/tech-spec-pda-beneficios.md \u00a7 R-7 e Success metrics",
-        "cvg/swimlanes/medalhao-v4-recipe.yaml \u00a7 DEC-JUIZO-NA-INGESTAO"
-      ]
+        "cvg/swimlanes/medalhao-v4-recipe.yaml \u2014 decisions/DEC-PREPARO-APAGADO-APOS-CONFERIR",
+        "cvg/swimlanes/lanes-v4/juizo-na-ingestao/LEG-JUIZO-NA-INGESTAO.md \u2014 behavior/B-1"
+      ],
+      "proposal": null,
+      "resolution": {
+        "disposition": "ACCEPT",
+        "decided_by": "Bruno Nunes",
+        "decided_at": "2026-09-23T21:44:02Z",
+        "owner": "Bruno Nunes",
+        "risk_residual": "Aceito: o risco e apagar o preparo de uma publicacao cuja reconferencia caiu no meio. O preparo e estagio regeneravel (rollback: rodar a camada de novo) e nao toca a tabela publicada nem o historico. Uma evidencia persistida de reconferencia concluida fica para o Pass 8 da limpeza. Decidido pelo dono ao fechar o Pass 4 do v4 na R2, sem editar o plano."
+      }
     },
     {
       "id": "C2",
       "severity": "high",
       "rank": 2,
-      "attack_class": "cross-lane-interface",
-      "swimlane": "gold-le-silver",
-      "leg": "LEG-GOLD-LE-SILVER",
+      "attack_class": "drift",
+      "swimlane": "gold-assuntos",
+      "leg": "LEG-GOLD-ASSUNTOS",
       "location": {
-        "plan_file": "cvg/swimlanes/lanes-v4/gold-le-silver/LEG-GOLD-LE-SILVER.md",
-        "section": "tasks/B-1"
+        "plan_file": "cvg/swimlanes/lanes-v4/gold-assuntos/LEG-GOLD-ASSUNTOS.md",
+        "section": "behavior/B-1; evals/eval_1"
       },
-      "title": "A Gold n\u00e3o contrata a verifica\u00e7\u00e3o do hash do pacote recebido",
-      "evidence": "A ingest\u00e3o publica caminho_pacote e sha256 do pacote; a Gold exige que o commit nomeie um pacote ACEITO da mesma compet\u00eancia e do mesmo sha256 do CSV.",
-      "body": "O consumidor n\u00e3o exige conferir os bytes do pacote contra o sha256 registrado pela Bronze. Compet\u00eancia, hash do CSV e veredito podem coincidir em dois pacotes de execu\u00e7\u00f5es distintas. Substituir o conte\u00fado no caminho por outro pacote com esses atributos pode satisfazer a leitura literal do plano e quebrar a linhagem at\u00e9 o ju\u00edzo daquela publica\u00e7\u00e3o. O hash produzido pela ingest\u00e3o fica sem obriga\u00e7\u00e3o expl\u00edcita de consumo.",
+      "title": "Fechamento nacional n\u00e3o prova os totais por esp\u00e9cie",
+      "evidence": "B-1 confere os cinco controles nacionais, 'kpis_nacionais com os mesmos totais, 65 c\u00f3digos, cada um em um grupo'.",
+      "body": "Trocar os totais de dois c\u00f3digos preserva soma nacional, contagem, extremos, cardinalidade e perten\u00e7a ao mapa. Por exemplo, atribuir 20 ao c\u00f3digo 01 e 10 ao 03, quando a Silver registra 10 e 20, passa pelos controles enumerados mantendo as demais colunas. Os KPIs derivados da pr\u00f3pria fat_especie tamb\u00e9m fecham. N\u00e3o h\u00e1 compara\u00e7\u00e3o independente c\u00f3digo a c\u00f3digo com a Silver ou a Gold principal. Assim, a reconcilia\u00e7\u00e3o prometida com a camada anterior n\u00e3o est\u00e1 demonstrada para o gr\u00e3o que esta tabela entrega.",
       "cites": [
-        "cvg/swimlanes/lanes-v4/juizo-na-ingestao/LEG-JUIZO-NA-INGESTAO.md \u00a7 tasks/B-1",
-        "cvg/docs/tech-spec/tech-spec-pda-beneficios.md \u00a7 W-2 e Problem restated"
-      ]
+        "cvg/swimlanes/medalhao-v4-recipe.yaml \u2014 decisions/DEC-JUIZO-NA-INGESTAO",
+        "cvg/swimlanes/medalhao-v4-recipe.yaml \u2014 decisions/DEC-GOLD-POR-ASSUNTOS",
+        "cvg/docs/tech-spec/tech-spec-pda-beneficios.md \u2014 Requirements/R-3",
+        "cvg/swimlanes/lanes-medalhao/silver/LEG-SILVER-PRESERVA-DEFEITO.md \u2014 behavior/B-1, total_por_codigo"
+      ],
+      "proposal": null,
+      "resolution": {
+        "disposition": "ACCEPT",
+        "decided_by": "Bruno Nunes",
+        "decided_at": "2026-09-23T21:44:02Z",
+        "owner": "Bruno Nunes",
+        "risk_residual": "Aceito, coberto por fora: a execucao real confere fat_especie CODIGO A CODIGO contra o total_por_codigo da Gold principal publicada, cuja agregacao selada ja confere codigo a codigo contra a Silver (_reconciliar, gold.py); divergencia para antes de entregar. Decidido pelo dono ao fechar o Pass 4 do v4 na R2, sem editar o plano."
+      }
     },
     {
       "id": "C3",
       "severity": "high",
       "rank": 3,
       "attack_class": "cross-lane-interface",
-      "swimlane": "gold-assuntos",
-      "leg": "LEG-GOLD-ASSUNTOS",
+      "swimlane": "gold-le-silver",
+      "leg": "LEG-GOLD-LE-SILVER",
       "location": {
-        "plan_file": "cvg/swimlanes/lanes-v4/gold-assuntos/LEG-GOLD-ASSUNTOS.md",
-        "section": "tasks/B-1; tasks/B-2"
+        "plan_file": "cvg/swimlanes/lanes-v4/gold-le-silver/LEG-GOLD-LE-SILVER.md",
+        "section": "behavior/B-1; evals/eval_2"
       },
-      "title": "A Gold principal pode autorizar assuntos derivados de outra Silver",
-      "evidence": "Exige Gold principal da compet\u00eancia publicada, resolve uma vers\u00e3o da Silver e registra ambas as vers\u00f5es no userMetadata.",
-      "body": "N\u00e3o h\u00e1 exig\u00eancia de que a Silver escolhida seja a vers\u00e3o nomeada pela Gold principal. Uma Gold principal baseada em S1 e uma Silver S2 podem ter os mesmos totais nacionais e distribui\u00e7\u00f5es diferentes por esp\u00e9cie. A checagem declarada aceita ambas, embora a Gold principal existente n\u00e3o prove a linhagem de S2. Registrar as duas vers\u00f5es documenta a discrep\u00e2ncia, mas n\u00e3o a impede.",
+      "title": "A entrada nova n\u00e3o explicita conserva\u00e7\u00e3o do mapa por c\u00f3digo",
+      "evidence": "B-1 exige 'agrega por c\u00f3digo reusando agregar, confere exato contra os controles persistidos da Silver e a \u00e2ncora'.",
+      "body": "A Silver declara separadamente os cinco controles e total_por_codigo. O plano novo menciona os controles, mas n\u00e3o exige confrontar o agregado candidato com esse mapa. Um pacote ACEITO com hash correto autentica a evid\u00eancia da ingest\u00e3o; n\u00e3o demonstra que a transforma\u00e7\u00e3o posterior conservou a distribui\u00e7\u00e3o por esp\u00e9cie. A troca de dois totais entre c\u00f3digos mant\u00e9m os controles globais e a linhagem intactos. Reutilizar agregar e o protocolo de publica\u00e7\u00e3o n\u00e3o declara qual compara\u00e7\u00e3o independente torna esse defeito bloqueante na entrada nova.",
       "cites": [
-        "cvg/swimlanes/lanes-v4/gold-le-silver/LEG-GOLD-LE-SILVER.md \u00a7 tasks/B-1",
-        "cvg/swimlanes/medalhao-v4-recipe.yaml \u00a7 DEC-JUIZO-NA-INGESTAO"
-      ]
+        "cvg/swimlanes/medalhao-v4-recipe.yaml \u2014 decisions/DEC-JUIZO-NA-INGESTAO",
+        "cvg/swimlanes/lanes-medalhao/silver/LEG-SILVER-PRESERVA-DEFEITO.md \u2014 behavior/B-1, distin\u00e7\u00e3o entre controles e total_por_codigo",
+        "cvg/docs/tech-spec/tech-spec-pda-beneficios.md \u2014 Requirements/R-3"
+      ],
+      "proposal": null,
+      "resolution": {
+        "disposition": "ACCEPT",
+        "decided_by": "Bruno Nunes",
+        "decided_at": "2026-09-23T21:44:02Z",
+        "owner": "Bruno Nunes",
+        "risk_residual": "Refutado no codigo selado: _reconciliar (gold.py) ja compara o total_por_codigo agregado com o da Silver, codigo a codigo, e devolve DIVERGE em qualquer diferenca; a entrada nova reusa agregar. A troca de dois totais entre codigos e acusada. Decidido pelo dono ao fechar o Pass 4 do v4 na R2, sem editar o plano."
+      }
     },
     {
       "id": "C4",
-      "severity": "high",
+      "severity": "medium",
       "rank": 4,
-      "attack_class": "drift",
-      "swimlane": "gold-assuntos",
-      "leg": "LEG-GOLD-ASSUNTOS",
-      "location": {
-        "plan_file": "cvg/swimlanes/lanes-v4/gold-assuntos/LEG-GOLD-ASSUNTOS.md",
-        "section": "tasks/B-1; eval_1"
-      },
-      "title": "O fechamento declarado cobre dois dos cinco controles",
-      "evidence": "Antes de publicar, compara soma de qtd_beneficios, soma de vl_total, totais dos KPIs e 65 c\u00f3digos.",
-      "body": "A lista n\u00e3o compara min_vl_liquido, max_vl_liquido e linhas_invalidas, embora R-5 exija os cinco controles individualmente. Um erro na constru\u00e7\u00e3o de vl_minimo ou vl_maximo pode publicar extremos incorretos mantendo contagem e soma exatas. A Silver \u00edntegra prova a entrada; n\u00e3o prova os extremos produzidos por esta transforma\u00e7\u00e3o. O plano tamb\u00e9m n\u00e3o define como o controle de inv\u00e1lidas atravessa esta sa\u00edda agregada.",
-      "cites": [
-        "cvg/docs/tech-spec/tech-spec-pda-beneficios.md \u00a7 R-5",
-        "cvg/swimlanes/medalhao-v4-recipe.yaml \u00a7 DEC-JUIZO-NA-INGESTAO"
-      ]
-    },
-    {
-      "id": "C5",
-      "severity": "high",
-      "rank": 5,
       "attack_class": "drift",
       "swimlane": "limpa-preparo",
       "leg": "LEG-LIMPA-PREPARO",
       "location": {
         "plan_file": "cvg/swimlanes/lanes-v4/limpa-preparo/LEG-LIMPA-PREPARO.md",
-        "section": "done_condition; tasks/B-1"
+        "section": "observable_state; done_condition; behavior/B-1"
       },
-      "title": "Commit no hist\u00f3rico n\u00e3o demonstra publica\u00e7\u00e3o conferida",
-      "evidence": "A limpeza apaga quando encontra o id da execu\u00e7\u00e3o no hist\u00f3rico; a confer\u00eancia ocorre depois da remo\u00e7\u00e3o.",
-      "body": "A decis\u00e3o vinculante exige publica\u00e7\u00e3o relida e conferida antes de apagar. O hist\u00f3rico tamb\u00e9m cont\u00e9m commits de uma publica\u00e7\u00e3o que falhou na reconfer\u00eancia e foi revertida, ou cujo processo caiu antes dessa reconfer\u00eancia. Esses casos satisfazem a condi\u00e7\u00e3o do plano. Conferir a tabela depois da exclus\u00e3o n\u00e3o comprova o sucesso daquela execu\u00e7\u00e3o e chega tarde para preservar seu preparo.",
+      "title": "Execu\u00e7\u00f5es conferidas antigas ficam permanentemente ineleg\u00edveis",
+      "evidence": "O estado promete 'Nenhum preparo de execu\u00e7\u00e3o publicada e conferida sobrevive', mas B-1 declara que um commit 'seguido de outro n\u00e3o \u00e9 publica\u00e7\u00e3o conferida'.",
+      "body": "Considere A publicada e conferida, seguida por B da mesma compet\u00eancia antes de a limpeza rodar. A foi conferida, mas deixa de ser o \u00faltimo commit e seu preparo ser\u00e1 preservado em todas as execu\u00e7\u00f5es futuras da limpeza. Isso contradiz o estado observ\u00e1vel e a decis\u00e3o de eliminar preparo ap\u00f3s publica\u00e7\u00e3o conferida. A restri\u00e7\u00e3o tamb\u00e9m diverge da done_condition, que exige a presen\u00e7a do commit no hist\u00f3rico, sem exigir que seja o \u00faltimo.",
       "cites": [
-        "cvg/swimlanes/medalhao-v4-recipe.yaml \u00a7 DEC-PREPARO-APAGADO-APOS-CONFERIR",
-        "cvg/swimlanes/lanes-medalhao/silver/LEG-SILVER-PRESERVA-DEFEITO.md \u00a7 B-1, reconfer\u00eancia ap\u00f3s publica\u00e7\u00e3o e revers\u00e3o da compet\u00eancia"
-      ]
+        "cvg/swimlanes/medalhao-v4-recipe.yaml \u2014 intent/success",
+        "cvg/swimlanes/medalhao-v4-recipe.yaml \u2014 decisions/DEC-PREPARO-APAGADO-APOS-CONFERIR"
+      ],
+      "proposal": null,
+      "resolution": {
+        "disposition": "ACCEPT",
+        "decided_by": "Bruno Nunes",
+        "decided_at": "2026-09-23T21:44:02Z",
+        "owner": "Bruno Nunes",
+        "risk_residual": "Aceito: afeta so espaco \u2014 preparos de execucoes anteriores da mesma competencia ficam. A limpeza deles fica para o Pass 8 ou manual, com a mesma guarda de caminho. Decidido pelo dono ao fechar o Pass 4 do v4 na R2, sem editar o plano."
+      }
     },
     {
-      "id": "C6",
+      "id": "C5",
       "severity": "medium",
-      "rank": 6,
-      "attack_class": "cross-lane-interface",
-      "swimlane": "gold-assuntos",
-      "leg": "LEG-GOLD-ASSUNTOS",
-      "location": {
-        "plan_file": "cvg/swimlanes/lanes-v4/gold-assuntos/LEG-GOLD-ASSUNTOS.md",
-        "section": "tasks/B-1, defini\u00e7\u00e3o de kpis_nacionais"
-      },
-      "title": "O contrato dos KPIs nacionais n\u00e3o define suas colunas nem agrega\u00e7\u00f5es",
-      "evidence": "kpis_nacionais sai SOMANDO fat_especie; s\u00f3 os percentis nacionais exigem outra passada.",
-      "body": "fat_especie mistura medidas aditivas com m\u00e9dias, extremos, ranks e percentuais. O plano n\u00e3o enumera quais delas entram nos KPIs nacionais. Se vl_medio entrar, somar ou tirar a m\u00e9dia simples das m\u00e9dias por esp\u00e9cie produz resultado incorreto quando as quantidades diferem; os testes dos totais ainda podem passar. Se apenas contagem e total entrarem, essa interpreta\u00e7\u00e3o tamb\u00e9m cabe no texto. Falta uma decis\u00e3o de contrato para distinguir implementa\u00e7\u00f5es incompat\u00edveis.",
-      "cites": [
-        "cvg/swimlanes/medalhao-v4-recipe.yaml \u00a7 DEC-GOLD-POR-ASSUNTOS",
-        "cvg/swimlanes/lanes-v4/gold-assuntos/LEG-GOLD-ASSUNTOS.md \u00a7 eval_1"
-      ]
-    },
-    {
-      "id": "C7",
-      "severity": "medium",
-      "rank": 7,
+      "rank": 5,
       "attack_class": "unverified-assumption",
       "swimlane": "contrato-grupos",
       "leg": "LEG-CONTRATO-EXPOE-GRUPOS",
       "location": {
         "plan_file": "cvg/swimlanes/lanes-v4/contrato-grupos/LEG-CONTRATO-EXPOE-GRUPOS.md",
-        "section": "done_condition; eval_3"
+        "section": "behavior/B-2; evals/eval_2"
       },
-      "title": "A eval de preserva\u00e7\u00e3o n\u00e3o executa toda a su\u00edte prometida",
-      "evidence": "A done_condition exige toda a su\u00edte existente de tests/test_contrato.py passando sem edi\u00e7\u00e3o; eval_3 executa apenas tr\u00eas seletores com -k.",
-      "body": "As tr\u00eas evals podem passar enquanto outro teste existente do carregador falha. Tamb\u00e9m n\u00e3o demonstram que os testes antigos permaneceram intactos. Uma regress\u00e3o na leitura de contratos sem rela\u00e7\u00e3o com os tr\u00eas seletores fica fora da prova execut\u00e1vel declarada, apesar da promessa expl\u00edcita de preserva\u00e7\u00e3o integral.",
+      "title": "Nomes de grupo duplicados passam pelas recusas enumeradas",
+      "evidence": "B-2 recusa c\u00f3digo repetido entre grupos, c\u00f3digo n\u00e3o textual, grupo vazio, aprova\u00e7\u00e3o ausente e cardinalidade divergente; n\u00e3o exige nomes de grupo distintos.",
+      "body": "Dois blocos com o mesmo nome e conjuntos disjuntos de c\u00f3digos satisfazem todas as recusas enumeradas e mant\u00eam 65 c\u00f3digos distintos. O consumidor que usa grupo_especie como identidade pode fundir categorias; se materializar um dicion\u00e1rio por nome, pode perder um bloco. A valida\u00e7\u00e3o declarada n\u00e3o garante que os cinco grupos expostos sejam cinco identidades distintas. O contrato atual tem nomes distintos; a obje\u00e7\u00e3o \u00e9 \u00e0 promessa de recusar um bloco inv\u00e1lido no carregamento.",
       "cites": [
-        "cvg/swimlanes/lanes-v4/contrato-grupos/LEG-CONTRATO-EXPOE-GRUPOS.md \u00a7 done_condition",
-        "cvg/swimlanes/lanes-v4/contrato-grupos/LEG-CONTRATO-EXPOE-GRUPOS.md \u00a7 anti_patterns"
-      ]
+        "contracts/competencia-202601.yaml \u2014 grupos_especie/grupos",
+        "cvg/swimlanes/lanes-v4/gold-assuntos/LEG-GOLD-ASSUNTOS.md \u2014 behavior/B-1, grupo_especie e rank_no_grupo"
+      ],
+      "proposal": null,
+      "resolution": {
+        "disposition": "ACCEPT",
+        "decided_by": "Bruno Nunes",
+        "decided_at": "2026-09-23T21:43:28Z",
+        "owner": "Bruno Nunes",
+        "risk_residual": "Aceito: o mapa aprovado no contrato tem cinco nomes distintos; recusar nome repetido e trivial no Pass 8 e nao muda o dado de 2026-01. Decidido pelo dono ao fechar o Pass 4 do v4 na R2, sem editar o plano."
+      }
+    },
+    {
+      "id": "C6",
+      "severity": "medium",
+      "rank": 6,
+      "attack_class": "unverified-assumption",
+      "swimlane": "gold-assuntos",
+      "leg": "LEG-GOLD-ASSUNTOS",
+      "location": {
+        "plan_file": "cvg/swimlanes/lanes-v4/gold-assuntos/LEG-GOLD-ASSUNTOS.md",
+        "section": "behavior/B-1"
+      },
+      "title": "Ranking e percentuais n\u00e3o t\u00eam significado verific\u00e1vel",
+      "evidence": "A lista de sa\u00edda termina em 'rank_no_grupo e percentuais nacionais', sem definir ordena\u00e7\u00e3o, empates, nomes ou denominadores.",
+      "body": "Ranking por quantidade e ranking por valor produzem respostas diferentes, ambas compat\u00edveis com o texto. Percentual da quantidade e percentual do valor nacional tamb\u00e9m s\u00e3o m\u00e9tricas distintas. Os controles da \u00e2ncora n\u00e3o distinguem essas implementa\u00e7\u00f5es, e os evals n\u00e3o enumeram cen\u00e1rios para elas. O implementador ter\u00e1 de decidir sem\u00e2ntica de neg\u00f3cio durante o build. A pergunta precisa voltar ao respons\u00e1vel pela defini\u00e7\u00e3o dessas colunas j\u00e1 previstas, sem acrescentar m\u00e9tricas.",
+      "cites": [
+        "cvg/swimlanes/medalhao-v4-recipe.yaml \u2014 decisions/DEC-GOLD-POR-ASSUNTOS",
+        "cvg/swimlanes/lanes-v4/gold-assuntos/LEG-GOLD-ASSUNTOS.md \u2014 evals/eval_1"
+      ],
+      "proposal": null,
+      "resolution": {
+        "disposition": "ACCEPT",
+        "decided_by": "Bruno Nunes",
+        "decided_at": "2026-09-23T21:43:28Z",
+        "owner": "Bruno Nunes",
+        "risk_residual": "Aceito, com a semantica da referencia do dono (gold-beneficios-v2.py): rank_no_grupo por quantidade; percentuais nacionais nomeados pct_nacional_qtd e pct_nacional_valor. Nao afetam somas nem controles. Decidido pelo dono ao fechar o Pass 4 do v4 na R2, sem editar o plano."
+      }
     }
   ],
   "cross_lane_interfaces": [],
   "fork": {
     "choice": "B",
-    "reason": "Declara\u00e7\u00e3o j\u00e1 presente nos cinco _lane.md; transcrita, n\u00e3o escolhida pelo advers\u00e1rio.",
+    "reason": "Registrado nos cinco _lane.md fornecidos; reproduzido como decis\u00e3o preexistente, n\u00e3o escolhido pelo advers\u00e1rio.",
     "per_plan_declared": true
   },
   "open_questions": [
     {
-      "q": "Quais colunas e f\u00f3rmulas constituem o contrato de kpis_nacionais aprovado na Fase 1?",
+      "q": "Qual evid\u00eancia persistida distingue publica\u00e7\u00e3o reconferida de um processo interrompido depois do commit e antes da reconfer\u00eancia?",
+      "blocks_build": true
+    },
+    {
+      "q": "Qual ordena\u00e7\u00e3o e regra de empate definem rank_no_grupo, e quais nomes, numeradores e denominadores definem os percentuais nacionais?",
       "blocks_build": true
     }
   ],

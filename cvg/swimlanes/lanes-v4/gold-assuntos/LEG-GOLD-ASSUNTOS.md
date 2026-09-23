@@ -1,6 +1,6 @@
 > Projetado de `LEG-GOLD-ASSUNTOS.md` pelo Seamwise.
 > **Não edite aqui** — edite a recipe e rode `seamwise plan`.
-> origem sha256: `fa2bdb8652ddb942465c377c9aebf9458f9527f238999139011699b14caaba75`
+> origem sha256: `fb269990da7b9931c7f7e9249e797263d35a70b4ac3333d8999e0d136b7024fb`
 
 ---
 
@@ -45,18 +45,23 @@ tasks:
     given: a Silver publicada com estado INTEGRO, a Gold principal da competência publicada, e grupos_especie
       no Contrato
     when: a Gold por assuntos roda para a competência
-    then: 'resolve UMA vez a versão da Silver e lê com versionAsOf; num único groupBy por especie_codigo
-      monta fat_especie — grão (especie_codigo, competencia), com descrição, grupo_especie do mapa, qtd_beneficios,
-      vl_total em soma EXATA no DecimalType declarado, vl_minimo, vl_maximo, qtd_vl_zero, vl_medio arredondado
-      meio-para-par com bround, vl_mediano_aprox e vl_p90_aprox — nomes que dizem que são aproximados
-      — com a precisão do percentil declarada, rank_no_grupo e percentuais nacionais —; kpis_nacionais
-      sai SOMANDO fat_especie, grão competência, uma linha, e só os percentis nacionais exigem outra passada.
-      Antes de publicar, confere EXATO: soma de qtd_beneficios igual a count_linhas da âncora, soma de
-      vl_total igual a sum_vl_liquido, kpis_nacionais com os mesmos totais, 65 códigos, cada um em um
-      grupo. Grava em preparo e publica com replaceWhere na competência em s3a://gold/pda/assuntos/fat_especie
-      e s3a://gold/pda/assuntos/kpis_nacionais, DecimalType do contrato, ansi.enabled=true, CHECK >= 0
-      nas colunas monetárias, imposição de schema ligada e evolução só aditiva com mergeSchema — nunca
-      overwriteSchema —, e o userMetadata do commit nomeia a versão da Silver e a da Gold principal lidas.'
+    then: 'lê a versão da Silver NOMEADA no commit da Gold principal publicada da competência — nunca
+      a mais recente —, com versionAsOf; num único groupBy por especie_codigo monta fat_especie — grão
+      (especie_codigo, competencia), com descrição, grupo_especie do mapa, qtd_beneficios, vl_total em
+      soma EXATA no DecimalType declarado, vl_minimo, vl_maximo, qtd_vl_zero, vl_medio arredondado meio-para-par
+      com bround, vl_mediano_aprox e vl_p90_aprox — nomes que dizem que são aproximados — com a precisão
+      do percentil declarada, rank_no_grupo e percentuais nacionais —; kpis_nacionais sai de fat_especie,
+      grão competência, uma linha, com colunas ENUMERADAS — total_beneficios e vl_total como somas, vl_medio
+      = bround(vl_total / total_beneficios, 2), NUNCA a média das médias por espécie, vl_minimo o menor
+      dos mínimos, vl_maximo o maior dos máximos, total_especies_ativas, qtd_vl_zero somado —, e só vl_mediano_aprox
+      e vl_p90_aprox nacionais exigem outra passada. Antes de publicar, confere EXATO: soma de qtd_beneficios
+      igual a count_linhas da âncora, soma de vl_total igual a sum_vl_liquido, o menor vl_minimo igual
+      a min_vl_liquido e o maior vl_maximo igual a max_vl_liquido da âncora, linhas_invalidas zero — os
+      CINCO controles —, kpis_nacionais com os mesmos totais, 65 códigos, cada um em um grupo. Grava em
+      preparo e publica com replaceWhere na competência em s3a://gold/pda/assuntos/fat_especie e s3a://gold/pda/assuntos/kpis_nacionais,
+      DecimalType do contrato, ansi.enabled=true, CHECK >= 0 nas colunas monetárias, imposição de schema
+      ligada e evolução só aditiva com mergeSchema — nunca overwriteSchema —, e o userMetadata do commit
+      nomeia a versão da Silver e a da Gold principal lidas.'
   - id: B-2
     given: uma competência sem Gold principal publicada, sem grupos_especie, com código fora do mapa,
       ou cujas somas não fecham
@@ -68,11 +73,13 @@ tasks:
   - id: eval_1
     description: Grão, colunas e fechamento exato
     bash: docker compose -f infra/docker-compose.yml exec -T spark sh -c 'for c in fat_especie_fecha_com_a_ancora
-      kpis_somam_fat_especie medio_arredonda_meio_para_par percentis_rotulados_aprox le_silver_por_versao;
+      kpis_somam_fat_especie medio_arredonda_meio_para_par percentis_rotulados_aprox le_silver_por_versao
+      usa_a_silver_nomeada_pela_gold extremos_conferem_com_a_ancora medio_nacional_nao_e_media_das_medias;
       do python3 -m pytest --collect-only -q tests/test_gold_assuntos.py -k "$c" 2>/dev/null | grep -q
       "::" || { echo "EVAL=CENARIO_AUSENTE_$c"; exit 1; }; done; python3 -m pytest -q tests/test_gold_assuntos.py
       -k "fat_especie_fecha_com_a_ancora or kpis_somam_fat_especie or medio_arredonda_meio_para_par or
-      percentis_rotulados_aprox or le_silver_por_versao"'
+      percentis_rotulados_aprox or le_silver_por_versao or usa_a_silver_nomeada_pela_gold or extremos_conferem_com_a_ancora
+      or medio_nacional_nao_e_media_das_medias"'
     verifies:
     - B-1
   - id: eval_2
@@ -110,7 +117,7 @@ tasks:
   - src/medalhao/gold.py
   rollback: Remover as duas tabelas por assunto; Silver e Gold principal não são tocadas.
   observability: competências publicadas na Gold principal sem tabelas por assunto
-source_seam_sha256: 631698f4a593069d9a371dabea32a16ebd4a3feb7ff13204c482ddee98a99154
+source_seam_sha256: 4a0ad0529836162b83790ac7824107b02c788898b59800f244e467aa5f2bbecf
 ---
 # fat_especie e kpis_nacionais publicadas e reconciliadas
 

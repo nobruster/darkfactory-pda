@@ -1,6 +1,6 @@
 > Projetado de `LEG-JUIZO-NA-INGESTAO.md` pelo Seamwise.
 > **Não edite aqui** — edite a recipe e rode `seamwise plan`.
-> origem sha256: `58c75585de90bd69b0bc81d8edbd58363578c4866c112b01767243befc37dbd3`
+> origem sha256: `f7f7ccbf5e6a53ff9e2a06c22a1cd760ae09e05cde207753b8be78eeffef90f6`
 
 ---
 
@@ -45,7 +45,10 @@ tasks:
       e lê o CSV pelo segundo motor, o leitor posicional em Python já selado, montando InsumosExecucao;
       só com Desfecho.autorizado_publicar a Bronze publica pelo protocolo que já existe — preparo, replaceWhere,
       reconferência —, e o userMetadata do commit nomeia o caminho_pacote e o sha256 do pacote do juízo.
-      O orquestrador e o juiz selados são reusados, nunca alterados.
+      O orquestrador e o juiz selados são reusados, nunca alterados. O que publica é o MESMO resultado
+      medido dentro do executar_leitura — nunca uma segunda leitura da landing —, e a reconferência depois
+      de publicar compara a Bronze publicada com os cinco controles e o total_por_codigo que o pacote
+      JULGOU, não só com o próprio preparo.
   - id: B-2
     given: um juízo que não autoriza — RECUSADO, ERRO ou ACEITO_SEM_ANCORA
     when: a ingestão termina
@@ -56,10 +59,11 @@ tasks:
   - id: eval_1
     description: O juízo acontece na ingestão, com os dois motores
     bash: docker compose -f infra/docker-compose.yml exec -T spark sh -c 'for c in julga_na_ingestao_com_segundo_motor
-      publica_bronze_so_com_aceito commit_da_bronze_nomeia_o_pacote; do python3 -m pytest --collect-only
-      -q tests/test_ingestao.py -k "$c" 2>/dev/null | grep -q "::" || { echo "EVAL=CENARIO_AUSENTE_$c";
-      exit 1; }; done; python3 -m pytest -q tests/test_ingestao.py -k "julga_na_ingestao_com_segundo_motor
-      or publica_bronze_so_com_aceito or commit_da_bronze_nomeia_o_pacote"'
+      publica_bronze_so_com_aceito commit_da_bronze_nomeia_o_pacote publicado_confere_com_o_julgado; do
+      python3 -m pytest --collect-only -q tests/test_ingestao.py -k "$c" 2>/dev/null | grep -q "::" ||
+      { echo "EVAL=CENARIO_AUSENTE_$c"; exit 1; }; done; python3 -m pytest -q tests/test_ingestao.py -k
+      "julga_na_ingestao_com_segundo_motor or publica_bronze_so_com_aceito or commit_da_bronze_nomeia_o_pacote
+      or publicado_confere_com_o_julgado"'
     verifies:
     - B-1
   - id: eval_2
@@ -95,7 +99,7 @@ tasks:
   - src/pda
   rollback: Reverter src/medalhao/bronze.py; remover ingestao.py e seu teste.
   observability: competências com Bronze publicada sem pacote no commit
-source_seam_sha256: d43dcaf7d30366fd452f5f731ddde362f6b884ec328aad9eea8944a420c284dc
+source_seam_sha256: a9a0aa86b44756693c7c6b319d4c40d5257cdd0955bfb06dc2251a825e0b9ac0
 ---
 # A Bronze publicada carrega o pacote ACEITO da ingestão
 

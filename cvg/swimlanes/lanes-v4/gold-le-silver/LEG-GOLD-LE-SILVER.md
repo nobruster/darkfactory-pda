@@ -1,6 +1,6 @@
 > Projetado de `LEG-GOLD-LE-SILVER.md` pelo Seamwise.
 > **Não edite aqui** — edite a recipe e rode `seamwise plan`.
-> origem sha256: `7fafdc72bca620ed7571e1f00a88d9aff8ce66357615f8d701f07fc492ef15e7`
+> origem sha256: `cad61aa95f69e3d2fd0a1d784e8f388866fee67c6b774713637a1e89a5461205`
 
 ---
 
@@ -46,7 +46,9 @@ tasks:
       da Silver e confere que o commit dessa Bronze nomeia um pacote ACEITO da mesma competência e do
       mesmo sha256 do CSV; agrega por código reusando agregar, confere exato contra os controles persistidos
       da Silver e a âncora, e publica pelo protocolo que já existe, com o userMetadata nomeando a versão
-      da Silver e o pacote. NÃO abre a landing nem o CSV.
+      da Silver e o pacote. NÃO abre a landing nem o CSV. Antes de confiar no pacote, recalcula o sha256
+      dos BYTES do arquivo em caminho_pacote e compara com o sha256 que o commit da Bronze registrou;
+      bytes diferentes são DIVERGE.
   - id: B-2
     given: uma Silver sem linhagem até um pacote ACEITO, ou com estado diferente de INTEGRO
     when: a Gold principal roda pela entrada nova
@@ -57,9 +59,10 @@ tasks:
   - id: eval_1
     description: Lê só a Silver e segue a linhagem
     bash: docker compose -f infra/docker-compose.yml exec -T spark sh -c 'for c in gold_le_so_a_silver
-      nao_abre_landing_nem_csv linhagem_ate_pacote_aceito; do python3 -m pytest --collect-only -q tests/test_gold.py
-      -k "$c" 2>/dev/null | grep -q "::" || { echo "EVAL=CENARIO_AUSENTE_$c"; exit 1; }; done; python3
-      -m pytest -q tests/test_gold.py -k "gold_le_so_a_silver or nao_abre_landing_nem_csv or linhagem_ate_pacote_aceito"'
+      nao_abre_landing_nem_csv linhagem_ate_pacote_aceito sha256_do_pacote_conferido; do python3 -m pytest
+      --collect-only -q tests/test_gold.py -k "$c" 2>/dev/null | grep -q "::" || { echo "EVAL=CENARIO_AUSENTE_$c";
+      exit 1; }; done; python3 -m pytest -q tests/test_gold.py -k "gold_le_so_a_silver or nao_abre_landing_nem_csv
+      or linhagem_ate_pacote_aceito or sha256_do_pacote_conferido"'
     verifies:
     - B-1
   - id: eval_2
@@ -96,7 +99,7 @@ tasks:
   - src/pda
   rollback: Reverter src/medalhao/gold.py e tests/test_gold.py ao commit assentado.
   observability: publicações da Gold sem versão da Silver no commit
-source_seam_sha256: d332e6bb04f71dc13b190bd31813925be9648cdacc2268b6c5449d246e203171
+source_seam_sha256: ec1bfa4df51d2a8c0b41caa0a85f1dc256922343ec6467ce533776a542f62ef5
 ---
 # A Gold principal publicada nomeia a versão da Silver e o pacote da ingestão
 

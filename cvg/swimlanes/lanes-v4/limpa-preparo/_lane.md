@@ -2,7 +2,7 @@ FORK: B (task-driven) — rota única desde a v3.4 — o consenso sempre entrega
 
 > Projetado de `LANE-LIMPA-PREPARO.md` pelo Seamwise.
 > **Não edite aqui** — edite a recipe e rode `seamwise plan`.
-> origem sha256: `3d7f589e532f45e9b81940674f346edb3c13f4a7c7c7c54a28df648af79b73fc`
+> origem sha256: `f34548869c832ff01da10e008b700f9fcaad14e5c35f03a54c70b55944efe3ec`
 
 ---
 
@@ -14,7 +14,7 @@ id: LANE-LIMPA-PREPARO
 name: Limpeza do preparo lane
 owner: medalhao
 seam_id: SEAM-LIMPA-PREPARO
-source_seam_sha256: 7777e56995a0bef551452e74dab24ee6e0ae0cf938908a571b58e9938d7a125f
+source_seam_sha256: 0b08c68625b689d0142e01042001eeeef4f9a5f72e41dc47dba57473b39c632b
 legs:
 - LEG-LIMPA-PREPARO
 ---

@@ -1,6 +1,6 @@
 > Projetado de `LEG-LIMPA-PREPARO.md` pelo Seamwise.
 > **Não edite aqui** — edite a recipe e rode `seamwise plan`.
-> origem sha256: `6c895cb0400eefbcad32719ad64d72c3b1bb0e8f3d31a88e00f3c69354da2fcd`
+> origem sha256: `ed74fd5d7920dc2b7e0bb8135b3e1126240b0ccddf0fafee7e58f83817ae5a60`
 
 ---
 
@@ -42,9 +42,11 @@ tasks:
   - id: B-1
     given: o preparo de uma execução cujo commit está no histórico da tabela publicada
     when: a limpeza roda para a camada e a execução
-    then: confere o commit pelo id da execução no userMetadata, apaga SÓ o prefixo <camada>/_preparo/.../execucao=<id>
-      — um caminho montado de partes validadas, recusado se vier vazio ou fora de _preparo —, e confere
-      depois que a tabela publicada mantém a mesma versão, a mesma contagem e a mesma soma.
+    then: confere que o ÚLTIMO commit que nomeia a competência no userMetadata é o dessa execução, com
+      estado de publicação e NÃO de reversão — um commit revertido ou seguido de outro não é publicação
+      conferida —, apaga SÓ o prefixo <camada>/_preparo/.../execucao=<id> — um caminho montado de partes
+      validadas, recusado se vier vazio ou fora de _preparo —, e confere depois que a tabela publicada
+      mantém a mesma versão, a mesma contagem e a mesma soma.
   - id: B-2
     given: uma execução sem commit no histórico, um id vazio ou um caminho fora do preparo
     when: a limpeza roda
@@ -63,9 +65,10 @@ tasks:
   - id: eval_2
     description: Guarda de caminho
     bash: docker compose -f infra/docker-compose.yml exec -T spark sh -c 'for c in id_vazio_recusado caminho_fora_do_preparo_recusado
-      execucao_nao_publicada_preserva; do python3 -m pytest --collect-only -q tests/test_limpeza.py -k
-      "$c" 2>/dev/null | grep -q "::" || { echo "EVAL=CENARIO_AUSENTE_$c"; exit 1; }; done; python3 -m
-      pytest -q tests/test_limpeza.py -k "id_vazio_recusado or caminho_fora_do_preparo_recusado or execucao_nao_publicada_preserva"'
+      execucao_nao_publicada_preserva commit_revertido_preserva; do python3 -m pytest --collect-only -q
+      tests/test_limpeza.py -k "$c" 2>/dev/null | grep -q "::" || { echo "EVAL=CENARIO_AUSENTE_$c"; exit
+      1; }; done; python3 -m pytest -q tests/test_limpeza.py -k "id_vazio_recusado or caminho_fora_do_preparo_recusado
+      or execucao_nao_publicada_preserva or commit_revertido_preserva"'
     verifies:
     - B-2
   - id: eval_3
@@ -93,7 +96,7 @@ tasks:
   - contracts
   rollback: Remover limpeza.py e seu teste; o preparo apagado é regenerável rodando a camada.
   observability: preparos de execuções já publicadas
-source_seam_sha256: 7777e56995a0bef551452e74dab24ee6e0ae0cf938908a571b58e9938d7a125f
+source_seam_sha256: 0b08c68625b689d0142e01042001eeeef4f9a5f72e41dc47dba57473b39c632b
 ---
 # Nenhum preparo de execução publicada e conferida sobrevive
 
