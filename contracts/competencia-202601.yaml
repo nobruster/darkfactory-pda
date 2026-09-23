@@ -40,6 +40,39 @@ politica_decimal:
   escala: 2
   escala_maxima_intermediarios: 3
   nao_negativo: true
+  # Os limites de expoente NÃO são política monetária — são o limite que
+  # NÃO INTERFERE, declarado para que nenhuma biblioteca o imponha. Medido
+  # com contraexemplo executado: com DefaultContext.Emax=5, um
+  # Context(prec=14, rounding=HALF_EVEN, traps=[]) herda Emax, a âncora
+  # 78521752562.12 vira Infinity, e traps=[] SILENCIA o Overflow que
+  # denunciaria. O gate recusaria a competência correta sem erro algum.
+  #
+  # 999999 é o default do Python, e o maior total desta competência tem
+  # expoente ~11 — folga de cinco ordens de grandeza.
+  emax: 999999
+  emin: -999999
+  aprovado_por: "Bruno Nunes"
+  aprovado_em: "2026-09-23"
+
+# MEDIDO no lago em 2026-09-23, não inferido do nome do diretório:
+#   mc ls  → competencia=2026-01/ e competencia=fatia-teste/
+#   Spark  → 2026-01 = 41.572.553 linhas, soma 78.521.752.562,12 (bate
+#            com a âncora ao centavo); fatia-teste = 50.000 linhas
+#
+# ⚠ A competência CONTRATADA não é a lista exaustiva de partições válidas.
+# Tratar 2026-01 como única admissível reprovaria fatia-teste, que existe
+# e é legítima. O domínio é a CHAVE; os valores variam por execução.
+particionamento:
+  chave: "competencia"
+  caminho: "s3a://landing/pda/beneficios-emitidos"
+  formato: "parquet"
+  valores_medidos:
+    - "2026-01"
+    - "fatia-teste"
+  objetos_auxiliares_ignorados:
+    - "_SUCCESS"
+  aprovado_por: "Bruno Nunes"
+  aprovado_em: "2026-09-23"
 
 # ADR 0002 — as duas colunas Espécie têm cabeçalho IDÊNTICO; só a posição
 # distingue. Medido: índice 12 é sempre 2 dígitos, 13 é sempre textual,
