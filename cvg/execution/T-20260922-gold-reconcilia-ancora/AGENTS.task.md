@@ -4,7 +4,7 @@
 
 - **Spec (canonical):** `cvg/tasks/T-20260922-gold-reconcilia-ancora.md`
 - **Contract:** `cvg/execution/T-20260922-gold-reconcilia-ancora/execution-profile.yaml`
-- **Epoch:** `T-20260922-gold-reconcilia-ancora@9286c46be953`
+- **Epoch:** `T-20260922-gold-reconcilia-ancora@90427f14552c`
 - **Project conventions:** `AGENTS.md` (read it once; it is the router)
 
 ## Goal

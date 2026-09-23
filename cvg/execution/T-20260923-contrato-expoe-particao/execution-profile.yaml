@@ -11,7 +11,7 @@
         "epoch_change"
       ]
     },
-    "epoch": "T-20260923-contrato-expoe-particao@8bf662022d6b",
+    "epoch": "T-20260923-contrato-expoe-particao@a3d445ea07a1",
     "grants": [
       {
         "capability": "fs.read",
@@ -297,7 +297,7 @@
     "id": "T-20260923-contrato-expoe-particao",
     "spec_ref": {
       "path": "cvg/tasks/T-20260923-contrato-expoe-particao.md",
-      "sha256": "8bf662022d6ba917a7d5319420b2a5a2c712d896e1c0732b4de88e9d9e0869b2"
+      "sha256": "a3d445ea07a156da59cfdb3c94e2e31a65a0d57e3b6407ce5b54595dcd2f223f"
     }
   },
   "topology": {

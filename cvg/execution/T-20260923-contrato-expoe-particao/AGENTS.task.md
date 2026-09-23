@@ -4,7 +4,7 @@
 
 - **Spec (canonical):** `cvg/tasks/T-20260923-contrato-expoe-particao.md`
 - **Contract:** `cvg/execution/T-20260923-contrato-expoe-particao/execution-profile.yaml`
-- **Epoch:** `T-20260923-contrato-expoe-particao@8bf662022d6b`
+- **Epoch:** `T-20260923-contrato-expoe-particao@a3d445ea07a1`
 - **Project conventions:** `AGENTS.md` (read it once; it is the router)
 
 ## Goal

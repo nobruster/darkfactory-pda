@@ -4,7 +4,7 @@
 
 - **Spec (canonical):** `cvg/tasks/T-20260922-bronze-confere-ancora.md`
 - **Contract:** `cvg/execution/T-20260922-bronze-confere-ancora/execution-profile.yaml`
-- **Epoch:** `T-20260922-bronze-confere-ancora@f764c4b34fd6`
+- **Epoch:** `T-20260922-bronze-confere-ancora@baa6c91afc74`
 - **Project conventions:** `AGENTS.md` (read it once; it is the router)
 
 ## Goal

@@ -11,7 +11,7 @@
         "epoch_change"
       ]
     },
-    "epoch": "T-20260922-gold-reconcilia-ancora@9286c46be953",
+    "epoch": "T-20260922-gold-reconcilia-ancora@90427f14552c",
     "grants": [
       {
         "capability": "fs.read",
@@ -297,7 +297,7 @@
     "id": "T-20260922-gold-reconcilia-ancora",
     "spec_ref": {
       "path": "cvg/tasks/T-20260922-gold-reconcilia-ancora.md",
-      "sha256": "9286c46be953ab5a9846cf528afc3b5cd6644b6dc7ec2eaa5cfe54821ab47eb0"
+      "sha256": "90427f14552c7d754442cb1d87824cfd364fdfe9b643e467af9062d4540dee0c"
     }
   },
   "topology": {

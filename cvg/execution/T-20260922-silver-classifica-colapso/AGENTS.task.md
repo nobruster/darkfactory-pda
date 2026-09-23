@@ -4,7 +4,7 @@
 
 - **Spec (canonical):** `cvg/tasks/T-20260922-silver-classifica-colapso.md`
 - **Contract:** `cvg/execution/T-20260922-silver-classifica-colapso/execution-profile.yaml`
-- **Epoch:** `T-20260922-silver-classifica-colapso@290e39de7f26`
+- **Epoch:** `T-20260922-silver-classifica-colapso@65cf6474a6b9`
 - **Project conventions:** `AGENTS.md` (read it once; it is the router)
 
 ## Goal
