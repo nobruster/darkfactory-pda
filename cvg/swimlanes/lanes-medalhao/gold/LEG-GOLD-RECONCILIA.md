@@ -1,6 +1,6 @@
 > Projetado de `LEG-GOLD-RECONCILIA.md` pelo Seamwise.
 > **Não edite aqui** — edite a recipe e rode `seamwise plan`.
-> origem sha256: `e885629fdc9da367da93a97e5d85f5d03f4c12ae5d3ed20a0d7b818d5e75bcb9`
+> origem sha256: `d2f4ee4cab2892293eab3b1dd0ab5febe1134cbdd14bf8d8a4f3d0d1d94b5e92`
 
 ---
 
@@ -59,7 +59,8 @@ tasks:
       biblioteca importada, Decimal(''2.345'').quantize(Decimal(''.01'')) LEVANTA Inexact dentro de um
       localcontext que declarou prec e rounding, e o arredondamento que o contrato PERMITE encerra a operação.
       O ADR 0006 diz que a precisão é declarada e não herdada; as traps são herdadas do mesmo jeito, e
-      declarar prec e rounding não basta. Gold só agrega sobre ''silver classificado'' com estado INTEGRO,
+      declarar prec e rounding não basta. Gold só agrega sobre ''silver classificado'' com estado INTEGRO
+      — BLOQUEADO, DIVERGE, NAO_MEDIDO e ERRO_LEITURA param a cadeia com o estado propagado sem tradução,
       pelo mesmo motivo que vale em Silver: estado negativo propagado para e cadeia para. Antes de reconciliar,
       a COMPETÊNCIA que Silver carrega é comparada com a do contrato, e divergir é DIVERGE — a R-1 exige
       que a âncora exista PARA AQUELA competência, não que contenha números iguais, e um Silver de outra
@@ -154,7 +155,7 @@ tasks:
   - contracts
   rollback: Remover a camada Gold e seus testes.
   observability: agregados recusados por não reconciliar
-source_seam_sha256: af1651eb7a3c6600f2d5cc2ba6af9fa5c370dcb18621bb478983becdbb3e326a
+source_seam_sha256: c2d86617b619189864606c39a01ac4e4eccb489c0ba6e7134a73f3d8ee29a2f8
 ---
 # Gold só publica quando reconcilia com a âncora
 

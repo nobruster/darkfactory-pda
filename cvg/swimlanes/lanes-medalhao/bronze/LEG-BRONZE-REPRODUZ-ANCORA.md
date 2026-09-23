@@ -1,6 +1,6 @@
 > Projetado de `LEG-BRONZE-REPRODUZ-ANCORA.md` pelo Seamwise.
 > **Não edite aqui** — edite a recipe e rode `seamwise plan`.
-> origem sha256: `e728ecf57ea26451a79c7aa4962a7ec31f180a015a295f62def0496ec861aae5`
+> origem sha256: `722613799c88a5ec262891423eff4566af9fb14ee706d769f37fc3aef90a4f53`
 
 ---
 
@@ -158,10 +158,12 @@ tasks:
   - id: eval_3
     description: Float recusado na entrada, e toda diferença com uma das seis classificações
     bash: docker compose -f infra/docker-compose.yml exec -T spark sh -c 'for c in centavo_a_mais maximo_acima_do_ancorado
-      recusa_float_na_entrada classificacao_das_seis; do python3 -m pytest --collect-only -q tests/test_bronze.py
+      recusa_float_na_entrada classificacao_das_seis recusa_valor_negativo recusa_valor_fora_da_escala
+      recusa_hash_divergente emite_marca_sem_vinculo; do python3 -m pytest --collect-only -q tests/test_bronze.py
       -k "$c" 2>/dev/null | grep -q "::" || { echo "EVAL=CENARIO_AUSENTE_$c"; exit 1; }; done; python3
       -m pytest -q tests/test_bronze.py -k "centavo_a_mais or maximo_acima_do_ancorado or recusa_float_na_entrada
-      or classificacao_das_seis"'
+      or classificacao_das_seis or recusa_valor_negativo or recusa_valor_fora_da_escala or recusa_hash_divergente
+      or emite_marca_sem_vinculo"'
     verifies:
     - B-1
   anti_patterns:
@@ -182,7 +184,7 @@ tasks:
   - contracts
   rollback: Remover o leitor Bronze e seus testes.
   observability: partições recusadas por controle divergente
-source_seam_sha256: 365802a507ccc5f9e6816f67873d155dbc168d3552f34b145dcecd7d9774b955
+source_seam_sha256: b38eb0fc7ac6cff225f7de680fb3df1875f4844dd5ced28ef2483194e04f40c0
 ---
 # Bronze só existe quando reproduz a âncora do contrato
 

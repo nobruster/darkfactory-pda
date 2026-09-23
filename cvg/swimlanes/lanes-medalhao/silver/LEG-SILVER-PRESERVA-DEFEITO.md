@@ -1,6 +1,6 @@
 > Projetado de `LEG-SILVER-PRESERVA-DEFEITO.md` pelo Seamwise.
 > **Não edite aqui** — edite a recipe e rode `seamwise plan`.
-> origem sha256: `f0771df68bf579c992c8c5c8bebdcda06948b253d6631cc44a730dd544204b6e`
+> origem sha256: `2effdd30126cffbc17681764e074aaedf79d157cc20f50f7b41aa72306429b43`
 
 ---
 
@@ -85,7 +85,10 @@ tasks:
       NÃO é só a soma global: o mapa de Silver é comparado com o de Bronze CÓDIGO A CÓDIGO, porque trocar
       os valores de dois códigos preserva soma, chaves, cardinalidades e grupos — {''01'': 10.00, ''03'':
       20.00} virando {''01'': 20.00, ''03'': 10.00} passa em toda prova global e altera o resultado por
-      espécie. O MULTICONJUNTO de linhas de Silver é idêntico ao de Bronze no que toca código e valor
+      espécie. O MULTICONJUNTO de linhas de Silver é idêntico ao de Bronze no que toca código, DESCRIÇÃO
+      ORIGINAL e valor — com a descrição dentro, porque trocar as descrições originais entre dois códigos
+      não colapsados, (''01'', ''A'', 10) e (''03'', ''B'', 20) virando (''01'', ''B'', 10) e (''03'',
+      ''A'', 20), mantém um multiconjunto de só código e valor, todos os totais e as quatro cardinalidades
       — igualdade linha a linha, não agregada: duas linhas do MESMO código e MESMA descrição, 10.00 e
       20.00, virando 11.00 e 19.00 preservam contagem, soma E o mapa por código, porque o mapa agrega
       justamente por código e não separa linhas irmãs. Por isso a prova é sobre o multiconjunto, e a contagem
@@ -102,33 +105,38 @@ tasks:
     when: Silver normaliza
     then: 'a linha atravessa com o VALOR intacto e o defeito registrado, nunca descartada nem corrigida
       — descartar mudaria o total e corrigir destruiria a prova. Defeito não classificado BLOQUEIA a camada,
-      e UNRESOLVED — que é uma das seis — BLOQUEIA igualmente: classificação preenchida não é defeito
-      resolvido, e uma descrição divergente que recebesse UNRESOLVED conservaria o valor e satisfaria
-      literalmente a condição de conclusão enquanto a diferença segue sem dono, porque a classificação
-      é o que transforma um erro da origem em cobrança rastreável; e nenhuma classificação é inferida
-      em silêncio, já que atribuir CONFIRMED_SOURCE_DEFECT sem aprovador transformaria juízo em default.
-      MEDIDO no contrato: existem as cardinalidades 65/52/11/24 e a classificação global, mas NÃO existe
-      mapa código→descrição nem a lista dos 11 grupos aprovados — e sem esse referencial ''descrição que
-      diverge do contrato'' não é verificável, porque trocar a descrição de um código mantém todas as
-      quatro cardinalidades. Silver então NÃO INVENTA referencial e NÃO aceita o grupo novo por default:
-      sem o mapa declarado no contrato, a comparação por identidade devolve NAO_MEDIDO, distinto de bloquear
-      por defeito — e esse NAO_MEDIDO IMPEDE produzir ''silver classificado'', porque uma capacidade chamada
-      ''classificado'' que sai com a identidade não medida mente no próprio nome. A cadeia para aqui com
-      o motivo nomeado, em vez de seguir e publicar com a identidade em aberto. Declarar esse mapa é trabalho
-      do contrato, com aprovador e data, não desta camada — e ENQUANTO ele não existir, esta tarefa entrega
-      apenas a capacidade CONDICIONAL: o caminho NAO_MEDIDO provado, e o caminho positivo provado contra
-      contrato de teste, jamais contra a competência contratada. Concluir Bronze NÃO habilita a prova
-      positiva de Silver sobre 2026-01, e o plano não finge que habilita. scripts/medir_colapso.py já
-      mede os 11 grupos na competência inteira; falta a aprovação, que é decisão de negócio.'
+      e bloquear tem ESTADO de saída declarado: ''silver classificado'' sai com estado BLOQUEADO, nunca
+      INTEGRO, e a lista dos defeitos que bloquearam — porque Gold só agrega sobre INTEGRO, e um INTEGRO
+      com UNRESOLVED dentro seria agregado sem que ninguém olhasse as classificações. Defeito não classificado
+      BLOQUEIA a camada, e UNRESOLVED — que é uma das seis — BLOQUEIA igualmente: classificação preenchida
+      não é defeito resolvido, e uma descrição divergente que recebesse UNRESOLVED conservaria o valor
+      e satisfaria literalmente a condição de conclusão enquanto a diferença segue sem dono, porque a
+      classificação é o que transforma um erro da origem em cobrança rastreável; e nenhuma classificação
+      é inferida em silêncio, já que atribuir CONFIRMED_SOURCE_DEFECT sem aprovador transformaria juízo
+      em default. MEDIDO no contrato: existem as cardinalidades 65/52/11/24 e a classificação global,
+      mas NÃO existe mapa código→descrição nem a lista dos 11 grupos aprovados — e sem esse referencial
+      ''descrição que diverge do contrato'' não é verificável, porque trocar a descrição de um código
+      mantém todas as quatro cardinalidades. Silver então NÃO INVENTA referencial e NÃO aceita o grupo
+      novo por default: sem o mapa declarado no contrato, a comparação por identidade devolve NAO_MEDIDO,
+      distinto de bloquear por defeito — e esse NAO_MEDIDO IMPEDE produzir ''silver classificado'', porque
+      uma capacidade chamada ''classificado'' que sai com a identidade não medida mente no próprio nome.
+      A cadeia para aqui com o motivo nomeado, em vez de seguir e publicar com a identidade em aberto.
+      Declarar esse mapa é trabalho do contrato, com aprovador e data, não desta camada — e ENQUANTO ele
+      não existir, esta tarefa entrega apenas a capacidade CONDICIONAL: o caminho NAO_MEDIDO provado,
+      e o caminho positivo provado contra contrato de teste, jamais contra a competência contratada. Concluir
+      Bronze NÃO habilita a prova positiva de Silver sobre 2026-01, e o plano não finge que habilita.
+      scripts/medir_colapso.py já mede os 11 grupos na competência inteira; falta a aprovação, que é decisão
+      de negócio.'
   evals:
   - id: eval_1
     description: Chave é o código; contagem, mapa e soma preservados, inclusive linha de valor zero
     bash: docker compose -f infra/docker-compose.yml exec -T spark sh -c 'for c in chave_e_codigo multiconjunto_identico
       linhas_irmas_com_valores_trocados linha_de_valor_zero_nao_some mapa_por_codigo_preservado contexto_declarado
-      entrega_as_linhas_normalizadas; do python3 -m pytest --collect-only -q tests/test_silver.py -k "$c"
-      2>/dev/null | grep -q "::" || { echo "EVAL=CENARIO_AUSENTE_$c"; exit 1; }; done; python3 -m pytest
-      -q tests/test_silver.py -k "chave_e_codigo or multiconjunto_identico or linhas_irmas_com_valores_trocados
-      or linha_de_valor_zero_nao_some or mapa_por_codigo_preservado or contexto_declarado or entrega_as_linhas_normalizadas"'
+      entrega_as_linhas_normalizadas descricao_trocada_entre_codigos; do python3 -m pytest --collect-only
+      -q tests/test_silver.py -k "$c" 2>/dev/null | grep -q "::" || { echo "EVAL=CENARIO_AUSENTE_$c";
+      exit 1; }; done; python3 -m pytest -q tests/test_silver.py -k "chave_e_codigo or multiconjunto_identico
+      or linhas_irmas_com_valores_trocados or linha_de_valor_zero_nao_some or mapa_por_codigo_preservado
+      or contexto_declarado or entrega_as_linhas_normalizadas or descricao_trocada_entre_codigos"'
     verifies:
     - B-1
   - id: eval_2
@@ -144,11 +152,11 @@ tasks:
   - id: eval_3
     description: Defeito não classificado bloqueia em vez de passar
     bash: docker compose -f infra/docker-compose.yml exec -T spark sh -c 'for c in nao_classificado_bloqueia
-      valor_intacto atravessa_sem_descartar unresolved_bloqueia marca_atravessa sem_mapa_nao_produz_capacidade;
-      do python3 -m pytest --collect-only -q tests/test_silver.py -k "$c" 2>/dev/null | grep -q "::" ||
-      { echo "EVAL=CENARIO_AUSENTE_$c"; exit 1; }; done; python3 -m pytest -q tests/test_silver.py -k
-      "nao_classificado_bloqueia or valor_intacto or atravessa_sem_descartar or unresolved_bloqueia or
-      marca_atravessa or sem_mapa_nao_produz_capacidade"'
+      valor_intacto atravessa_sem_descartar unresolved_bloqueia marca_atravessa sem_mapa_nao_produz_capacidade
+      bloqueio_sai_como_bloqueado; do python3 -m pytest --collect-only -q tests/test_silver.py -k "$c"
+      2>/dev/null | grep -q "::" || { echo "EVAL=CENARIO_AUSENTE_$c"; exit 1; }; done; python3 -m pytest
+      -q tests/test_silver.py -k "nao_classificado_bloqueia or valor_intacto or atravessa_sem_descartar
+      or unresolved_bloqueia or marca_atravessa or sem_mapa_nao_produz_capacidade or bloqueio_sai_como_bloqueado"'
     verifies:
     - B-2
   anti_patterns:
@@ -169,7 +177,7 @@ tasks:
   - contracts
   rollback: Remover a camada Silver e seus testes.
   observability: colapsos classificados por competência
-source_seam_sha256: 89952e18d0642887b23cef16a8503d1aeee83fffcea250335690fc70a56d7648
+source_seam_sha256: 924e3649df445ebacc9695b930f9f657591f45f9cd079d8ad3fe778c9c9fe9c5
 ---
 # Silver classifica o defeito e conserva o total
 

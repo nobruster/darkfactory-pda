@@ -182,7 +182,7 @@ def _simetria(seams, falhas):
     }
 
     TERMOS = ["FORMA declarada", "estado INTEGRO", "traps=[]",
-              "uma das seis"]
+              "uma das seis", "NO MOTOR"]
 
     corpos = {}
     for s in seams:
@@ -214,8 +214,13 @@ def _simetria(seams, falhas):
         quem = ", ".join(sorted(s.replace("SEAM-", "") for s in tem)) or "—"
         print(f"    {marca}{termo:<18} em: {quem}")
 
-        # só acusa quando a MAIORIA diz e uma minoria não
-        if faltam and len(tem) > len(faltam):
+        # TERMOS é a lista CURADA de doutrinas que valem em toda camada.
+        # A primeira versão só acusava quando a maioria tinha e a minoria
+        # não — e ficou cega para o caso mais comum do padrão que este
+        # bloco existe para pegar: a correção introduzida em UMA camada.
+        # Com "NO MOTOR" só em Silver, marcou "!!" e devolveu PLANO=OK.
+        # Para doutrina curada, qualquer camada não isenta sem ela reprova.
+        if faltam:
             falhas.append(
                 f"assimetria: '{termo}' aparece em "
                 f"{', '.join(sorted(tem))} e falta em "
