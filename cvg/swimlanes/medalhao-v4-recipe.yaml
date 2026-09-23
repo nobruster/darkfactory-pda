@@ -1,0 +1,502 @@
+schema_version: 1
+intent:
+  id: DI-PDA-MEDALHAO-V4
+  title: Medalhão v4 — juízo na ingestão, Gold lê a Silver, Gold por assuntos
+  summary: O arquivo bruto é lido UMA vez, na ingestão, onde o juízo com o segundo motor aceita a Bronze; Silver e Gold consomem só a camada anterior persistida; a Gold entrega tabelas por assunto; e o preparo é apagado depois da publicação conferida.
+  claim: proposed
+  source:
+    uri: cvg/docs/tech-spec/tech-spec-pda-beneficios.md
+    captured_at: '2026-09-21T00:00:00Z'
+    sha256: e619ead9d343282533110bc8cb8f1203614d8e733565b21e3157df2b8f157b88
+  success:
+  - A Gold principal publica sem ler a landing nem o CSV.
+  - A Bronze só publica com o pacote ACEITO do juízo da ingestão.
+  - fat_especie e kpis_nacionais fecham exato com a âncora.
+  - Nenhum _preparo sobrevive a uma publicação conferida, e nada fora dele é apagado.
+  out_of_scope:
+  - 'fat_uf, fat_banco e perfil demográfico: exigem a landing v2 com as 14 colunas (Fase 2).'
+  - 'Alterar o orquestrador ou o juiz selados: eles são REUSADOS na ingestão, não modificados.'
+system_map:
+  claim: proposed
+  components:
+  - Ingestão julgada
+  - Gold principal
+  - Contrato com grupos
+  - Gold por assuntos
+  - Limpeza do preparo
+  external_dependencies:
+  - Silver publicada em s3a://silver/pda/beneficios-emitidos
+  - Gold principal publicada em s3a://gold/pda/beneficios-emitidos
+  - grupos_especie aprovado no contrato
+  unknowns: []
+evidence:
+- id: E-ANCORA-202601
+  claim: external
+  source:
+    uri: cvg/docs/adrs/0001-the-2026-01-anchor-is-41572553-rows-summing-78521752562-12.md
+    captured_at: '2026-09-21T00:00:00Z'
+    sha256: 0505a743963abfb09a257373a431c3878b25cf6c19d71467c722da9830779acd
+  confidence: 1.0
+  summary: 'Competência 2026-01 medida na origem: 41572553 linhas, soma 78521752562.12.'
+decisions:
+- id: ADR-0003-HALF-EVEN
+  status: accepted
+  owner: Bruno Nunes
+  rationale: Dinheiro arredonda meio-para-par, 2 casas; meio-para-cima vira tendência em volume.
+- id: DEC-GOLD-POR-ASSUNTOS
+  status: accepted
+  owner: Bruno Nunes
+  rationale: 'Decidido pelo dono em 2026-09-23: a Gold entrega tabelas por assunto em duas fases; a Fase 1 são fat_especie e kpis_nacionais, que as colunas da landing atual permitem. Grupos de espécie por texto, aprovados no contrato; mediana e P90 aproximados e rotulados; somas e contagens exatas.'
+- id: DEC-JUIZO-NA-INGESTAO
+  status: accepted
+  owner: Bruno Nunes
+  rationale: 'Decidido pelo dono em 2026-09-23: a Gold não recebe o arquivo inteiro. Medido: a Gold principal recalculava Bronze e Silver da landing e o juiz lia as 41,5 M linhas do CSV — cerca de 20 dos 22 minutos — sem ler a Silver publicada. O ADR 0006 (Spark grava, Python confere) continua valendo; o que muda é ONDE o juízo acontece: na ingestão, uma vez, onde o bruto é legitimamente lido. As camadas seguintes reconciliam exato contra a anterior e seguem a linhagem até o pacote ACEITO da ingestão.'
+- id: DEC-PREPARO-APAGADO-APOS-CONFERIR
+  status: accepted
+  owner: Bruno Nunes
+  rationale: 'Decidido pelo dono em 2026-09-23: o _preparo de uma execução é apagado depois que a publicação é relida e conferida. O histórico Delta da tabela publicada é a evidência; o preparo somava 646 MiB e crescia cerca de 650 MiB por execução.'
+seams:
+- id: SEAM-JUIZO-NA-INGESTAO
+  name: Ingestão julgada — o bruto lido uma vez, pelos dois motores
+  description: Separa ler o arquivo bruto de consumir as camadas que dele derivam.
+  evidence:
+  - E-ANCORA-202601
+  responsibility: Julgar a Bronze contra o CSV pelo segundo motor na ingestão e só publicá-la com o pacote ACEITO, registrando esse pacote no commit.
+  consumes:
+  - procedencia vinculada
+  produces:
+  - bronze julgada
+  owner: medalhao
+  independent_proof: Sobre o dado real, conduzir devolve ACEITO na ingestão e o commit da Bronze nomeia o caminho e o sha256 do pacote.
+  decision_ids:
+  - DEC-JUIZO-NA-INGESTAO
+  rejected_alternatives:
+  - alternative: Manter o juízo no portão da Gold
+    reason: Obriga a Gold a ler o arquivo inteiro, contra o medalhão.
+  swimlane:
+    id: LANE-JUIZO-NA-INGESTAO
+    name: Ingestão julgada lane
+    owner: medalhao
+    legs:
+    - id: LEG-JUIZO-NA-INGESTAO
+      observable_state: A Bronze publicada carrega o pacote ACEITO da ingestão
+      proof: Sem ACEITO, a Bronze não publica; com ACEITO, o commit nomeia o pacote.
+      requires: []
+      produces:
+      - bronze julgada
+      tasks:
+      - id: T-20260923-ingestao-julgada
+        title: Julgar a ingestão com o segundo motor e publicar a Bronze só com ACEITO
+        goal: Ler o arquivo bruto uma vez, na ingestão, com os dois motores.
+        done_condition: Sobre uma landing vinculada, conduzir julga a Bronze contra o CSV; só com autorizado_publicar a Bronze publica, e o commit nomeia o pacote; sem autorização, nada é publicado.
+        effort: M
+        profile: standard
+        execution_backend: any
+        required_tools: &id001
+        - git
+        - bash
+        - python3
+        - pytest
+        - docker
+        depends_on: []
+        touches_paths:
+        - src/medalhao/bronze.py
+        creates_paths:
+        - src/medalhao/ingestao.py
+        - tests/test_ingestao.py
+        behavior:
+        - id: B-1
+          given: a landing vinculada ao CSV, o contrato e o CSV original em _raw/
+          when: a ingestão roda para a competência
+          then: chama orquestracao.conduzir com um executar_leitura que mede a Bronze no motor Spark SEM gravar e lê o CSV pelo segundo motor, o leitor posicional em Python já selado, montando InsumosExecucao; só com Desfecho.autorizado_publicar a Bronze publica pelo protocolo que já existe — preparo, replaceWhere, reconferência —, e o userMetadata do commit nomeia o caminho_pacote e o sha256 do pacote do juízo. O orquestrador e o juiz selados são reusados, nunca alterados.
+        - id: B-2
+          given: um juízo que não autoriza — RECUSADO, ERRO ou ACEITO_SEM_ANCORA
+          when: a ingestão termina
+          then: a Bronze não publica nada, o pacote do juízo fica gravado como evidência com o motivo, e a ingestão devolve o veredito do orquestrador sem traduzi-lo; nenhum teste já existente de tests/test_bronze.py é editado.
+        evals:
+        - id: eval_1
+          description: O juízo acontece na ingestão, com os dois motores
+          bash: docker compose -f infra/docker-compose.yml exec -T spark sh -c 'for c in julga_na_ingestao_com_segundo_motor publica_bronze_so_com_aceito commit_da_bronze_nomeia_o_pacote; do python3 -m pytest --collect-only -q tests/test_ingestao.py -k "$c" 2>/dev/null | grep -q "::" || { echo "EVAL=CENARIO_AUSENTE_$c"; exit 1; }; done; python3 -m pytest -q tests/test_ingestao.py -k "julga_na_ingestao_com_segundo_motor or publica_bronze_so_com_aceito or commit_da_bronze_nomeia_o_pacote"'
+          verifies:
+          - B-1
+        - id: eval_2
+          description: Sem autorização, nada publica
+          bash: docker compose -f infra/docker-compose.yml exec -T spark sh -c 'for c in recusado_nao_publica erro_nao_publica pacote_fica_como_evidencia; do python3 -m pytest --collect-only -q tests/test_ingestao.py -k "$c" 2>/dev/null | grep -q "::" || { echo "EVAL=CENARIO_AUSENTE_$c"; exit 1; }; done; python3 -m pytest -q tests/test_ingestao.py -k "recusado_nao_publica or erro_nao_publica or pacote_fica_como_evidencia"'
+          verifies:
+          - B-2
+        - id: eval_3
+          description: Orquestrador reusado, não alterado
+          bash: docker compose -f infra/docker-compose.yml exec -T spark sh -c 'for c in reusa_conduzir_selado reusa_leitor_posicional; do python3 -m pytest --collect-only -q tests/test_ingestao.py -k "$c" 2>/dev/null | grep -q "::" || { echo "EVAL=CENARIO_AUSENTE_$c"; exit 1; }; done; python3 -m pytest -q tests/test_ingestao.py -k "reusa_conduzir_selado or reusa_leitor_posicional"'
+          verifies:
+          - B-1
+        anti_patterns:
+        - action: reimplementar o juiz ou o orquestrador dentro da ingestão
+          reason: são selados; uma segunda versão pode divergir em silêncio
+          instead: chamar orquestracao.conduzir
+        - action: ler o CSV pelo Spark no lugar do leitor Python
+          reason: dois motores iguais não se conferem (ADR 0006)
+          instead: usar o leitor posicional já selado
+        - action: publicar a Bronze antes do veredito
+          reason: publicação sem juízo é o que o portão existe para impedir
+          instead: publicar só com autorizado_publicar
+        do_not_touch:
+        - _raw
+        - cvg/docs/adrs
+        - contracts
+        - src/pda
+        rollback: Reverter src/medalhao/bronze.py; remover ingestao.py e seu teste.
+        observability: competências com Bronze publicada sem pacote no commit
+- id: SEAM-GOLD-LE-SILVER
+  name: Gold principal lê só a Silver publicada
+  description: Separa agregar para o negócio de reler o bruto.
+  evidence:
+  - E-ANCORA-202601
+  responsibility: Publicar a Gold principal a partir da versão da Silver, seguindo a linhagem até o pacote ACEITO da ingestão, sem ler a landing nem o CSV.
+  consumes:
+  - bronze julgada
+  - silver publicada
+  produces:
+  - gold principal publicada
+  owner: medalhao
+  independent_proof: Sobre a Silver real, a Gold principal publica 65 códigos somando 78521752562.12 sem abrir a landing nem o CSV.
+  decision_ids:
+  - DEC-JUIZO-NA-INGESTAO
+  - ADR-0003-HALF-EVEN
+  rejected_alternatives:
+  - alternative: Rodar de novo o juiz sobre o CSV na Gold
+    reason: É exatamente a leitura do arquivo inteiro que o dono vetou.
+  swimlane:
+    id: LANE-GOLD-LE-SILVER
+    name: Gold lê Silver lane
+    owner: medalhao
+    legs:
+    - id: LEG-GOLD-LE-SILVER
+      observable_state: A Gold principal publicada nomeia a versão da Silver e o pacote da ingestão
+      proof: A Gold publica sem ler landing nem CSV, e a linhagem chega ao pacote ACEITO.
+      requires:
+      - bronze julgada
+      produces:
+      - gold principal publicada
+      tasks:
+      - id: T-20260923-gold-le-silver
+        title: Gold principal a partir da versão da Silver
+        goal: Tirar da Gold a leitura do arquivo inteiro.
+        done_condition: Sobre a Silver INTEGRO cuja Bronze tem pacote ACEITO, a Gold principal publica fechando exato com a âncora sem ler landing nem CSV; sem essa linhagem, nada é publicado.
+        effort: S
+        profile: standard
+        execution_backend: any
+        required_tools: *id001
+        depends_on:
+        - T-20260923-ingestao-julgada
+        touches_paths:
+        - src/medalhao/gold.py
+        - tests/test_gold.py
+        creates_paths: []
+        behavior:
+        - id: B-1
+          given: a Silver publicada INTEGRO e a Bronze que ela leu, com pacote ACEITO no commit
+          when: a Gold principal roda pela entrada nova
+          then: resolve UMA vez a versão da Silver, lê com versionAsOf, segue a versão da Bronze nos metadados da Silver e confere que o commit dessa Bronze nomeia um pacote ACEITO da mesma competência e do mesmo sha256 do CSV; agrega por código reusando agregar, confere exato contra os controles persistidos da Silver e a âncora, e publica pelo protocolo que já existe, com o userMetadata nomeando a versão da Silver e o pacote. NÃO abre a landing nem o CSV.
+        - id: B-2
+          given: uma Silver sem linhagem até um pacote ACEITO, ou com estado diferente de INTEGRO
+          when: a Gold principal roda pela entrada nova
+          then: devolve NAO_MEDIDO sem pacote ACEITO na linhagem e DIVERGE quando a soma não fecha, sem publicar nada; a entrada antiga continua existindo para os testes selados, e nenhum teste já existente de tests/test_gold.py é editado.
+        evals:
+        - id: eval_1
+          description: Lê só a Silver e segue a linhagem
+          bash: docker compose -f infra/docker-compose.yml exec -T spark sh -c 'for c in gold_le_so_a_silver nao_abre_landing_nem_csv linhagem_ate_pacote_aceito; do python3 -m pytest --collect-only -q tests/test_gold.py -k "$c" 2>/dev/null | grep -q "::" || { echo "EVAL=CENARIO_AUSENTE_$c"; exit 1; }; done; python3 -m pytest -q tests/test_gold.py -k "gold_le_so_a_silver or nao_abre_landing_nem_csv or linhagem_ate_pacote_aceito"'
+          verifies:
+          - B-1
+        - id: eval_2
+          description: Fecha exato e nomeia as versões
+          bash: docker compose -f infra/docker-compose.yml exec -T spark sh -c 'for c in gold_da_silver_fecha_com_a_ancora commit_nomeia_silver_e_pacote; do python3 -m pytest --collect-only -q tests/test_gold.py -k "$c" 2>/dev/null | grep -q "::" || { echo "EVAL=CENARIO_AUSENTE_$c"; exit 1; }; done; python3 -m pytest -q tests/test_gold.py -k "gold_da_silver_fecha_com_a_ancora or commit_nomeia_silver_e_pacote"'
+          verifies:
+          - B-1
+        - id: eval_3
+          description: Sem linhagem, nada publica
+          bash: docker compose -f infra/docker-compose.yml exec -T spark sh -c 'for c in sem_pacote_aceito_nao_medido silver_nao_integra_nao_publica gold_soma_que_nao_fecha_diverge; do python3 -m pytest --collect-only -q tests/test_gold.py -k "$c" 2>/dev/null | grep -q "::" || { echo "EVAL=CENARIO_AUSENTE_$c"; exit 1; }; done; python3 -m pytest -q tests/test_gold.py -k "sem_pacote_aceito_nao_medido or silver_nao_integra_nao_publica or gold_soma_que_nao_fecha_diverge"'
+          verifies:
+          - B-2
+        anti_patterns:
+        - action: chamar leitura.ler_competencia na Gold
+          reason: é a leitura do arquivo inteiro que a decisão tirou daqui
+          instead: confiar no pacote ACEITO da ingestão, pela linhagem
+        - action: recalcular Bronze e Silver da landing
+          reason: ignora a Silver publicada e perde a linhagem
+          instead: ler a Silver por versionAsOf
+        - action: editar um teste já existente de tests/test_gold.py
+          reason: teste selado que precisa mudar denuncia mudança de comportamento
+          instead: acrescentar a entrada nova e testes novos
+        do_not_touch:
+        - _raw
+        - cvg/docs/adrs
+        - contracts
+        - src/pda
+        rollback: Reverter src/medalhao/gold.py e tests/test_gold.py ao commit assentado.
+        observability: publicações da Gold sem versão da Silver no commit
+- id: SEAM-CONTRATO-GRUPOS
+  name: Contrato com grupos — o carregador expõe grupos_especie
+  description: Separa aprovar o mapa de grupos de ter quem o leia.
+  evidence:
+  - E-ANCORA-202601
+  responsibility: Expor grupos_especie no Contrato carregado, opcional, e recusar o bloco presente e inválido.
+  consumes:
+  - contrato validado
+  produces:
+  - contrato com grupos
+  owner: medalhao
+  independent_proof: O contrato real expõe os 5 grupos e os 65 códigos; a suíte já existente de tests/test_contrato.py passa inalterada.
+  decision_ids:
+  - DEC-GOLD-POR-ASSUNTOS
+  rejected_alternatives:
+  - alternative: A Gold ler grupos_especie direto do YAML
+    reason: Segunda porta para o mesmo oráculo.
+  swimlane:
+    id: LANE-CONTRATO-GRUPOS
+    name: Contrato com grupos lane
+    owner: medalhao
+    legs:
+    - id: LEG-CONTRATO-EXPOE-GRUPOS
+      observable_state: O Contrato carregado expõe grupos_especie
+      proof: O contrato real expõe os grupos; bloco inválido é recusado no carregamento.
+      requires: []
+      produces:
+      - contrato com grupos
+      tasks:
+      - id: T-20260923-contrato-expoe-grupos
+        title: Expor grupos_especie no Contrato carregado
+        goal: Fazer o objeto carregado dizer o mapa de grupos que o YAML aprova.
+        done_condition: O contrato real expõe grupos_especie com 5 grupos e 65 códigos; um contrato sem o bloco carrega com None; bloco inválido é recusado; e toda a suíte já existente de tests/test_contrato.py passa sem edição.
+        effort: S
+        profile: standard
+        execution_backend: any
+        required_tools: *id001
+        depends_on: []
+        touches_paths:
+        - src/pda/contrato.py
+        - tests/test_contrato.py
+        creates_paths: []
+        behavior:
+        - id: B-1
+          given: o contrato real da competência 2026-01, com grupos_especie aprovado
+          when: o contrato é carregado
+          then: o Contrato expõe grupos_especie com aprovador, data, regra e a lista de grupos, cada um com seu nome e os códigos como TEXTO, lidos do MESMO carregamento; um contrato sem o bloco carrega com None, e é o consumidor que o exige.
+        - id: B-2
+          given: um bloco grupos_especie presente e inválido
+          when: o contrato é carregado
+          then: 'é RECUSADO no carregamento: código repetido entre grupos, código que não é texto, grupo sem códigos, aprovação sem aprovador ou data, ou total de códigos distintos diferente de cardinalidade.codigos_distintos. Nenhum teste já existente de tests/test_contrato.py é editado.'
+        evals:
+        - id: eval_1
+          description: Os grupos expostos, opcionais, em texto
+          bash: docker compose -f infra/docker-compose.yml exec -T spark sh -c 'for c in expoe_grupos_especie grupos_ausentes_viram_none codigos_de_grupo_sao_texto; do python3 -m pytest --collect-only -q tests/test_contrato.py -k "$c" 2>/dev/null | grep -q "::" || { echo "EVAL=CENARIO_AUSENTE_$c"; exit 1; }; done; python3 -m pytest -q tests/test_contrato.py -k "expoe_grupos_especie or grupos_ausentes_viram_none or codigos_de_grupo_sao_texto"'
+          verifies:
+          - B-1
+        - id: eval_2
+          description: Bloco inválido recusado no carregamento
+          bash: docker compose -f infra/docker-compose.yml exec -T spark sh -c 'for c in grupo_codigo_repetido_recusado grupos_cobertura_diferente_recusada grupos_sem_aprovacao_recusado; do python3 -m pytest --collect-only -q tests/test_contrato.py -k "$c" 2>/dev/null | grep -q "::" || { echo "EVAL=CENARIO_AUSENTE_$c"; exit 1; }; done; python3 -m pytest -q tests/test_contrato.py -k "grupo_codigo_repetido_recusado or grupos_cobertura_diferente_recusada or grupos_sem_aprovacao_recusado"'
+          verifies:
+          - B-2
+        - id: eval_3
+          description: O comportamento selado segue intacto
+          bash: docker compose -f infra/docker-compose.yml exec -T spark sh -c 'for c in expoe_mapa_de_colapsos expoe_particionamento nao_relaxa_recusa_de_float; do python3 -m pytest --collect-only -q tests/test_contrato.py -k "$c" 2>/dev/null | grep -q "::" || { echo "EVAL=CENARIO_AUSENTE_$c"; exit 1; }; done; python3 -m pytest -q tests/test_contrato.py -k "expoe_mapa_de_colapsos or expoe_particionamento or nao_relaxa_recusa_de_float"'
+          verifies:
+          - B-1
+          - B-2
+        anti_patterns:
+        - action: exigir grupos_especie no carregador
+          reason: contratos-fixture antigos não o têm
+          instead: expor como opcional e deixar a Gold exigir
+        - action: converter códigos para inteiro
+          reason: '''01'' vira 1 e não casa com o dado'
+          instead: manter e exigir texto
+        - action: editar um teste já existente de tests/test_contrato.py
+          reason: teste selado que precisa mudar denuncia mudança de comportamento
+          instead: só acrescentar testes novos
+        do_not_touch:
+        - _raw
+        - cvg/docs/adrs
+        - contracts
+        rollback: Reverter src/pda/contrato.py e tests/test_contrato.py ao commit assentado.
+        observability: contratos carregados sem grupos_especie
+- id: SEAM-GOLD-ASSUNTOS
+  name: Gold por assuntos — fat_especie e kpis_nacionais
+  description: Separa o agregado reconciliado das tabelas que o cliente consome.
+  evidence:
+  - E-ANCORA-202601
+  responsibility: Publicar fat_especie e kpis_nacionais a partir da Silver publicada, com grão declarado, fechando exato com a âncora antes de publicar.
+  consumes:
+  - contrato com grupos
+  - gold principal publicada
+  produces:
+  - gold por assuntos
+  owner: medalhao
+  independent_proof: Sobre a Silver real, fat_especie tem 65 linhas somando 41572553 e 78521752562.12, e kpis_nacionais uma linha com os mesmos totais.
+  decision_ids:
+  - DEC-GOLD-POR-ASSUNTOS
+  - ADR-0003-HALF-EVEN
+  rejected_alternatives:
+  - alternative: Recalcular Bronze e Silver a partir da landing
+    reason: 'Perde a linhagem: a tabela por assunto tem de nomear a versão da Silver que leu.'
+  swimlane:
+    id: LANE-GOLD-ASSUNTOS
+    name: Gold por assuntos lane
+    owner: medalhao
+    legs:
+    - id: LEG-GOLD-ASSUNTOS
+      observable_state: fat_especie e kpis_nacionais publicadas e reconciliadas
+      proof: Cada tabela fecha exato com a âncora antes do commit que a publica.
+      requires:
+      - contrato com grupos
+      - gold principal publicada
+      produces:
+      - gold por assuntos
+      tasks:
+      - id: T-20260923-gold-assuntos
+        title: Publicar fat_especie e kpis_nacionais a partir da Silver
+        goal: Entregar ao cliente as tabelas por assunto da Fase 1, reconciliadas.
+        done_condition: Sobre uma Silver INTEGRO e uma Gold principal publicada, as duas tabelas são publicadas fechando exato com a âncora; faltando qualquer pré-condição, nada é publicado.
+        effort: S
+        profile: standard
+        execution_backend: any
+        required_tools: *id001
+        depends_on:
+        - T-20260923-contrato-expoe-grupos
+        - T-20260923-gold-le-silver
+        touches_paths: []
+        creates_paths:
+        - src/medalhao/gold_assuntos.py
+        - tests/test_gold_assuntos.py
+        behavior:
+        - id: B-1
+          given: a Silver publicada com estado INTEGRO, a Gold principal da competência publicada, e grupos_especie no Contrato
+          when: a Gold por assuntos roda para a competência
+          then: 'resolve UMA vez a versão da Silver e lê com versionAsOf; num único groupBy por especie_codigo monta fat_especie — grão (especie_codigo, competencia), com descrição, grupo_especie do mapa, qtd_beneficios, vl_total em soma EXATA no DecimalType declarado, vl_minimo, vl_maximo, qtd_vl_zero, vl_medio arredondado meio-para-par com bround, vl_mediano_aprox e vl_p90_aprox — nomes que dizem que são aproximados — com a precisão do percentil declarada, rank_no_grupo e percentuais nacionais —; kpis_nacionais sai SOMANDO fat_especie, grão competência, uma linha, e só os percentis nacionais exigem outra passada. Antes de publicar, confere EXATO: soma de qtd_beneficios igual a count_linhas da âncora, soma de vl_total igual a sum_vl_liquido, kpis_nacionais com os mesmos totais, 65 códigos, cada um em um grupo. Grava em preparo e publica com replaceWhere na competência em s3a://gold/pda/assuntos/fat_especie e s3a://gold/pda/assuntos/kpis_nacionais, DecimalType do contrato, ansi.enabled=true, CHECK >= 0 nas colunas monetárias, imposição de schema ligada e evolução só aditiva com mergeSchema — nunca overwriteSchema —, e o userMetadata do commit nomeia a versão da Silver e a da Gold principal lidas.'
+        - id: B-2
+          given: uma competência sem Gold principal publicada, sem grupos_especie, com código fora do mapa, ou cujas somas não fecham
+          when: a Gold por assuntos roda
+          then: sem Gold principal publicada ou sem grupos_especie devolve NAO_MEDIDO; código fora do mapa ou soma que não fecha devolve DIVERGE nomeando a diferença; em nenhum dos casos publica nada, e nenhuma tolerância é aceita — a igualdade é exata, porque tolerância aqui seria afrouxar o oráculo.
+        evals:
+        - id: eval_1
+          description: Grão, colunas e fechamento exato
+          bash: docker compose -f infra/docker-compose.yml exec -T spark sh -c 'for c in fat_especie_fecha_com_a_ancora kpis_somam_fat_especie medio_arredonda_meio_para_par percentis_rotulados_aprox le_silver_por_versao; do python3 -m pytest --collect-only -q tests/test_gold_assuntos.py -k "$c" 2>/dev/null | grep -q "::" || { echo "EVAL=CENARIO_AUSENTE_$c"; exit 1; }; done; python3 -m pytest -q tests/test_gold_assuntos.py -k "fat_especie_fecha_com_a_ancora or kpis_somam_fat_especie or medio_arredonda_meio_para_par or percentis_rotulados_aprox or le_silver_por_versao"'
+          verifies:
+          - B-1
+        - id: eval_2
+          description: Delta com a doutrina
+          bash: docker compose -f infra/docker-compose.yml exec -T spark sh -c 'for c in publica_com_replacewhere check_nao_negativo_monetario commit_nomeia_versoes_lidas; do python3 -m pytest --collect-only -q tests/test_gold_assuntos.py -k "$c" 2>/dev/null | grep -q "::" || { echo "EVAL=CENARIO_AUSENTE_$c"; exit 1; }; done; python3 -m pytest -q tests/test_gold_assuntos.py -k "publica_com_replacewhere or check_nao_negativo_monetario or commit_nomeia_versoes_lidas"'
+          verifies:
+          - B-1
+        - id: eval_3
+          description: Nada publica sem pré-condição
+          bash: docker compose -f infra/docker-compose.yml exec -T spark sh -c 'for c in sem_gold_principal_nao_medido sem_grupos_nao_medido codigo_fora_do_mapa_diverge soma_que_nao_fecha_diverge; do python3 -m pytest --collect-only -q tests/test_gold_assuntos.py -k "$c" 2>/dev/null | grep -q "::" || { echo "EVAL=CENARIO_AUSENTE_$c"; exit 1; }; done; python3 -m pytest -q tests/test_gold_assuntos.py -k "sem_gold_principal_nao_medido or sem_grupos_nao_medido or codigo_fora_do_mapa_diverge or soma_que_nao_fecha_diverge"'
+          verifies:
+          - B-2
+        anti_patterns:
+        - action: validar com tolerância (< 10 linhas, ~100%)
+          reason: tolerância afrouxa o oráculo e esconde centavo sumido
+          instead: igualdade exata contra a âncora
+        - action: usar overwriteSchema ou round (meio-para-cima)
+          reason: apaga schema em silêncio; arredonda contra o ADR
+          instead: mergeSchema só aditivo; bround meio-para-par
+        - action: comparar especie_codigo com inteiros
+          reason: '''01'' não casa com 1 e tudo cai fora do grupo em silêncio'
+          instead: usar os códigos texto do grupos_especie
+        do_not_touch:
+        - _raw
+        - cvg/docs/adrs
+        - contracts
+        - src/medalhao/gold.py
+        rollback: Remover as duas tabelas por assunto; Silver e Gold principal não são tocadas.
+        observability: competências publicadas na Gold principal sem tabelas por assunto
+- id: SEAM-LIMPA-PREPARO
+  name: Limpeza do preparo — só depois da publicação conferida
+  description: Separa o estágio privado da evidência que fica.
+  evidence:
+  - E-ANCORA-202601
+  responsibility: Apagar o _preparo de uma execução só quando a tabela publicada tem o commit dessa execução, e nunca nada fora do prefixo do preparo dela.
+  consumes:
+  - gold principal publicada
+  produces:
+  - preparo limpo
+  owner: medalhao
+  independent_proof: Com a publicação real conferida, o preparo da execução some e as tabelas publicadas ficam com o mesmo tamanho e a mesma soma.
+  decision_ids:
+  - DEC-PREPARO-APAGADO-APOS-CONFERIR
+  rejected_alternatives:
+  - alternative: Apagar todo o _preparo de uma vez
+    reason: Apagaria o estágio de uma execução ainda em curso.
+  swimlane:
+    id: LANE-LIMPA-PREPARO
+    name: Limpeza do preparo lane
+    owner: medalhao
+    legs:
+    - id: LEG-LIMPA-PREPARO
+      observable_state: Nenhum preparo de execução publicada e conferida sobrevive
+      proof: Só apaga com o commit da execução no histórico; nunca fora do prefixo dela.
+      requires:
+      - gold principal publicada
+      produces:
+      - preparo limpo
+      tasks:
+      - id: T-20260923-limpa-preparo
+        title: Apagar o preparo de execuções publicadas e conferidas
+        goal: Não deixar o estágio privado ocupar o armazenamento.
+        done_condition: Para cada camada, o preparo de uma execução é apagado só se o histórico da tabela publicada tem o commit daquela execução; qualquer outro caso preserva o preparo e diz por quê.
+        effort: S
+        profile: standard
+        execution_backend: any
+        required_tools: *id001
+        depends_on:
+        - T-20260923-gold-le-silver
+        touches_paths: []
+        creates_paths:
+        - src/medalhao/limpeza.py
+        - tests/test_limpeza.py
+        behavior:
+        - id: B-1
+          given: o preparo de uma execução cujo commit está no histórico da tabela publicada
+          when: a limpeza roda para a camada e a execução
+          then: confere o commit pelo id da execução no userMetadata, apaga SÓ o prefixo <camada>/_preparo/.../execucao=<id> — um caminho montado de partes validadas, recusado se vier vazio ou fora de _preparo —, e confere depois que a tabela publicada mantém a mesma versão, a mesma contagem e a mesma soma.
+        - id: B-2
+          given: uma execução sem commit no histórico, um id vazio ou um caminho fora do preparo
+          when: a limpeza roda
+          then: 'não apaga nada e devolve o motivo: execução não publicada preserva o preparo; id vazio ou caminho fora de _preparo é RECUSADO antes de qualquer remoção, porque um prefixo vazio já montou uma vez o caminho do bucket inteiro.'
+        evals:
+        - id: eval_1
+          description: Apaga só o preparo conferido
+          bash: docker compose -f infra/docker-compose.yml exec -T spark sh -c 'for c in apaga_preparo_de_execucao_publicada publicada_intacta_depois; do python3 -m pytest --collect-only -q tests/test_limpeza.py -k "$c" 2>/dev/null | grep -q "::" || { echo "EVAL=CENARIO_AUSENTE_$c"; exit 1; }; done; python3 -m pytest -q tests/test_limpeza.py -k "apaga_preparo_de_execucao_publicada or publicada_intacta_depois"'
+          verifies:
+          - B-1
+        - id: eval_2
+          description: Guarda de caminho
+          bash: docker compose -f infra/docker-compose.yml exec -T spark sh -c 'for c in id_vazio_recusado caminho_fora_do_preparo_recusado execucao_nao_publicada_preserva; do python3 -m pytest --collect-only -q tests/test_limpeza.py -k "$c" 2>/dev/null | grep -q "::" || { echo "EVAL=CENARIO_AUSENTE_$c"; exit 1; }; done; python3 -m pytest -q tests/test_limpeza.py -k "id_vazio_recusado or caminho_fora_do_preparo_recusado or execucao_nao_publicada_preserva"'
+          verifies:
+          - B-2
+        - id: eval_3
+          description: Nada além do prefixo da execução
+          bash: docker compose -f infra/docker-compose.yml exec -T spark sh -c 'for c in outra_execucao_intacta prefixo_montado_de_partes_validadas; do python3 -m pytest --collect-only -q tests/test_limpeza.py -k "$c" 2>/dev/null | grep -q "::" || { echo "EVAL=CENARIO_AUSENTE_$c"; exit 1; }; done; python3 -m pytest -q tests/test_limpeza.py -k "outra_execucao_intacta or prefixo_montado_de_partes_validadas"'
+          verifies:
+          - B-1
+          - B-2
+        anti_patterns:
+        - action: montar o caminho a apagar com variável não validada
+          reason: um valor vazio vira o bucket inteiro
+          instead: validar cada parte e exigir o prefixo _preparo/…/execucao=<id>
+        - action: apagar preparo de execução sem commit publicado
+          reason: pode ser uma execução ainda em curso
+          instead: exigir o commit da execução no histórico
+        - action: usar VACUUM para liberar espaço
+          reason: VACUUM apaga histórico, que é evidência
+          instead: apagar só o preparo, que não é histórico de tabela publicada
+        do_not_touch:
+        - _raw
+        - cvg/docs/adrs
+        - contracts
+        rollback: Remover limpeza.py e seu teste; o preparo apagado é regenerável rodando a camada.
+        observability: preparos de execuções já publicadas
+steel_thread:
+- LEG-JUIZO-NA-INGESTAO
+- LEG-GOLD-LE-SILVER
+- LEG-CONTRATO-EXPOE-GRUPOS
+- LEG-GOLD-ASSUNTOS
+- LEG-LIMPA-PREPARO
