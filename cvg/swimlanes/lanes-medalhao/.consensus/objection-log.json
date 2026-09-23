@@ -13,7 +13,7 @@
     "family": "anthropic"
   },
   "verdict": "REVISE",
-  "prompt_sha256": "d80c94116de1d8169051fd3575ab7f47c76f43dd170013539c07aa45c4351279",
+  "prompt_sha256": "e1940a7486803bbbdfb5bc4c05a35daad310c5bd7c320a6d06cd8d1e8282def0",
   "inputs": [
     {
       "path": "bronze/LEG-BRONZE-REPRODUZ-ANCORA.md",
@@ -25,19 +25,19 @@
     },
     {
       "path": "contrato-ext/LEG-CONTRATO-EXPOE-PARTICAO.md",
-      "sha256": "44c04d9be34e50984c0aa1542097dc1b173dfb08699e8e1fe60ede33f9438f9c"
+      "sha256": "510826cfed5ee2115f6ff143bc29acaf4a941c20fa4350e791a6e945c780850f"
     },
     {
       "path": "contrato-ext/_lane.md",
-      "sha256": "954cd57b6d992e9bb8031654356320a60dc146c02014d03d0776ff7ab7c2bb92"
+      "sha256": "bb18d679c92b7c48368da22e80db93cb1e9d1651d4baae9ccbcaf5620f663b01"
     },
     {
       "path": "gold/LEG-GOLD-RECONCILIA.md",
-      "sha256": "431a4bc1b2c86c5a5667fba821c25881305b66037e1714335908ab58cd14c1c7"
+      "sha256": "fa3e57f9e6f79c7f7a2e92cc3a15b2d125630fbf2cfedb4000dc7f85f92c08fa"
     },
     {
       "path": "gold/_lane.md",
-      "sha256": "3220ae600beb984422fcae2e97617a50c9dc800e06176403e4f66c55dcd7d0ca"
+      "sha256": "4bc778982fe0cecadb1febde96a0708ad1746bc0686015013e9005c066452acd"
     },
     {
       "path": "silver/LEG-SILVER-PRESERVA-DEFEITO.md",
@@ -54,19 +54,19 @@
       "severity": "high",
       "rank": 1,
       "attack_class": "cross-lane-interface",
-      "swimlane": "silver",
+      "swimlane": "LANE-SILVER",
       "leg": "LEG-SILVER-PRESERVA-DEFEITO",
       "location": {
         "plan_file": "cvg/swimlanes/lanes-medalhao/silver/LEG-SILVER-PRESERVA-DEFEITO.md",
-        "section": "tasks/B-2 \u2014 mapa aprovado e caminho positivo contra contrato de teste"
+        "section": "tasks[0].behavior B-2 \u2014 descri\u00e7\u00e3o divergente e mapa aprovado"
       },
-      "title": "O caminho positivo depende de um atributo que nenhum produtor entrega",
-      "body": "A pend\u00eancia de aprova\u00e7\u00e3o do mapa est\u00e1 explicitamente reconhecida e n\u00e3o \u00e9 a obje\u00e7\u00e3o. O problema \u00e9 anterior: a interface Contrato n\u00e3o possui mapa c\u00f3digo\u2192descri\u00e7\u00e3o nem grupos aprovados, e contrato-ext promete acrescentar somente particionamento e limites de expoente. Assim, mesmo um YAML de teste contendo mapa aprovado n\u00e3o tem caminho declarado para entreg\u00e1-lo a Silver pelo carregador real. Um teste positivo com objeto artificial pode passar enquanto a composi\u00e7\u00e3o real permanece incapaz de produzir INTEGRO. Ler o YAML novamente em Silver tamb\u00e9m contornaria a \u00fanica leitura do contrato que o plano da extens\u00e3o exige. A decis\u00e3o sobre essa interface precisa voltar ao planejamento, sem presumir autoriza\u00e7\u00e3o para ampliar a extens\u00e3o.",
-      "evidence": "Silver B-2: 'o caminho positivo provado contra contrato de teste'. Contrato-ext B-1: 'uma \u00fanica leitura do YAML'. A defini\u00e7\u00e3o atual de src/pda/contrato.py::Contrato exp\u00f5e competencia, procedencia, layout, ancora, cardinalidade, defeitos_conhecidos e politica_decimal; n\u00e3o exp\u00f5e o mapa.",
+      "title": "O mapa de colapsos n\u00e3o sustenta a compara\u00e7\u00e3o de descri\u00e7\u00e3o de qualquer c\u00f3digo",
+      "body": "Silver promete detectar um c\u00f3digo cuja descri\u00e7\u00e3o diverge do contrato, mas contrato-ext s\u00f3 entrega os grupos colapsados: 24 dos 65 c\u00f3digos. Trocar as descri\u00e7\u00f5es de dois c\u00f3digos n\u00e3o colapsados j\u00e1 no Bronze preserva as quatro cardinalidades, os grupos aprovados e os totais por c\u00f3digo. A conserva\u00e7\u00e3o Bronze\u2192Silver e a compara\u00e7\u00e3o Gold\u2192Silver tamb\u00e9m passam. A decis\u00e3o do dono aprova especificamente o mapa dos 11 colapsos; estend\u00ea-la aos outros 41 c\u00f3digos seria requisito novo. A abrang\u00eancia da promessa de Silver permanece sem referencial.",
+      "evidence": "B-2 come\u00e7a com 'um c\u00f3digo cuja descri\u00e7\u00e3o diverge do contrato'; contrato-ext B-1 define grupos com descri\u00e7\u00e3o original e lista de c\u00f3digos; DEC-MAPA-APROVADO-OBRIGATORIO especifica 'dos 11 colapsos'.",
       "cites": [
-        "cvg/swimlanes/lanes-medalhao/contrato-ext/LEG-CONTRATO-EXPOE-PARTICAO.md \u2014 B-1 e done_condition",
-        "src/pda/contrato.py \u2014 Contrato",
-        "cvg/swimlanes/lanes-medalhao/silver/LEG-SILVER-PRESERVA-DEFEITO.md \u2014 B-2"
+        "cvg/swimlanes/lanes-medalhao/contrato-ext/LEG-CONTRATO-EXPOE-PARTICAO.md \u2014 B-1",
+        "cvg/swimlanes/medalhao-recipe.yaml \u2014 DEC-MAPA-APROVADO-OBRIGATORIO",
+        "cvg/docs/tech-spec/tech-spec-pda-beneficios.md \u2014 R-3 e R-6"
       ],
       "proposal": null
     },
@@ -75,39 +75,39 @@
       "severity": "high",
       "rank": 2,
       "attack_class": "unverified-assumption",
-      "swimlane": "gold",
+      "swimlane": "LANE-GOLD",
       "leg": "LEG-GOLD-RECONCILIA",
       "location": {
         "plan_file": "cvg/swimlanes/lanes-medalhao/gold/LEG-GOLD-RECONCILIA.md",
-        "section": "B-1 \u2014 publica\u00e7\u00e3o indivis\u00edvel; eval_3"
+        "section": "tasks[0].behavior B-1 \u2014 publica\u00e7\u00e3o indivis\u00edvel; evals"
       },
-      "title": "A prova de destino inalterado termina antes da transi\u00e7\u00e3o que pode expor dados parciais",
-      "body": "O plano exige atomicidade e preserva\u00e7\u00e3o do destino quando a publica\u00e7\u00e3o \u00e9 interrompida, mas o cen\u00e1rio obrigat\u00f3rio observa o destino DURANTE a reconcilia\u00e7\u00e3o. Uma implementa\u00e7\u00e3o pode satisfazer esse cen\u00e1rio, obter autoriza\u00e7\u00e3o e depois copiar arquivos sequencialmente para o destino p\u00fablico. A falha ocorre depois da janela observada. Nenhum cen\u00e1rio obrigat\u00f3rio nomeado exercita interrup\u00e7\u00e3o durante a publica\u00e7\u00e3o ou leitura concorrente da transi\u00e7\u00e3o. Tamb\u00e9m n\u00e3o est\u00e1 declarado qual destino e qual opera\u00e7\u00e3o concretizam a indivisibilidade; n\u00e3o h\u00e1 evid\u00eancia para tratar essa promessa como demonstrada.",
-      "evidence": "B-1: 'o eval observa que o caminho de destino permanece inalterado DURANTE a reconcilia\u00e7\u00e3o'; posteriormente: 'Publica\u00e7\u00e3o interrompida deixa o destino como estava antes'. eval_3 exige destino_inalterado_durante, mas n\u00e3o exige cen\u00e1rio de interrup\u00e7\u00e3o da publica\u00e7\u00e3o.",
+      "title": "Atomicidade \u00e9 exigida sem definir o destino e a opera\u00e7\u00e3o que a realiza",
+      "body": "O plano exige visibilidade indivis\u00edvel de v\u00e1rios arquivos e preserva\u00e7\u00e3o do destino ap\u00f3s interrup\u00e7\u00e3o, mas n\u00e3o declara o backend de publica\u00e7\u00e3o, a unidade de troca ou o ponto de commit observado pelos consumidores. Essas condi\u00e7\u00f5es determinam se a opera\u00e7\u00e3o \u00e9 implement\u00e1vel. Os evals nomeados observam o destino durante a reconcilia\u00e7\u00e3o, mas n\u00e3o exigem interrup\u00e7\u00e3o durante a publica\u00e7\u00e3o nem leitura concorrente nessa transi\u00e7\u00e3o. Uma implementa\u00e7\u00e3o pode satisfazer os testes indicados e expor apenas parte do conjunto ap\u00f3s obter autoriza\u00e7\u00e3o.",
+      "evidence": "B-1: 'Publica\u00e7\u00e3o interrompida deixa o destino como estava antes'. eval_3 exige destino_inalterado_durante, descrito como observa\u00e7\u00e3o DURANTE a reconcilia\u00e7\u00e3o, sem cen\u00e1rio obrigat\u00f3rio de interrup\u00e7\u00e3o na publica\u00e7\u00e3o.",
       "cites": [
-        "cvg/swimlanes/lanes-medalhao/gold/LEG-GOLD-RECONCILIA.md \u2014 B-1 e eval_3",
-        "cvg/docs/tech-spec/tech-spec-pda-beneficios.md \u2014 Problem restated e R-7"
+        "cvg/docs/tech-spec/tech-spec-pda-beneficios.md \u2014 Problem restated e R-7",
+        "cvg/swimlanes/lanes-medalhao/gold/LEG-GOLD-RECONCILIA.md \u2014 B-1 e eval_3"
       ],
       "proposal": null
     },
     {
       "id": "C3",
-      "severity": "medium",
+      "severity": "high",
       "rank": 3,
       "attack_class": "race",
-      "swimlane": "bronze",
+      "swimlane": "LANE-BRONZE",
       "leg": "LEG-BRONZE-REPRODUZ-ANCORA",
       "location": {
         "plan_file": "cvg/swimlanes/lanes-medalhao/bronze/LEG-BRONZE-REPRODUZ-ANCORA.md",
-        "section": "B-2 \u2014 fechamento por universo independente"
+        "section": "tasks[0].behavior B-1 e B-2 \u2014 rela\u00e7\u00e3o materializada e universo independente"
       },
-      "title": "Duas observa\u00e7\u00f5es do lago podem representar gera\u00e7\u00f5es diferentes",
-      "body": "O fechamento compara contagens da leitura com um universo obtido por listagem independente, sem declarar que ambos representam o mesmo conjunto est\u00e1vel de objetos. Se uma parti\u00e7\u00e3o leg\u00edtima for acrescentada entre essas observa\u00e7\u00f5es, a listagem poder\u00e1 conter linhas que a rela\u00e7\u00e3o anterior n\u00e3o cont\u00e9m. O plano determina DIVERGE e chama a diferen\u00e7a de contamina\u00e7\u00e3o, embora o contraexemplo seja uma atualiza\u00e7\u00e3o concorrente leg\u00edtima. Materializar as linhas da compet\u00eancia protege a entrega a Silver, mas n\u00e3o estabelece por si s\u00f3 a identidade temporal entre todas as observa\u00e7\u00f5es usadas no fechamento. A aus\u00eancia de escritor concorrente ou de outra garantia equivalente continua sendo hip\u00f3tese.",
-      "evidence": "B-2: 'o total vem de um UNIVERSO INDEPENDENTE, a listagem dos objetos do lago, nunca da mesma leitura agrupada'. O contrato admite valores de parti\u00e7\u00e3o vari\u00e1veis por execu\u00e7\u00e3o.",
+      "title": "As leituras independentes n\u00e3o t\u00eam uma gera\u00e7\u00e3o comum declarada",
+      "body": "Bronze compara a leitura da parti\u00e7\u00e3o, as contagens das demais parti\u00e7\u00f5es e uma listagem independente de objetos. O plano n\u00e3o estabelece que essas observa\u00e7\u00f5es pertencem \u00e0 mesma gera\u00e7\u00e3o do lago, nem define o resultado quando o carregamento paralelo altera objetos entre elas. Uma atualiza\u00e7\u00e3o leg\u00edtima entre contagem e listagem pode produzir DIVERGE por contamina\u00e7\u00e3o inexistente. A rela\u00e7\u00e3o materializada entregue a Silver n\u00e3o resolve a consist\u00eancia temporal entre as medi\u00e7\u00f5es anteriores.",
+      "evidence": "B-2 exige total obtido de 'um UNIVERSO INDEPENDENTE, a listagem dos objetos do lago'; B-1 exige rela\u00e7\u00e3o materializada, mas n\u00e3o define estabilidade da listagem e das outras leituras.",
       "cites": [
-        "cvg/swimlanes/lanes-medalhao/bronze/LEG-BRONZE-REPRODUZ-ANCORA.md \u2014 B-1 e B-2",
-        "contracts/competencia-202601.yaml \u2014 particionamento",
-        "cvg/docs/tech-spec/tech-spec-pda-beneficios.md \u2014 Scope: carregamento atual segue em paralelo"
+        "cvg/docs/tech-spec/tech-spec-pda-beneficios.md \u2014 Scope: carregamento atual segue em paralelo",
+        "cvg/docs/adrs/0006-the-judge-ships-before-the-spark-producer-that-it-will-judge.md \u2014 Consequences",
+        "cvg/swimlanes/lanes-medalhao/bronze/LEG-BRONZE-REPRODUZ-ANCORA.md \u2014 B-2"
       ],
       "proposal": null
     },
@@ -115,22 +115,20 @@
       "id": "C4",
       "severity": "medium",
       "rank": 4,
-      "attack_class": "observability",
-      "swimlane": "gold",
-      "leg": "LEG-GOLD-RECONCILIA",
+      "attack_class": "unverified-assumption",
+      "swimlane": "LANE-CONTRATO-EXT",
+      "leg": "LEG-CONTRATO-EXPOE-PARTICAO",
       "location": {
-        "plan_file": "cvg/swimlanes/lanes-medalhao/gold/LEG-GOLD-RECONCILIA.md",
-        "section": "B-1 \u2014 marca PROCEDENCIA_NAO_VINCULADA e registro de falhas"
+        "plan_file": "cvg/swimlanes/lanes-medalhao/contrato-ext/LEG-CONTRATO-EXPOE-PARTICAO.md",
+        "section": "tasks[0].behavior B-1 \u2014 valida\u00e7\u00e3o de emax/emin"
       },
-      "title": "A recusa por proced\u00eancia n\u00e3o vinculada n\u00e3o tem posi\u00e7\u00e3o definida no fluxo de evid\u00eancia",
-      "body": "O diagn\u00f3stico serializado est\u00e1 contratado para recusa do envelope e estados de camada diferentes de INTEGRO. Entretanto, Bronze pode entregar INTEGRO com PROCEDENCIA_NAO_VINCULADA, e a marca n\u00e3o faz parte do ENVELOPE_SCHEMA nem de InsumosExecucao. Gold deve bloquear a publica\u00e7\u00e3o, mas o plano n\u00e3o determina se essa recusa acontece dentro do callback, onde gera evento_falha, ou depois do retorno autorizado do orquestrador. A segunda implementa\u00e7\u00e3o pode deixar um pacote ACEITO sem registrar a raz\u00e3o efetiva da n\u00e3o publica\u00e7\u00e3o. O teste que verifica somente aus\u00eancia de publica\u00e7\u00e3o sob a marca n\u00e3o distingue esses caminhos.",
-      "evidence": "Bronze B-1 permite 'bronze conferido' marcado PROCEDENCIA_NAO_VINCULADA. Gold B-1 exige que 'Gold recusa publicar sob ela', enquanto os gatilhos expl\u00edcitos do diagn\u00f3stico s\u00e3o envelope recusado e camada fora de INTEGRO. O envelope fechado e InsumosExecucao n\u00e3o possuem campo para essa marca.",
+      "title": "Inteiros ordenados ainda podem formar um contexto inv\u00e1lido ou destrutivo",
+      "body": "Os crit\u00e9rios expl\u00edcitos de valida\u00e7\u00e3o n\u00e3o bastam para assegurar que os limites sejam utiliz\u00e1veis e n\u00e3o interfiram na \u00e2ncora. Emin=1/Emax=2 e Emin=-2/Emax=-1 s\u00e3o inteiros ordenados, mas Context os recusa. Emin=-1/Emax=1 \u00e9 aceito pelo construtor e transforma a soma da \u00e2ncora em Infinity com traps=[]. O plano promete recusar a pol\u00edtica inv\u00e1lida no carregamento, mas seus exemplos e eval gen\u00e9rico n\u00e3o delimitam esses casos.",
+      "evidence": "Contraexemplo executado em Python: Context com Emin=1/Emax=2 levanta ValueError; com Emin=-2/Emax=-1 tamb\u00e9m; com Emin=-1/Emax=1, prec=14 e traps=[], Decimal('78521752562.12') + Decimal('0') resulta em Infinity.",
       "cites": [
-        "cvg/swimlanes/lanes-medalhao/bronze/LEG-BRONZE-REPRODUZ-ANCORA.md \u2014 B-1",
-        "cvg/swimlanes/lanes-medalhao/gold/LEG-GOLD-RECONCILIA.md \u2014 B-1 e eval_1",
-        "src/pda/envelope.py \u2014 ENVELOPE_SCHEMA",
-        "src/pda/orquestracao.py \u2014 InsumosExecucao",
-        "cvg/docs/tech-spec/tech-spec-pda-beneficios.md \u2014 pacote com veredito, causa e n\u00fameros"
+        "contracts/competencia-202601.yaml \u2014 politica_decimal: limites que n\u00e3o interferem",
+        "cvg/docs/adrs/0009-the-derived-precision-assumes-a-monotonic-sum-with-no-negative-values.md \u2014 Decision e Consequences",
+        "cvg/swimlanes/lanes-medalhao/contrato-ext/LEG-CONTRATO-EXPOE-PARTICAO.md \u2014 B-1"
       ],
       "proposal": null
     },
@@ -139,19 +137,19 @@
       "severity": "medium",
       "rank": 5,
       "attack_class": "cross-lane-interface",
-      "swimlane": "contrato-ext",
-      "leg": "LEG-CONTRATO-EXPOE-PARTICAO",
+      "swimlane": "LANE-BRONZE",
+      "leg": "LEG-BRONZE-REPRODUZ-ANCORA",
       "location": {
-        "plan_file": "cvg/swimlanes/lanes-medalhao/contrato-ext/LEG-CONTRATO-EXPOE-PARTICAO.md",
-        "section": "B-1 \u2014 campos opcionais; eval_1"
+        "plan_file": "cvg/swimlanes/lanes-medalhao/bronze/LEG-BRONZE-REPRODUZ-ANCORA.md",
+        "section": "tasks[0].behavior B-1 \u2014 identidade e posi\u00e7\u00e3o de valor inv\u00e1lido"
       },
-      "title": "Aus\u00eancia de configura\u00e7\u00e3o est\u00e1 definida; configura\u00e7\u00e3o presente e inv\u00e1lida n\u00e3o est\u00e1",
-      "body": "A extens\u00e3o distingue campos ausentes de zero e promete expor os valores presentes, mas n\u00e3o contrata a resposta a um bloco parcial ou inv\u00e1lido. Por exemplo, politica_decimal.emax='invalido' pode ser entregue pelo carregador e s\u00f3 falhar quando uma camada construir Context; particionamento={} pode chegar ao consumidor como um objeto presente sem chave ou caminho. Bronze s\u00f3 define explicitamente o caso None. Isso deixa sem dono a distin\u00e7\u00e3o entre contrato recusado, aus\u00eancia de medi\u00e7\u00e3o e erro operacional. Os testes existentes n\u00e3o verificam os campos novos, e os cen\u00e1rios novos cobrem presen\u00e7a v\u00e1lida e aus\u00eancia, n\u00e3o essa terceira classe. \u00c9 uma pergunta sobre o dom\u00ednio da interface acrescentada, n\u00e3o autoriza\u00e7\u00e3o para alterar o or\u00e1culo.",
-      "evidence": "B-1: 'Os campos novos s\u00e3o OPCIONAIS no carregador' e 'None n\u00e3o \u00e9 zero nem vazio'. eval_1 exige expoe_particionamento, expoe_limites_de_expoente, campos_novos_sao_opcionais e ausencia_vira_none_nao_zero. Bronze B-2 trata particionamento ou limites de expoente como None, sem declarar o tratamento de configura\u00e7\u00e3o presente e malformada.",
+      "title": "A posi\u00e7\u00e3o exigida no diagn\u00f3stico n\u00e3o tem significado contratado no Parquet",
+      "body": "Bronze exige identidade, valor original e posi\u00e7\u00e3o para todo valor fora do dom\u00ednio, mas sua entrada declarada s\u00f3 cont\u00e9m c\u00f3digo, descri\u00e7\u00e3o, valor e compet\u00eancia. Gold reconhece explicitamente que o Parquet n\u00e3o carrega o n\u00famero da linha do CSV. Essa limita\u00e7\u00e3o tamb\u00e9m afeta o caminho negativo de Bronze: uma numera\u00e7\u00e3o produzida durante a execu\u00e7\u00e3o n\u00e3o demonstra a posi\u00e7\u00e3o na origem. Sem definir qual posi\u00e7\u00e3o \u00e9 reportada, implementa\u00e7\u00f5es podem fabricar identidades incompat\u00edveis e o pacote n\u00e3o permite localizar de forma reproduz\u00edvel a ocorr\u00eancia recusada.",
+      "evidence": "Bronze B-1: 'defeito classificado com identidade, valor original e posi\u00e7\u00e3o'. Gold B-1: 'a posi\u00e7\u00e3o de linha do CSV, que o Parquet n\u00e3o carrega'. A dispensa em Gold vale apenas para o caminho positivo sem defeitos de linha.",
       "cites": [
-        "cvg/swimlanes/lanes-medalhao/contrato-ext/LEG-CONTRATO-EXPOE-PARTICAO.md \u2014 B-1 e eval_1",
-        "cvg/swimlanes/lanes-medalhao/bronze/LEG-BRONZE-REPRODUZ-ANCORA.md \u2014 B-2",
-        "src/pda/contrato.py \u2014 contrato p\u00fablico de carregar_contrato e ContratoRecusado"
+        "cvg/docs/adrs/0009-the-derived-precision-assumes-a-monotonic-sum-with-no-negative-values.md \u2014 Consequences",
+        "cvg/docs/tech-spec/tech-spec-pda-beneficios.md \u2014 R-6 e pacote de evid\u00eancia",
+        "cvg/swimlanes/lanes-medalhao/gold/LEG-GOLD-RECONCILIA.md \u2014 B-1"
       ],
       "proposal": null
     }
@@ -159,21 +157,21 @@
   "cross_lane_interfaces": [],
   "fork": {
     "choice": "B",
-    "reason": "Declara\u00e7\u00e3o j\u00e1 presente nos quatro arquivos _lane.md; transcrita, n\u00e3o escolhida pelo advers\u00e1rio.",
+    "reason": "Transcrito dos quatro _lane.md; nenhuma escolha feita pelo advers\u00e1rio.",
     "per_plan_declared": true
   },
   "open_questions": [
     {
-      "q": "Qual interface carregada fornece a Silver o mapa aprovado usado no teste positivo, considerando o escopo limitado de contrato-ext?",
+      "q": "A compara\u00e7\u00e3o contratada de identidade cobre somente os 11 grupos aprovados ou tamb\u00e9m os 41 c\u00f3digos n\u00e3o colapsados? A segunda interpreta\u00e7\u00e3o exige decis\u00e3o acima deste passe.",
       "blocks_build": true
     },
     {
-      "q": "Qual destino e opera\u00e7\u00e3o sustentam a publica\u00e7\u00e3o indivis\u00edvel, e qual execu\u00e7\u00e3o interrompida prova essa propriedade?",
+      "q": "Qual destino e qual opera\u00e7\u00e3o de publica\u00e7\u00e3o sustentam a visibilidade indivis\u00edvel exigida por Gold?",
       "blocks_build": true
     },
     {
-      "q": "Qual garantia mant\u00e9m listagem e contagens do fechamento de Bronze na mesma gera\u00e7\u00e3o de objetos?",
-      "blocks_build": false
+      "q": "Qual garantia mant\u00e9m listagem, contagens e parti\u00e7\u00e3o de Bronze na mesma gera\u00e7\u00e3o enquanto o carregamento existente continua operando?",
+      "blocks_build": true
     }
   ],
   "rounds_run": 1

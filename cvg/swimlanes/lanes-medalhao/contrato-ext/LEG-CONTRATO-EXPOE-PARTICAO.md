@@ -1,6 +1,6 @@
 > Projetado de `LEG-CONTRATO-EXPOE-PARTICAO.md` pelo Seamwise.
 > **Não edite aqui** — edite a recipe e rode `seamwise plan`.
-> origem sha256: `53987fef6ad67cbc11ac77557a4fa80418a4a064e8bb458f07aee732ad3e8656`
+> origem sha256: `a531351f1e8bbc5f917214da60aa1d57d61d1fb4cb89d690bfdfd917e42685bc`
 
 ---
 
@@ -44,12 +44,20 @@ tasks:
       valores medidos, objetos auxiliares ignorados — e politica_decimal com emax 999999 e emin -999999,
       com aprovador e data
     when: o contrato é carregado
-    then: 'o objeto Contrato expõe um campo particionamento com os cinco atributos e a politica_decimal
-      expõe emax e emin, lidos do MESMO carregamento — uma única leitura do YAML, nunca uma segunda porta
-      para o mesmo oráculo. Os campos novos são OPCIONAIS no carregador: um contrato sem esses blocos
-      carrega com eles None, e None não é zero nem vazio — é ausência declarada, que Bronze, e não o carregador,
-      trata como NAO_MEDIDO. Exigi-los aqui recusaria os contratos-fixture da primeira descida, que não
-      os têm, e quebraria a suíte selada: o requisito é do consumidor, e é ele que o impõe'
+    then: 'o objeto Contrato expõe um campo particionamento com os cinco atributos, a politica_decimal
+      expõe emax e emin, e o Contrato expõe o MAPA DE COLAPSOS APROVADO — os grupos, cada um com a descrição
+      original e a lista dos códigos que ela cobre, e o aprovador e a data da aprovação —, porque a decisão
+      DEC-MAPA-APROVADO-OBRIGATORIO torna o mapa condição de publicação e, sem este campo, ele não teria
+      caminho do YAML até Silver nem depois de aprovado, lidos do MESMO carregamento — uma única leitura
+      do YAML, nunca uma segunda porta para o mesmo oráculo. Os campos novos são OPCIONAIS no carregador:
+      um contrato sem esses blocos carrega com eles None, e None não é zero nem vazio — é ausência declarada,
+      que Bronze, e não o carregador, trata como NAO_MEDIDO. Exigi-los aqui recusaria os contratos-fixture
+      da primeira descida, que não os têm, e quebraria a suíte selada: o requisito é do consumidor, e
+      é ele que o impõe. Já um bloco PRESENTE E INVÁLIDO é RECUSADO no carregamento, como o carregador
+      selado já faz com política contraditória — emax que não é inteiro, emin maior que emax, particionamento
+      sem chave, mapa com grupo de um código só ou código repetido entre grupos, aprovação sem aprovador
+      ou sem data. Entregar o bloco e deixar a camada tropeçar ao construir o Context trocaria uma recusa
+      com motivo por uma exceção longe da causa'
   - id: B-2
     given: a suíte já existente de tests/test_contrato.py, selada na primeira descida
     when: o carregador estendido é testado
@@ -62,10 +70,11 @@ tasks:
   - id: eval_1
     description: Os dois blocos expostos, opcionais, e None não é zero
     bash: docker compose -f infra/docker-compose.yml exec -T spark sh -c 'for c in expoe_particionamento
-      expoe_limites_de_expoente campos_novos_sao_opcionais ausencia_vira_none_nao_zero; do python3 -m
-      pytest --collect-only -q tests/test_contrato.py -k "$c" 2>/dev/null | grep -q "::" || { echo "EVAL=CENARIO_AUSENTE_$c";
-      exit 1; }; done; python3 -m pytest -q tests/test_contrato.py -k "expoe_particionamento or expoe_limites_de_expoente
-      or campos_novos_sao_opcionais or ausencia_vira_none_nao_zero"'
+      expoe_limites_de_expoente campos_novos_sao_opcionais ausencia_vira_none_nao_zero expoe_mapa_de_colapsos;
+      do python3 -m pytest --collect-only -q tests/test_contrato.py -k "$c" 2>/dev/null | grep -q "::"
+      || { echo "EVAL=CENARIO_AUSENTE_$c"; exit 1; }; done; python3 -m pytest -q tests/test_contrato.py
+      -k "expoe_particionamento or expoe_limites_de_expoente or campos_novos_sao_opcionais or ausencia_vira_none_nao_zero
+      or expoe_mapa_de_colapsos"'
     verifies:
     - B-1
   - id: eval_2
@@ -81,10 +90,10 @@ tasks:
   - id: eval_3
     description: Nada do comportamento selado afrouxou
     bash: docker compose -f infra/docker-compose.yml exec -T spark sh -c 'for c in nao_relaxa_recusa_de_float
-      nao_muda_precisao_derivada nao_le_o_yaml_duas_vezes; do python3 -m pytest --collect-only -q tests/test_contrato.py
-      -k "$c" 2>/dev/null | grep -q "::" || { echo "EVAL=CENARIO_AUSENTE_$c"; exit 1; }; done; python3
-      -m pytest -q tests/test_contrato.py -k "nao_relaxa_recusa_de_float or nao_muda_precisao_derivada
-      or nao_le_o_yaml_duas_vezes"'
+      nao_muda_precisao_derivada nao_le_o_yaml_duas_vezes bloco_presente_e_invalido_recusado; do python3
+      -m pytest --collect-only -q tests/test_contrato.py -k "$c" 2>/dev/null | grep -q "::" || { echo
+      "EVAL=CENARIO_AUSENTE_$c"; exit 1; }; done; python3 -m pytest -q tests/test_contrato.py -k "nao_relaxa_recusa_de_float
+      or nao_muda_precisao_derivada or nao_le_o_yaml_duas_vezes or bloco_presente_e_invalido_recusado"'
     verifies:
     - B-2
   anti_patterns:
@@ -103,7 +112,7 @@ tasks:
   - contracts
   rollback: Reverter src/pda/contrato.py e tests/test_contrato.py ao commit selado.
   observability: contratos carregados sem os blocos novos
-source_seam_sha256: 81e41abc1026403f81268f18d6c448930b7eda5b3932a5443af2499eda1233e3
+source_seam_sha256: b6d66332cce9197264260fdf1b7855795ca94547013c7834db298b303541812d
 ---
 # O Contrato carregado expõe particionamento e limites de expoente
 

@@ -1,6 +1,6 @@
 > Projetado de `LEG-GOLD-RECONCILIA.md` pelo Seamwise.
 > **Não edite aqui** — edite a recipe e rode `seamwise plan`.
-> origem sha256: `4123c6d886f4d99bba63531220d162c86eb07c27ab5cbb4af52a62fb86996031`
+> origem sha256: `93f835d7ba6c82f4c231014e31f11543cd4d016370b376683903a24242d9005f`
 
 ---
 
@@ -109,36 +109,37 @@ tasks:
       caminho_contrato, executar_leitura), em que executar_leitura é o ponto de injeção, e é DENTRO dele
       que roda a cadeia INTEIRA — Bronze, Silver e Gold — e que Gold chama envelope.validar_envelope(envelope,
       capacidade_leitura, contrato) ANTES de montar os insumos, porque, MEDIDO, conduzir() NÃO valida
-      o envelope: ele só chama julgar() sobre insumos.agregado. Recusa do envelope, e qualquer camada
-      que PARE a cadeia — Bronze ou Silver fora de INTEGRO, inclusive Silver sem o mapa aprovado —, sobe
-      como exceção cuja MENSAGEM é o diagnóstico estruturado serializado em JSON — camada, estado, os
-      controles que divergiram com o valor observado e o ancorado, e as classificações —, porque, MEDIDO,
-      o pacote guarda de evento_falha apenas {tipo, mensagem}: uma mensagem ''Bronze DIVERGE'' descartaria
-      tudo o que permite reconstruir a recusa. O veredito EXTERNO é o do orquestrador — ERRO, sem autorização
-      de publicar —, e ''sem tradução'' significa que o estado do medalhão é preservado VERBATIM dentro
-      do pacote, não re-rotulado. conduzir a captura, grava o pacote com evento_falha e devolve um Desfecho
-      sem autorização de publicar. Assim TODO caminho deixa evidência, e não só o que chega à agregação.
-      Pelo ponto de injeção Gold entrega um InsumosExecucao que PAREIA a leitura PRÓPRIA do juiz sobre
-      o CSV com o envelope de Gold — hash_ancorado, hash_observado pela leitura, hash_declarado no envelope,
-      defeitos_leitura contra defeitos_envelope, totais_leitura contra totais_envelope. conduzir carrega
-      o contrato, julga, grava o pacote de evidência em QUALQUER desfecho e devolve um Desfecho; Gold
-      publica se e somente se Desfecho.autorizado_publicar for verdadeiro E Desfecho.caminho_pacote existir
-      em disco. Não se compara string ''ACEITO'' contra o retorno de julgar(), que devolve Veredito(aceito,
-      classificacoes), nem contra rederivar_veredito(), que devolve o par (veredito, causa) — descrever
-      essas assinaturas em prosa errou um detalhe a cada rodada, e o orquestrador já as fala. Gold importa
-      o orquestrador e o juiz, jamais os edita, e nenhum dos dois importa Gold. A publicação é um passo
-      POSTERIOR e condicionado a autorizado_publicar, e o veredito CONSOME a marca PROCEDENCIA_NAO_VINCULADA
-      que Bronze emite e Silver preserva — Gold recusa publicar sob ela, e a recusa tem eval próprio,
-      senão cada camada cumpre o seu e a marca se perde na transformação: se as candidatas fossem escritas
-      no destino para depois serem relidas, o dado divergente já teria ficado exposto antes de qualquer
-      veredito, e remover depois não desfaz a exposição. Um teste que confira só o resultado final ou
-      a ausência de arquivos ao término não vê isso — o eval observa que o caminho de destino permanece
-      inalterado DURANTE a reconciliação. E a publicação em si é uma transição INDIVISÍVEL de visibilidade:
-      o conjunto publicado é exatamente o conjunto reconciliado, tudo ou nada. Copiar vários arquivos
-      expondo-os à medida que chegam deixaria um consumidor lendo parte das candidatas, ou misturadas
-      com as da execução anterior, com a reconciliação correta e o total lido por ninguém aprovado — e
-      uma interrupção no meio congela esse estado. Publicação interrompida deixa o destino como estava
-      antes'
+      o envelope: ele só chama julgar() sobre insumos.agregado. Recusa do envelope, a marca PROCEDENCIA_NAO_VINCULADA
+      — que não cabe no ENVELOPE_SCHEMA nem em InsumosExecucao, e por isso é decidida AQUI, antes dos
+      insumos, mesmo com as camadas INTEGRO —, e qualquer camada que PARE a cadeia — Bronze ou Silver
+      fora de INTEGRO, inclusive Silver sem o mapa aprovado —, sobe como exceção cuja MENSAGEM é o diagnóstico
+      estruturado serializado em JSON — camada, estado, os controles que divergiram com o valor observado
+      e o ancorado, e as classificações —, porque, MEDIDO, o pacote guarda de evento_falha apenas {tipo,
+      mensagem}: uma mensagem ''Bronze DIVERGE'' descartaria tudo o que permite reconstruir a recusa.
+      O veredito EXTERNO é o do orquestrador — ERRO, sem autorização de publicar —, e ''sem tradução''
+      significa que o estado do medalhão é preservado VERBATIM dentro do pacote, não re-rotulado. conduzir
+      a captura, grava o pacote com evento_falha e devolve um Desfecho sem autorização de publicar. Assim
+      TODO caminho deixa evidência, e não só o que chega à agregação. Pelo ponto de injeção Gold entrega
+      um InsumosExecucao que PAREIA a leitura PRÓPRIA do juiz sobre o CSV com o envelope de Gold — hash_ancorado,
+      hash_observado pela leitura, hash_declarado no envelope, defeitos_leitura contra defeitos_envelope,
+      totais_leitura contra totais_envelope. conduzir carrega o contrato, julga, grava o pacote de evidência
+      em QUALQUER desfecho e devolve um Desfecho; Gold publica se e somente se Desfecho.autorizado_publicar
+      for verdadeiro E Desfecho.caminho_pacote existir em disco. Não se compara string ''ACEITO'' contra
+      o retorno de julgar(), que devolve Veredito(aceito, classificacoes), nem contra rederivar_veredito(),
+      que devolve o par (veredito, causa) — descrever essas assinaturas em prosa errou um detalhe a cada
+      rodada, e o orquestrador já as fala. Gold importa o orquestrador e o juiz, jamais os edita, e nenhum
+      dos dois importa Gold. A publicação é um passo POSTERIOR e condicionado a autorizado_publicar, e
+      o veredito CONSOME a marca PROCEDENCIA_NAO_VINCULADA que Bronze emite e Silver preserva — Gold recusa
+      publicar sob ela, e a recusa tem eval próprio, senão cada camada cumpre o seu e a marca se perde
+      na transformação: se as candidatas fossem escritas no destino para depois serem relidas, o dado
+      divergente já teria ficado exposto antes de qualquer veredito, e remover depois não desfaz a exposição.
+      Um teste que confira só o resultado final ou a ausência de arquivos ao término não vê isso — o eval
+      observa que o caminho de destino permanece inalterado DURANTE a reconciliação. E a publicação em
+      si é uma transição INDIVISÍVEL de visibilidade: o conjunto publicado é exatamente o conjunto reconciliado,
+      tudo ou nada. Copiar vários arquivos expondo-os à medida que chegam deixaria um consumidor lendo
+      parte das candidatas, ou misturadas com as da execução anterior, com a reconciliação correta e o
+      total lido por ninguém aprovado — e uma interrupção no meio congela esse estado. Publicação interrompida
+      deixa o destino como estava antes'
   - id: B-2
     given: um Silver cujo total não reproduz a âncora, ou uma competência sem âncora no contrato
     when: Gold agrega
@@ -196,11 +197,11 @@ tasks:
     description: DIVERGE e NAO_MEDIDO são estados distintos e nenhum publica
     bash: docker compose -f infra/docker-compose.yml exec -T spark sh -c 'for c in diverge_nao_publica
       sem_ancora_nao_medido destino_inalterado_durante classifica_diferenca_das_seis orcamento_leitura_ao_veredito_medido
-      parada_antecipada_grava_evidencia diagnostico_estruturado_no_pacote; do python3 -m pytest --collect-only
-      -q tests/test_gold.py -k "$c" 2>/dev/null | grep -q "::" || { echo "EVAL=CENARIO_AUSENTE_$c"; exit
-      1; }; done; python3 -m pytest -q tests/test_gold.py -k "diverge_nao_publica or sem_ancora_nao_medido
-      or destino_inalterado_durante or classifica_diferenca_das_seis or orcamento_leitura_ao_veredito_medido
-      or parada_antecipada_grava_evidencia or diagnostico_estruturado_no_pacote"'
+      parada_antecipada_grava_evidencia diagnostico_estruturado_no_pacote marca_de_procedencia_vira_evidencia;
+      do python3 -m pytest --collect-only -q tests/test_gold.py -k "$c" 2>/dev/null | grep -q "::" ||
+      { echo "EVAL=CENARIO_AUSENTE_$c"; exit 1; }; done; python3 -m pytest -q tests/test_gold.py -k "diverge_nao_publica
+      or sem_ancora_nao_medido or destino_inalterado_durante or classifica_diferenca_das_seis or orcamento_leitura_ao_veredito_medido
+      or parada_antecipada_grava_evidencia or diagnostico_estruturado_no_pacote or marca_de_procedencia_vira_evidencia"'
     verifies:
     - B-2
   anti_patterns:
@@ -222,7 +223,7 @@ tasks:
   - contracts
   rollback: Remover a camada Gold e seus testes.
   observability: agregados recusados por não reconciliar
-source_seam_sha256: 5b4e015a3cb55e743f353467d460df2d9b70a3964def3af4a405313ebcf15410
+source_seam_sha256: 209793270e3e5fbe2440235b560a50ed9cc86c385460ccc9b575101b75a3e92a
 ---
 # Gold só publica quando reconcilia com a âncora
 
