@@ -88,7 +88,7 @@ seams:
       - id: T-20260924-perf-bronze-silver
         title: Memória declarada, cache liberado e reconferência numa passada
         goal: Baixar executor, shuffle e spill da Bronze e da Silver sem mudar a saída.
-        done_condition: Bronze e Silver reais saem idênticas à produção e o gate dá PERF=MELHOR contra perf/baseline-bronze e perf/baseline-silver.
+        done_condition: 'Bronze e Silver reais saem idênticas à produção. O PERF=MELHOR contra perf/ é VERIFICAÇÃO PÓS-ASSENTAMENTO: roda na execução real com a skill spark-perf, fora do loop, porque tempo medido dentro de eval é instável; a entrega exige saída idêntica e o comportamento declarado.'
         effort: M
         profile: standard
         execution_backend: any
@@ -108,7 +108,7 @@ seams:
         - id: B-1
           given: a sessão criada por criar_sessao e as leituras e gravações da Bronze e da Silver
           when: Bronze e Silver rodam
-          then: 'criar_sessao DECLARA spark.driver.memory, spark.sql.adaptive.enabled e spark.sql.shuffle.partitions a partir de parâmetros com padrão explícito — nunca herda — e confere depois de criar que a memória da sessão é a declarada, recusando sessão reaproveitada com memória herdada; todo DataFrame persistido é liberado com unpersist depois de publicado e reconferido, inclusive no caminho INTEGRO; e a reconferência de _conferir_tabela passa a UMA passada: um exceptAll e a igualdade das contagens — multiconjuntos de mesmo tamanho em que um está contido no outro são iguais —, provando o mesmo que os dois exceptAll. O ganho só vale com o gate da skill spark-perf: PERF=MELHOR contra a baseline gravada em perf/, com a saída IDÊNTICA à de produção — controles e multiconjunto 0/0. Otimização que muda o número é defeito, não ganho; nenhuma reconferência é removida, só barateada.'
+          then: 'criar_sessao DECLARA spark.driver.memory, spark.sql.adaptive.enabled e spark.sql.shuffle.partitions a partir de parâmetros com padrão explícito — nunca herda — e confere depois de criar o heap EFETIVO da JVM — Runtime.getRuntime().maxMemory() por spark._jvm, não a propriedade de configuração, que não prova nada numa JVM já iniciada —, recusando sessão cujo heap efetivo seja menor que o declarado; todo DataFrame persistido é liberado com unpersist num finally, em TODOS os caminhos — publicado, divergente, CHECK que recusou ou exceção de escrita —, e nunca antes da reconferência, inclusive no caminho INTEGRO; e a reconferência de _conferir_tabela passa a UMA passada: um exceptAll e a igualdade das contagens — multiconjuntos de mesmo tamanho em que um está contido no outro são iguais —, provando o mesmo que os dois exceptAll. O ganho só vale com o gate da skill spark-perf: PERF=MELHOR contra a baseline gravada em perf/, com a saída IDÊNTICA à de produção — controles e multiconjunto 0/0. Otimização que muda o número é defeito, não ganho; nenhuma reconferência é removida, só barateada.'
         - id: B-2
           given: uma saída alterada — linha trocada, centavo a mais ou linha a menos
           when: a reconferência numa passada roda
@@ -116,7 +116,7 @@ seams:
         evals:
         - id: eval_1
           description: Memória declarada e cache liberado
-          bash: docker compose -f infra/docker-compose.yml exec -T spark sh -c 'for c in sessao_declara_memoria sessao_com_memoria_herdada_recusada unpersist_depois_de_publicar; do python3 -m pytest --collect-only -q tests/test_performance.py -k "$c" 2>/dev/null | grep -q "::" || { echo "EVAL=CENARIO_AUSENTE_$c"; exit 1; }; done; python3 -m pytest -q tests/test_performance.py -k "sessao_declara_memoria or sessao_com_memoria_herdada_recusada or unpersist_depois_de_publicar"'
+          bash: docker compose -f infra/docker-compose.yml exec -T spark sh -c 'for c in sessao_declara_memoria sessao_com_memoria_herdada_recusada unpersist_depois_de_publicar heap_efetivo_conferido_pela_jvm unpersist_tambem_na_falha; do python3 -m pytest --collect-only -q tests/test_performance.py -k "$c" 2>/dev/null | grep -q "::" || { echo "EVAL=CENARIO_AUSENTE_$c"; exit 1; }; done; python3 -m pytest -q tests/test_performance.py -k "sessao_declara_memoria or sessao_com_memoria_herdada_recusada or unpersist_depois_de_publicar or heap_efetivo_conferido_pela_jvm or unpersist_tambem_na_falha"'
           verifies:
           - B-1
         - id: eval_2
@@ -180,7 +180,7 @@ seams:
       - id: T-20260924-perf-gold
         title: Cache liberado e constraints num commit só na Gold
         goal: Baixar o custo da Gold e dos assuntos sem mudar a saída.
-        done_condition: A Gold e os assuntos reais saem idênticos à produção e o gate dá PERF=MELHOR contra perf/baseline-assuntos.
+        done_condition: 'A Gold e os assuntos reais saem idênticos à produção. O PERF=MELHOR contra perf/ é VERIFICAÇÃO PÓS-ASSENTAMENTO: roda na execução real com a skill spark-perf, fora do loop, porque tempo medido dentro de eval é instável; a entrega exige saída idêntica e o comportamento declarado.'
         effort: M
         profile: standard
         execution_backend: any
@@ -196,7 +196,7 @@ seams:
         - id: B-1
           given: a Gold principal e os assuntos publicando a competência
           when: rodam
-          then: 'todo DataFrame persistido é liberado com unpersist depois de publicado e reconferido; uma tabela NOVA de assuntos nasce com as colunas monetárias protegidas por UM CHECK que exige todas >= 0 — um commit em vez de seis —, e uma tabela que já existe com os seis CHECK é reconhecida como protegida, sem receber constraint nova nem perder as antigas; a reconferência passa a uma passada como na Bronze. O ganho só vale com o gate da skill spark-perf: PERF=MELHOR contra a baseline gravada em perf/, com a saída IDÊNTICA à de produção — controles e multiconjunto 0/0. Otimização que muda o número é defeito, não ganho; nenhuma reconferência é removida, só barateada.'
+          then: 'todo DataFrame persistido é liberado com unpersist num finally, em TODOS os caminhos — publicado, divergente, CHECK que recusou ou exceção de escrita —, e nunca antes da reconferência; uma tabela NOVA de assuntos nasce com as colunas monetárias protegidas por UM CHECK que exige todas >= 0 — um commit em vez de seis —, e uma tabela que já existe com os seis CHECK é reconhecida como protegida, sem receber constraint nova nem perder as antigas; a reconferência passa a uma passada como na Bronze. O ganho só vale com o gate da skill spark-perf: PERF=MELHOR contra a baseline gravada em perf/, com a saída IDÊNTICA à de produção — controles e multiconjunto 0/0. Otimização que muda o número é defeito, não ganho; nenhuma reconferência é removida, só barateada.'
         - id: B-2
           given: uma saída com valor monetário negativo ou uma linha trocada
           when: a publicação roda
@@ -204,7 +204,7 @@ seams:
         evals:
         - id: eval_1
           description: Cache liberado e um CHECK só
-          bash: docker compose -f infra/docker-compose.yml exec -T spark sh -c 'for c in gold_unpersist_depois_de_publicar check_unico_no_create tabela_com_seis_check_reconhecida; do python3 -m pytest --collect-only -q tests/test_performance_gold.py -k "$c" 2>/dev/null | grep -q "::" || { echo "EVAL=CENARIO_AUSENTE_$c"; exit 1; }; done; python3 -m pytest -q tests/test_performance_gold.py -k "gold_unpersist_depois_de_publicar or check_unico_no_create or tabela_com_seis_check_reconhecida"'
+          bash: docker compose -f infra/docker-compose.yml exec -T spark sh -c 'for c in gold_unpersist_depois_de_publicar check_unico_no_create tabela_com_seis_check_reconhecida gold_unpersist_tambem_na_falha; do python3 -m pytest --collect-only -q tests/test_performance_gold.py -k "$c" 2>/dev/null | grep -q "::" || { echo "EVAL=CENARIO_AUSENTE_$c"; exit 1; }; done; python3 -m pytest -q tests/test_performance_gold.py -k "gold_unpersist_depois_de_publicar or check_unico_no_create or tabela_com_seis_check_reconhecida or gold_unpersist_tambem_na_falha"'
           verifies:
           - B-1
         - id: eval_2
@@ -286,7 +286,7 @@ seams:
         - id: B-1
           given: os auxiliares _cenario, _cadeia_publicada e _preparar, que montam a cadeia real por teste
           when: os testes rodam
-          then: a cadeia do cenário é montada UMA vez por módulo numa fixture e cada teste recebe uma CÓPIA do diretório — tabelas Delta locais com caminhos relativos no _delta_log, contrato e lago de teste reescritos para a cópia —, isolando os testes entre si como antes; SÓ os auxiliares e as fixtures mudam, e nenhuma linha dentro de uma função test_* é alterada.
+          then: a cadeia do cenário é montada UMA vez por módulo numa fixture e cada teste recebe uma CÓPIA do diretório — tabelas Delta locais com caminhos relativos no _delta_log, contrato e lago de teste reescritos para a cópia —, isolando os testes entre si como antes — provado por um cenário que republica numa cópia e confere que o cenário-base e outra cópia ficam intactos; SÓ os auxiliares e as fixtures mudam, e nenhuma linha dentro de uma função test_* é alterada.
         - id: B-2
           given: a suíte depois da mudança
           when: é coletada e executada
@@ -299,7 +299,7 @@ seams:
           - B-1
         - id: eval_2
           description: Nenhuma asserção mudou
-          bash: docker compose -f infra/docker-compose.yml exec -T spark sh -c 'for c in mesmos_ids_coletados corpo_das_funcoes_test_intacto nenhum_skip_ou_xfail; do python3 -m pytest --collect-only -q tests/test_testes_leves.py -k "$c" 2>/dev/null | grep -q "::" || { echo "EVAL=CENARIO_AUSENTE_$c"; exit 1; }; done; python3 -m pytest -q tests/test_testes_leves.py -k "mesmos_ids_coletados or corpo_das_funcoes_test_intacto or nenhum_skip_ou_xfail"'
+          bash: docker compose -f infra/docker-compose.yml exec -T spark sh -c 'for c in mesmos_ids_coletados corpo_das_funcoes_test_intacto nenhum_skip_ou_xfail copia_isolada_do_cenario_base; do python3 -m pytest --collect-only -q tests/test_testes_leves.py -k "$c" 2>/dev/null | grep -q "::" || { echo "EVAL=CENARIO_AUSENTE_$c"; exit 1; }; done; python3 -m pytest -q tests/test_testes_leves.py -k "mesmos_ids_coletados or corpo_das_funcoes_test_intacto or nenhum_skip_ou_xfail or copia_isolada_do_cenario_base"'
           verifies:
           - B-2
         - id: eval_3
@@ -372,11 +372,11 @@ seams:
         - id: B-1
           given: o preparo de uma execução cujo commit de publicação está no histórico e foi SUBSTITUÍDO por outro posterior
           when: a limpeza roda
-          then: apaga o preparo dessa execução se o commit dela tem estado INTEGRO, NÃO é de reversão e nenhum commit de reversão a desfez — publicação conferida e depois substituída —, com a mesma guarda de caminho; a tabela publicada segue com a mesma versão, contagem e soma.
+          then: 'apaga o preparo dessa execução se o commit dela tem estado INTEGRO, NÃO é de reversão e nenhum commit de reversão a desfez — publicação conferida e depois substituída —, com a mesma guarda de caminho — sob a INVARIANTE declarada de que execução não é retomada: cada execução nasce com id novo e nunca reusa o preparo de outra, então um preparo cuja execução já tem commit publicado e foi substituída não está em uso —; a tabela publicada segue com a mesma versão, contagem e soma.'
         - id: B-2
           given: uma execução revertida, uma sem commit, ou um caminho fora do preparo
           when: a limpeza roda
-          then: preserva o preparo e diz o motivo; caminho fora de _preparo ou id vazio é RECUSADO antes de qualquer remoção; nenhum teste já existente de tests/test_limpeza.py é editado.
+          then: preserva o preparo e diz o motivo — inclusive o da execução ATIVA, que ainda não tem commit; caminho fora de _preparo ou id vazio é RECUSADO antes de qualquer remoção; nenhum teste já existente de tests/test_limpeza.py é editado.
         evals:
         - id: eval_1
           description: Substituída e conferida sai
@@ -385,7 +385,7 @@ seams:
           - B-1
         - id: eval_2
           description: Revertida e em curso ficam
-          bash: docker compose -f infra/docker-compose.yml exec -T spark sh -c 'for c in revertida_preserva sem_commit_preserva id_vazio_recusado; do python3 -m pytest --collect-only -q tests/test_limpeza.py -k "$c" 2>/dev/null | grep -q "::" || { echo "EVAL=CENARIO_AUSENTE_$c"; exit 1; }; done; python3 -m pytest -q tests/test_limpeza.py -k "revertida_preserva or sem_commit_preserva or id_vazio_recusado"'
+          bash: docker compose -f infra/docker-compose.yml exec -T spark sh -c 'for c in revertida_preserva sem_commit_preserva id_vazio_recusado execucao_ativa_preserva; do python3 -m pytest --collect-only -q tests/test_limpeza.py -k "$c" 2>/dev/null | grep -q "::" || { echo "EVAL=CENARIO_AUSENTE_$c"; exit 1; }; done; python3 -m pytest -q tests/test_limpeza.py -k "revertida_preserva or sem_commit_preserva or id_vazio_recusado or execucao_ativa_preserva"'
           verifies:
           - B-2
         - id: eval_3
