@@ -1,0 +1,47 @@
+{
+  "contract": "SeamwiseTaskPlanLineage/v1",
+  "delivery_plan_sha256": "2cc8b225ac25887b4e6994ad7989a8829fbdee08a27e922b8a609101bc5f9c50",
+  "engine_version": "0.2.0",
+  "intent": {
+    "id": "DI-PDA-ONTOLOGIA",
+    "sha256": "a547bb8863dd454eb7e176b0be7da0a66d6bd3bd5c6a3d72ffd26b9863a7b741"
+  },
+  "review": {
+    "fixture": false,
+    "plan_sha256": "2cc8b225ac25887b4e6994ad7989a8829fbdee08a27e922b8a609101bc5f9c50",
+    "reviewed_at": "2026-09-24T22:39:15.024483+00:00",
+    "reviewer": "Bruno Nunes",
+    "sha256": "aa68829233118bef05a89bb38f855113bc30aec7a3d85bbf7bf745ceb402427b"
+  },
+  "task_plan": {
+    "contract": "TaskPlan/v1",
+    "digest": "3f0c69d80576635d6cbc6173f0ff379a4d5017f518404851c58a08706e6e6c01",
+    "path": "seamwise/task-plan.json"
+  },
+  "units": {
+    "T-20260924-especie-silver": {
+      "intent": "DI-PDA-ONTOLOGIA",
+      "leg": "LEG-ESPECIE-SILVER",
+      "seam": "SEAM-ESPECIE-SILVER",
+      "source_sha256": "cee128273b7b8da7b79ffeb2204d3d88753ec7ec458b14e4979cc761782f0f26",
+      "swimlane": "LANE-ESPECIE-SILVER",
+      "unit_id": "T-20260924-especie-silver"
+    },
+    "T-20260924-ontologia-postgres": {
+      "intent": "DI-PDA-ONTOLOGIA",
+      "leg": "LEG-ONTOLOGIA-POSTGRES",
+      "seam": "SEAM-ONTOLOGIA-POSTGRES",
+      "source_sha256": "1dce405604989a6535f684204341ab2e5db26ed9ae254fa7608ae887dd53d3af",
+      "swimlane": "LANE-ONTOLOGIA-POSTGRES",
+      "unit_id": "T-20260924-ontologia-postgres"
+    },
+    "T-20260924-ontologia-versionada": {
+      "intent": "DI-PDA-ONTOLOGIA",
+      "leg": "LEG-ONTOLOGIA",
+      "seam": "SEAM-ONTOLOGIA",
+      "source_sha256": "e3f026e4a429111280a2203a71e48bb6d0a45fec70b211ff2b089c8bb9a20c59",
+      "swimlane": "LANE-ONTOLOGIA",
+      "unit_id": "T-20260924-ontologia-versionada"
+    }
+  }
+}

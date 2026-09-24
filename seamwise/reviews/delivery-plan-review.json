@@ -1,0 +1,10 @@
+{
+  "disposition": "accepted",
+  "draft_sha256": "aaf6abeb082189c4d1395faf6f25809b973069f77ca95ff306995c176e902d9d",
+  "fixture": false,
+  "plan_sha256": "2cc8b225ac25887b4e6994ad7989a8829fbdee08a27e922b8a609101bc5f9c50",
+  "reason": "Pass 4 da ontologia fechado na R2. Tres costuras (ADR 0010): ontologia versionada, projecao Delta especie, projecao Postgres.",
+  "reviewed_at": "2026-09-24T22:39:15.024483+00:00",
+  "reviewer": "Bruno Nunes",
+  "schema_version": 1
+}

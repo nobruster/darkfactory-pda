@@ -1,0 +1,36 @@
+schema_version: 1
+status: SEAM_MAP=READY
+intent_id: DI-PDA-ONTOLOGIA
+source_recipe:
+  name: ontologia-recipe.yaml
+  sha256: 3ff6cafce248a308918bc9b3ae15dd4eb1e012c303cc101ba52edabeede0c456
+intent_sha256: a547bb8863dd454eb7e176b0be7da0a66d6bd3bd5c6a3d72ffd26b9863a7b741
+system_map_sha256: 26b00ca2bdd4d9f98619ae892b9627118554c7bddc8e4c58003fe23453db2500
+evidence_sha256: 82016cff9e5ea9f80f64af8ee1f08a9e2fb303c7a64795e732e98a5b013de7fc
+decisions:
+- id: ADR-0010-ONTOLOGIA-FONTE
+  path: seamwise/decisions/ADR-0010-ONTOLOGIA-FONTE.md
+  status: accepted
+  sha256: 1ce82b9ec2b0b07cb0fa8688d89df5835ecfaa1bdefb58d403a724ffd41d62a8
+seams:
+- id: SEAM-ONTOLOGIA
+  path: seamwise/seams/SEAM-ONTOLOGIA.md
+  owner: medalhao
+  evidence:
+  - E-DICIONARIOS-INSS
+  swimlane_id: LANE-ONTOLOGIA
+  sha256: 794d7da3d10d423b43beb73e9e11601fc073792e7d470e0a1307506437dafb9e
+- id: SEAM-ESPECIE-SILVER
+  path: seamwise/seams/SEAM-ESPECIE-SILVER.md
+  owner: medalhao
+  evidence:
+  - E-DICIONARIOS-INSS
+  swimlane_id: LANE-ESPECIE-SILVER
+  sha256: 4252c9999bf37047bcabbc9dbf11b9b2be11befc420564e592104fe82db3f2dc
+- id: SEAM-ONTOLOGIA-POSTGRES
+  path: seamwise/seams/SEAM-ONTOLOGIA-POSTGRES.md
+  owner: medalhao
+  evidence:
+  - E-DICIONARIOS-INSS
+  swimlane_id: LANE-ONTOLOGIA-POSTGRES
+  sha256: d6839f94a0081dc129a2ce9543bb8f9967029d0e1379570eb1b8843c1a03ca46

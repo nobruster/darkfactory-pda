@@ -1,0 +1,286 @@
+{
+  "api_version": "taskspec.dev/v1",
+  "approved": true,
+  "kind": "TaskPlan",
+  "metadata": {
+    "delivery_plan_review_sha256": "aa68829233118bef05a89bb38f855113bc30aec7a3d85bbf7bf745ceb402427b",
+    "delivery_plan_sha256": "2cc8b225ac25887b4e6994ad7989a8829fbdee08a27e922b8a609101bc5f9c50",
+    "name": "DI-PDA-ONTOLOGIA",
+    "producer": "seamwise",
+    "producer_version": "0.2.0",
+    "seamwise_plan_status": "DELIVERY_PLAN=READY",
+    "source": "seamwise/task-plan.json"
+  },
+  "units": [
+    {
+      "agent": "any",
+      "anti_patterns": [
+        "Do not sobrescrever especie_descricao da Silver com o nome oficial: o texto truncado é a prova do defeito da fonte (Regra 4); instead guardar os dois lado a lado.",
+        "Do not escolher uma descrição quando o código tem duas: escolher é decidir em silêncio; instead recusar com o código e as descrições.",
+        "Do not gravar e só depois conferir a cobertura de códigos: publica uma tabela que a conferência reprovaria; instead conferir antes, gravar, e reconferir o gravado."
+      ],
+      "behaviors": [
+        {
+          "given": "a ontologia carregada e uma Silver Delta com especie_codigo e especie_descricao da competência",
+          "id": "B-1",
+          "then": "lê a Silver UMA vez, na versão V fixada no início (versionAsOf), e usa essa mesma leitura para conferir e calcular; grava em Delta, por replaceWhere da competência — que deixa as outras competências intactas —, numa tabela criada pela própria tarefa com o seu schema (não o _garantir_tabela da Silver), uma linha por código com: especie_codigo, nome_oficial, grupo, descricao_fonte (o texto da Silver COMO VEIO, espaços à direita inclusive, Regra 4), texto_fonte_confere_prefixo (verdadeiro quando descricao_fonte sem espaços à direita é igual aos 20 primeiros caracteres do nome oficial sem espaços à direita — medido: 43 de 65 na 2026-01, com ou sem NFC) e competencia; o commit leva em userMetadata a versão V, o sha256 da ontologia e um id_execucao; a reconferência lê o destino na versão do PRÓPRIO commit, achada pelo id_execucao no histórico, nunca a versão atual, e confere o multiconjunto nos dois sentidos contra o calculado, numa função reconferir_especie que acusa uma linha alterada. Sobre a Silver real de 2026-01 o resultado tem 65 linhas, 65 nomes oficiais distintos e 43 linhas com texto_fonte_confere_prefixo verdadeiro.",
+          "when": "publicar_especie(spark, ontologia, silver, destino, competencia) roda"
+        },
+        {
+          "given": "uma Silver que não confere com a ontologia, ou vazia",
+          "id": "B-2",
+          "then": "recusa SEM gravar nada: código na Silver que a ontologia não tem, código da ontologia ausente da competência, código com mais de uma descrição na competência — cada um com o motivo e os códigos; competência sem nenhuma linha devolve NAO_MEDIDO (Regra 9); cada recusa afirma que o destino não ganhou versão nova. Os testes gravam só em tmp_path, nunca no MinIO; os cenários da Silver real leem o MinIO UMA vez, numa fixture de escopo de módulo, e gravam em tmp_path. Nenhum cenário usa skip, xfail ou importorskip: MinIO ou Silver indisponível FALHA o teste.",
+          "when": "publicar_especie confere antes de gravar"
+        }
+      ],
+      "context": "Intent DI-PDA-ONTOLOGIA; seam SEAM-ESPECIE-SILVER; swimlane LANE-ESPECIE-SILVER; capability leg LEG-ESPECIE-SILVER. Done condition: publicar_especie grava a tabela com uma linha por código da competência, reconfere o que gravou, e recusa sem gravar quando a Silver e a ontologia não conferem; os testes de tests/test_especie.py passam.",
+      "creates_paths": [
+        "src/medalhao/especie.py",
+        "tests/test_especie.py"
+      ],
+      "depends_on": [
+        "T-20260924-ontologia-versionada"
+      ],
+      "do_not_touch": [
+        "_raw",
+        "cvg/docs/adrs",
+        "contracts",
+        "src/pda",
+        "infra",
+        "src/ontologia/beneficios-emitidos.yaml",
+        "src/medalhao/ontologia.py"
+      ],
+      "done_condition": "publicar_especie grava a tabela com uma linha por código da competência, reconfere o que gravou, e recusa sem gravar quando a Silver e a ontologia não conferem; os testes de tests/test_especie.py passam.",
+      "effort": "S",
+      "evals": [
+        {
+          "command": "docker compose -f infra/docker-compose.yml exec -T spark sh -c 'for c in grava_nome_oficial_e_texto_da_fonte descricao_fonte_como_veio reconferencia_acusa_linha_alterada outra_competencia_intacta linhagem_no_commit; do python3 -m pytest --collect-only -q tests/test_especie.py -k \"$c\" 2>/dev/null | grep -q \"::\" || { echo \"EVAL=CENARIO_AUSENTE_$c\"; exit 1; }; done; python3 -m pytest -q tests/test_especie.py -k \"grava_nome_oficial_e_texto_da_fonte or descricao_fonte_como_veio or reconferencia_acusa_linha_alterada or outra_competencia_intacta or linhagem_no_commit\"'",
+          "description": "A tabela guarda os dois textos e fecha com a Silver",
+          "expected_duration_sec": 10,
+          "id": "eval_1",
+          "terminal": false,
+          "verifies": [
+            "B-1"
+          ]
+        },
+        {
+          "command": "docker compose -f infra/docker-compose.yml exec -T spark sh -c 'for c in codigo_fora_da_ontologia_recusa codigo_ausente_recusa duas_descricoes_recusa competencia_vazia_nao_medido; do python3 -m pytest --collect-only -q tests/test_especie.py -k \"$c\" 2>/dev/null | grep -q \"::\" || { echo \"EVAL=CENARIO_AUSENTE_$c\"; exit 1; }; done; python3 -m pytest -q tests/test_especie.py -k \"codigo_fora_da_ontologia_recusa or codigo_ausente_recusa or duas_descricoes_recusa or competencia_vazia_nao_medido\"'",
+          "description": "Divergência recusa sem gravar",
+          "expected_duration_sec": 10,
+          "id": "eval_2",
+          "terminal": false,
+          "verifies": [
+            "B-2"
+          ]
+        },
+        {
+          "command": "docker compose -f infra/docker-compose.yml exec -T spark sh -c 'for c in especie_real_2026_01 colapsos_desfeitos_pelo_nome; do python3 -m pytest --collect-only -q tests/test_especie.py -k \"$c\" 2>/dev/null | grep -q \"::\" || { echo \"EVAL=CENARIO_AUSENTE_$c\"; exit 1; }; done; python3 -m pytest -q tests/test_especie.py -k \"especie_real_2026_01 or colapsos_desfeitos_pelo_nome\"'",
+          "description": "A Silver real de 2026-01",
+          "expected_duration_sec": 10,
+          "id": "eval_3",
+          "terminal": true,
+          "verifies": [
+            "B-1",
+            "B-2"
+          ]
+        }
+      ],
+      "execution_backend": "any",
+      "goal": "Publicar, por competência, uma tabela Delta com cada código de espécie, o nome oficial da ontologia, o grupo e o texto que a fonte publicou, sem corrigir nada. Para rodar testes, o ÚNICO comando liberado ao agente é `docker compose -f infra/docker-compose.yml exec -T spark python3 -m pytest <arquivo> -k <cenarios>`.",
+      "id": "T-20260924-especie-silver",
+      "observability": "códigos de espécie que a ontologia não conhece",
+      "profile": "standard",
+      "required_tools": [
+        "git",
+        "bash",
+        "python3",
+        "pytest",
+        "docker"
+      ],
+      "rollback": "Remover os dois arquivos criados; a tabela especie de produção só é publicada fora do loop.",
+      "source_note": "seamwise/legs/LEG-ESPECIE-SILVER.md#T-20260924-especie-silver",
+      "title": "Tabela Delta especie: o nome oficial ao lado do texto da fonte",
+      "touches_paths": [],
+      "why": "Publicar, por competência, uma tabela Delta com cada código de espécie, o nome oficial da ontologia, o grupo e o texto que a fonte publicou, sem corrigir nada. Para rodar testes, o ÚNICO comando liberado ao agente é `docker compose -f infra/docker-compose.yml exec -T spark python3 -m pytest <arquivo> -k <cenarios>`."
+    },
+    {
+      "agent": "any",
+      "anti_patterns": [
+        "Do not escrever credencial, host ou senha padrão no código ou no teste: é o defeito do legado que o BRD nomeou (Regra 6); instead ler PG_* do ambiente e recusar se faltar.",
+        "Do not montar SQL com o nome do schema sem validar: nome livre em SQL é injeção; instead validar o identificador e usar psycopg.sql.Identifier.",
+        "Do not inserir tabela por tabela em transações separadas: uma falha no meio deixa o banco com meia ontologia; instead uma transação para a carga inteira."
+      ],
+      "behaviors": [
+        {
+          "given": "a ontologia carregada e as variáveis PG_HOST, PG_PORT, PG_DB, PG_USER e PG_PASSWORD do ambiente",
+          "id": "B-1",
+          "then": "num schema OBRIGATÓRIO, sem valor padrão, cujo nome é validado como identificador simples (letras minúsculas, dígitos e _), cria as tabelas fonte, termo, coluna, grupo e especie, com chave primária em cada uma e chave estrangeira de coluna para termo e de especie para grupo, e uma tabela carga com o sha256 da ontologia e o instante da carga; a carga substitui o conteúdo anterior do schema numa ÚNICA transação e, AINDA DENTRO dela, antes do commit, relê cada tabela e confere linha a linha contra a ontologia — 2 fontes, 13 termos, 14 colunas, os grupos do contrato (5 hoje), 65 espécies —; só então faz commit e devolve PROJETADA com as contagens. Aceita um parâmetro apos_tabela, chamado dentro da transação depois de cada tabela carregada, pelo qual os testes injetam falha ou alteração. Credenciais só do ambiente, nunca escritas no código, nunca impressas nem incluídas em mensagem de erro.",
+          "when": "projetar_ontologia(ontologia, schema) roda"
+        },
+        {
+          "given": "uma carga que falha no meio, uma variável de ambiente ausente, ou um nome de schema inválido",
+          "id": "B-2",
+          "then": "falha no meio desfaz a transação e a carga anterior fica intacta, conferida pelo sha256 na tabela carga; reconferência divergente — uma linha alterada por apos_tabela — desfaz a transação, devolve DIVERGENTE e a carga anterior segue sendo a visível; variável ausente recusa SEM chamar psycopg.connect (o teste o substitui por um que falha se chamado) e nomeia a variável, nunca o valor; um erro de conexão não traz a senha na mensagem; nome de schema fora do padrão, 'public' ou começado por 'pg_' recusa sem executar SQL. Cada teste usa um schema 'teste_' com sufixo aleatório, apagado no finalizer da fixture — mesmo quando o teste falha —, e nunca apaga schema que ele não criou. Nenhum cenário usa skip, xfail ou importorskip: Postgres indisponível FALHA o teste.",
+          "when": "projetar_ontologia roda"
+        }
+      ],
+      "context": "Intent DI-PDA-ONTOLOGIA; seam SEAM-ONTOLOGIA-POSTGRES; swimlane LANE-ONTOLOGIA-POSTGRES; capability leg LEG-ONTOLOGIA-POSTGRES. Done condition: projetar_ontologia carrega fontes, termos, colunas, grupos e espécies num schema nomeado, numa transação só, reconfere cada tabela contra a ontologia e grava o sha256 da ontologia; falha no meio deixa a carga anterior intacta; os testes de tests/test_projecao_postgres.py passam.",
+      "creates_paths": [
+        "src/medalhao/projecao_postgres.py",
+        "tests/test_projecao_postgres.py"
+      ],
+      "depends_on": [
+        "T-20260924-ontologia-versionada"
+      ],
+      "do_not_touch": [
+        "_raw",
+        "cvg/docs/adrs",
+        "contracts",
+        "src/pda",
+        "infra",
+        "src/ontologia/beneficios-emitidos.yaml",
+        "src/medalhao/ontologia.py"
+      ],
+      "done_condition": "projetar_ontologia carrega fontes, termos, colunas, grupos e espécies num schema nomeado, numa transação só, reconfere cada tabela contra a ontologia e grava o sha256 da ontologia; falha no meio deixa a carga anterior intacta; os testes de tests/test_projecao_postgres.py passam.",
+      "effort": "S",
+      "evals": [
+        {
+          "command": "docker compose -f infra/docker-compose.yml exec -T spark sh -c 'for c in projeta_e_reconfere grava_sha256_da_ontologia chaves_estrangeiras_valem chave_primaria_em_cada_tabela; do python3 -m pytest --collect-only -q tests/test_projecao_postgres.py -k \"$c\" 2>/dev/null | grep -q \"::\" || { echo \"EVAL=CENARIO_AUSENTE_$c\"; exit 1; }; done; python3 -m pytest -q tests/test_projecao_postgres.py -k \"projeta_e_reconfere or grava_sha256_da_ontologia or chaves_estrangeiras_valem or chave_primaria_em_cada_tabela\"'",
+          "description": "A projeção carrega e confere",
+          "expected_duration_sec": 10,
+          "id": "eval_1",
+          "terminal": false,
+          "verifies": [
+            "B-1"
+          ]
+        },
+        {
+          "command": "docker compose -f infra/docker-compose.yml exec -T spark sh -c 'for c in falha_no_meio_preserva_carga_anterior divergencia_desfaz_e_preserva_carga_anterior; do python3 -m pytest --collect-only -q tests/test_projecao_postgres.py -k \"$c\" 2>/dev/null | grep -q \"::\" || { echo \"EVAL=CENARIO_AUSENTE_$c\"; exit 1; }; done; python3 -m pytest -q tests/test_projecao_postgres.py -k \"falha_no_meio_preserva_carga_anterior or divergencia_desfaz_e_preserva_carga_anterior\"'",
+          "description": "Tudo ou nada",
+          "expected_duration_sec": 10,
+          "id": "eval_2",
+          "terminal": false,
+          "verifies": [
+            "B-2"
+          ]
+        },
+        {
+          "command": "docker compose -f infra/docker-compose.yml exec -T spark sh -c 'for c in variavel_ausente_recusa_sem_conectar erro_de_conexao_nao_vaza_senha schema_invalido_recusa schema_public_recusa schema_de_teste_apagado; do python3 -m pytest --collect-only -q tests/test_projecao_postgres.py -k \"$c\" 2>/dev/null | grep -q \"::\" || { echo \"EVAL=CENARIO_AUSENTE_$c\"; exit 1; }; done; python3 -m pytest -q tests/test_projecao_postgres.py -k \"variavel_ausente_recusa_sem_conectar or erro_de_conexao_nao_vaza_senha or schema_invalido_recusa or schema_public_recusa or schema_de_teste_apagado\"'",
+          "description": "Sem credencial no código e sem SQL de nome livre",
+          "expected_duration_sec": 10,
+          "id": "eval_3",
+          "terminal": true,
+          "verifies": [
+            "B-1",
+            "B-2"
+          ]
+        }
+      ],
+      "execution_backend": "any",
+      "goal": "Carregar a ontologia no Postgres pda-postgres para consulta fora do Spark, sem que o banco vire fonte da verdade: tudo ou nada, reconferido linha a linha, com a versão da ontologia gravada. Para rodar testes, o ÚNICO comando liberado ao agente é `docker compose -f infra/docker-compose.yml exec -T spark python3 -m pytest <arquivo> -k <cenarios>`.",
+      "id": "T-20260924-ontologia-postgres",
+      "observability": "projeções divergentes da ontologia versionada",
+      "profile": "standard",
+      "required_tools": [
+        "git",
+        "bash",
+        "python3",
+        "pytest",
+        "docker"
+      ],
+      "rollback": "Remover os dois arquivos criados e apagar o schema carregado.",
+      "source_note": "seamwise/legs/LEG-ONTOLOGIA-POSTGRES.md#T-20260924-ontologia-postgres",
+      "title": "Projeção da ontologia no Postgres, carregada numa transação e reconferida",
+      "touches_paths": [],
+      "why": "Carregar a ontologia no Postgres pda-postgres para consulta fora do Spark, sem que o banco vire fonte da verdade: tudo ou nada, reconferido linha a linha, com a versão da ontologia gravada. Para rodar testes, o ÚNICO comando liberado ao agente é `docker compose -f infra/docker-compose.yml exec -T spark python3 -m pytest <arquivo> -k <cenarios>`."
+    },
+    {
+      "agent": "any",
+      "anti_patterns": [
+        "Do not ligar coluna a termo pelo nome do cabeçalho: os nomes divergem e as duas Espécie têm cabeçalho idêntico (ADR 0002); instead ligar pela posição de 0 a 13.",
+        "Do not copiar os grupos de espécie para dentro da ontologia: duas fontes do mesmo fato divergem em silêncio; instead referenciar grupos_especie do contrato e conferir a cobertura.",
+        "Do not corrigir ou abreviar o nome oficial para caber em 20 caracteres: o nome oficial é o que a ontologia acrescenta; o truncado já está na Silver; instead guardar o nome exatamente como o dicionário publica."
+      ],
+      "behaviors": [
+        {
+          "given": "os bytes oficiais em /dados/_raw (dicionario-especies-beneficio.xlsx e glossario-beneficios-emitidos.xlsx, com sha256 em /dados/_raw/CHECKSUMS.txt) e o contrato contracts/competencia-202601.yaml com grupos_especie",
+          "id": "B-1",
+          "then": "devolve a ontologia com: as duas fontes e o sha256 de cada, que confere com o arquivo e com a linha do CHECKSUMS.txt — cujas linhas têm o formato '<sha256>  _raw/<arquivo>', casadas pelo NOME do arquivo, porque no contêiner o diretório é /dados/_raw; as 14 colunas do CSV, cada uma por POSIÇÃO de 0 a 13 com o cabeçalho e o termo do glossário que representa — o cabeçalho declarado de cada posição é IGUAL ao da primeira linha (latin-1, separador ';') de todo D.SDA.PDA.003.EMI.*.csv em /dados/_raw; as posições 12 e 13 são as duas 'Espécie', com papel codigo e descricao_truncada (ADR 0002), e nenhuma ligação é feita pelo nome; os 13 termos com a descrição IGUAL à do glossário; as 65 espécies, código de 2 dígitos em texto, com o nome oficial IGUAL, caractere a caractere e sem normalização, ao texto extraído do dicionário (medido: nenhum dos 65 tem espaço nas pontas nem está fora de NFC), e o grupo de cada uma lido de contrato.grupos_especie.grupos, por referência. O atributo sha256 da ontologia é o sha256 do JSON canônico (chaves ordenadas, sem espaços) do conteúdo RESOLVIDO — fontes, colunas, termos, espécies com o grupo vindo do contrato —, para que uma mudança de grupo no contrato mude a versão. Os .xlsx são lidos só com a biblioteca padrão (zipfile e xml), sem openpyxl, porque o contêiner não tem rede.",
+          "when": "carregar_ontologia lê src/ontologia/beneficios-emitidos.yaml"
+        },
+        {
+          "given": "uma ontologia, uma fonte ou um contrato que não conferem, ou que não foram lidos",
+          "id": "B-2",
+          "then": "recusa, nunca devolve ontologia parcial: sha256 divergente do arquivo ou do CHECKSUMS.txt, código a mais ou a menos que o dicionário, nome diferente do dicionário, código sem grupo ou em dois grupos, termo que o glossário não tem ou com descrição diferente, cabeçalho diferente do CSV na mesma posição, posição de coluna faltando ou repetida, carregar_contrato devolvendo a string NAO_MEDIDO ou grupos_especie ausente — cada caso com o motivo nomeado; zero espécies lidas, zero termos lidos, nenhum CSV em /dados/_raw ou arquivo ausente devolvem NAO_MEDIDO, não OK (Regra 9). Os cenários de recusa usam cópias em tmp_path, nunca alteram /dados/_raw. Nenhum cenário usa skip, xfail ou importorskip, nem retorna antes de afirmar: fonte ausente no ambiente de teste FALHA o teste.",
+          "when": "carregar_ontologia confere"
+        }
+      ],
+      "context": "Intent DI-PDA-ONTOLOGIA; seam SEAM-ONTOLOGIA; swimlane LANE-ONTOLOGIA; capability leg LEG-ONTOLOGIA. Done condition: src/ontologia/beneficios-emitidos.yaml existe; carregar_ontologia devolve a ontologia com 14 colunas, 13 termos e 65 espécies quando ela confere com os dois .xlsx de /dados/_raw e com o contrato, e recusa em qualquer divergência ou ausência; os testes de tests/test_ontologia.py passam.",
+      "creates_paths": [
+        "src/ontologia/beneficios-emitidos.yaml",
+        "src/medalhao/ontologia.py",
+        "tests/test_ontologia.py"
+      ],
+      "depends_on": [],
+      "do_not_touch": [
+        "_raw",
+        "cvg/docs/adrs",
+        "contracts",
+        "src/pda",
+        "infra"
+      ],
+      "done_condition": "src/ontologia/beneficios-emitidos.yaml existe; carregar_ontologia devolve a ontologia com 14 colunas, 13 termos e 65 espécies quando ela confere com os dois .xlsx de /dados/_raw e com o contrato, e recusa em qualquer divergência ou ausência; os testes de tests/test_ontologia.py passam.",
+      "effort": "M",
+      "evals": [
+        {
+          "command": "docker compose -f infra/docker-compose.yml exec -T spark sh -c 'for c in ontologia_real_confere sessenta_e_cinco_especies catorze_colunas_por_posicao sha256_cobre_os_grupos; do python3 -m pytest --collect-only -q tests/test_ontologia.py -k \"$c\" 2>/dev/null | grep -q \"::\" || { echo \"EVAL=CENARIO_AUSENTE_$c\"; exit 1; }; done; python3 -m pytest -q tests/test_ontologia.py -k \"ontologia_real_confere or sessenta_e_cinco_especies or catorze_colunas_por_posicao or sha256_cobre_os_grupos\"'",
+          "description": "A ontologia real confere com o INSS e com o contrato",
+          "expected_duration_sec": 10,
+          "id": "eval_1",
+          "terminal": false,
+          "verifies": [
+            "B-1"
+          ]
+        },
+        {
+          "command": "docker compose -f infra/docker-compose.yml exec -T spark sh -c 'for c in sha256_divergente_recusa checksums_divergente_recusa nome_diferente_recusa codigo_sem_grupo_recusa codigo_em_dois_grupos_recusa termo_fora_do_glossario_recusa descricao_de_termo_diferente_recusa cabecalho_trocado_recusa posicao_repetida_recusa; do python3 -m pytest --collect-only -q tests/test_ontologia.py -k \"$c\" 2>/dev/null | grep -q \"::\" || { echo \"EVAL=CENARIO_AUSENTE_$c\"; exit 1; }; done; python3 -m pytest -q tests/test_ontologia.py -k \"sha256_divergente_recusa or checksums_divergente_recusa or nome_diferente_recusa or codigo_sem_grupo_recusa or codigo_em_dois_grupos_recusa or termo_fora_do_glossario_recusa or descricao_de_termo_diferente_recusa or cabecalho_trocado_recusa or posicao_repetida_recusa\"'",
+          "description": "Divergência recusa com motivo",
+          "expected_duration_sec": 10,
+          "id": "eval_2",
+          "terminal": false,
+          "verifies": [
+            "B-2"
+          ]
+        },
+        {
+          "command": "docker compose -f infra/docker-compose.yml exec -T spark sh -c 'for c in dicionario_vazio_nao_medido fonte_ausente_nao_medido contrato_nao_medido_recusa le_xlsx_sem_dependencia; do python3 -m pytest --collect-only -q tests/test_ontologia.py -k \"$c\" 2>/dev/null | grep -q \"::\" || { echo \"EVAL=CENARIO_AUSENTE_$c\"; exit 1; }; done; python3 -m pytest -q tests/test_ontologia.py -k \"dicionario_vazio_nao_medido or fonte_ausente_nao_medido or contrato_nao_medido_recusa or le_xlsx_sem_dependencia\"'",
+          "description": "Ausência não é medição",
+          "expected_duration_sec": 10,
+          "id": "eval_3",
+          "terminal": true,
+          "verifies": [
+            "B-1",
+            "B-2"
+          ]
+        }
+      ],
+      "execution_backend": "any",
+      "goal": "Ter num arquivo versionado os conceitos da fonte — colunas, termos do glossário, espécies com o nome oficial e o grupo de cada uma — e um carregador que só aceita a ontologia se ela confere com os bytes de _raw/. Para rodar testes, o ÚNICO comando liberado ao agente é `docker compose -f infra/docker-compose.yml exec -T spark python3 -m pytest <arquivo> -k <cenarios>`.",
+      "id": "T-20260924-ontologia-versionada",
+      "observability": "ontologia recusada por divergência com os bytes do INSS",
+      "profile": "standard",
+      "required_tools": [
+        "git",
+        "bash",
+        "python3",
+        "pytest",
+        "docker"
+      ],
+      "rollback": "Remover os três arquivos criados; nada mais depende deles até a próxima tarefa.",
+      "source_note": "seamwise/legs/LEG-ONTOLOGIA.md#T-20260924-ontologia-versionada",
+      "title": "Ontologia versionada dos benefícios emitidos, reconferida contra os bytes do INSS",
+      "touches_paths": [],
+      "why": "Ter num arquivo versionado os conceitos da fonte — colunas, termos do glossário, espécies com o nome oficial e o grupo de cada uma — e um carregador que só aceita a ontologia se ela confere com os bytes de _raw/. Para rodar testes, o ÚNICO comando liberado ao agente é `docker compose -f infra/docker-compose.yml exec -T spark python3 -m pytest <arquivo> -k <cenarios>`."
+    }
+  ]
+}

@@ -28,3 +28,6 @@
 {"attributes":{"source":{"name":"teste-limpeza-recipe.yaml","sha256":"c35d3d70dc4b31b7bd6beed8799f8bfb29698e5a3206c8d1b619c8178cbc83af"}},"authorization":false,"event":"seamwise.map","schema_version":1,"time":"2026-09-24T20:17:20.011180+00:00","token":"SEAM_MAP=READY"}
 {"attributes":{"lanes":1,"legs":1},"authorization":false,"event":"seamwise.plan","schema_version":1,"time":"2026-09-24T20:17:20.044453+00:00","token":"DELIVERY_PLAN=NEEDS_REVIEW"}
 {"attributes":{"fixture":false,"reviewer":"Bruno Nunes"},"authorization":false,"event":"seamwise.review","schema_version":1,"time":"2026-09-24T20:17:20.308716+00:00","token":"DELIVERY_PLAN=READY"}
+{"attributes":{"source":{"name":"ontologia-recipe.yaml","sha256":"3ff6cafce248a308918bc9b3ae15dd4eb1e012c303cc101ba52edabeede0c456"}},"authorization":false,"event":"seamwise.map","schema_version":1,"time":"2026-09-24T22:39:14.608089+00:00","token":"SEAM_MAP=READY"}
+{"attributes":{"lanes":3,"legs":3},"authorization":false,"event":"seamwise.plan","schema_version":1,"time":"2026-09-24T22:39:14.684071+00:00","token":"DELIVERY_PLAN=NEEDS_REVIEW"}
+{"attributes":{"fixture":false,"reviewer":"Bruno Nunes"},"authorization":false,"event":"seamwise.review","schema_version":1,"time":"2026-09-24T22:39:15.042895+00:00","token":"DELIVERY_PLAN=READY"}
