@@ -1,0 +1,59 @@
+{
+  "formato": 1,
+  "eventlog": "base-assuntos-1-225440",
+  "tolerancia_sugerida": 0.1,
+  "resultado": {
+    "controles": {
+      "linhas": "65",
+      "soma": "78521752562.12",
+      "minimo": "242.17",
+      "maximo": "22212167999.57"
+    }
+  },
+  "medicao": {
+    "total": {
+      "tarefas": 6062,
+      "falhas": 0,
+      "parede_ms": 70060,
+      "executor_run_ms": 153843,
+      "cpu_ms": 117579,
+      "gc_ms": 8066,
+      "shuffle_bytes": 19436504,
+      "shuffle_lido": 9718252,
+      "shuffle_escrito": 9718252,
+      "spill_memoria_bytes": 0,
+      "spill_disco_bytes": 0,
+      "entrada_bytes": 528664254,
+      "saida_bytes": 22478
+    },
+    "relogio_consistente": false,
+    "apps": {
+      "assuntos-perf": {
+        "totais": {
+          "tarefas": 6062,
+          "falhas": 0,
+          "executor_run_ms": 153843,
+          "cpu_ms": 117579,
+          "gc_ms": 8066,
+          "shuffle_lido": 9718252,
+          "shuffle_escrito": 9718252,
+          "spill_memoria_bytes": 0,
+          "spill_disco_bytes": 0,
+          "entrada_bytes": 528664254,
+          "saida_bytes": 22478,
+          "shuffle_bytes": 19436504,
+          "parede_ms": 70060
+        },
+        "versao_spark": "3.5.9",
+        "relogio_consistente": false,
+        "ambiente": {
+          "spark.sql.catalog.spark_catalog": "org.apache.spark.sql.delta.catalog.DeltaCatalog",
+          "spark.driver.memory": "6g",
+          "spark.sql.ansi.enabled": "true",
+          "spark.master": "local[*]",
+          "spark.sql.extensions": "io.delta.sql.DeltaSparkSessionExtension"
+        }
+      }
+    }
+  }
+}
