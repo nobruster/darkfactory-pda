@@ -39,6 +39,10 @@ decisions:
   status: accepted
   owner: Bruno Nunes
   rationale: 'Decidido pelo dono em 2026-09-24: adotar pela cadeia os dois arquivos escritos fora dela (Regra 11), sem mudar comportamento. Medido pelo verificar_procedencia.py consertado (289c9d2): são os dois únicos de 20 sem Task-Spec selada. A carga incremental que o gravador faz é o ADR 0011, reunido com a linha pds em dae1042.'
+- id: DEC-DEFEITOS-LATENTES-FIXADOS
+  status: accepted
+  owner: Bruno Nunes
+  rationale: 'A primeira revisão do produtor (code-reviewer e test-generator, 2026-09-24) achou defeitos LATENTES, nenhum exercido pelo landing de 2026-01 (0 inválidas, uma carga, fecha com a âncora): a gramática Spark diverge da do juiz Python (''1,5'' e negativos); código vazio some de total_por_codigo sem contador; o append não confere partição vazia; linha inválida grava NULL sem o texto bruto; as sessões não declaram ansi.enabled. A adoção FIXA o comportamento atual em teste e não corrige: corrigir muda o código que gravou o dado, e cada correção é tarefa própria, decidida pelo dono.'
 seams:
 - id: SEAM-ADOTA-PRODUTOR
   name: Produtor adotado
@@ -54,6 +58,7 @@ seams:
   independent_proof: PROCEDENCIA=OK; funções iguais às de antes por AST, salvo --destino; suíte verde.
   decision_ids:
   - DEC-ADOTA-PRODUTOR
+  - DEC-DEFEITOS-LATENTES-FIXADOS
   rejected_alternatives:
   - alternative: Isentar os dois arquivos no verificador
     reason: isenção de código que soma dinheiro devolve o furo da Regra 11 com outro nome.
@@ -92,25 +97,25 @@ seams:
         - id: B-1
           given: um CSV pequeno em tmp_path, em latin-1 com separador ';', no layout do contrato de 2026-01 (14 colunas, o cabeçalho com 'Espécie' duas vezes), valores no formato brasileiro com espaços à esquerda ('        1.518,00') e pelo menos um valor fora da gramática
           when: spark_produtor.produzir(csv, contrato, competencia) roda
-          then: 'o envelope traz motor ''spark'', o sha256 do arquivo lido, e os cinco controles como TEXTO — count_linhas, linhas_invalidas, sum_vl_liquido, min_vl_liquido e max_vl_liquido — IGUAIS, comparados como Decimal, aos que o juiz em Python puro (pda.leitura e pda.agregacao, já selados) mede sobre o mesmo arquivo: os dois motores chegam ao mesmo número (ADR 0005); o valor fora da gramática conta em linhas_invalidas e nunca como zero; a espécie é lida pela POSIÇÃO do contrato, não pelo nome; total_por_codigo soma por código; nenhum float em nenhum valor do envelope. Como produzir chama spark.stop(), cada cenário que o executa roda num PROCESSO FILHO, para não derrubar a sessão Spark compartilhada da suíte.'
+          then: 'o envelope traz motor ''spark'', o sha256 do arquivo lido (igual ao hashlib do teste), e os cinco controles como TEXTO — count_linhas, linhas_invalidas, sum_vl_liquido, min_vl_liquido e max_vl_liquido — IGUAIS, comparados como Decimal, a valores LITERAIS da fixture calculados à mão no teste (o juiz Python não serve de oráculo aqui: exige chmod 444, 65 códigos e 11 colapsos); a fixture tem DOIS CÓDIGOS COM A MESMA DESCRIÇÃO, e total_por_codigo os soma SEPARADOS, por código, nunca pela descrição (R-3, ADR 0008); a espécie é lida pela POSIÇÃO do contrato. O comportamento atual da gramática fica FIXADO, sem corrigir (Regra 4): ''1,5'' conta em linhas_invalidas e nunca como zero, e ''-5,00'' é aceito e somado — divergência conhecida com o juiz Python, que aceita ''1,5'' e recusa negativo, registrada para decisão do dono; e um código vazio fica fora de total_por_codigo, também fixado e registrado. Nenhum float em nenhum valor do envelope. Como produzir chama spark.stop(), ele só roda num PROCESSO FILHO, sem as variáveis S3_* no ambiente, com toda saída em tmp_path.'
         - id: B-2
           given: o mesmo CSV e um destino em tmp_path passado por --destino
           when: gravar_lago._ler_fonte, gravar_lago._controles e gravar_lago.main rodam
-          then: _ler_fonte seguido de _controles mede os mesmos cinco controles que produzir, pela mesma gramática; main recusa com LAGO=RECUSADO um contrato NAO_MEDIDO e uma fonte de zero linhas, sem gravar nada; grava em append, NUNCA overwrite, na partição competencia=<c> do destino, relê do destino e compara os cinco controles; uma segunda carga da mesma competência no mesmo destino dobra as linhas relidas e dá LAGO=DIVERGE, sem apagar a primeira; LAGO=GRAVADO só quando fonte, lago e âncora do contrato batem — para isso o teste usa uma cópia do contrato em tmp_path com a âncora da fixture. O padrão de --destino é o destino de hoje, s3a://landing/pda/beneficios-emitidos. main também roda num processo filho. Nenhum cenário grava no MinIO, e nenhum usa skip, xfail ou importorskip.
+          then: _ler_fonte seguido de _controles mede os mesmos cinco controles que produzir, pela mesma gramática; main recusa com o token LAGO=RECUSADO na saída um contrato NAO_MEDIDO e uma fonte de zero linhas, e o destino NÃO existe depois; com uma cópia do contrato em tmp_path cuja âncora é a da fixture, a PRIMEIRA carga dá LAGO=GRAVADO, e uma SEGUNDA carga da mesma competência no mesmo destino dá LAGO=DIVERGE com o dobro de linhas relidas e os arquivos da primeira ainda lá — o append sem conferir partição vazia fica FIXADO e registrado como defeito latente; cada um dos cinco controles divergindo SOZINHO na releitura — o processo filho substitui a releitura por um DataFrame com um único controle alterado — dá LAGO=DIVERGE, para provar que a comparação não é só por contagem. O padrão de --destino é o destino de hoje, s3a://landing/pda/beneficios-emitidos, conferido pelo argparse SEM executar main. main só roda num processo filho SEM as variáveis S3_* — qualquer acesso ao MinIO falha em vez de gravar —, com --destino e --out em tmp_path e subprocess com timeout. Nenhum cenário usa skip, xfail ou importorskip, e um cenário confere pelo AST do próprio arquivo de teste que produzir e main nunca são chamados no processo do pytest.
         evals:
         - id: eval_1
-          description: O produtor mede como o juiz
-          bash: docker compose -f infra/docker-compose.yml exec -T spark sh -c 'for c in produtor_bate_com_o_juiz_python valor_fora_da_gramatica_conta_como_invalido especie_lida_por_posicao envelope_sem_float; do python3 -m pytest --collect-only -q tests/test_produtor.py -k "$c" 2>/dev/null | grep -q "::" || { echo "EVAL=CENARIO_AUSENTE_$c"; exit 1; }; done; python3 -m pytest -q tests/test_produtor.py -k "produtor_bate_com_o_juiz_python or valor_fora_da_gramatica_conta_como_invalido or especie_lida_por_posicao or envelope_sem_float"'
+          description: O produtor mede o que a fixture tem
+          bash: docker compose -f infra/docker-compose.yml exec -T spark sh -c 'for c in produtor_totais_literais_da_fixture codigos_com_mesma_descricao_somam_separados gramatica_atual_fixada codigo_vazio_fora_do_total_fixado sha256_e_motor_no_envelope envelope_sem_float; do python3 -m pytest --collect-only -q tests/test_produtor.py -k "$c" 2>/dev/null | grep -q "::" || { echo "EVAL=CENARIO_AUSENTE_$c"; exit 1; }; done; python3 -m pytest -q tests/test_produtor.py -k "produtor_totais_literais_da_fixture or codigos_com_mesma_descricao_somam_separados or gramatica_atual_fixada or codigo_vazio_fora_do_total_fixado or sha256_e_motor_no_envelope or envelope_sem_float"'
           verifies:
           - B-1
         - id: eval_2
           description: O gravador prova o que gravou
-          bash: docker compose -f infra/docker-compose.yml exec -T spark sh -c 'for c in gravador_mede_igual_ao_produtor contrato_nao_medido_recusa zero_linhas_nao_grava segunda_carga_diverge_e_nao_apaga grava_so_quando_bate_com_a_ancora; do python3 -m pytest --collect-only -q tests/test_produtor.py -k "$c" 2>/dev/null | grep -q "::" || { echo "EVAL=CENARIO_AUSENTE_$c"; exit 1; }; done; python3 -m pytest -q tests/test_produtor.py -k "gravador_mede_igual_ao_produtor or contrato_nao_medido_recusa or zero_linhas_nao_grava or segunda_carga_diverge_e_nao_apaga or grava_so_quando_bate_com_a_ancora"'
+          bash: docker compose -f infra/docker-compose.yml exec -T spark sh -c 'for c in gravador_mede_igual_ao_produtor contrato_nao_medido_recusa zero_linhas_nao_grava primeira_grava_segunda_diverge_sem_apagar cada_controle_divergente_acusa; do python3 -m pytest --collect-only -q tests/test_produtor.py -k "$c" 2>/dev/null | grep -q "::" || { echo "EVAL=CENARIO_AUSENTE_$c"; exit 1; }; done; python3 -m pytest -q tests/test_produtor.py -k "gravador_mede_igual_ao_produtor or contrato_nao_medido_recusa or zero_linhas_nao_grava or primeira_grava_segunda_diverge_sem_apagar or cada_controle_divergente_acusa"'
           verifies:
           - B-2
         - id: eval_3
-          description: Sem mudar o que já gravou
-          bash: docker compose -f infra/docker-compose.yml exec -T spark sh -c 'for c in destino_padrao_e_o_landing_de_hoje sessao_da_suite_sobrevive controles_em_texto; do python3 -m pytest --collect-only -q tests/test_produtor.py -k "$c" 2>/dev/null | grep -q "::" || { echo "EVAL=CENARIO_AUSENTE_$c"; exit 1; }; done; python3 -m pytest -q tests/test_produtor.py -k "destino_padrao_e_o_landing_de_hoje or sessao_da_suite_sobrevive or controles_em_texto"'
+          description: Sem mudar o que já gravou e sem tocar o MinIO
+          bash: docker compose -f infra/docker-compose.yml exec -T spark sh -c 'for c in destino_padrao_e_o_landing_de_hoje filho_sem_credencial_s3 produzir_e_main_so_em_processo_filho controles_em_texto; do python3 -m pytest --collect-only -q tests/test_produtor.py -k "$c" 2>/dev/null | grep -q "::" || { echo "EVAL=CENARIO_AUSENTE_$c"; exit 1; }; done; python3 -m pytest -q tests/test_produtor.py -k "destino_padrao_e_o_landing_de_hoje or filho_sem_credencial_s3 or produzir_e_main_so_em_processo_filho or controles_em_texto"'
           verifies:
           - B-1
           - B-2
