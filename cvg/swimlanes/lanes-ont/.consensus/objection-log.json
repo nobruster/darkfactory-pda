@@ -1,0 +1,225 @@
+{
+  "schema_version": "1.0",
+  "pass": "4-consensus",
+  "adversary": {
+    "engine_id": "codex",
+    "model": "codex",
+    "family": "openai",
+    "engine_version": "codex-cli 0.155.0",
+    "sandbox_mode": "read-only"
+  },
+  "author": {
+    "model": "claude",
+    "family": "anthropic"
+  },
+  "verdict": "REVISE",
+  "prompt_sha256": "2061663e69297c5e78ad6c9496892961bf0039bf2ce63b6dc2d8ffd43135dd69",
+  "inputs": [
+    {
+      "path": "especie-silver/LEG-ESPECIE-SILVER.md",
+      "sha256": "055d3ec231300c4b72f95518dc9e64a7473efe909716ebcd843d66a3c12cfa63"
+    },
+    {
+      "path": "especie-silver/_lane.md",
+      "sha256": "7e02f3ccb989b5771858fcaf488b7c03f3c4c32a73a8f38302a350d3576d1a0a"
+    },
+    {
+      "path": "ontologia-postgres/LEG-ONTOLOGIA-POSTGRES.md",
+      "sha256": "ba566e3544be4d4f6b7ee1d8a0bc8d8d815a7fc5344776a37629816b9ec50e91"
+    },
+    {
+      "path": "ontologia-postgres/_lane.md",
+      "sha256": "eb094b49eba0b85e1a8de47d0a9bb947ed08ec0e95f0f3eb94d6d6042d36aa18"
+    },
+    {
+      "path": "ontologia/LEG-ONTOLOGIA.md",
+      "sha256": "2800c239f7a8568aa7d73f4ae1d56d65f424adbda79c072e43310327090e1783"
+    },
+    {
+      "path": "ontologia/_lane.md",
+      "sha256": "89ce9a3295c99e9379a4474dca0d6b8f972d50adc51b35c905e6068cb689333e"
+    }
+  ],
+  "objections": [
+    {
+      "id": "C1",
+      "severity": "high",
+      "rank": 1,
+      "attack_class": "data-loss",
+      "swimlane": "LANE-ONTOLOGIA-POSTGRES",
+      "leg": "LEG-ONTOLOGIA-POSTGRES",
+      "location": {
+        "plan_file": "cvg/swimlanes/lanes-ont/ontologia-postgres/LEG-ONTOLOGIA-POSTGRES.md",
+        "section": "tasks[0].rollback; behavior B-1/B-2"
+      },
+      "title": "Rollback apaga a carga anterior que o plano promete preservar",
+      "evidence": "rollback: 'Remover os dois arquivos criados e apagar o schema carregado.' B-1 permite substituir conte\u00fado anterior; B-2 promete preserv\u00e1-lo em falhas.",
+      "body": "Contraexemplo: o schema j\u00e1 cont\u00e9m a vers\u00e3o A, a tarefa publica B e depois \u00e9 revertida. Executar o rollback declarado elimina o schema inteiro, inclusive a possibilidade de servir A. A restri\u00e7\u00e3o de apagar somente schemas criados pelo teste aparece na fixture, mas n\u00e3o no rollback operacional. A instru\u00e7\u00e3o destrutiva n\u00e3o distingue primeira instala\u00e7\u00e3o de atualiza\u00e7\u00e3o.",
+      "cites": [
+        "LEG-ONTOLOGIA-POSTGRES.md: done_condition",
+        "LEG-ONTOLOGIA-POSTGRES.md: behavior B-1/B-2 e rollback"
+      ],
+      "resolution": {
+        "disposition": "ACCEPT",
+        "decided_by": "Bruno Nunes",
+        "decided_at": "2026-09-24T22:38:33Z",
+        "owner": "Bruno Nunes",
+        "risk_residual": "Aceito, com regra operacional: reverter a projecao Postgres e RE-PROJETAR a ontologia do commit anterior (projetar_ontologia com a versao anterior), nunca DROP do schema de producao. O codigo ja recusa 'public' e 'pg_' e os testes so apagam schemas 'teste_' que eles criaram. Decidido pelo dono ao fechar o Pass 4 da ontologia na R2, sem editar o plano."
+      }
+    },
+    {
+      "id": "C2",
+      "severity": "high",
+      "rank": 2,
+      "attack_class": "unverified-assumption",
+      "swimlane": "LANE-ONTOLOGIA",
+      "leg": "LEG-ONTOLOGIA",
+      "location": {
+        "plan_file": "cvg/swimlanes/lanes-ont/ontologia/LEG-ONTOLOGIA.md",
+        "section": "behavior B-1/B-2; eval_2"
+      },
+      "title": "Conferir cabe\u00e7alhos e termos separadamente n\u00e3o prova a rela\u00e7\u00e3o entre eles",
+      "evidence": "B-1 exige o cabe\u00e7alho correto por posi\u00e7\u00e3o e os termos com descri\u00e7\u00e3o igual ao gloss\u00e1rio. B-2 lista termo inexistente, descri\u00e7\u00e3o diferente e posi\u00e7\u00e3o repetida, mas n\u00e3o liga\u00e7\u00e3o semanticamente errada entre posi\u00e7\u00e3o e termo existente.",
+      "body": "Contraexemplo: trocar entre duas colunas as refer\u00eancias a dois termos v\u00e1lidos, mantendo posi\u00e7\u00f5es, cabe\u00e7alhos, todos os termos e suas descri\u00e7\u00f5es. As confer\u00eancias enumeradas continuam satisfeitas, mas a ontologia passa a atribuir conceitos errados \u00e0s colunas; o Postgres reproduzir\u00e1 essa rela\u00e7\u00e3o e a reconfer\u00eancia contra a pr\u00f3pria ontologia concordar\u00e1. Falta identificar a refer\u00eancia autoritativa que permite refutar essa permuta\u00e7\u00e3o.",
+      "cites": [
+        "cvg/docs/adrs/0010-the-versioned-ontology-is-the-source-of-truth-delta-and-postgres-are-projections.md: Decision, liga\u00e7\u00e3o das 14 colunas aos 13 termos por posi\u00e7\u00e3o",
+        "LEG-ONTOLOGIA.md: behavior B-1/B-2"
+      ],
+      "resolution": {
+        "disposition": "ACCEPT",
+        "decided_by": "Bruno Nunes",
+        "decided_at": "2026-09-24T22:38:33Z",
+        "owner": "Bruno Nunes",
+        "risk_residual": "Aceito, coberto por fora: a ligacao posicao->termo e julgamento, revisado no diff da folha. Depois do loop, a cadeia imprime as 14 linhas (posicao, cabecalho real do CSV, termo, descricao do glossario) lado a lado para o dono conferir antes de cercar src/ontologia/. Decidido pelo dono ao fechar o Pass 4 da ontologia na R2, sem editar o plano."
+      }
+    },
+    {
+      "id": "C3",
+      "severity": "high",
+      "rank": 3,
+      "attack_class": "cross-lane-interface",
+      "swimlane": "LANE-ONTOLOGIA",
+      "leg": "LEG-ONTOLOGIA",
+      "location": {
+        "plan_file": "cvg/swimlanes/lanes-ont/ontologia/LEG-ONTOLOGIA.md",
+        "section": "behavior B-1; produces"
+      },
+      "title": "O objeto compartilhado n\u00e3o tem forma de interface declarada",
+      "evidence": "O produtor promete 'devolve a ontologia com' fontes, colunas, termos e esp\u00e9cies. Os consumidores recebem 'ontologia' e ficam proibidos de alterar src/medalhao/ontologia.py.",
+      "body": "O conte\u00fado conceitual est\u00e1 listado, mas faltam nomes e tipos da estrutura retornada, suas chaves de identidade e a representa\u00e7\u00e3o dos grupos resolvidos. Um produtor pode devolver esp\u00e9cies como lista; outro entendimento igualmente compat\u00edvel com o texto seria um mapa por c\u00f3digo. Os dois consumidores podem implementar contratos incompat\u00edveis, descobertos apenas na integra\u00e7\u00e3o. O atributo sha256 declarado isoladamente n\u00e3o fecha essa interface.",
+      "cites": [
+        "LEG-ONTOLOGIA.md: behavior B-1",
+        "cvg/swimlanes/lanes-ont/especie-silver/LEG-ESPECIE-SILVER.md: behavior B-1 e do_not_touch",
+        "cvg/swimlanes/lanes-ont/ontologia-postgres/LEG-ONTOLOGIA-POSTGRES.md: behavior B-1 e do_not_touch"
+      ],
+      "resolution": {
+        "disposition": "ACCEPT",
+        "decided_by": "Bruno Nunes",
+        "decided_at": "2026-09-24T22:38:33Z",
+        "owner": "Bruno Nunes",
+        "risk_residual": "Aceito: as tarefas consumidoras sao cortadas da branch da ontologia entregue e leem o codigo dela; o risco de incompatibilidade aparece no eval das consumidoras, que carregam a ontologia real. Decidido pelo dono ao fechar o Pass 4 da ontologia na R2, sem editar o plano."
+      }
+    },
+    {
+      "id": "C4",
+      "severity": "high",
+      "rank": 4,
+      "attack_class": "other",
+      "swimlane": "LANE-ESPECIE-SILVER",
+      "leg": "LEG-ESPECIE-SILVER",
+      "location": {
+        "plan_file": "cvg/swimlanes/lanes-ont/especie-silver/LEG-ESPECIE-SILVER.md",
+        "section": "goal versus evals[*].bash"
+      },
+      "title": "Os evals exigem um comando que a pr\u00f3pria tarefa n\u00e3o libera",
+      "evidence": "goal libera exclusivamente 'exec -T spark python3 -m pytest ...'; todos os evals executam 'exec -T spark sh -c' com la\u00e7o, coleta e grep.",
+      "body": "O executor que respeita literalmente a autoriza\u00e7\u00e3o n\u00e3o pode executar os evals publicados. O executor que roda os evals desrespeita a restri\u00e7\u00e3o da tarefa. O mesmo conflito ocorre independentemente nas outras duas legs. Isso bloqueia a prova prescrita mesmo quando a implementa\u00e7\u00e3o est\u00e1 correta; falta esclarecer se a restri\u00e7\u00e3o exclui explicitamente a execu\u00e7\u00e3o dos evals pelo gate.",
+      "cites": [
+        "LEG-ESPECIE-SILVER.md: goal e eval_1/2/3",
+        "cvg/swimlanes/lanes-ont/ontologia/LEG-ONTOLOGIA.md: goal e eval_1/2/3",
+        "cvg/swimlanes/lanes-ont/ontologia-postgres/LEG-ONTOLOGIA-POSTGRES.md: goal e eval_1/2/3"
+      ],
+      "resolution": {
+        "disposition": "ACCEPT",
+        "decided_by": "Bruno Nunes",
+        "decided_at": "2026-09-24T22:38:33Z",
+        "owner": "Bruno Nunes",
+        "risk_residual": "Refutado, como nas rodadas anteriores (performance R3 C2 e R4 C1, memoria R2 C2, teste da limpeza R2 C1): a permissao de escopo minimo e do AGENTE; os evals sao executados pelo MOTOR, fora dela. Decidido pelo dono ao fechar o Pass 4 da ontologia na R2, sem editar o plano."
+      }
+    },
+    {
+      "id": "C5",
+      "severity": "medium",
+      "rank": 5,
+      "attack_class": "race",
+      "swimlane": "LANE-ESPECIE-SILVER",
+      "leg": "LEG-ESPECIE-SILVER",
+      "location": {
+        "plan_file": "cvg/swimlanes/lanes-ont/especie-silver/LEG-ESPECIE-SILVER.md",
+        "section": "behavior B-1; eval_1"
+      },
+      "title": "A prova enumerada n\u00e3o distingue vers\u00e3o pr\u00f3pria de vers\u00e3o atual",
+      "evidence": "B-1 exige versionAsOf na origem e reconfer\u00eancia da vers\u00e3o encontrada pelo id_execucao. eval_1 enumera linhagem_no_commit e reconferencia_acusa_linha_alterada, sem explicitar avan\u00e7o concorrente de vers\u00e3o.",
+      "body": "Com origem e destino est\u00e1veis, uma implementa\u00e7\u00e3o que registra V nos metadados, mas l\u00ea a vers\u00e3o atual, pode passar os cen\u00e1rios descritos. O mesmo vale para reconferir o \u00faltimo commit em vez do pr\u00f3prio. O plano declara a prote\u00e7\u00e3o correta, por\u00e9m sua prova n\u00e3o exige o contraexemplo que a diferencia da implementa\u00e7\u00e3o incorreta: outra vers\u00e3o surgindo entre as etapas. N\u00e3o afirmo que os futuros testes necessariamente omitir\u00e3o isso; o requisito de demonstra\u00e7\u00e3o permanece aberto.",
+      "cites": [
+        "LEG-ESPECIE-SILVER.md: behavior B-1",
+        "LEG-ESPECIE-SILVER.md: eval_1"
+      ],
+      "resolution": {
+        "disposition": "ACCEPT",
+        "decided_by": "Bruno Nunes",
+        "decided_at": "2026-09-24T22:38:33Z",
+        "owner": "Bruno Nunes",
+        "risk_residual": "Aceito, coberto por fora: depois do loop a cadeia confere no codigo entregue o versionAsOf na leitura da Silver e a busca do commit proprio pelo id_execucao no historico. Decidido pelo dono ao fechar o Pass 4 da ontologia na R2, sem editar o plano."
+      }
+    },
+    {
+      "id": "C6",
+      "severity": "medium",
+      "rank": 6,
+      "attack_class": "drift",
+      "swimlane": "LANE-ONTOLOGIA-POSTGRES",
+      "leg": "LEG-ONTOLOGIA-POSTGRES",
+      "location": {
+        "plan_file": "cvg/swimlanes/lanes-ont/ontologia-postgres/LEG-ONTOLOGIA-POSTGRES.md",
+        "section": "requires; tasks[0].depends_on"
+      },
+      "title": "O grafo permite Postgres antes de Delta, contrariando a ordem registrada",
+      "evidence": "Postgres depende apenas de T-20260924-ontologia-versionada. ADR 0010, Consequences: 'Tr\u00eas costuras, nesta ordem: a ontologia com o carregador; a proje\u00e7\u00e3o Delta especie; a proje\u00e7\u00e3o Postgres.'",
+      "body": "Depois do carregador, o grafo permite executar as duas proje\u00e7\u00f5es em paralelo ou entregar Postgres primeiro. A lane confirma que somente depend\u00eancias expl\u00edcitas imp\u00f5em ordem. Isso diverge da sequ\u00eancia textual vinculante. N\u00e3o foi demonstrada depend\u00eancia t\u00e9cnica entre as proje\u00e7\u00f5es; a quest\u00e3o \u00e9 esclarecer se a sequ\u00eancia do ADR \u00e9 obrigat\u00f3ria ou apenas descritiva, sem o advers\u00e1rio decidir por conta pr\u00f3pria.",
+      "cites": [
+        "LEG-ONTOLOGIA-POSTGRES.md: requires e depends_on",
+        "cvg/swimlanes/lanes-ont/ontologia-postgres/_lane.md: regra de ordena\u00e7\u00e3o",
+        "cvg/docs/adrs/0010-the-versioned-ontology-is-the-source-of-truth-delta-and-postgres-are-projections.md: Consequences"
+      ],
+      "resolution": {
+        "disposition": "ACCEPT",
+        "decided_by": "Bruno Nunes",
+        "decided_at": "2026-09-24T22:38:33Z",
+        "owner": "Bruno Nunes",
+        "risk_residual": "Aceito: nao ha dependencia tecnica entre as projecoes; a ordem do ADR 0010 e a da execucao, que a cadeia faz em sequencia (ontologia, especie, postgres), cada loop cortado da branch anterior. Decidido pelo dono ao fechar o Pass 4 da ontologia na R2, sem editar o plano."
+      }
+    }
+  ],
+  "cross_lane_interfaces": [],
+  "fork": {
+    "choice": "B",
+    "reason": "Reproduz a escolha j\u00e1 declarada nas tr\u00eas lanes; nenhuma escolha feita pelo advers\u00e1rio.",
+    "per_plan_declared": true
+  },
+  "open_questions": [
+    {
+      "q": "Como o despacho representa obje\u00e7\u00f5es ainda abertas, dado que o schema local exige resolution com disposition, decided_by e decided_at? Esses dados n\u00e3o foram fornecidos e n\u00e3o podem ser inventados.",
+      "blocks_build": true
+    },
+    {
+      "q": "Qual refer\u00eancia aprovada determina o v\u00ednculo sem\u00e2ntico posi\u00e7\u00e3o\u2192termo, permitindo detectar a permuta\u00e7\u00e3o descrita em C2?",
+      "blocks_build": true
+    },
+    {
+      "q": "A sequ\u00eancia Delta\u2192Postgres no ADR 0010 \u00e9 obrigat\u00f3ria ou descritiva?",
+      "blocks_build": true
+    }
+  ],
+  "rounds_run": 1
+}
