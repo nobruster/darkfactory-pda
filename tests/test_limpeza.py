@@ -123,6 +123,51 @@ def test_outra_execucao_intacta(spark, tmp_path):
     assert (outra / "parte.parquet").exists()
 
 
+def test_substituida_conferida_apaga(spark, tmp_path):
+    destino = _publicar(spark, tmp_path)
+    _commit(spark, destino, "11.00", {"competencia": COMP, "estado": "INTEGRO", "id_execucao": "e2"})
+    raiz, execucao = _preparo(tmp_path, "gold", "e1")
+    r = _limpar(spark, destino, raiz)
+    assert r.apagou and r.conferido, r
+    assert not execucao.exists()
+
+
+def test_publicada_intacta_apos_limpar_substituida(spark, tmp_path):
+    destino = _publicar(spark, tmp_path)
+    _commit(spark, destino, "11.00", {"competencia": COMP, "estado": "INTEGRO", "id_execucao": "e2"})
+    raiz, _ = _preparo(tmp_path, "gold", "e1")
+    antes = limpeza._medir(spark, str(destino), "vl_liquido")
+    assert _limpar(spark, destino, raiz).conferido
+    assert limpeza._medir(spark, str(destino), "vl_liquido") == antes
+
+
+def test_revertida_preserva(spark, tmp_path):
+    destino = _publicar(spark, tmp_path)
+    _commit(spark, destino, "10.00", {"competencia": COMP, "estado": "REVERTIDO", "id_execucao": "e1"})
+    _commit(spark, destino, "12.00", {"competencia": COMP, "estado": "INTEGRO", "id_execucao": "e3"})
+    raiz, execucao = _preparo(tmp_path, "gold", "e1")
+    r = _limpar(spark, destino, raiz)
+    assert r.resultado == limpeza.PRESERVADO and r.motivo
+    assert execucao.exists()
+
+
+def test_sem_commit_preserva(spark, tmp_path):
+    destino = _publicar(spark, tmp_path, id_execucao="e0")
+    raiz, execucao = _preparo(tmp_path, "gold", "e1")
+    r = _limpar(spark, destino, raiz)
+    assert r.resultado == limpeza.PRESERVADO and r.motivo
+    assert execucao.exists()
+
+
+def test_execucao_ativa_preserva(spark, tmp_path):
+    destino = _publicar(spark, tmp_path, id_execucao="e0")
+    _commit(spark, destino, "11.00", {"competencia": COMP, "estado": "INTEGRO", "id_execucao": "e2"})
+    raiz, ativa = _preparo(tmp_path, "gold", "e9")
+    r = _limpar(spark, destino, raiz, "e9")
+    assert r.resultado == limpeza.PRESERVADO and r.motivo == "EXECUCAO_NAO_PUBLICADA"
+    assert ativa.exists()
+
+
 def test_prefixo_montado_de_partes_validadas(tmp_path):
     raiz = str(Path(tmp_path) / "gold" / "_preparo" / "pda" / "t")
     assert limpeza.montar_prefixo("gold", raiz, "e1") == f"{raiz}/execucao=e1"

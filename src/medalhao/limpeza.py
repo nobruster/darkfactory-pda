@@ -77,6 +77,21 @@ def _commit_da_competencia(historico, competencia: str) -> Optional[Tuple[int, d
     return None
 
 
+def _commits_da_competencia(historico, competencia: str) -> List[Tuple[int, dict]]:
+    """Todos os commits que nomeiam a competência, em ordem crescente de versão."""
+    achados = []
+    for versao, meta in sorted(historico, key=lambda t: t[0]):
+        if not meta:
+            continue
+        try:
+            corpo = json.loads(meta)
+        except ValueError:
+            continue
+        if isinstance(corpo, dict) and corpo.get("competencia") == competencia:
+            achados.append((versao, corpo))
+    return achados
+
+
 def _medir(spark: SparkSession, publicada: str, coluna_soma: str) -> Tuple[int, int, Any]:
     versao = bronze._versao_atual(spark, publicada)
     linhas = spark.read.format("delta").option("versionAsOf", versao).load(publicada)
@@ -104,14 +119,18 @@ def limpar_preparo(
     except CaminhoRecusado as exc:
         return Limpeza(RECUSADO, str(exc))
 
-    dono = _commit_da_competencia(_historico(spark, publicada), competencia)
-    if dono is None:
+    commits = _commits_da_competencia(_historico(spark, publicada), competencia)
+    proprios = [(v, m) for v, m in commits if m.get("id_execucao") == id_execucao]
+    if not proprios:
         return Limpeza(PRESERVADO, "EXECUCAO_NAO_PUBLICADA", prefixo)
-    _, meta = dono
-    if meta.get("id_execucao") != id_execucao:
-        return Limpeza(PRESERVADO, "EXECUCAO_NAO_E_A_ULTIMA_PUBLICADA", prefixo)
+    versao, meta = proprios[-1]
     if meta.get("estado") != bronze.INTEGRO:
         return Limpeza(PRESERVADO, f"ESTADO_NAO_E_PUBLICACAO: {meta.get('estado')}", prefixo)
+    # Execução não é retomada (id novo por execução): publicada e substituída não está em uso.
+    # Qualquer commit posterior que não seja publicação pode ter desfeito esta — preserva.
+    for v, m in commits:
+        if v > versao and m.get("estado") != bronze.INTEGRO:
+            return Limpeza(PRESERVADO, f"REVERSAO_POSTERIOR: {m.get('estado')}", prefixo)
 
     antes = _medir(spark, publicada, coluna_soma)
     _apagar(spark, prefixo)
