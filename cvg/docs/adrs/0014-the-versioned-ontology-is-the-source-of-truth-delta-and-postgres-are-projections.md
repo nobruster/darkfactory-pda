@@ -1,5 +1,5 @@
 ---
-adr: "0010"
+adr: "0014"
 status: accepted
 date: 2026-09-24
 ground: brownfield
@@ -10,7 +10,12 @@ superseded_by: ""
 deciders: "Bruno Nunes"
 ---
 
-# 0010 — the versioned ontology is the source of truth; Delta and Postgres are projections
+# 0014 — the versioned ontology is the source of truth; Delta and Postgres are projections
+
+> **Renumerado de 0010 para 0014 em 2026-09-24**, sem mudar a decisão: a linha `pds`
+> já tinha um ADR 0010 (a média do benefício sobe entre 2025-12 e 2026-01), e as
+> duas linhas foram reunidas. A receita da ontologia e as folhas seladas citam
+> `ADR-0010-ONTOLOGIA-FONTE` — é este ADR; ficam como estavam, porque são histórico.
 
 ## Context
 

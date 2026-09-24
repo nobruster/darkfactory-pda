@@ -15,7 +15,7 @@ não distingue o arquivo novo sem autorização — é o verificador que nunca
 reprova, pelo avesso. Agora lê as duas, e só folha com `signed_off_sig`
 autoriza: folha sem selo não passou pelo Pass 5.
 
-E confere `.yaml` além de `.py`: a ontologia (ADR 0010) é dado versionado em
+E confere `.yaml` além de `.py`: a ontologia (ADR 0014) é dado versionado em
 src/ e governa as projeções tanto quanto código.
 
 Token: PROCEDENCIA=OK|SEM_AUTORIZACAO|ERRO

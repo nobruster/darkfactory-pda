@@ -1,6 +1,6 @@
 """Mede o dicionário de espécies do INSS contra a Silver publicada.
 
-Evidência do ADR 0010. Só lê: /dados/_raw (os .xlsx) e a Silver no MinIO.
+Evidência do ADR 0014. Só lê: /dados/_raw (os .xlsx) e a Silver no MinIO.
 
   1. códigos: dicionário × dado
   2. texto da fonte == 20 primeiros caracteres do nome oficial (sem espaços
