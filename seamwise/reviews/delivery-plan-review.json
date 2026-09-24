@@ -1,0 +1,10 @@
+{
+  "disposition": "accepted",
+  "draft_sha256": "658d3e634c0ce627d723c96103977a91c4d188c3d6c7d0fd29620dd4b8cdec93",
+  "fixture": false,
+  "plan_sha256": "e9872acf69dd73964d75148cf948370d6d778597b34198a547ade4278552c4e3",
+  "reason": "Pass 4 do teste da limpeza fechado na R2. Uma costura: retirar o teste selado que codifica a regra antiga, com guarda da lista.",
+  "reviewed_at": "2026-09-24T20:17:20.302403+00:00",
+  "reviewer": "Bruno Nunes",
+  "schema_version": 1
+}

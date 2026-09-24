@@ -1,0 +1,22 @@
+schema_version: 1
+status: DELIVERY_PLAN=READY
+seam_map_sha256: 80a6cc577e36cbfa1059fb4fc6aaefed47b6f2012e15162283f7f8be9ac03d23
+swimlanes:
+- id: LANE-RETIRA-REGRA-ANTIGA
+  seam_id: SEAM-RETIRA-REGRA-ANTIGA
+  owner: medalhao
+  path: seamwise/swimlanes/LANE-RETIRA-REGRA-ANTIGA.md
+  sha256: dec985f6a009a7b953794f67a08357bbd67737d798ea5e8b129082778495ec69
+legs:
+- id: LEG-RETIRA-REGRA-ANTIGA
+  seam_id: SEAM-RETIRA-REGRA-ANTIGA
+  swimlane_id: LANE-RETIRA-REGRA-ANTIGA
+  path: seamwise/legs/LEG-RETIRA-REGRA-ANTIGA.md
+  sha256: f15622f21181cf5a474b7e1d75e99d460899dd8a0fccbbca0826c9db3b985f25
+steel_thread:
+- LEG-RETIRA-REGRA-ANTIGA
+objections: []
+contentions: []
+steel_thread_path: seamwise/steel-thread.md
+steel_thread_sha256: 0b969bddcd75e0d45f583c0d23a14db64cafce5a2de368aef81d594e86d7b8f4
+review_authority_sha256: 3628a1d07ea5e7e9b63d38a9c485c5f617ceafe43a3847f7f8345229c4327c00

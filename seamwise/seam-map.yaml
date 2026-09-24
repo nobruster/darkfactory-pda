@@ -1,0 +1,22 @@
+schema_version: 1
+status: SEAM_MAP=READY
+intent_id: DI-PDA-TESTE-LIMPEZA
+source_recipe:
+  name: teste-limpeza-recipe.yaml
+  sha256: c35d3d70dc4b31b7bd6beed8799f8bfb29698e5a3206c8d1b619c8178cbc83af
+intent_sha256: be17a5779ab7d5b6802f6a9124c69d7b257b2de35d8915f1eddbed261ad2bdd4
+system_map_sha256: a13ad0e4871f0ed43b9f0396ea3240fa81123c1f449a04a041f5ae516b16aa63
+evidence_sha256: b24f1acce2da18a69f0156627622bd52a0d9b80c6a7aa3953eedd95802337ee4
+decisions:
+- id: DEC-RETIRA-REGRA-ANTIGA-LIMPEZA
+  path: seamwise/decisions/DEC-RETIRA-REGRA-ANTIGA-LIMPEZA.md
+  status: accepted
+  sha256: a3ee4dcfec621febd87993c7e9ce708de5d057ac086f4879afd99d288c5280db
+seams:
+- id: SEAM-RETIRA-REGRA-ANTIGA
+  path: seamwise/seams/SEAM-RETIRA-REGRA-ANTIGA.md
+  owner: medalhao
+  evidence:
+  - E-ANCORA-202601
+  swimlane_id: LANE-RETIRA-REGRA-ANTIGA
+  sha256: a878760508eedfa75361511b7b88d1be1f07cc02e7cb2da7f2f2dccfff795375

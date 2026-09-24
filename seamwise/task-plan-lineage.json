@@ -1,0 +1,31 @@
+{
+  "contract": "SeamwiseTaskPlanLineage/v1",
+  "delivery_plan_sha256": "e9872acf69dd73964d75148cf948370d6d778597b34198a547ade4278552c4e3",
+  "engine_version": "0.2.0",
+  "intent": {
+    "id": "DI-PDA-TESTE-LIMPEZA",
+    "sha256": "be17a5779ab7d5b6802f6a9124c69d7b257b2de35d8915f1eddbed261ad2bdd4"
+  },
+  "review": {
+    "fixture": false,
+    "plan_sha256": "e9872acf69dd73964d75148cf948370d6d778597b34198a547ade4278552c4e3",
+    "reviewed_at": "2026-09-24T20:17:20.302403+00:00",
+    "reviewer": "Bruno Nunes",
+    "sha256": "8ce53d4e34adfc730104426acc01b37847dabd9510d6836aa420c9d83f889b95"
+  },
+  "task_plan": {
+    "contract": "TaskPlan/v1",
+    "digest": "460f0c2782d8c89bf6cb679abe34f3be521cae9fa015f257bb8a21eea9c69d90",
+    "path": "seamwise/task-plan.json"
+  },
+  "units": {
+    "T-20260924-retira-regra-antiga-limpeza": {
+      "intent": "DI-PDA-TESTE-LIMPEZA",
+      "leg": "LEG-RETIRA-REGRA-ANTIGA",
+      "seam": "SEAM-RETIRA-REGRA-ANTIGA",
+      "source_sha256": "f15622f21181cf5a474b7e1d75e99d460899dd8a0fccbbca0826c9db3b985f25",
+      "swimlane": "LANE-RETIRA-REGRA-ANTIGA",
+      "unit_id": "T-20260924-retira-regra-antiga-limpeza"
+    }
+  }
+}
