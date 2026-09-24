@@ -1,129 +1,90 @@
-# Onde parei — 23/09/2026, madrugada
+# Onde parei — 24/09/2026, madrugada
 
-Descida do **medalhão** (Bronze, Silver, Gold) sobre a partição já
-publicada no lago. Leia [`MEDALHAO.md`](MEDALHAO.md) para o detalhe; isto
-aqui é só para retomar sem reconstruir contexto.
+O dono pediu para parar. Isto é só para retomar sem reconstruir contexto; o
+histórico completo está no `git log` desta branch.
 
-## Posição
+## O que está em produção (MinIO, Delta) — 2026-01 publicada
 
-| Passe | Gate | Veredito |
-|---|---|---|
-| 3 · Decompose | `seamwise map` | 🟢 `SEAM_MAP=READY` |
-| 4 · Consensus | `cvg review --check` | 🔴 **RED** — o plano mudou na R13 |
-| 5 · Tasking | `taskspec gate --stamp` | 🟡 selado, mas sobre texto antigo |
-| 7 · Bind | `cvg bind --check` | 🟡 idem |
-| 8 · Loop | `cvg loop` | 🛑 Bronze deu `blocked`, e o plano foi corrigido |
+| Camada | Tabela | Versão | Linhas | Soma | Estado |
+|---|---|---|---:|---:|---|
+| Landing | `s3a://landing/pda/beneficios-emitidos` + `_PROCEDENCIA.json` | — | 41.572.553 | 78.521.752.562,12 | vinculada ao CSV `505725d9…` |
+| Bronze | `s3a://bronze/pda/beneficios-emitidos` | v4 | 41.572.553 | 78.521.752.562,12 | `INTEGRO`, commit nomeia o pacote `ACEITO` da ingestão |
+| Silver | `s3a://silver/pda/beneficios-emitidos` | v5 | 41.572.553 | 78.521.752.562,12 | `INTEGRO` |
+| Gold | `s3a://gold/pda/beneficios-emitidos` | v3 | 65 códigos | 78.521.752.562,12 | `INTEGRO`, lida **só da Silver** (17 s; antes 1326 s) |
+| Assuntos | `s3a://gold/pda/assuntos/fat_especie` e `kpis_nacionais` | v7 | 65 / 1 | 78.521.752.562,12 | `INTEGRO`, código a código igual à Gold |
 
-⚠️ **O Pass 4 está RED de propósito.** Corrigi o plano na R13 e não
-re-rodei o adversário — os hashes moveram e a procedência quebrou, como
-deve. Não é defeito: é o preço de mexer no plano, e a Regra 10 manda
-pagá-lo em vez de afrouxar a cerca.
+Execução real que publicou: `v4-20260924T011752` (evidência em
+`/app/trabalho/evidencia/`). Preparos antigos e prefixos de teste já foram
+apagados; `_preparo` vazio.
+
+## Cadeias entregues (todas `LOCAL_SETTLED`, receipt `pass/pass`)
+
+Primeira descida (7) · contrato-ext · medalhão Delta (bronze, silver, gold) ·
+procedência (vinculador, bronze lê a prova) · **v4** (ingestão julgada, gold
+lê a silver, grupos no contrato, gold por assuntos, limpeza do preparo).
+Suíte: **327 testes verdes por módulo** (numa JVM só estoura o heap de 1 GB
+herdado — é o que a cadeia de performance corrige).
+
+Contrato: mapa dos 11 colapsos e `grupos_especie` (65 códigos por texto, 6
+nomeados em Outros) aprovados pelo dono, com nome e data.
+
+## Onde a cadeia de PERFORMANCE parou
+
+Receita `cvg/swimlanes/performance-recipe.yaml`, 4 costuras: memória
+declarada + `unpersist` + reconferência numa passada (bronze/silver);
+`unpersist` + um CHECK só (gold/assuntos); testes mais leves; limpeza de
+execuções substituídas.
+
+| Passe | Estado |
+|---|---|
+| 3 · 4 | 🟢 `CHECK_CONSENSUS=OK` na R2 (commit `16cd810`) |
+| Arquivo da composição v4 | 🟢 `ca40f3c` |
+| **5 · Tasking** | 🟡 **no meio** — compose `MATERIALIZED`; `perf-bronze-silver` e `perf-gold` **seladas**; `testes-leves` e `limpa-substituidas` **não seladas**; **nada deste passe commitado** (a árvore tem `seamwise/`, `cvg/tasks/T-20260924-*`, `cvg/receipts/` sem commit — é o estado esperado, não lixo) |
+| 7 · Bind | ⬜ |
+| 8 · Loop | ⬜ 4 loops |
+
+Baselines de performance em `perf/` (gate `spark-perf`, 6 GB declarados,
+ruído `PERF=IGUAL`): bronze executor 374 s, silver 678 s, assuntos 167 s.
 
 ## O comando para retomar
 
-**De dentro do WSL Ubuntu-24.04**, com os overrides:
-
 ```bash
-cd ~/darkfactory-pda
-export PATH="$HOME/.local/bin:$PATH"
-export CVG_TASKSPEC_BIN="$PWD/task-spec-3.8.1/bin/taskspec"
-export CVG_SEAMWISE_BIN="$PWD/.bin/seamwise"
-export SEAMWISE_WORKSPACE=/tmp/ws-medalhao
+# de dentro do WSL Ubuntu-24.04
+bash ~/retomar_perf.sh      # sela o que falta, Pass 5 commit, Pass 7, os 4 loops
 ```
 
-⚠️ **O workspace `/tmp/ws-medalhao` some ao reiniciar a máquina.** Se
-sumir, recrie com `bash ~/cadeia_medalhao.sh`, que roda
-map → plan → review → compile e devolve `TASK_GRAPH=READY`.
+Ele confere a branch (`task/limpa-preparo`), para no primeiro loop que não
+assentar e confere os caminhos de cada tarefa (Regra 10 pelos dois lados).
 
-## O próximo passo, na ordem
+## Depois do Pass 8 — verificação pós-assentamento prometida no Pass 4
 
-1. **Rodada 14 do adversário** — `bash ~/adversario13.sh` (renomeie o eco)
+1. Rodar de novo bronze, silver e assuntos com event log e 6 GB e comparar
+   com `perf/` pela skill: só aceitar `PERF=MELHOR` com saída **idêntica** à
+   produção (controles + multiconjunto 0/0). `PIOR`/`IGUAL` → reverter.
+2. Rodar os assuntos **duas vezes** — a segunda não pode acrescentar CHECK
+   nem falhar (R2 C3).
+3. Rodar `test_gold.py` e `test_gold_assuntos.py` **inteiros, cronometrados**;
+   meta: assuntos abaixo de 275 s (hoje 551 s).
+4. Comparar pela AST e por `git diff` as funções `test_*` contra o commit
+   selado do Pass 5 (gravado em `/tmp/perf_selado.txt` pelo script).
 
-   **O critério de parada já está definido**, e defini antes de ver o
-   resultado para não racionalizar depois:
+## Pendências fora da performance
 
-   > Se a rodada trouxer **só** as famílias `contrato-pendente` e
-   > `storage`, **fecho**. Se trouxer classe nova, corrijo e sigo.
+- **Fase 2 da Gold:** landing v2 com as 14 colunas → `fat_uf`, `fat_banco`,
+  perfil demográfico.
+- `scripts/medir_colapso.py`: piso da Regra 9 (conta descartes, zero linhas
+  é `NAO_MEDIDO`).
+- `cvg/MEDALHAO.md` está defasado em relação a este arquivo.
+- **Publicar:** muitos commits locais aqui e no template (`main`). O push é
+  do dono, do terminal dele (o Git Credential Manager pede interação).
 
-2. **Fechar o Pass 4** — `python3 ~/fechar_pass4.py` gera o script de
-   decisão a partir do log, com razão própria por objeção; depois
-   `bash ~/decidir_pass4.sh`
+## Armadilhas desta sessão (já na bancada, `AGENTS.md` do template)
 
-3. **Recompor e re-selar** — `bash ~/pass5_prepare.sh`,
-   `~/pass5_completar.sh`, `~/pass5_selar.sh`
-
-4. **Re-bindar** — `bash ~/pass7_bind.sh`
-
-5. **Pass 8** — `bash ~/pass8_bronze.sh`, e **ler o receipt**, não a tela
-
-## As duas lacunas que não são do plano resolver
-
-Elas reaparecem em toda rodada, e vão reaparecer até alguém decidir
-**fora** do plano:
-
-| | O que falta | De quem é |
-|---|---|---|
-| contrato | o mapa código→descrição dos 11 colapsos | **decisão sua** — medir é técnico (`scripts/medir_colapso.py` já sabe), aprovar é de negócio |
-| storage | atomicidade da publicação, estabilidade dos objetos | Pass 8, contra o mecanismo que ele escolher |
-
-Declarar o mapa sem aprovador e data seria inventar referencial — a
-Regra 2. Por isso ficou pendente em vez de resolvido.
-
-## O que já foi declarado no contrato, e como
-
-Toquei `contracts/`, que é cercado. Provei que não afrouxei:
-
-```
-ORACULO=INTACTO
-  ancora, cardinalidade, layout, procedencia, defeitos_conhecidos,
-  competencia — byte a byte iguais
-  politica_decimal SÓ GANHOU campos
-  120 testes passando
-```
-
-- `particionamento` — remedido no lago naquela sessão, não inferido
-- `politica_decimal.emax/emin` — 999999/-999999, o limite que **não
-  interfere**, com contraexemplo executado
-
-## Publicação
-
-| | |
-|---|---|
-| `darkfactory-pda` | publicado até `354689aa`; **há commits novos depois** |
-| `darkfactory-template` | `NAO_MEDIDO` — o `ls-remote` dele falha enquanto o do PDA responde |
-
-```bash
-cd ~/darkfactory-pda && git push origin task/orquestra-desfecho
-cd ~/darkfactory-template && git push origin main
-```
-
-⚠️ **Publique do seu terminal.** O Git Credential Manager é GUI e pendura
-para sempre quando chamado de sessão não-interativa — medido: `exit=124`,
-stdout e stderr vazios, e `GIT_TERMINAL_PROMPT=0` não resolve porque não é
-prompt de terminal.
-
-## O estado do ambiente
-
-| | |
-|---|---|
-| `pda-minio`, `pda-spark` | de pé; o Spark tem `pytest 8.3.4` e `pyspark 3.5.9` |
-| `tests/` no contêiner | montado (`:ro`), corrigido nesta sessão |
-| lago | `competencia=2026-01` bate com a âncora ao centavo; `fatia-teste` isolada |
-| 120 testes | passando |
-
-## ⚠️ O padrão que custou treze rodadas
-
-```
-R3  → R8   escopo sem orçamento
-R8  → R9   contexto sem DefaultContext
-R9  → R11  piso sem contar
-R11 → R12  exigência sem fonte
-R12 → R13  contexto em dois de três
-```
-
-**Cada correção minha virou o achado da rodada seguinte** — porque eu
-corrigia a junta apontada sem testar a própria correção contra o mesmo
-tipo de ataque. Quando testei (`1 de 5`, `4 de 5`, `5 de 5`, `5 com
-falha`), o furo apareceu na hora.
-
-Se retomar corrigindo algo: **teste a correção, não só o defeito.**
+- Nunca montar comando destrutivo por `wsl.exe -- bash -lc '… $var …'`: o
+  shell do Windows expande a variável vazia. Um `mc rm l/$p/` virou `l//` (o
+  site inteiro) — o `mc` recusou. Apagar é por script, caminho literal, lista
+  fechada.
+- Enquanto um loop inplace roda, **nada mais** escreve neste repositório.
+- O agente do loop pode rodar **só** `docker compose -f infra/docker-compose.yml
+  exec -T spark python3 -m pytest…` (autorizado pelo dono, escopo mínimo),
+  via `~/bin/claude-loop-testes` e `CVG_CLAUDE_CMD` no `~/pass8_tarefa.sh`.
