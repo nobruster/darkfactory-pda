@@ -1,0 +1,22 @@
+schema_version: 1
+status: DELIVERY_PLAN=READY
+seam_map_sha256: 85b866ea0acd6d6d61494cdaab883924bb9313297b65d9475297be213d0e38df
+swimlanes:
+- id: LANE-ADOTA-PRODUTOR
+  seam_id: SEAM-ADOTA-PRODUTOR
+  owner: medalhao
+  path: seamwise/swimlanes/LANE-ADOTA-PRODUTOR.md
+  sha256: 4003694b9de8f2d7c55dec1c784c071b3a8744483d3521a65dbb122d4859b578
+legs:
+- id: LEG-ADOTA-PRODUTOR
+  seam_id: SEAM-ADOTA-PRODUTOR
+  swimlane_id: LANE-ADOTA-PRODUTOR
+  path: seamwise/legs/LEG-ADOTA-PRODUTOR.md
+  sha256: d2aa2ef14e81d0e1e4492d445089a0cbe127d89d89bd8e63f309e72a538f7d6d
+steel_thread:
+- LEG-ADOTA-PRODUTOR
+objections: []
+contentions: []
+steel_thread_path: seamwise/steel-thread.md
+steel_thread_sha256: 273846672ded18a784a437d8552905742106fd6e0b1d25de83d1d612afa7abed
+review_authority_sha256: ba6b20540df8a3649d210e8cf88d28098baa5e9d3739999508031959e26d9c5a

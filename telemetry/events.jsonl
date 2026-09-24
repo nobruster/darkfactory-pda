@@ -34,3 +34,6 @@
 {"attributes":{"source":{"name":"ontologia-recipe.yaml","sha256":"0141a01518a68942a039ec20e01ce35ea2f61afc6293c49beb17c00b341b6688"}},"authorization":false,"event":"seamwise.map","schema_version":1,"time":"2026-09-24T22:52:41.187761+00:00","token":"SEAM_MAP=READY"}
 {"attributes":{"lanes":3,"legs":3},"authorization":false,"event":"seamwise.plan","schema_version":1,"time":"2026-09-24T22:52:41.253025+00:00","token":"DELIVERY_PLAN=NEEDS_REVIEW"}
 {"attributes":{"fixture":false,"reviewer":"Bruno Nunes"},"authorization":false,"event":"seamwise.review","schema_version":1,"time":"2026-09-24T22:52:41.540495+00:00","token":"DELIVERY_PLAN=READY"}
+{"attributes":{"source":{"name":"adota-produtor-recipe.yaml","sha256":"0f58a8fbdbc7b640bc5e0cbccec5915ed6fa503b5f24ce0923e5003660d90267"}},"authorization":false,"event":"seamwise.map","schema_version":1,"time":"2026-09-24T23:43:13.899036+00:00","token":"SEAM_MAP=READY"}
+{"attributes":{"lanes":1,"legs":1},"authorization":false,"event":"seamwise.plan","schema_version":1,"time":"2026-09-24T23:43:13.939825+00:00","token":"DELIVERY_PLAN=NEEDS_REVIEW"}
+{"attributes":{"fixture":false,"reviewer":"Bruno Nunes"},"authorization":false,"event":"seamwise.review","schema_version":1,"time":"2026-09-24T23:43:14.223404+00:00","token":"DELIVERY_PLAN=READY"}

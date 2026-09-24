@@ -1,0 +1,10 @@
+{
+  "disposition": "accepted",
+  "draft_sha256": "a7c08cb7059374e3757a5cd78cabf0b88d62a781c350671751bdb58e9078ebf0",
+  "fixture": false,
+  "plan_sha256": "12df426d811a8f1648cc4c6400830452ca437667bb944f9b194dc2a751d21c4e",
+  "reason": "Pass 4 da adocao do produtor fechado na R2. Uma costura: testar o produtor e o gravador como sao, sem mudar comportamento.",
+  "reviewed_at": "2026-09-24T23:43:14.213329+00:00",
+  "reviewer": "Bruno Nunes",
+  "schema_version": 1
+}

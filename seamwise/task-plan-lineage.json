@@ -1,0 +1,31 @@
+{
+  "contract": "SeamwiseTaskPlanLineage/v1",
+  "delivery_plan_sha256": "12df426d811a8f1648cc4c6400830452ca437667bb944f9b194dc2a751d21c4e",
+  "engine_version": "0.2.0",
+  "intent": {
+    "id": "DI-PDA-ADOTA-PRODUTOR",
+    "sha256": "86c9a72df3016ab9b2c0311fc0784066a58bfc8f51dc07eceed76b5cdde44b81"
+  },
+  "review": {
+    "fixture": false,
+    "plan_sha256": "12df426d811a8f1648cc4c6400830452ca437667bb944f9b194dc2a751d21c4e",
+    "reviewed_at": "2026-09-24T23:43:14.213329+00:00",
+    "reviewer": "Bruno Nunes",
+    "sha256": "0e9a2c5635441b7a690737e7286359b5d49b6146034e1ab563deeabe896f8fdd"
+  },
+  "task_plan": {
+    "contract": "TaskPlan/v1",
+    "digest": "8375c13238f2b21cc7406f3433180d6dd25d5de21649bf2f438cffa72b5a7808",
+    "path": "seamwise/task-plan.json"
+  },
+  "units": {
+    "T-20260924-adota-produtor": {
+      "intent": "DI-PDA-ADOTA-PRODUTOR",
+      "leg": "LEG-ADOTA-PRODUTOR",
+      "seam": "SEAM-ADOTA-PRODUTOR",
+      "source_sha256": "d2aa2ef14e81d0e1e4492d445089a0cbe127d89d89bd8e63f309e72a538f7d6d",
+      "swimlane": "LANE-ADOTA-PRODUTOR",
+      "unit_id": "T-20260924-adota-produtor"
+    }
+  }
+}
