@@ -22,6 +22,11 @@ set -e
 
 pip install --quiet --no-cache-dir pyyaml==6.0.2 pytest==8.3.4
 
+# psycopg — a projeção da ontologia no Postgres (serviço pda-postgres).
+# Entra aqui pelo mesmo motivo do pytest: o agente do loop não tem rede.
+# [binary] traz a libpq junto; sem ele o import pede a libpq do sistema.
+pip install --quiet --no-cache-dir "psycopg[binary]==3.2.3"
+
 # Delta Lake — as camadas do medalhão gravam em Delta (decisão do dono,
 # 2026-09-23). 3.2.1 é a linha do Delta para Spark 3.5 / Scala 2.12; o
 # pip vai SEM dependências, porque puxaria outro pyspark por cima do 3.5.9.
