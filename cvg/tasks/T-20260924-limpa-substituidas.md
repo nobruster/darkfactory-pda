@@ -28,10 +28,14 @@ execution_backend: any
 signed_off: true
 signed_off_by: nobru
 signed_off_at: 2026-09-24T16:52:20Z
-accepted: false
-accepted_by: (none)
-accepted_at: (none)
+accepted: true
+accepted_by: converge-loop
+accepted_at: 2026-09-24T18:34:44Z
 signed_off_sig: hmac-sha256-v3:85d3c104:dea37788e135a50d3c4b92112b60336f3edeb7f673a7f7176ccc021f86e7ffb4
+accepted_tier: 1
+accepted_attempt_id: 84112b5b-abf2-4adc-8234-f725b5fa3a54
+accepted_authorization_ref: hmac-sha256-v3:85d3c104:dea37788e135a50d3c4b92112b60336f3edeb7f673a7f7176ccc021f86e7ffb4
+acceptance_record_digest: sha256:bce9136d77f846cb3c15c5093d51d19f98ba0d8ecbea78c0bcd28abeef568151
 ---
 
 # Limpar o preparo de execuções substituídas

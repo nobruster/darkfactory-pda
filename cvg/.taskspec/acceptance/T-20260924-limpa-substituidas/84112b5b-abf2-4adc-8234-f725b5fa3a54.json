@@ -1,0 +1,40 @@
+{
+  "acceptance_tier": 1,
+  "accepted_at": "2026-09-24T18:34:44Z",
+  "accepted_by": "converge-loop",
+  "contract": "AcceptanceRecord/v1",
+  "gate_outcomes": {
+    "authorization": {
+      "code": "AUTHORIZATION_VALID",
+      "status": "pass"
+    },
+    "evaluation": {
+      "code": "EVAL_PASSED",
+      "status": "pass"
+    },
+    "evidence": {
+      "code": "EVIDENCE_SATISFIED",
+      "proof": [
+        "format v3 or earlier: v4 policy receipts are not required"
+      ],
+      "status": "pass"
+    },
+    "preflight": {
+      "code": "PREFLIGHT_PASSED",
+      "status": "pass",
+      "warnings": []
+    }
+  },
+  "outcome": {
+    "code": "ACCEPTED_TIER_1",
+    "status": "accepted"
+  },
+  "receipts": [],
+  "subject": {
+    "attempt_id": "84112b5b-abf2-4adc-8234-f725b5fa3a54",
+    "authorization_ref": "hmac-sha256-v3:85d3c104:dea37788e135a50d3c4b92112b60336f3edeb7f673a7f7176ccc021f86e7ffb4",
+    "base_commit": "dddf06addd82e8acac5ca8049d739e97a9141a18",
+    "task_id": "T-20260924-limpa-substituidas",
+    "task_revision_digest": "sha256:70b1aa07052eeb0ba647600bcf07f11a2c1710c61e77963bc0c3d2732008b0e2"
+  }
+}
