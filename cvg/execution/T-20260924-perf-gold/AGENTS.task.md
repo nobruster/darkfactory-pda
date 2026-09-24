@@ -4,12 +4,12 @@
 
 - **Spec (canonical):** `cvg/tasks/T-20260924-perf-gold.md`
 - **Contract:** `cvg/execution/T-20260924-perf-gold/execution-profile.yaml`
-- **Epoch:** `T-20260924-perf-gold@e44875499eaa`
+- **Epoch:** `T-20260924-perf-gold@25a303c60425`
 - **Project conventions:** `AGENTS.md` (read it once; it is the router)
 
 ## Goal
 
-Baixar o custo da Gold e dos assuntos sem mudar a saída.
+Baixar o custo da Gold e dos assuntos sem mudar a saída. Para rodar testes, o ÚNICO comando liberado ao agente é `docker compose -f infra/docker-compose.yml exec -T spark python3 -m pytest <arquivo> -k <cenarios>` — outras formas são recusadas pela permissão.
 
 ## You may write ONLY these paths
 

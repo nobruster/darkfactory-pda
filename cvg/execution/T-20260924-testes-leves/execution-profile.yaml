@@ -11,7 +11,7 @@
         "epoch_change"
       ]
     },
-    "epoch": "T-20260924-perf-gold@25a303c60425",
+    "epoch": "T-20260924-testes-leves@874900ebc2a3",
     "grants": [
       {
         "capability": "fs.read",
@@ -27,16 +27,14 @@
           "_raw",
           "contracts",
           "cvg/docs/adrs",
-          "src/medalhao/bronze.py",
-          "src/medalhao/silver.py",
-          "src/pda"
+          "src"
         ],
         "granted": true,
         "phase": "implement",
         "scope": [
-          "src/medalhao/gold.py",
-          "src/medalhao/gold_assuntos.py",
-          "tests/test_performance_gold.py"
+          "tests/test_gold.py",
+          "tests/test_gold_assuntos.py",
+          "tests/test_testes_leves.py"
         ]
       },
       {
@@ -58,9 +56,9 @@
         "granted": true,
         "phase": "settle",
         "scope": [
-          "src/medalhao/gold.py",
-          "src/medalhao/gold_assuntos.py",
-          "tests/test_performance_gold.py"
+          "tests/test_gold.py",
+          "tests/test_gold_assuntos.py",
+          "tests/test_testes_leves.py"
         ]
       },
       {
@@ -93,7 +91,7 @@
   "enforcement": {
     "adapters": [
       {
-        "path": "cvg/execution/T-20260924-perf-gold/adapters/generic.json",
+        "path": "cvg/execution/T-20260924-testes-leves/adapters/generic.json",
         "resolution": {
           "controls": {
             "fs.write": {
@@ -131,7 +129,7 @@
         "runtime": "generic"
       },
       {
-        "path": "cvg/execution/T-20260924-perf-gold/adapters/claude.json",
+        "path": "cvg/execution/T-20260924-testes-leves/adapters/claude.json",
         "resolution": {
           "controls": {
             "fs.write": {
@@ -169,7 +167,7 @@
         "runtime": "claude"
       },
       {
-        "path": "cvg/execution/T-20260924-perf-gold/adapters/codex.json",
+        "path": "cvg/execution/T-20260924-testes-leves/adapters/codex.json",
         "resolution": {
           "controls": {
             "fs.write": {
@@ -207,7 +205,7 @@
         "runtime": "codex"
       },
       {
-        "path": "cvg/execution/T-20260924-perf-gold/adapters/kimi.json",
+        "path": "cvg/execution/T-20260924-testes-leves/adapters/kimi.json",
         "resolution": {
           "controls": {
             "fs.write": {
@@ -259,7 +257,7 @@
       "inferred_source": "fallback.generic",
       "source": "fallback.generic"
     },
-    "task_brief": "cvg/execution/T-20260924-perf-gold/AGENTS.task.md",
+    "task_brief": "cvg/execution/T-20260924-testes-leves/AGENTS.task.md",
     "tool_input_guard": "skills/task-to-runtime-contract/scripts/guard-tool-input.py",
     "unenforced_waivers": []
   },
@@ -269,7 +267,7 @@
     "version": "1.0.0"
   },
   "knowledge": {
-    "candidate_output": "cvg/knowledge/candidates/T-20260924-perf-gold.md",
+    "candidate_output": "cvg/knowledge/candidates/T-20260924-testes-leves.md",
     "promotion": "owner_or_designated_reviewer"
   },
   "policy": {
@@ -290,7 +288,7 @@
     }
   },
   "receipt": {
-    "path": "cvg/receipts/T-20260924-perf-gold.json"
+    "path": "cvg/receipts/T-20260924-testes-leves.json"
   },
   "schema": "cvg.execution-profile.v1",
   "task": {
@@ -299,10 +297,10 @@
       "signed_off": true,
       "trust_tier": 1
     },
-    "id": "T-20260924-perf-gold",
+    "id": "T-20260924-testes-leves",
     "spec_ref": {
-      "path": "cvg/tasks/T-20260924-perf-gold.md",
-      "sha256": "25a303c604250615d1490d4f7ad6b3e8652fe9cc09a2d68c9201c96e9d3a20a9"
+      "path": "cvg/tasks/T-20260924-testes-leves.md",
+      "sha256": "874900ebc2a36bde02039a258e1b143bc48dd5720f5fee230d585f2ed88e4bd7"
     }
   },
   "topology": {

@@ -11,7 +11,7 @@
         "epoch_change"
       ]
     },
-    "epoch": "T-20260924-limpa-substituidas@5d91748ea455",
+    "epoch": "T-20260924-limpa-substituidas@753f4b2db8b5",
     "grants": [
       {
         "capability": "fs.read",
@@ -298,7 +298,7 @@
     "id": "T-20260924-limpa-substituidas",
     "spec_ref": {
       "path": "cvg/tasks/T-20260924-limpa-substituidas.md",
-      "sha256": "5d91748ea4550f5cc1c4dbf77479dfbe57ced6425165109c38a4215f6f3816f1"
+      "sha256": "753f4b2db8b5f0a2e6cdc12f3ba8e87abd4f83ee257acf823921110235459e50"
     }
   },
   "topology": {
