@@ -1,0 +1,374 @@
+{
+  "api_version": "taskspec.dev/v1",
+  "approved": true,
+  "kind": "TaskPlan",
+  "metadata": {
+    "delivery_plan_review_sha256": "d8ba65894cc2952de69788e2664147c7ef3e3a9518163156d30f56a9479391a4",
+    "delivery_plan_sha256": "b4001afff176bc73f2d7546979d2f2cdcddcec2c28146c5efc4ceca19040e3de",
+    "name": "DI-PDA-PERFORMANCE",
+    "producer": "seamwise",
+    "producer_version": "0.2.0",
+    "seamwise_plan_status": "DELIVERY_PLAN=READY",
+    "source": "seamwise/task-plan.json"
+  },
+  "units": [
+    {
+      "agent": "any",
+      "anti_patterns": [
+        "Do not apagar preparo de execução revertida: é evidência de uma divergência; instead preservar.",
+        "Do not montar o caminho com variável não validada: um valor vazio vira o bucket; instead montar_prefixo com partes validadas.",
+        "Do not usar VACUUM: apaga histórico, que é evidência; instead apagar só o preparo."
+      ],
+      "behaviors": [
+        {
+          "given": "o preparo de uma execução cujo commit de publicação está no histórico e foi SUBSTITUÍDO por outro posterior",
+          "id": "B-1",
+          "then": "apaga o preparo dessa execução se o commit dela tem estado INTEGRO, NÃO é de reversão e nenhum commit de reversão a desfez — publicação conferida e depois substituída —, com a mesma guarda de caminho — sob a INVARIANTE declarada de que execução não é retomada: cada execução nasce com id novo e nunca reusa o preparo de outra, então um preparo cuja execução já tem commit publicado e foi substituída não está em uso —; a tabela publicada segue com a mesma versão, contagem e soma.",
+          "when": "a limpeza roda"
+        },
+        {
+          "given": "uma execução revertida, uma sem commit, ou um caminho fora do preparo",
+          "id": "B-2",
+          "then": "preserva o preparo e diz o motivo — inclusive o da execução ATIVA, que ainda não tem commit; caminho fora de _preparo ou id vazio é RECUSADO antes de qualquer remoção; nenhum teste já existente de tests/test_limpeza.py é editado.",
+          "when": "a limpeza roda"
+        }
+      ],
+      "context": "Intent DI-PDA-PERFORMANCE; seam SEAM-LIMPA-SUBSTITUIDAS; swimlane LANE-LIMPA-SUBSTITUIDAS; capability leg LEG-LIMPA-SUBSTITUIDAS. Done condition: O preparo de execução substituída cuja publicação foi conferida é apagado; revertida, em curso ou sem commit fica.",
+      "creates_paths": [],
+      "depends_on": [
+        "T-20260924-testes-leves"
+      ],
+      "do_not_touch": [
+        "_raw",
+        "cvg/docs/adrs",
+        "contracts",
+        "src/pda"
+      ],
+      "done_condition": "O preparo de execução substituída cuja publicação foi conferida é apagado; revertida, em curso ou sem commit fica.",
+      "effort": "S",
+      "evals": [
+        {
+          "command": "docker compose -f infra/docker-compose.yml exec -T spark sh -c 'for c in substituida_conferida_apaga publicada_intacta_apos_limpar_substituida; do python3 -m pytest --collect-only -q tests/test_limpeza.py -k \"$c\" 2>/dev/null | grep -q \"::\" || { echo \"EVAL=CENARIO_AUSENTE_$c\"; exit 1; }; done; python3 -m pytest -q tests/test_limpeza.py -k \"substituida_conferida_apaga or publicada_intacta_apos_limpar_substituida\"'",
+          "description": "Substituída e conferida sai",
+          "expected_duration_sec": 10,
+          "id": "eval_1",
+          "terminal": false,
+          "verifies": [
+            "B-1"
+          ]
+        },
+        {
+          "command": "docker compose -f infra/docker-compose.yml exec -T spark sh -c 'for c in revertida_preserva sem_commit_preserva id_vazio_recusado execucao_ativa_preserva; do python3 -m pytest --collect-only -q tests/test_limpeza.py -k \"$c\" 2>/dev/null | grep -q \"::\" || { echo \"EVAL=CENARIO_AUSENTE_$c\"; exit 1; }; done; python3 -m pytest -q tests/test_limpeza.py -k \"revertida_preserva or sem_commit_preserva or id_vazio_recusado or execucao_ativa_preserva\"'",
+          "description": "Revertida e em curso ficam",
+          "expected_duration_sec": 10,
+          "id": "eval_2",
+          "terminal": false,
+          "verifies": [
+            "B-2"
+          ]
+        },
+        {
+          "command": "docker compose -f infra/docker-compose.yml exec -T spark sh -c 'for c in apaga_preparo_de_execucao_publicada caminho_fora_do_preparo_recusado; do python3 -m pytest --collect-only -q tests/test_limpeza.py -k \"$c\" 2>/dev/null | grep -q \"::\" || { echo \"EVAL=CENARIO_AUSENTE_$c\"; exit 1; }; done; python3 -m pytest -q tests/test_limpeza.py -k \"apaga_preparo_de_execucao_publicada or caminho_fora_do_preparo_recusado\"'",
+          "description": "O comportamento selado segue",
+          "expected_duration_sec": 10,
+          "id": "eval_3",
+          "terminal": true,
+          "verifies": [
+            "B-1",
+            "B-2"
+          ]
+        }
+      ],
+      "execution_backend": "any",
+      "goal": "Não deixar sobras de execuções antigas.",
+      "id": "T-20260924-limpa-substituidas",
+      "observability": "execuções com memória herdada ou cache não liberado",
+      "profile": "standard",
+      "required_tools": [
+        "git",
+        "bash",
+        "python3",
+        "pytest",
+        "docker"
+      ],
+      "rollback": "Reverter os arquivos tocados ao commit assentado; remover os criados.",
+      "source_note": "seamwise/legs/LEG-LIMPA-SUBSTITUIDAS.md#T-20260924-limpa-substituidas",
+      "title": "Limpar o preparo de execuções substituídas",
+      "touches_paths": [
+        "src/medalhao/limpeza.py",
+        "tests/test_limpeza.py"
+      ],
+      "why": "Não deixar sobras de execuções antigas."
+    },
+    {
+      "agent": "any",
+      "anti_patterns": [
+        "Do not remover um exceptAll sem a igualdade de contagem: prova só um sentido; instead um exceptAll E contagens iguais.",
+        "Do not definir a memória por PYSPARK_SUBMIT_ARGS no código: esconde a declaração fora da sessão; instead declarar no builder de criar_sessao e conferir.",
+        "Do not chamar unpersist antes de reconferir: a reconferência releria da origem; instead liberar só depois de publicado e reconferido."
+      ],
+      "behaviors": [
+        {
+          "given": "a sessão criada por criar_sessao e as leituras e gravações da Bronze e da Silver",
+          "id": "B-1",
+          "then": "criar_sessao DECLARA spark.driver.memory, spark.sql.adaptive.enabled e spark.sql.shuffle.partitions a partir de parâmetros com padrão explícito — nunca herda — e confere depois de criar o heap EFETIVO da JVM — Runtime.getRuntime().maxMemory() por spark._jvm, não a propriedade de configuração, que não prova nada numa JVM já iniciada —, recusando sessão cujo heap efetivo seja menor que o declarado; todo DataFrame persistido é liberado com unpersist num finally, em TODOS os caminhos — publicado, divergente, CHECK que recusou ou exceção de escrita —, e nunca antes da reconferência, inclusive no caminho INTEGRO; e a reconferência de _conferir_tabela passa a UMA passada: um exceptAll e a igualdade das contagens — multiconjuntos de mesmo tamanho em que um está contido no outro são iguais —, provando o mesmo que os dois exceptAll. O ganho só vale com o gate da skill spark-perf: PERF=MELHOR contra a baseline gravada em perf/, com a saída IDÊNTICA à de produção — controles e multiconjunto 0/0. Otimização que muda o número é defeito, não ganho; nenhuma reconferência é removida, só barateada.",
+          "when": "Bronze e Silver rodam"
+        },
+        {
+          "given": "uma saída alterada — linha trocada, centavo a mais ou linha a menos",
+          "id": "B-2",
+          "then": "acusa exatamente o que os dois exceptAll acusavam: DIVERGE com a diferença nomeada, e nada é publicado; nenhum teste já existente de tests/test_bronze.py ou tests/test_silver.py é editado.",
+          "when": "a reconferência numa passada roda"
+        }
+      ],
+      "context": "Intent DI-PDA-PERFORMANCE; seam SEAM-PERF-BRONZE-SILVER; swimlane LANE-PERF-BRONZE-SILVER; capability leg LEG-PERF-BRONZE-SILVER. Done condition: Bronze e Silver reais saem idênticas à produção. O PERF=MELHOR contra perf/ é VERIFICAÇÃO PÓS-ASSENTAMENTO: roda na execução real com a skill spark-perf, fora do loop, porque tempo medido dentro de eval é instável; a entrega exige saída idêntica e o comportamento declarado.",
+      "creates_paths": [
+        "tests/test_performance.py"
+      ],
+      "depends_on": [],
+      "do_not_touch": [
+        "_raw",
+        "cvg/docs/adrs",
+        "contracts",
+        "src/pda"
+      ],
+      "done_condition": "Bronze e Silver reais saem idênticas à produção. O PERF=MELHOR contra perf/ é VERIFICAÇÃO PÓS-ASSENTAMENTO: roda na execução real com a skill spark-perf, fora do loop, porque tempo medido dentro de eval é instável; a entrega exige saída idêntica e o comportamento declarado.",
+      "effort": "M",
+      "evals": [
+        {
+          "command": "docker compose -f infra/docker-compose.yml exec -T spark sh -c 'for c in sessao_declara_memoria sessao_com_memoria_herdada_recusada unpersist_depois_de_publicar heap_efetivo_conferido_pela_jvm unpersist_tambem_na_falha; do python3 -m pytest --collect-only -q tests/test_performance.py -k \"$c\" 2>/dev/null | grep -q \"::\" || { echo \"EVAL=CENARIO_AUSENTE_$c\"; exit 1; }; done; python3 -m pytest -q tests/test_performance.py -k \"sessao_declara_memoria or sessao_com_memoria_herdada_recusada or unpersist_depois_de_publicar or heap_efetivo_conferido_pela_jvm or unpersist_tambem_na_falha\"'",
+          "description": "Memória declarada e cache liberado",
+          "expected_duration_sec": 10,
+          "id": "eval_1",
+          "terminal": false,
+          "verifies": [
+            "B-1"
+          ]
+        },
+        {
+          "command": "docker compose -f infra/docker-compose.yml exec -T spark sh -c 'for c in uma_passada_igual_a_duas linha_trocada_diverge centavo_a_mais_diverge linha_a_menos_diverge; do python3 -m pytest --collect-only -q tests/test_performance.py -k \"$c\" 2>/dev/null | grep -q \"::\" || { echo \"EVAL=CENARIO_AUSENTE_$c\"; exit 1; }; done; python3 -m pytest -q tests/test_performance.py -k \"uma_passada_igual_a_duas or linha_trocada_diverge or centavo_a_mais_diverge or linha_a_menos_diverge\"'",
+          "description": "Uma passada prova o mesmo que duas",
+          "expected_duration_sec": 10,
+          "id": "eval_2",
+          "terminal": false,
+          "verifies": [
+            "B-2"
+          ]
+        },
+        {
+          "command": "docker compose -f infra/docker-compose.yml exec -T spark sh -c 'for c in cinco_controles reconfere_no_preparo_antes_de_publicar reverte_so_a_competencia; do python3 -m pytest --collect-only -q tests/test_bronze.py -k \"$c\" 2>/dev/null | grep -q \"::\" || { echo \"EVAL=CENARIO_AUSENTE_$c\"; exit 1; }; done; python3 -m pytest -q tests/test_bronze.py -k \"cinco_controles or reconfere_no_preparo_antes_de_publicar or reverte_so_a_competencia\"'",
+          "description": "Nada do comportamento selado mudou",
+          "expected_duration_sec": 10,
+          "id": "eval_3",
+          "terminal": true,
+          "verifies": [
+            "B-1",
+            "B-2"
+          ]
+        }
+      ],
+      "execution_backend": "any",
+      "goal": "Baixar executor, shuffle e spill da Bronze e da Silver sem mudar a saída.",
+      "id": "T-20260924-perf-bronze-silver",
+      "observability": "execuções com memória herdada ou cache não liberado",
+      "profile": "standard",
+      "required_tools": [
+        "git",
+        "bash",
+        "python3",
+        "pytest",
+        "docker"
+      ],
+      "rollback": "Reverter os arquivos tocados ao commit assentado; remover os criados.",
+      "source_note": "seamwise/legs/LEG-PERF-BRONZE-SILVER.md#T-20260924-perf-bronze-silver",
+      "title": "Memória declarada, cache liberado e reconferência numa passada",
+      "touches_paths": [
+        "src/medalhao/bronze.py",
+        "src/medalhao/silver.py"
+      ],
+      "why": "Baixar executor, shuffle e spill da Bronze e da Silver sem mudar a saída."
+    },
+    {
+      "agent": "any",
+      "anti_patterns": [
+        "Do not tirar o CHECK monetário: é o domínio da ADR 0009; instead um CHECK combinado.",
+        "Do not dropar os seis CHECK de uma tabela existente: desproteger para trocar é janela sem domínio; instead reconhecer os seis como proteção equivalente.",
+        "Do not unpersist antes da reconferência: releria a origem; instead liberar depois de publicado e reconferido."
+      ],
+      "behaviors": [
+        {
+          "given": "a Gold principal e os assuntos publicando a competência",
+          "id": "B-1",
+          "then": "todo DataFrame persistido é liberado com unpersist num finally, em TODOS os caminhos — publicado, divergente, CHECK que recusou ou exceção de escrita —, e nunca antes da reconferência; uma tabela NOVA de assuntos nasce com as colunas monetárias protegidas por UM CHECK que exige todas >= 0 — um commit em vez de seis —, e uma tabela que já existe com os seis CHECK é reconhecida como protegida, sem receber constraint nova nem perder as antigas; a reconferência passa a uma passada como na Bronze. O ganho só vale com o gate da skill spark-perf: PERF=MELHOR contra a baseline gravada em perf/, com a saída IDÊNTICA à de produção — controles e multiconjunto 0/0. Otimização que muda o número é defeito, não ganho; nenhuma reconferência é removida, só barateada.",
+          "when": "rodam"
+        },
+        {
+          "given": "uma saída com valor monetário negativo ou uma linha trocada",
+          "id": "B-2",
+          "then": "o CHECK único recusa o negativo como os seis recusavam, e a reconferência numa passada devolve DIVERGE; nada é publicado; nenhum teste já existente de tests/test_gold.py ou tests/test_gold_assuntos.py é editado.",
+          "when": "a publicação roda"
+        }
+      ],
+      "context": "Intent DI-PDA-PERFORMANCE; seam SEAM-PERF-GOLD; swimlane LANE-PERF-GOLD; capability leg LEG-PERF-GOLD. Done condition: A Gold e os assuntos reais saem idênticos à produção. O PERF=MELHOR contra perf/ é VERIFICAÇÃO PÓS-ASSENTAMENTO: roda na execução real com a skill spark-perf, fora do loop, porque tempo medido dentro de eval é instável; a entrega exige saída idêntica e o comportamento declarado.",
+      "creates_paths": [
+        "tests/test_performance_gold.py"
+      ],
+      "depends_on": [
+        "T-20260924-perf-bronze-silver"
+      ],
+      "do_not_touch": [
+        "_raw",
+        "cvg/docs/adrs",
+        "contracts",
+        "src/pda",
+        "src/medalhao/bronze.py",
+        "src/medalhao/silver.py"
+      ],
+      "done_condition": "A Gold e os assuntos reais saem idênticos à produção. O PERF=MELHOR contra perf/ é VERIFICAÇÃO PÓS-ASSENTAMENTO: roda na execução real com a skill spark-perf, fora do loop, porque tempo medido dentro de eval é instável; a entrega exige saída idêntica e o comportamento declarado.",
+      "effort": "M",
+      "evals": [
+        {
+          "command": "docker compose -f infra/docker-compose.yml exec -T spark sh -c 'for c in gold_unpersist_depois_de_publicar check_unico_no_create tabela_com_seis_check_reconhecida gold_unpersist_tambem_na_falha; do python3 -m pytest --collect-only -q tests/test_performance_gold.py -k \"$c\" 2>/dev/null | grep -q \"::\" || { echo \"EVAL=CENARIO_AUSENTE_$c\"; exit 1; }; done; python3 -m pytest -q tests/test_performance_gold.py -k \"gold_unpersist_depois_de_publicar or check_unico_no_create or tabela_com_seis_check_reconhecida or gold_unpersist_tambem_na_falha\"'",
+          "description": "Cache liberado e um CHECK só",
+          "expected_duration_sec": 10,
+          "id": "eval_1",
+          "terminal": false,
+          "verifies": [
+            "B-1"
+          ]
+        },
+        {
+          "command": "docker compose -f infra/docker-compose.yml exec -T spark sh -c 'for c in check_unico_recusa_negativo gold_uma_passada_diverge_linha_trocada; do python3 -m pytest --collect-only -q tests/test_performance_gold.py -k \"$c\" 2>/dev/null | grep -q \"::\" || { echo \"EVAL=CENARIO_AUSENTE_$c\"; exit 1; }; done; python3 -m pytest -q tests/test_performance_gold.py -k \"check_unico_recusa_negativo or gold_uma_passada_diverge_linha_trocada\"'",
+          "description": "A proteção é a mesma",
+          "expected_duration_sec": 10,
+          "id": "eval_2",
+          "terminal": false,
+          "verifies": [
+            "B-2"
+          ]
+        },
+        {
+          "command": "docker compose -f infra/docker-compose.yml exec -T spark sh -c 'for c in check_nao_negativo_monetario fat_especie_fecha_com_a_ancora publica_com_replacewhere; do python3 -m pytest --collect-only -q tests/test_gold_assuntos.py -k \"$c\" 2>/dev/null | grep -q \"::\" || { echo \"EVAL=CENARIO_AUSENTE_$c\"; exit 1; }; done; python3 -m pytest -q tests/test_gold_assuntos.py -k \"check_nao_negativo_monetario or fat_especie_fecha_com_a_ancora or publica_com_replacewhere\"'",
+          "description": "Nada do comportamento selado mudou",
+          "expected_duration_sec": 10,
+          "id": "eval_3",
+          "terminal": true,
+          "verifies": [
+            "B-1",
+            "B-2"
+          ]
+        }
+      ],
+      "execution_backend": "any",
+      "goal": "Baixar o custo da Gold e dos assuntos sem mudar a saída.",
+      "id": "T-20260924-perf-gold",
+      "observability": "execuções com memória herdada ou cache não liberado",
+      "profile": "standard",
+      "required_tools": [
+        "git",
+        "bash",
+        "python3",
+        "pytest",
+        "docker"
+      ],
+      "rollback": "Reverter os arquivos tocados ao commit assentado; remover os criados.",
+      "source_note": "seamwise/legs/LEG-PERF-GOLD.md#T-20260924-perf-gold",
+      "title": "Cache liberado e constraints num commit só na Gold",
+      "touches_paths": [
+        "src/medalhao/gold.py",
+        "src/medalhao/gold_assuntos.py"
+      ],
+      "why": "Baixar o custo da Gold e dos assuntos sem mudar a saída."
+    },
+    {
+      "agent": "any",
+      "anti_patterns": [
+        "Do not editar uma linha dentro de uma função test_*: muda o que o teste prova; instead mudar só auxiliares e fixtures.",
+        "Do not marcar teste lento como skip ou xfail: é afrouxar o gate (Regra 3); instead barateá-lo pela fixture.",
+        "Do not compartilhar o MESMO diretório entre testes: um teste que republica contamina o outro; instead uma cópia por teste."
+      ],
+      "behaviors": [
+        {
+          "given": "os auxiliares _cenario, _cadeia_publicada e _preparar, que montam a cadeia real por teste",
+          "id": "B-1",
+          "then": "a cadeia do cenário é montada UMA vez por módulo numa fixture e cada teste recebe uma CÓPIA do diretório — tabelas Delta locais com caminhos relativos no _delta_log, contrato e lago de teste reescritos para a cópia —, isolando os testes entre si como antes — provado por um cenário que republica numa cópia e confere que o cenário-base e outra cópia ficam intactos; SÓ os auxiliares e as fixtures mudam, e nenhuma linha dentro de uma função test_* é alterada.",
+          "when": "os testes rodam"
+        },
+        {
+          "given": "a suíte depois da mudança",
+          "id": "B-2",
+          "then": "coleta EXATAMENTE os mesmos ids de teste de antes, todos passam, nenhum é marcado skip ou xfail, e o diff de cada função test_* contra o commit anterior é vazio — verificado por um teste que compara o corpo das funções pela AST; test_gold_assuntos leva menos da metade dos 551s medidos.",
+          "when": "é coletada e executada"
+        }
+      ],
+      "context": "Intent DI-PDA-PERFORMANCE; seam SEAM-TESTES-LEVES; swimlane LANE-TESTES-LEVES; capability leg LEG-TESTES-LEVES. Done condition: Os mesmos ids de teste de tests/test_gold.py e tests/test_gold_assuntos.py são coletados, nenhuma linha dentro de uma função test_* mudou, todos passam, e test_gold_assuntos leva menos da metade dos 551s medidos.",
+      "creates_paths": [
+        "tests/test_testes_leves.py"
+      ],
+      "depends_on": [
+        "T-20260924-perf-gold"
+      ],
+      "do_not_touch": [
+        "_raw",
+        "cvg/docs/adrs",
+        "contracts",
+        "src"
+      ],
+      "done_condition": "Os mesmos ids de teste de tests/test_gold.py e tests/test_gold_assuntos.py são coletados, nenhuma linha dentro de uma função test_* mudou, todos passam, e test_gold_assuntos leva menos da metade dos 551s medidos.",
+      "effort": "M",
+      "evals": [
+        {
+          "command": "docker compose -f infra/docker-compose.yml exec -T spark sh -c 'for c in fat_especie_fecha_com_a_ancora le_silver_por_versao usa_a_silver_nomeada_pela_gold; do python3 -m pytest --collect-only -q tests/test_gold_assuntos.py -k \"$c\" 2>/dev/null | grep -q \"::\" || { echo \"EVAL=CENARIO_AUSENTE_$c\"; exit 1; }; done; python3 -m pytest -q tests/test_gold_assuntos.py -k \"fat_especie_fecha_com_a_ancora or le_silver_por_versao or usa_a_silver_nomeada_pela_gold\"'",
+          "description": "Cenário uma vez, cópia por teste",
+          "expected_duration_sec": 10,
+          "id": "eval_1",
+          "terminal": false,
+          "verifies": [
+            "B-1"
+          ]
+        },
+        {
+          "command": "docker compose -f infra/docker-compose.yml exec -T spark sh -c 'for c in mesmos_ids_coletados corpo_das_funcoes_test_intacto nenhum_skip_ou_xfail copia_isolada_do_cenario_base; do python3 -m pytest --collect-only -q tests/test_testes_leves.py -k \"$c\" 2>/dev/null | grep -q \"::\" || { echo \"EVAL=CENARIO_AUSENTE_$c\"; exit 1; }; done; python3 -m pytest -q tests/test_testes_leves.py -k \"mesmos_ids_coletados or corpo_das_funcoes_test_intacto or nenhum_skip_ou_xfail or copia_isolada_do_cenario_base\"'",
+          "description": "Nenhuma asserção mudou",
+          "expected_duration_sec": 10,
+          "id": "eval_2",
+          "terminal": false,
+          "verifies": [
+            "B-2"
+          ]
+        },
+        {
+          "command": "docker compose -f infra/docker-compose.yml exec -T spark sh -c 'for c in gold_le_so_a_silver linhagem_ate_pacote_aceito gold_da_silver_fecha_com_a_ancora; do python3 -m pytest --collect-only -q tests/test_gold.py -k \"$c\" 2>/dev/null | grep -q \"::\" || { echo \"EVAL=CENARIO_AUSENTE_$c\"; exit 1; }; done; python3 -m pytest -q tests/test_gold.py -k \"gold_le_so_a_silver or linhagem_ate_pacote_aceito or gold_da_silver_fecha_com_a_ancora\"'",
+          "description": "A Gold continua verde",
+          "expected_duration_sec": 10,
+          "id": "eval_3",
+          "terminal": true,
+          "verifies": [
+            "B-1",
+            "B-2"
+          ]
+        }
+      ],
+      "execution_backend": "any",
+      "goal": "Tirar dos testes a montagem da cadeia real a cada teste.",
+      "id": "T-20260924-testes-leves",
+      "observability": "execuções com memória herdada ou cache não liberado",
+      "profile": "standard",
+      "required_tools": [
+        "git",
+        "bash",
+        "python3",
+        "pytest",
+        "docker"
+      ],
+      "rollback": "Reverter os arquivos tocados ao commit assentado; remover os criados.",
+      "source_note": "seamwise/legs/LEG-TESTES-LEVES.md#T-20260924-testes-leves",
+      "title": "Cenário de teste montado uma vez por módulo",
+      "touches_paths": [
+        "tests/test_gold.py",
+        "tests/test_gold_assuntos.py"
+      ],
+      "why": "Tirar dos testes a montagem da cadeia real a cada teste."
+    }
+  ]
+}

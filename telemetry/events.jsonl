@@ -16,3 +16,6 @@
 {"attributes":{"source":{"name":"medalhao-v4-recipe.yaml","sha256":"1a813dc4f8be76bacf6a26378b7054e178c84b7c1d72548c3a40d3e271b657ca"}},"authorization":false,"event":"seamwise.map","schema_version":1,"time":"2026-09-23T21:43:55.484467+00:00","token":"SEAM_MAP=READY"}
 {"attributes":{"lanes":5,"legs":5},"authorization":false,"event":"seamwise.plan","schema_version":1,"time":"2026-09-23T21:43:55.571711+00:00","token":"DELIVERY_PLAN=NEEDS_REVIEW"}
 {"attributes":{"fixture":false,"reviewer":"Bruno Nunes"},"authorization":false,"event":"seamwise.review","schema_version":1,"time":"2026-09-23T21:43:55.883266+00:00","token":"DELIVERY_PLAN=READY"}
+{"attributes":{"source":{"name":"performance-recipe.yaml","sha256":"71e26140441f66f55ce020d60fe487a804a358bf83085821d0c6466141b8dadf"}},"authorization":false,"event":"seamwise.map","schema_version":1,"time":"2026-09-24T02:06:51.889851+00:00","token":"SEAM_MAP=READY"}
+{"attributes":{"lanes":4,"legs":4},"authorization":false,"event":"seamwise.plan","schema_version":1,"time":"2026-09-24T02:06:51.980536+00:00","token":"DELIVERY_PLAN=NEEDS_REVIEW"}
+{"attributes":{"fixture":false,"reviewer":"Bruno Nunes"},"authorization":false,"event":"seamwise.review","schema_version":1,"time":"2026-09-24T02:06:52.318336+00:00","token":"DELIVERY_PLAN=READY"}

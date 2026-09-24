@@ -1,0 +1,55 @@
+schema_version: 1
+status: DELIVERY_PLAN=READY
+seam_map_sha256: 8543e0b4911971d48d9c2961f61658d5f70105fb0a79e4073e32a5151a72a344
+swimlanes:
+- id: LANE-PERF-BRONZE-SILVER
+  seam_id: SEAM-PERF-BRONZE-SILVER
+  owner: medalhao
+  path: seamwise/swimlanes/LANE-PERF-BRONZE-SILVER.md
+  sha256: 95f40905afc9f4a99675bb917bd0101fcccfbda3985385ed326b484282b18242
+- id: LANE-PERF-GOLD
+  seam_id: SEAM-PERF-GOLD
+  owner: medalhao
+  path: seamwise/swimlanes/LANE-PERF-GOLD.md
+  sha256: a67b2843efc73e30f8dcdfb503cadeb39560ba2dd90db783bbc884207fd2aee0
+- id: LANE-TESTES-LEVES
+  seam_id: SEAM-TESTES-LEVES
+  owner: medalhao
+  path: seamwise/swimlanes/LANE-TESTES-LEVES.md
+  sha256: a64470cbab94a5ea6b319ecae9bf63bd141aa5979dd33d34f8cfaed8ff17b5f8
+- id: LANE-LIMPA-SUBSTITUIDAS
+  seam_id: SEAM-LIMPA-SUBSTITUIDAS
+  owner: medalhao
+  path: seamwise/swimlanes/LANE-LIMPA-SUBSTITUIDAS.md
+  sha256: 3b62c020a0478382113e52c264a6c143d2090836cb89876d15da50ba9f63260d
+legs:
+- id: LEG-PERF-BRONZE-SILVER
+  seam_id: SEAM-PERF-BRONZE-SILVER
+  swimlane_id: LANE-PERF-BRONZE-SILVER
+  path: seamwise/legs/LEG-PERF-BRONZE-SILVER.md
+  sha256: 66d2c3dd7cb948f39198a89958bf0d7ca624d02c75b8cdb7fbd28fe438f11b2c
+- id: LEG-PERF-GOLD
+  seam_id: SEAM-PERF-GOLD
+  swimlane_id: LANE-PERF-GOLD
+  path: seamwise/legs/LEG-PERF-GOLD.md
+  sha256: 6dff52e0a748ed3c9d9b3d9671056f2e7160e6839592e03b66916644bfc535ae
+- id: LEG-TESTES-LEVES
+  seam_id: SEAM-TESTES-LEVES
+  swimlane_id: LANE-TESTES-LEVES
+  path: seamwise/legs/LEG-TESTES-LEVES.md
+  sha256: 23ca94f0551b9057b94e638bc36c8f6523cfb60d8b115c36f1795fed2c5ead1f
+- id: LEG-LIMPA-SUBSTITUIDAS
+  seam_id: SEAM-LIMPA-SUBSTITUIDAS
+  swimlane_id: LANE-LIMPA-SUBSTITUIDAS
+  path: seamwise/legs/LEG-LIMPA-SUBSTITUIDAS.md
+  sha256: b269155d2ea899dc1e45ac0525192f5a7f242ac76567adb865adb50dc54e12a0
+steel_thread:
+- LEG-PERF-BRONZE-SILVER
+- LEG-PERF-GOLD
+- LEG-TESTES-LEVES
+- LEG-LIMPA-SUBSTITUIDAS
+objections: []
+contentions: []
+steel_thread_path: seamwise/steel-thread.md
+steel_thread_sha256: e40b4111f0c52bbc1e2cefcaaab214f4fc00081af15e774bb7f34ccc3e8a768b
+review_authority_sha256: 752b21ceadabd8e6804c30fe0e7c1db1459f2399e7fce5475f02cc50c0e29d0f

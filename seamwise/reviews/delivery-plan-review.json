@@ -1,0 +1,10 @@
+{
+  "disposition": "accepted",
+  "draft_sha256": "656faefd7778dfcfeaf2321408d501d9da5efe6db53a8c4766d2a675f3c4c8a5",
+  "fixture": false,
+  "plan_sha256": "b4001afff176bc73f2d7546979d2f2cdcddcec2c28146c5efc4ceca19040e3de",
+  "reason": "Pass 4 da performance fechado com CHECK_CONSENSUS=OK na R2, sem editar. Quatro costuras, cada ganho pelo gate spark-perf com saida identica.",
+  "reviewed_at": "2026-09-24T02:06:52.298951+00:00",
+  "reviewer": "Bruno Nunes",
+  "schema_version": 1
+}

@@ -1,0 +1,55 @@
+schema_version: 1
+status: SEAM_MAP=READY
+intent_id: DI-PDA-PERFORMANCE
+source_recipe:
+  name: performance-recipe.yaml
+  sha256: 71e26140441f66f55ce020d60fe487a804a358bf83085821d0c6466141b8dadf
+intent_sha256: 02cb5b7810fa1c20500027ea2325f33f1e8001a782886b394f18aaa9e4cb2b68
+system_map_sha256: aa53b8e3b3fe7ae5ff878afd5af94ffec291edfcd4fd1a96313d3cad25e628b5
+evidence_sha256: b24f1acce2da18a69f0156627622bd52a0d9b80c6a7aa3953eedd95802337ee4
+decisions:
+- id: DEC-CAMADAS-EM-DELTA
+  path: seamwise/decisions/DEC-CAMADAS-EM-DELTA.md
+  status: accepted
+  sha256: cb9e7c0cfd1fe89ab642dbba6613cd9e8acafc2d6fe75f596e4a47fa68fa5a65
+- id: DEC-PREPARO-APAGADO-APOS-CONFERIR
+  path: seamwise/decisions/DEC-PREPARO-APAGADO-APOS-CONFERIR.md
+  status: accepted
+  sha256: c42fde86a02a04f8844fdc061526f914e62005bc4cd256774a7d1117078f85e9
+- id: DEC-PERFORMANCE-MEDIDA
+  path: seamwise/decisions/DEC-PERFORMANCE-MEDIDA.md
+  status: accepted
+  sha256: 0c93f3b77e50dc167b5397f4d1829324ebc717674dd2eb5b4ad366bf31c05a22
+- id: DEC-TESTES-LEVES-SEM-TOCAR-ASSERCAO
+  path: seamwise/decisions/DEC-TESTES-LEVES-SEM-TOCAR-ASSERCAO.md
+  status: accepted
+  sha256: 94066dc2119e9d42db24f34052477a63760d4c354843b62a3cd987689b808018
+seams:
+- id: SEAM-PERF-BRONZE-SILVER
+  path: seamwise/seams/SEAM-PERF-BRONZE-SILVER.md
+  owner: medalhao
+  evidence:
+  - E-ANCORA-202601
+  swimlane_id: LANE-PERF-BRONZE-SILVER
+  sha256: bc68c47ffd39c6724ac934fa40642c44e21ceb7d45d95d6132ec9a3e533cebc4
+- id: SEAM-PERF-GOLD
+  path: seamwise/seams/SEAM-PERF-GOLD.md
+  owner: medalhao
+  evidence:
+  - E-ANCORA-202601
+  swimlane_id: LANE-PERF-GOLD
+  sha256: 11a2e5477314b6fdd4cbf32c00d3baa2512b660dfc1677261c6b5c920930a8c1
+- id: SEAM-TESTES-LEVES
+  path: seamwise/seams/SEAM-TESTES-LEVES.md
+  owner: medalhao
+  evidence:
+  - E-ANCORA-202601
+  swimlane_id: LANE-TESTES-LEVES
+  sha256: fc066a6f247b110a4dbe01d7da2703c31510081255247b6f9aab1943e2f795e3
+- id: SEAM-LIMPA-SUBSTITUIDAS
+  path: seamwise/seams/SEAM-LIMPA-SUBSTITUIDAS.md
+  owner: medalhao
+  evidence:
+  - E-ANCORA-202601
+  swimlane_id: LANE-LIMPA-SUBSTITUIDAS
+  sha256: b42c7f3e0e3d690107c9bc9ea6f210895282aa94294122df923a9d58d5d1c70b

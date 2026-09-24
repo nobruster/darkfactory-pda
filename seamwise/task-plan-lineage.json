@@ -1,0 +1,55 @@
+{
+  "contract": "SeamwiseTaskPlanLineage/v1",
+  "delivery_plan_sha256": "b4001afff176bc73f2d7546979d2f2cdcddcec2c28146c5efc4ceca19040e3de",
+  "engine_version": "0.2.0",
+  "intent": {
+    "id": "DI-PDA-PERFORMANCE",
+    "sha256": "02cb5b7810fa1c20500027ea2325f33f1e8001a782886b394f18aaa9e4cb2b68"
+  },
+  "review": {
+    "fixture": false,
+    "plan_sha256": "b4001afff176bc73f2d7546979d2f2cdcddcec2c28146c5efc4ceca19040e3de",
+    "reviewed_at": "2026-09-24T02:06:52.298951+00:00",
+    "reviewer": "Bruno Nunes",
+    "sha256": "d8ba65894cc2952de69788e2664147c7ef3e3a9518163156d30f56a9479391a4"
+  },
+  "task_plan": {
+    "contract": "TaskPlan/v1",
+    "digest": "b592261ff1000d083e6e37df6deb961d60d34b7b7f10b7724b99de7f8ba84586",
+    "path": "seamwise/task-plan.json"
+  },
+  "units": {
+    "T-20260924-limpa-substituidas": {
+      "intent": "DI-PDA-PERFORMANCE",
+      "leg": "LEG-LIMPA-SUBSTITUIDAS",
+      "seam": "SEAM-LIMPA-SUBSTITUIDAS",
+      "source_sha256": "b269155d2ea899dc1e45ac0525192f5a7f242ac76567adb865adb50dc54e12a0",
+      "swimlane": "LANE-LIMPA-SUBSTITUIDAS",
+      "unit_id": "T-20260924-limpa-substituidas"
+    },
+    "T-20260924-perf-bronze-silver": {
+      "intent": "DI-PDA-PERFORMANCE",
+      "leg": "LEG-PERF-BRONZE-SILVER",
+      "seam": "SEAM-PERF-BRONZE-SILVER",
+      "source_sha256": "66d2c3dd7cb948f39198a89958bf0d7ca624d02c75b8cdb7fbd28fe438f11b2c",
+      "swimlane": "LANE-PERF-BRONZE-SILVER",
+      "unit_id": "T-20260924-perf-bronze-silver"
+    },
+    "T-20260924-perf-gold": {
+      "intent": "DI-PDA-PERFORMANCE",
+      "leg": "LEG-PERF-GOLD",
+      "seam": "SEAM-PERF-GOLD",
+      "source_sha256": "6dff52e0a748ed3c9d9b3d9671056f2e7160e6839592e03b66916644bfc535ae",
+      "swimlane": "LANE-PERF-GOLD",
+      "unit_id": "T-20260924-perf-gold"
+    },
+    "T-20260924-testes-leves": {
+      "intent": "DI-PDA-PERFORMANCE",
+      "leg": "LEG-TESTES-LEVES",
+      "seam": "SEAM-TESTES-LEVES",
+      "source_sha256": "23ca94f0551b9057b94e638bc36c8f6523cfb60d8b115c36f1795fed2c5ead1f",
+      "swimlane": "LANE-TESTES-LEVES",
+      "unit_id": "T-20260924-testes-leves"
+    }
+  }
+}
