@@ -1,0 +1,139 @@
+schema_version: 1
+intent:
+  id: DI-PDA-ADOTA-PRODUTOR
+  title: Produtor e gravador do lago sob Task-Spec
+  summary: Os dois únicos arquivos de src/ sem Task-Spec passam a ter uma, com testes do comportamento que já gravou o landing, sem mudá-lo.
+  claim: proposed
+  source:
+    uri: cvg/docs/tech-spec/tech-spec-pda-beneficios.md
+    captured_at: '2026-09-21T00:00:00Z'
+    sha256: e619ead9d343282533110bc8cb8f1203614d8e733565b21e3157df2b8f157b88
+  success:
+  - verificar_procedencia.py devolve PROCEDENCIA=OK pela primeira vez.
+  - Suíte inteira numa JVM só, verde, sem skip.
+  - As funções dos dois módulos iguais às de antes, salvo o --destino.
+  out_of_scope:
+  - Mudar a gravação para Delta ou o destino do landing.
+  - Regravar o landing de 2026-01.
+  - Adotar vincular_procedencia.py (já tem Task-Spec).
+system_map:
+  claim: proposed
+  components:
+  - produtor Spark
+  - gravador do lago
+  external_dependencies:
+  - pda-spark
+  - contrato de 2026-01
+  unknowns: []
+evidence:
+- id: E-ANCORA-202601
+  claim: external
+  source:
+    uri: cvg/docs/adrs/0001-the-2026-01-anchor-is-41572553-rows-summing-78521752562-12.md
+    captured_at: '2026-09-21T00:00:00Z'
+    sha256: 0505a743963abfb09a257373a431c3878b25cf6c19d71467c722da9830779acd
+  confidence: 1.0
+  summary: 'Competência 2026-01 medida na origem: 41572553 linhas, soma 78521752562.12.'
+decisions:
+- id: DEC-ADOTA-PRODUTOR
+  status: accepted
+  owner: Bruno Nunes
+  rationale: 'Decidido pelo dono em 2026-09-24: adotar pela cadeia os dois arquivos escritos fora dela (Regra 11), sem mudar comportamento. Medido pelo verificar_procedencia.py consertado (289c9d2): são os dois únicos de 20 sem Task-Spec selada. A carga incremental que o gravador faz é o ADR 0011, reunido com a linha pds em dae1042.'
+seams:
+- id: SEAM-ADOTA-PRODUTOR
+  name: Produtor adotado
+  description: Separa o código que gravou o landing do código que ninguém revisou.
+  evidence:
+  - E-ANCORA-202601
+  responsibility: Provar por teste o comportamento atual do produtor e do gravador, sem mudá-lo.
+  consumes:
+  - contrato de 2026-01
+  produces:
+  - produtor sob task-spec
+  owner: medalhao
+  independent_proof: PROCEDENCIA=OK; funções iguais às de antes por AST, salvo --destino; suíte verde.
+  decision_ids:
+  - DEC-ADOTA-PRODUTOR
+  rejected_alternatives:
+  - alternative: Isentar os dois arquivos no verificador
+    reason: isenção de código que soma dinheiro devolve o furo da Regra 11 com outro nome.
+  swimlane:
+    id: LANE-ADOTA-PRODUTOR
+    name: Adota produtor lane
+    owner: medalhao
+    legs:
+    - id: LEG-ADOTA-PRODUTOR
+      observable_state: Produtor e gravador sob Task-Spec
+      proof: PROCEDENCIA=OK e AST igual.
+      requires: []
+      produces:
+      - produtor sob task-spec
+      tasks:
+      - id: T-20260924-adota-produtor
+        title: Adotar o produtor Spark e o gravador do lago, sem mudar o que eles fazem
+        goal: Pôr sob Task-Spec o código que gravou o landing de 2026-01, provando por testes o comportamento que ele já tem, sem alterá-lo. Para rodar testes, o ÚNICO comando liberado ao agente é `docker compose -f infra/docker-compose.yml exec -T spark python3 -m pytest <arquivo> -k <cenarios>`.
+        done_condition: tests/test_produtor.py prova o comportamento atual de src/produtor/spark_produtor.py e src/produtor/gravar_lago.py sobre fixtures em tmp_path; a única mudança de código é o parâmetro --destino em src/produtor/gravar_lago.py.main, com o padrão de hoje; todos os testes passam, numa JVM compartilhada sem ser derrubada.
+        effort: M
+        profile: standard
+        execution_backend: any
+        required_tools:
+        - git
+        - bash
+        - python3
+        - pytest
+        - docker
+        depends_on: []
+        touches_paths:
+        - src/produtor/spark_produtor.py
+        - src/produtor/gravar_lago.py
+        creates_paths:
+        - tests/test_produtor.py
+        behavior:
+        - id: B-1
+          given: um CSV pequeno em tmp_path, em latin-1 com separador ';', no layout do contrato de 2026-01 (14 colunas, o cabeçalho com 'Espécie' duas vezes), valores no formato brasileiro com espaços à esquerda ('        1.518,00') e pelo menos um valor fora da gramática
+          when: spark_produtor.produzir(csv, contrato, competencia) roda
+          then: 'o envelope traz motor ''spark'', o sha256 do arquivo lido, e os cinco controles como TEXTO — count_linhas, linhas_invalidas, sum_vl_liquido, min_vl_liquido e max_vl_liquido — IGUAIS, comparados como Decimal, aos que o juiz em Python puro (pda.leitura e pda.agregacao, já selados) mede sobre o mesmo arquivo: os dois motores chegam ao mesmo número (ADR 0005); o valor fora da gramática conta em linhas_invalidas e nunca como zero; a espécie é lida pela POSIÇÃO do contrato, não pelo nome; total_por_codigo soma por código; nenhum float em nenhum valor do envelope. Como produzir chama spark.stop(), cada cenário que o executa roda num PROCESSO FILHO, para não derrubar a sessão Spark compartilhada da suíte.'
+        - id: B-2
+          given: o mesmo CSV e um destino em tmp_path passado por --destino
+          when: gravar_lago._ler_fonte, gravar_lago._controles e gravar_lago.main rodam
+          then: _ler_fonte seguido de _controles mede os mesmos cinco controles que produzir, pela mesma gramática; main recusa com LAGO=RECUSADO um contrato NAO_MEDIDO e uma fonte de zero linhas, sem gravar nada; grava em append, NUNCA overwrite, na partição competencia=<c> do destino, relê do destino e compara os cinco controles; uma segunda carga da mesma competência no mesmo destino dobra as linhas relidas e dá LAGO=DIVERGE, sem apagar a primeira; LAGO=GRAVADO só quando fonte, lago e âncora do contrato batem — para isso o teste usa uma cópia do contrato em tmp_path com a âncora da fixture. O padrão de --destino é o destino de hoje, s3a://landing/pda/beneficios-emitidos. main também roda num processo filho. Nenhum cenário grava no MinIO, e nenhum usa skip, xfail ou importorskip.
+        evals:
+        - id: eval_1
+          description: O produtor mede como o juiz
+          bash: docker compose -f infra/docker-compose.yml exec -T spark sh -c 'for c in produtor_bate_com_o_juiz_python valor_fora_da_gramatica_conta_como_invalido especie_lida_por_posicao envelope_sem_float; do python3 -m pytest --collect-only -q tests/test_produtor.py -k "$c" 2>/dev/null | grep -q "::" || { echo "EVAL=CENARIO_AUSENTE_$c"; exit 1; }; done; python3 -m pytest -q tests/test_produtor.py -k "produtor_bate_com_o_juiz_python or valor_fora_da_gramatica_conta_como_invalido or especie_lida_por_posicao or envelope_sem_float"'
+          verifies:
+          - B-1
+        - id: eval_2
+          description: O gravador prova o que gravou
+          bash: docker compose -f infra/docker-compose.yml exec -T spark sh -c 'for c in gravador_mede_igual_ao_produtor contrato_nao_medido_recusa zero_linhas_nao_grava segunda_carga_diverge_e_nao_apaga grava_so_quando_bate_com_a_ancora; do python3 -m pytest --collect-only -q tests/test_produtor.py -k "$c" 2>/dev/null | grep -q "::" || { echo "EVAL=CENARIO_AUSENTE_$c"; exit 1; }; done; python3 -m pytest -q tests/test_produtor.py -k "gravador_mede_igual_ao_produtor or contrato_nao_medido_recusa or zero_linhas_nao_grava or segunda_carga_diverge_e_nao_apaga or grava_so_quando_bate_com_a_ancora"'
+          verifies:
+          - B-2
+        - id: eval_3
+          description: Sem mudar o que já gravou
+          bash: docker compose -f infra/docker-compose.yml exec -T spark sh -c 'for c in destino_padrao_e_o_landing_de_hoje sessao_da_suite_sobrevive controles_em_texto; do python3 -m pytest --collect-only -q tests/test_produtor.py -k "$c" 2>/dev/null | grep -q "::" || { echo "EVAL=CENARIO_AUSENTE_$c"; exit 1; }; done; python3 -m pytest -q tests/test_produtor.py -k "destino_padrao_e_o_landing_de_hoje or sessao_da_suite_sobrevive or controles_em_texto"'
+          verifies:
+          - B-1
+          - B-2
+        anti_patterns:
+        - action: mudar a leitura, a gramática, o schema ou os controles para um teste passar
+          reason: o landing de 2026-01 foi gravado por este código e fecha com a âncora; mudar muda o dado
+          instead: o teste descreve o comportamento que existe; divergência é achado, reportado
+        - action: refatorar, renomear ou 'melhorar' qualquer função além de acrescentar --destino
+          reason: adoção não é reescrita; cada mudança exigiria provar de novo contra os 41,5 milhões
+          instead: só o parâmetro --destino, com o padrão de hoje
+        - action: chamar produzir ou main no processo do pytest
+          reason: spark.stop() derruba a sessão compartilhada da suíte numa JVM só
+          instead: processo filho (subprocess) com o Python do contêiner
+        do_not_touch:
+        - _raw
+        - contracts
+        - cvg/docs/adrs
+        - src/pda
+        - src/medalhao
+        - src/ontologia
+        - infra
+        - src/produtor/vincular_procedencia.py
+        rollback: Reverter src/produtor/spark_produtor.py e src/produtor/gravar_lago.py ao commit anterior e remover tests/test_produtor.py.
+        observability: divergência entre o produtor Spark e o juiz Python sobre o mesmo arquivo
+steel_thread:
+- LEG-ADOTA-PRODUTOR
