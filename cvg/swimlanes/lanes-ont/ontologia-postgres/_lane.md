@@ -2,7 +2,7 @@ FORK: B (task-driven) — rota única desde a v3.4 — o consenso sempre entrega
 
 > Projetado de `LANE-ONTOLOGIA-POSTGRES.md` pelo Seamwise.
 > **Não edite aqui** — edite a recipe e rode `seamwise plan`.
-> origem sha256: `175f367812c12e9ae84f82294607b67ddb4e7d12dc3006136a6a8e5716bd1a86`
+> origem sha256: `b695bc34269f62d74f78480f8993382aa4424f1142342e9bdc6fd7cd8ccaca58`
 
 ---
 
@@ -14,7 +14,7 @@ id: LANE-ONTOLOGIA-POSTGRES
 name: Ontologia no Postgres lane
 owner: medalhao
 seam_id: SEAM-ONTOLOGIA-POSTGRES
-source_seam_sha256: d6839f94a0081dc129a2ce9543bb8f9967029d0e1379570eb1b8843c1a03ca46
+source_seam_sha256: d000271ccc150ae31bdc39c4a8229467b6a8166342f533393847879c96fc2b8e
 legs:
 - LEG-ONTOLOGIA-POSTGRES
 ---

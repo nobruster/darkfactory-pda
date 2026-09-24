@@ -1,6 +1,6 @@
 > Projetado de `LEG-ONTOLOGIA-POSTGRES.md` pelo Seamwise.
 > **Não edite aqui** — edite a recipe e rode `seamwise plan`.
-> origem sha256: `1dce405604989a6535f684204341ab2e5db26ed9ae254fa7608ae887dd53d3af`
+> origem sha256: `d137536a8bbb7cf0bc33a4284c4678ac0647ddb233e76b55ec56e0518de213de`
 
 ---
 
@@ -116,7 +116,7 @@ tasks:
   - src/medalhao/ontologia.py
   rollback: Remover os dois arquivos criados e apagar o schema carregado.
   observability: projeções divergentes da ontologia versionada
-source_seam_sha256: d6839f94a0081dc129a2ce9543bb8f9967029d0e1379570eb1b8843c1a03ca46
+source_seam_sha256: d000271ccc150ae31bdc39c4a8229467b6a8166342f533393847879c96fc2b8e
 ---
 # Ontologia projetada e reconferida
 

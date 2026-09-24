@@ -1,6 +1,6 @@
 > Projetado de `LEG-ONTOLOGIA.md` pelo Seamwise.
 > **Não edite aqui** — edite a recipe e rode `seamwise plan`.
-> origem sha256: `e3f026e4a429111280a2203a71e48bb6d0a45fec70b211ff2b089c8bb9a20c59`
+> origem sha256: `00ab708741d7c05a95ce5ab2240166ef4371f65309271150f8d4764b555244de`
 
 ---
 
@@ -50,16 +50,19 @@ tasks:
       a linha do CHECKSUMS.txt — cujas linhas têm o formato ''<sha256>  _raw/<arquivo>'', casadas pelo
       NOME do arquivo, porque no contêiner o diretório é /dados/_raw; as 14 colunas do CSV, cada uma por
       POSIÇÃO de 0 a 13 com o cabeçalho e o termo do glossário que representa — o cabeçalho declarado
-      de cada posição é IGUAL ao da primeira linha (latin-1, separador '';'') de todo D.SDA.PDA.003.EMI.*.csv
-      em /dados/_raw; as posições 12 e 13 são as duas ''Espécie'', com papel codigo e descricao_truncada
-      (ADR 0002), e nenhuma ligação é feita pelo nome; os 13 termos com a descrição IGUAL à do glossário;
-      as 65 espécies, código de 2 dígitos em texto, com o nome oficial IGUAL, caractere a caractere e
-      sem normalização, ao texto extraído do dicionário (medido: nenhum dos 65 tem espaço nas pontas nem
-      está fora de NFC), e o grupo de cada uma lido de contrato.grupos_especie.grupos, por referência.
-      O atributo sha256 da ontologia é o sha256 do JSON canônico (chaves ordenadas, sem espaços) do conteúdo
-      RESOLVIDO — fontes, colunas, termos, espécies com o grupo vindo do contrato —, para que uma mudança
-      de grupo no contrato mude a versão. Os .xlsx são lidos só com a biblioteca padrão (zipfile e xml),
-      sem openpyxl, porque o contêiner não tem rede.'
+      de cada posição é IGUAL ao da primeira linha do CSV que o CONTRATO declara como fonte (contrato.procedencia.fonte,
+      hoje _raw/D.SDA.PDA.003.EMI.202601.csv, achado em /dados/_raw pelo nome), lida com contrato.layout.encoding
+      e contrato.layout.separador, e o total de colunas é contrato.layout.total_colunas — NUNCA o de todo
+      CSV de _raw: medido em 2026-09-24, 2025-07 e 2025-08 têm OUTRO layout (13 colunas, uma só ''Espécie'',
+      na posição 0), e a ontologia descreve o layout do contrato; as posições 12 e 13 são as duas ''Espécie'',
+      com papel codigo e descricao_truncada (ADR 0002), e nenhuma ligação é feita pelo nome; os 13 termos
+      com a descrição IGUAL à do glossário; as 65 espécies, código de 2 dígitos em texto, com o nome oficial
+      IGUAL, caractere a caractere e sem normalização, ao texto extraído do dicionário (medido: nenhum
+      dos 65 tem espaço nas pontas nem está fora de NFC), e o grupo de cada uma lido de contrato.grupos_especie.grupos,
+      por referência. O atributo sha256 da ontologia é o sha256 do JSON canônico (chaves ordenadas, sem
+      espaços) do conteúdo RESOLVIDO — fontes, colunas, termos, espécies com o grupo vindo do contrato
+      —, para que uma mudança de grupo no contrato mude a versão. Os .xlsx são lidos só com a biblioteca
+      padrão (zipfile e xml), sem openpyxl, porque o contêiner não tem rede.'
   - id: B-2
     given: uma ontologia, uma fonte ou um contrato que não conferem, ou que não foram lidos
     when: carregar_ontologia confere
@@ -67,11 +70,11 @@ tasks:
       código a mais ou a menos que o dicionário, nome diferente do dicionário, código sem grupo ou em
       dois grupos, termo que o glossário não tem ou com descrição diferente, cabeçalho diferente do CSV
       na mesma posição, posição de coluna faltando ou repetida, carregar_contrato devolvendo a string
-      NAO_MEDIDO ou grupos_especie ausente — cada caso com o motivo nomeado; zero espécies lidas, zero
-      termos lidos, nenhum CSV em /dados/_raw ou arquivo ausente devolvem NAO_MEDIDO, não OK (Regra 9).
-      Os cenários de recusa usam cópias em tmp_path, nunca alteram /dados/_raw. Nenhum cenário usa skip,
-      xfail ou importorskip, nem retorna antes de afirmar: fonte ausente no ambiente de teste FALHA o
-      teste.'
+      NAO_MEDIDO ou grupos_especie ausente — cada caso com o motivo nomeado; um CSV de OUTRO layout em
+      /dados/_raw não é motivo de recusa nem é lido; zero espécies lidas, zero termos lidos, o CSV da
+      fonte do contrato ausente ou arquivo ausente devolvem NAO_MEDIDO, não OK (Regra 9). Os cenários
+      de recusa usam cópias em tmp_path, nunca alteram /dados/_raw. Nenhum cenário usa skip, xfail ou
+      importorskip, nem retorna antes de afirmar: fonte ausente no ambiente de teste FALHA o teste.'
   evals:
   - id: eval_1
     description: A ontologia real confere com o INSS e com o contrato
@@ -86,12 +89,13 @@ tasks:
     description: Divergência recusa com motivo
     bash: docker compose -f infra/docker-compose.yml exec -T spark sh -c 'for c in sha256_divergente_recusa
       checksums_divergente_recusa nome_diferente_recusa codigo_sem_grupo_recusa codigo_em_dois_grupos_recusa
-      termo_fora_do_glossario_recusa descricao_de_termo_diferente_recusa cabecalho_trocado_recusa posicao_repetida_recusa;
-      do python3 -m pytest --collect-only -q tests/test_ontologia.py -k "$c" 2>/dev/null | grep -q "::"
-      || { echo "EVAL=CENARIO_AUSENTE_$c"; exit 1; }; done; python3 -m pytest -q tests/test_ontologia.py
-      -k "sha256_divergente_recusa or checksums_divergente_recusa or nome_diferente_recusa or codigo_sem_grupo_recusa
-      or codigo_em_dois_grupos_recusa or termo_fora_do_glossario_recusa or descricao_de_termo_diferente_recusa
-      or cabecalho_trocado_recusa or posicao_repetida_recusa"'
+      termo_fora_do_glossario_recusa descricao_de_termo_diferente_recusa cabecalho_trocado_recusa posicao_repetida_recusa
+      csv_de_outro_layout_ignorado; do python3 -m pytest --collect-only -q tests/test_ontologia.py -k
+      "$c" 2>/dev/null | grep -q "::" || { echo "EVAL=CENARIO_AUSENTE_$c"; exit 1; }; done; python3 -m
+      pytest -q tests/test_ontologia.py -k "sha256_divergente_recusa or checksums_divergente_recusa or
+      nome_diferente_recusa or codigo_sem_grupo_recusa or codigo_em_dois_grupos_recusa or termo_fora_do_glossario_recusa
+      or descricao_de_termo_diferente_recusa or cabecalho_trocado_recusa or posicao_repetida_recusa or
+      csv_de_outro_layout_ignorado"'
     verifies:
     - B-2
   - id: eval_3
@@ -122,7 +126,7 @@ tasks:
   - infra
   rollback: Remover os três arquivos criados; nada mais depende deles até a próxima tarefa.
   observability: ontologia recusada por divergência com os bytes do INSS
-source_seam_sha256: 794d7da3d10d423b43beb73e9e11601fc073792e7d470e0a1307506437dafb9e
+source_seam_sha256: 5cdfe4743025069fd83d40574a3f94e1a45cf2f1c17d12ba81a4e9c436aadd08
 ---
 # Ontologia carregada e conferida
 

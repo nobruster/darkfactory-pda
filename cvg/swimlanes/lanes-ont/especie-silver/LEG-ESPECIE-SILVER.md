@@ -1,6 +1,6 @@
 > Projetado de `LEG-ESPECIE-SILVER.md` pelo Seamwise.
 > **Não edite aqui** — edite a recipe e rode `seamwise plan`.
-> origem sha256: `cee128273b7b8da7b79ffeb2204d3d88753ec7ec458b14e4979cc761782f0f26`
+> origem sha256: `56e221f620d6f58047237b693407621000778350d87596dcb00e41dafb63776a`
 
 ---
 
@@ -116,7 +116,7 @@ tasks:
   - src/medalhao/ontologia.py
   rollback: Remover os dois arquivos criados; a tabela especie de produção só é publicada fora do loop.
   observability: códigos de espécie que a ontologia não conhece
-source_seam_sha256: 4252c9999bf37047bcabbc9dbf11b9b2be11befc420564e592104fe82db3f2dc
+source_seam_sha256: 6560c84db51140338f4f37363e4fdd8a0aa953a94881892176319f7461776124
 ---
 # Tabela especie publicada e reconferida
 
