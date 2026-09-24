@@ -102,7 +102,7 @@ seams:
           - B-2
         - id: eval_3
           description: O resto do módulo segue verde
-          bash: docker compose -f infra/docker-compose.yml exec -T spark sh -c 'for c in apaga_preparo_de_execucao_publicada commit_revertido_preserva caminho_fora_do_preparo_recusado; do python3 -m pytest --collect-only -q tests/test_limpeza.py -k "$c" 2>/dev/null | grep -q "::" || { echo "EVAL=CENARIO_AUSENTE_$c"; exit 1; }; done; python3 -m pytest -q tests/test_limpeza.py -k "apaga_preparo_de_execucao_publicada or commit_revertido_preserva or caminho_fora_do_preparo_recusado"'
+          bash: docker compose -f infra/docker-compose.yml exec -T spark sh -c 'for c in apaga_preparo_de_execucao_publicada commit_revertido_preserva caminho_fora_do_preparo_recusado publicada_intacta_depois id_vazio_recusado execucao_nao_publicada_preserva outra_execucao_intacta prefixo_montado_de_partes_validadas; do python3 -m pytest --collect-only -q tests/test_limpeza.py -k "$c" 2>/dev/null | grep -q "::" || { echo "EVAL=CENARIO_AUSENTE_$c"; exit 1; }; done; python3 -m pytest -q tests/test_limpeza.py -k "apaga_preparo_de_execucao_publicada or commit_revertido_preserva or caminho_fora_do_preparo_recusado or publicada_intacta_depois or id_vazio_recusado or execucao_nao_publicada_preserva or outra_execucao_intacta or prefixo_montado_de_partes_validadas"'
           verifies:
           - B-1
           - B-2
