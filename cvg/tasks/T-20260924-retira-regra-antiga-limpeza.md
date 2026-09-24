@@ -28,10 +28,14 @@ execution_backend: any
 signed_off: true
 signed_off_by: nobru
 signed_off_at: 2026-09-24T20:18:14Z
-accepted: false
-accepted_by: (none)
-accepted_at: (none)
+accepted: true
+accepted_by: converge-loop
+accepted_at: 2026-09-24T20:48:45Z
 signed_off_sig: hmac-sha256-v3:85d3c104:de10ab58482f80d91373bd1c1d37e6d264c0932b92ea581af5b69d842ac35fca
+accepted_tier: 1
+accepted_attempt_id: 3774a4c0-6371-4f78-8049-0bb863a51bb1
+accepted_authorization_ref: hmac-sha256-v3:85d3c104:de10ab58482f80d91373bd1c1d37e6d264c0932b92ea581af5b69d842ac35fca
+acceptance_record_digest: sha256:22c73a4ad97aad0ddec231649892dd203400cc41fc25ce037ef2810091826065
 ---
 
 # Retirar o teste selado que codifica a regra antiga da limpeza

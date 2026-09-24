@@ -1,0 +1,40 @@
+{
+  "acceptance_tier": 1,
+  "accepted_at": "2026-09-24T20:48:45Z",
+  "accepted_by": "converge-loop",
+  "contract": "AcceptanceRecord/v1",
+  "gate_outcomes": {
+    "authorization": {
+      "code": "AUTHORIZATION_VALID",
+      "status": "pass"
+    },
+    "evaluation": {
+      "code": "EVAL_PASSED",
+      "status": "pass"
+    },
+    "evidence": {
+      "code": "EVIDENCE_SATISFIED",
+      "proof": [
+        "format v3 or earlier: v4 policy receipts are not required"
+      ],
+      "status": "pass"
+    },
+    "preflight": {
+      "code": "PREFLIGHT_PASSED",
+      "status": "pass",
+      "warnings": []
+    }
+  },
+  "outcome": {
+    "code": "ACCEPTED_TIER_1",
+    "status": "accepted"
+  },
+  "receipts": [],
+  "subject": {
+    "attempt_id": "3774a4c0-6371-4f78-8049-0bb863a51bb1",
+    "authorization_ref": "hmac-sha256-v3:85d3c104:de10ab58482f80d91373bd1c1d37e6d264c0932b92ea581af5b69d842ac35fca",
+    "base_commit": "51cc9f0a37e34f1528c87869e5da0acd8f4f869a",
+    "task_id": "T-20260924-retira-regra-antiga-limpeza",
+    "task_revision_digest": "sha256:3230340b56c8e0760a30b97c8b425eb3902462430ab771963c9854618880fd3a"
+  }
+}
