@@ -1,0 +1,40 @@
+{
+  "acceptance_tier": 1,
+  "accepted_at": "2026-09-24T18:02:02Z",
+  "accepted_by": "converge-loop",
+  "contract": "AcceptanceRecord/v1",
+  "gate_outcomes": {
+    "authorization": {
+      "code": "AUTHORIZATION_VALID",
+      "status": "pass"
+    },
+    "evaluation": {
+      "code": "EVAL_PASSED",
+      "status": "pass"
+    },
+    "evidence": {
+      "code": "EVIDENCE_SATISFIED",
+      "proof": [
+        "format v3 or earlier: v4 policy receipts are not required"
+      ],
+      "status": "pass"
+    },
+    "preflight": {
+      "code": "PREFLIGHT_PASSED",
+      "status": "pass",
+      "warnings": []
+    }
+  },
+  "outcome": {
+    "code": "ACCEPTED_TIER_1",
+    "status": "accepted"
+  },
+  "receipts": [],
+  "subject": {
+    "attempt_id": "0b266bbc-260a-417f-8022-98520337f685",
+    "authorization_ref": "hmac-sha256-v3:85d3c104:c9ea2a0ec86df6add8036d6dd8139fa318214be192ea67815caa2cbe1b0b38ec",
+    "base_commit": "9f12b3b5ea80f100362bde9716335b5e5727f691",
+    "task_id": "T-20260924-testes-leves",
+    "task_revision_digest": "sha256:7a26246e20ebb211bbf9bc108191a0f23917f311da31cb5519f57b4130ca4402"
+  }
+}

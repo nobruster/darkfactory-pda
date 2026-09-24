@@ -28,10 +28,14 @@ execution_backend: any
 signed_off: true
 signed_off_by: nobru
 signed_off_at: 2026-09-24T16:52:07Z
-accepted: false
-accepted_by: (none)
-accepted_at: (none)
+accepted: true
+accepted_by: converge-loop
+accepted_at: 2026-09-24T18:02:02Z
 signed_off_sig: hmac-sha256-v3:85d3c104:c9ea2a0ec86df6add8036d6dd8139fa318214be192ea67815caa2cbe1b0b38ec
+accepted_tier: 1
+accepted_attempt_id: 0b266bbc-260a-417f-8022-98520337f685
+accepted_authorization_ref: hmac-sha256-v3:85d3c104:c9ea2a0ec86df6add8036d6dd8139fa318214be192ea67815caa2cbe1b0b38ec
+acceptance_record_digest: sha256:a412d593a68f759a5eda766bd602bed41c6758f67a4eaad1a252c354f0992e3a
 ---
 
 # Cenário de teste montado uma vez por módulo
