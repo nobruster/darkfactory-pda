@@ -2,7 +2,7 @@ FORK: B (task-driven) — rota única desde a v3.4 — o consenso sempre entrega
 
 > Projetado de `LANE-MEMORIA-6G.md` pelo Seamwise.
 > **Não edite aqui** — edite a recipe e rode `seamwise plan`.
-> origem sha256: `52bd8141c50d2c95a143ca64bd47286d40ec7a422d7eeeb3a339f0f4687af6bb`
+> origem sha256: `9704e0e1167f2d7645cd22effba58b1254759c550be7577fa9aeafda615fac8b`
 
 ---
 
@@ -14,7 +14,7 @@ id: LANE-MEMORIA-6G
 name: Memória 6g lane
 owner: medalhao
 seam_id: SEAM-MEMORIA-6G
-source_seam_sha256: 6ecc328765a2f4b2b7dcff318b61c0887956234092327e3eefe5c4e1af4f1079
+source_seam_sha256: 1b38b0ba7f78578dd8ea90bbda3520cac3ae74c86b008ed92648a6de121ddce0
 legs:
 - LEG-MEMORIA-6G
 ---

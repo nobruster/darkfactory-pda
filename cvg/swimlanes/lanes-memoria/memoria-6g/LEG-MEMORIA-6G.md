@@ -1,6 +1,6 @@
 > Projetado de `LEG-MEMORIA-6G.md` pelo Seamwise.
 > **Não edite aqui** — edite a recipe e rode `seamwise plan`.
-> origem sha256: `1474ab7229209c3703d10d00c5e580d539a5820f49a76a7c5ca486c836c13404`
+> origem sha256: `ace1f18642c23e0d915876cd131ef851227019a408fb82322798303d0c3ea805`
 
 ---
 
@@ -23,8 +23,8 @@ tasks:
     testes, o ÚNICO comando liberado ao agente é `docker compose -f infra/docker-compose.yml exec -T spark
     python3 -m pytest <arquivo> -k <cenarios>`.
   done_condition: Uma sessão criada por criar_sessao sem memória explícita tem spark.driver.memory = 6g
-    e heap efetivo de pelo menos 5,5 GiB; a recusa de heap menor que o declarado segue valendo; toda a
-    suíte já existente de tests/test_performance.py passa sem edição.
+    e heap efetivo de pelo menos FOLGA_DO_HEAP × 6g, medido numa JVM nova; a recusa de heap menor que
+    o declarado segue valendo; toda a suíte já existente de tests/test_performance.py passa sem edição.
   effort: S
   profile: standard
   execution_backend: any
@@ -45,13 +45,17 @@ tasks:
     when: a sessão é criada
     then: o padrão MEMORIA_DRIVER_PADRAO é "6g" — o valor com que as baselines de perf/ foram medidas
       e que tirou a Bronze de 506s para 374s de executor —, declarado no builder, e o heap EFETIVO lido
-      por Runtime.getRuntime().maxMemory() é de pelo menos 5,5 GiB, porque a JVM desconta o espaço de
-      sobrevivente; o valor fica como constante nomeada com o porquê, nunca espalhado.
+      por Runtime.getRuntime().maxMemory() é de pelo menos FOLGA_DO_HEAP × 6g — a regra que o código já
+      tem, 0,85, porque a JVM desconta o espaço de sobrevivente; aceite e recusa são complementares, sem
+      faixa intermediária. O cenário mede numa JVM NOVA, num processo filho, porque numa JVM já iniciada
+      o builder não muda o heap; o valor fica como constante nomeada com o porquê, nunca espalhado.
   - id: B-2
     given: uma sessão cujo heap efetivo é menor que o declarado — JVM já iniciada com menos
     when: criar_sessao confere a sessão
-    then: recusa como já recusava, com o heap efetivo e o declarado na mensagem; um pedido explícito de
-      memória continua prevalecendo sobre o padrão; nenhum teste já existente de tests/test_performance.py
+    then: recusa quando o heap efetivo é menor que FOLGA_DO_HEAP × declarado — a mesma regra do B-1, do
+      outro lado —, com o heap efetivo e o declarado na mensagem; o cenário sobe, num processo filho,
+      uma JVM com MENOS memória que o padrão (2g contra 6g), e não um pedido absurdo; um pedido explícito
+      de memória continua prevalecendo sobre o padrão; nenhum teste já existente de tests/test_performance.py
       é editado.
   evals:
   - id: eval_1
@@ -97,7 +101,7 @@ tasks:
   - src/pda
   rollback: Reverter src/medalhao/bronze.py e tests/test_performance.py ao commit assentado.
   observability: sessões com heap efetivo abaixo do declarado
-source_seam_sha256: 6ecc328765a2f4b2b7dcff318b61c0887956234092327e3eefe5c4e1af4f1079
+source_seam_sha256: 1b38b0ba7f78578dd8ea90bbda3520cac3ae74c86b008ed92648a6de121ddce0
 ---
 # Sessão padrão com 6 GB de heap efetivo
 
@@ -107,7 +111,7 @@ maxMemory da JVM, não a propriedade.
 
 ## Runnable leaves
 
-- `T-20260924-memoria-6g` — Memória do driver declarada com o valor medido: Uma sessão criada por criar_sessao sem memória explícita tem spark.driver.memory = 6g e heap efetivo de pelo menos 5,5 GiB; a recusa de heap menor que o declarado segue valendo; toda a suíte já existente de tests/test_performance.py passa sem edição.
+- `T-20260924-memoria-6g` — Memória do driver declarada com o valor medido: Uma sessão criada por criar_sessao sem memória explícita tem spark.driver.memory = 6g e heap efetivo de pelo menos FOLGA_DO_HEAP × 6g, medido numa JVM nova; a recusa de heap menor que o declarado segue valendo; toda a suíte já existente de tests/test_performance.py passa sem edição.
 
 The leg names a capability state, not an activity. Each leaf owns one coherent,
 independently provable done-condition.
