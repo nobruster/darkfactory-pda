@@ -4,7 +4,7 @@ status: accepted
 date: 2026-09-24
 ground: brownfield
 converge_pass: 2
-spec_ref: "R-4"
+spec_ref: "R-2"
 supersedes: ""
 superseded_by: ""
 deciders: "Bruno Nunes"
@@ -14,8 +14,9 @@ deciders: "Bruno Nunes"
 
 ## Context
 
-A fonte publica a descrição da espécie truncada em 20 caracteres (ADR 0004),
-e 11 descrições cobrem 24 códigos (ADR 0008, `CONFIRMED_SOURCE_DEFECT`). A
+A fonte publica a descrição da espécie em 20 caracteres, e 11 descrições
+cobrem 24 códigos — o defeito é identidade colapsada, não largura de campo
+(ADR 0008, que substituiu o 0004; `CONFIRMED_SOURCE_DEFECT`). A
 fábrica preserva o código e nunca funde — mas até aqui não tinha o **nome**
 de cada espécie, só o texto cortado.
 
@@ -33,7 +34,8 @@ A ontologia é um **arquivo versionado**, `src/ontologia/beneficios-emitidos.yam
 e é a única fonte da verdade sobre conceitos e relações:
 
 - as 14 colunas do CSV ligadas aos 13 termos do glossário **por posição**
-  (as duas "Espécie", 12 e 13, são código e descrição truncada — ADR 0002);
+  (as duas "Espécie", 12 e 13, são código e descrição truncada — ADR 0002;
+  R-2 da tech-spec: leitura por posição declarada);
 - as 65 espécies com o nome oficial do dicionário, byte a byte;
 - cada espécie no seu grupo, **por referência** a `grupos_especie` do
   contrato — a ontologia não redefine grupos.
@@ -70,8 +72,12 @@ validade", "Sexo." × "Sexo"), e as duas "Espécie" têm cabeçalho idêntico
 
 ## Evidence
 
-Medido em 2026-09-24 por `conferir_dicionario.py` contra a Silver real
-2026-01 (41.572.553 linhas):
+Medido em 2026-09-24 por `scripts/medir_dicionario.py` contra a Silver real
+2026-01 (41.572.553 linhas) — reproduzível com
+`docker compose -f infra/docker-compose.yml exec -T spark python3 scripts/medir_dicionario.py`.
+O "43 de 65" dá o mesmo com a regra do prefixo com ou sem NFC e com `strip`
+dos dois lados: nenhum nome do dicionário tem espaço nas pontas nem está fora
+de NFC.
 
 | Conferência | Resultado |
 |---|---|
