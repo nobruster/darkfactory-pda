@@ -1,6 +1,6 @@
 > Projetado de `LEG-PERF-BRONZE-SILVER.md` pelo Seamwise.
 > **Não edite aqui** — edite a recipe e rode `seamwise plan`.
-> origem sha256: `9e558087fb089abd6ba68bca88d8b416e26ce385f07a5afd973d3cffe2ea8df0`
+> origem sha256: `66d2c3dd7cb948f39198a89958bf0d7ca624d02c75b8cdb7fbd28fe438f11b2c`
 
 ---
 
@@ -20,8 +20,9 @@ tasks:
 - id: T-20260924-perf-bronze-silver
   title: Memória declarada, cache liberado e reconferência numa passada
   goal: Baixar executor, shuffle e spill da Bronze e da Silver sem mudar a saída.
-  done_condition: Bronze e Silver reais saem idênticas à produção e o gate dá PERF=MELHOR contra perf/baseline-bronze
-    e perf/baseline-silver.
+  done_condition: 'Bronze e Silver reais saem idênticas à produção. O PERF=MELHOR contra perf/ é VERIFICAÇÃO
+    PÓS-ASSENTAMENTO: roda na execução real com a skill spark-perf, fora do loop, porque tempo medido
+    dentro de eval é instável; a entrega exige saída idêntica e o comportamento declarado.'
   effort: M
   profile: standard
   execution_backend: any
@@ -42,14 +43,16 @@ tasks:
     given: a sessão criada por criar_sessao e as leituras e gravações da Bronze e da Silver
     when: Bronze e Silver rodam
     then: 'criar_sessao DECLARA spark.driver.memory, spark.sql.adaptive.enabled e spark.sql.shuffle.partitions
-      a partir de parâmetros com padrão explícito — nunca herda — e confere depois de criar que a memória
-      da sessão é a declarada, recusando sessão reaproveitada com memória herdada; todo DataFrame persistido
-      é liberado com unpersist depois de publicado e reconferido, inclusive no caminho INTEGRO; e a reconferência
-      de _conferir_tabela passa a UMA passada: um exceptAll e a igualdade das contagens — multiconjuntos
-      de mesmo tamanho em que um está contido no outro são iguais —, provando o mesmo que os dois exceptAll.
-      O ganho só vale com o gate da skill spark-perf: PERF=MELHOR contra a baseline gravada em perf/,
-      com a saída IDÊNTICA à de produção — controles e multiconjunto 0/0. Otimização que muda o número
-      é defeito, não ganho; nenhuma reconferência é removida, só barateada.'
+      a partir de parâmetros com padrão explícito — nunca herda — e confere depois de criar o heap EFETIVO
+      da JVM — Runtime.getRuntime().maxMemory() por spark._jvm, não a propriedade de configuração, que
+      não prova nada numa JVM já iniciada —, recusando sessão cujo heap efetivo seja menor que o declarado;
+      todo DataFrame persistido é liberado com unpersist num finally, em TODOS os caminhos — publicado,
+      divergente, CHECK que recusou ou exceção de escrita —, e nunca antes da reconferência, inclusive
+      no caminho INTEGRO; e a reconferência de _conferir_tabela passa a UMA passada: um exceptAll e a
+      igualdade das contagens — multiconjuntos de mesmo tamanho em que um está contido no outro são iguais
+      —, provando o mesmo que os dois exceptAll. O ganho só vale com o gate da skill spark-perf: PERF=MELHOR
+      contra a baseline gravada em perf/, com a saída IDÊNTICA à de produção — controles e multiconjunto
+      0/0. Otimização que muda o número é defeito, não ganho; nenhuma reconferência é removida, só barateada.'
   - id: B-2
     given: uma saída alterada — linha trocada, centavo a mais ou linha a menos
     when: a reconferência numa passada roda
@@ -59,10 +62,11 @@ tasks:
   - id: eval_1
     description: Memória declarada e cache liberado
     bash: docker compose -f infra/docker-compose.yml exec -T spark sh -c 'for c in sessao_declara_memoria
-      sessao_com_memoria_herdada_recusada unpersist_depois_de_publicar; do python3 -m pytest --collect-only
-      -q tests/test_performance.py -k "$c" 2>/dev/null | grep -q "::" || { echo "EVAL=CENARIO_AUSENTE_$c";
-      exit 1; }; done; python3 -m pytest -q tests/test_performance.py -k "sessao_declara_memoria or sessao_com_memoria_herdada_recusada
-      or unpersist_depois_de_publicar"'
+      sessao_com_memoria_herdada_recusada unpersist_depois_de_publicar heap_efetivo_conferido_pela_jvm
+      unpersist_tambem_na_falha; do python3 -m pytest --collect-only -q tests/test_performance.py -k "$c"
+      2>/dev/null | grep -q "::" || { echo "EVAL=CENARIO_AUSENTE_$c"; exit 1; }; done; python3 -m pytest
+      -q tests/test_performance.py -k "sessao_declara_memoria or sessao_com_memoria_herdada_recusada or
+      unpersist_depois_de_publicar or heap_efetivo_conferido_pela_jvm or unpersist_tambem_na_falha"'
     verifies:
     - B-1
   - id: eval_2
@@ -100,7 +104,7 @@ tasks:
   - src/pda
   rollback: Reverter os arquivos tocados ao commit assentado; remover os criados.
   observability: execuções com memória herdada ou cache não liberado
-source_seam_sha256: 8b387186ad8ea648e85e433cb8b248e647f27550a247e010407b0c1d717bc4c2
+source_seam_sha256: bc68c47ffd39c6724ac934fa40642c44e21ceb7d45d95d6132ec9a3e533cebc4
 ---
 # Bronze e Silver mais rápidas com a mesma saída
 
@@ -110,7 +114,7 @@ PERF=MELHOR com resultado idêntico.
 
 ## Runnable leaves
 
-- `T-20260924-perf-bronze-silver` — Memória declarada, cache liberado e reconferência numa passada: Bronze e Silver reais saem idênticas à produção e o gate dá PERF=MELHOR contra perf/baseline-bronze e perf/baseline-silver.
+- `T-20260924-perf-bronze-silver` — Memória declarada, cache liberado e reconferência numa passada: Bronze e Silver reais saem idênticas à produção. O PERF=MELHOR contra perf/ é VERIFICAÇÃO PÓS-ASSENTAMENTO: roda na execução real com a skill spark-perf, fora do loop, porque tempo medido dentro de eval é instável; a entrega exige saída idêntica e o comportamento declarado.
 
 The leg names a capability state, not an activity. Each leaf owns one coherent,
 independently provable done-condition.

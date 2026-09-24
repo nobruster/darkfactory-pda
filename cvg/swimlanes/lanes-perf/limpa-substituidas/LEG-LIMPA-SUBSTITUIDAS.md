@@ -1,6 +1,6 @@
 > Projetado de `LEG-LIMPA-SUBSTITUIDAS.md` pelo Seamwise.
 > **Não edite aqui** — edite a recipe e rode `seamwise plan`.
-> origem sha256: `32b3980280470d4a5dda271977101612a75375c193f67504b7eee1401265479a`
+> origem sha256: `b269155d2ea899dc1e45ac0525192f5a7f242ac76567adb865adb50dc54e12a0`
 
 ---
 
@@ -43,14 +43,17 @@ tasks:
     given: o preparo de uma execução cujo commit de publicação está no histórico e foi SUBSTITUÍDO por
       outro posterior
     when: a limpeza roda
-    then: apaga o preparo dessa execução se o commit dela tem estado INTEGRO, NÃO é de reversão e nenhum
+    then: 'apaga o preparo dessa execução se o commit dela tem estado INTEGRO, NÃO é de reversão e nenhum
       commit de reversão a desfez — publicação conferida e depois substituída —, com a mesma guarda de
-      caminho; a tabela publicada segue com a mesma versão, contagem e soma.
+      caminho — sob a INVARIANTE declarada de que execução não é retomada: cada execução nasce com id
+      novo e nunca reusa o preparo de outra, então um preparo cuja execução já tem commit publicado e
+      foi substituída não está em uso —; a tabela publicada segue com a mesma versão, contagem e soma.'
   - id: B-2
     given: uma execução revertida, uma sem commit, ou um caminho fora do preparo
     when: a limpeza roda
-    then: preserva o preparo e diz o motivo; caminho fora de _preparo ou id vazio é RECUSADO antes de
-      qualquer remoção; nenhum teste já existente de tests/test_limpeza.py é editado.
+    then: preserva o preparo e diz o motivo — inclusive o da execução ATIVA, que ainda não tem commit;
+      caminho fora de _preparo ou id vazio é RECUSADO antes de qualquer remoção; nenhum teste já existente
+      de tests/test_limpeza.py é editado.
   evals:
   - id: eval_1
     description: Substituída e conferida sai
@@ -63,9 +66,10 @@ tasks:
   - id: eval_2
     description: Revertida e em curso ficam
     bash: docker compose -f infra/docker-compose.yml exec -T spark sh -c 'for c in revertida_preserva
-      sem_commit_preserva id_vazio_recusado; do python3 -m pytest --collect-only -q tests/test_limpeza.py
-      -k "$c" 2>/dev/null | grep -q "::" || { echo "EVAL=CENARIO_AUSENTE_$c"; exit 1; }; done; python3
-      -m pytest -q tests/test_limpeza.py -k "revertida_preserva or sem_commit_preserva or id_vazio_recusado"'
+      sem_commit_preserva id_vazio_recusado execucao_ativa_preserva; do python3 -m pytest --collect-only
+      -q tests/test_limpeza.py -k "$c" 2>/dev/null | grep -q "::" || { echo "EVAL=CENARIO_AUSENTE_$c";
+      exit 1; }; done; python3 -m pytest -q tests/test_limpeza.py -k "revertida_preserva or sem_commit_preserva
+      or id_vazio_recusado or execucao_ativa_preserva"'
     verifies:
     - B-2
   - id: eval_3
@@ -94,7 +98,7 @@ tasks:
   - src/pda
   rollback: Reverter os arquivos tocados ao commit assentado; remover os criados.
   observability: execuções com memória herdada ou cache não liberado
-source_seam_sha256: a2f0863b30128997262113c2b6ac97348148b1c6e586af04771c5b344e56c449
+source_seam_sha256: b42c7f3e0e3d690107c9bc9ea6f210895282aa94294122df923a9d58d5d1c70b
 ---
 # Nenhum preparo de execução conferida sobrevive
 

@@ -1,6 +1,6 @@
 > Projetado de `LEG-PERF-GOLD.md` pelo Seamwise.
 > **Não edite aqui** — edite a recipe e rode `seamwise plan`.
-> origem sha256: `dabd4db4cf286d01ac21cabb9e712491fd8eb5919886f99c0179fe1538b72638`
+> origem sha256: `6dff52e0a748ed3c9d9b3d9671056f2e7160e6839592e03b66916644bfc535ae`
 
 ---
 
@@ -21,8 +21,9 @@ tasks:
 - id: T-20260924-perf-gold
   title: Cache liberado e constraints num commit só na Gold
   goal: Baixar o custo da Gold e dos assuntos sem mudar a saída.
-  done_condition: A Gold e os assuntos reais saem idênticos à produção e o gate dá PERF=MELHOR contra
-    perf/baseline-assuntos.
+  done_condition: 'A Gold e os assuntos reais saem idênticos à produção. O PERF=MELHOR contra perf/ é
+    VERIFICAÇÃO PÓS-ASSENTAMENTO: roda na execução real com a skill spark-perf, fora do loop, porque tempo
+    medido dentro de eval é instável; a entrega exige saída idêntica e o comportamento declarado.'
   effort: M
   profile: standard
   execution_backend: any
@@ -43,7 +44,8 @@ tasks:
   - id: B-1
     given: a Gold principal e os assuntos publicando a competência
     when: rodam
-    then: 'todo DataFrame persistido é liberado com unpersist depois de publicado e reconferido; uma tabela
+    then: 'todo DataFrame persistido é liberado com unpersist num finally, em TODOS os caminhos — publicado,
+      divergente, CHECK que recusou ou exceção de escrita —, e nunca antes da reconferência; uma tabela
       NOVA de assuntos nasce com as colunas monetárias protegidas por UM CHECK que exige todas >= 0 —
       um commit em vez de seis —, e uma tabela que já existe com os seis CHECK é reconhecida como protegida,
       sem receber constraint nova nem perder as antigas; a reconferência passa a uma passada como na Bronze.
@@ -60,10 +62,11 @@ tasks:
   - id: eval_1
     description: Cache liberado e um CHECK só
     bash: docker compose -f infra/docker-compose.yml exec -T spark sh -c 'for c in gold_unpersist_depois_de_publicar
-      check_unico_no_create tabela_com_seis_check_reconhecida; do python3 -m pytest --collect-only -q
-      tests/test_performance_gold.py -k "$c" 2>/dev/null | grep -q "::" || { echo "EVAL=CENARIO_AUSENTE_$c";
-      exit 1; }; done; python3 -m pytest -q tests/test_performance_gold.py -k "gold_unpersist_depois_de_publicar
-      or check_unico_no_create or tabela_com_seis_check_reconhecida"'
+      check_unico_no_create tabela_com_seis_check_reconhecida gold_unpersist_tambem_na_falha; do python3
+      -m pytest --collect-only -q tests/test_performance_gold.py -k "$c" 2>/dev/null | grep -q "::" ||
+      { echo "EVAL=CENARIO_AUSENTE_$c"; exit 1; }; done; python3 -m pytest -q tests/test_performance_gold.py
+      -k "gold_unpersist_depois_de_publicar or check_unico_no_create or tabela_com_seis_check_reconhecida
+      or gold_unpersist_tambem_na_falha"'
     verifies:
     - B-1
   - id: eval_2
@@ -103,7 +106,7 @@ tasks:
   - src/medalhao/silver.py
   rollback: Reverter os arquivos tocados ao commit assentado; remover os criados.
   observability: execuções com memória herdada ou cache não liberado
-source_seam_sha256: 0c9ae44a5466e1ed6d785742de6b19352084c871f5bbc93c638fb745ee8f0609
+source_seam_sha256: 11a2e5477314b6fdd4cbf32c00d3baa2512b660dfc1677261c6b5c920930a8c1
 ---
 # Gold e assuntos com menos commits e a mesma saída
 
@@ -113,7 +116,7 @@ PERF=MELHOR com resultado idêntico.
 
 ## Runnable leaves
 
-- `T-20260924-perf-gold` — Cache liberado e constraints num commit só na Gold: A Gold e os assuntos reais saem idênticos à produção e o gate dá PERF=MELHOR contra perf/baseline-assuntos.
+- `T-20260924-perf-gold` — Cache liberado e constraints num commit só na Gold: A Gold e os assuntos reais saem idênticos à produção. O PERF=MELHOR contra perf/ é VERIFICAÇÃO PÓS-ASSENTAMENTO: roda na execução real com a skill spark-perf, fora do loop, porque tempo medido dentro de eval é instável; a entrega exige saída idêntica e o comportamento declarado.
 
 The leg names a capability state, not an activity. Each leaf owns one coherent,
 independently provable done-condition.

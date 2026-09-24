@@ -2,7 +2,7 @@ FORK: B (task-driven) — rota única desde a v3.4 — o consenso sempre entrega
 
 > Projetado de `LANE-PERF-BRONZE-SILVER.md` pelo Seamwise.
 > **Não edite aqui** — edite a recipe e rode `seamwise plan`.
-> origem sha256: `f579a21dbf8a7ee57ff8424a5782311a1bda1ee144dd7bf46ecabf4d4dbd5a68`
+> origem sha256: `95f40905afc9f4a99675bb917bd0101fcccfbda3985385ed326b484282b18242`
 
 ---
 
@@ -14,7 +14,7 @@ id: LANE-PERF-BRONZE-SILVER
 name: Performance da Bronze e da Silver lane
 owner: medalhao
 seam_id: SEAM-PERF-BRONZE-SILVER
-source_seam_sha256: 8b387186ad8ea648e85e433cb8b248e647f27550a247e010407b0c1d717bc4c2
+source_seam_sha256: bc68c47ffd39c6724ac934fa40642c44e21ceb7d45d95d6132ec9a3e533cebc4
 legs:
 - LEG-PERF-BRONZE-SILVER
 ---

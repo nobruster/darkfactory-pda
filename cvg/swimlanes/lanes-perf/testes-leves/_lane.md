@@ -2,7 +2,7 @@ FORK: B (task-driven) — rota única desde a v3.4 — o consenso sempre entrega
 
 > Projetado de `LANE-TESTES-LEVES.md` pelo Seamwise.
 > **Não edite aqui** — edite a recipe e rode `seamwise plan`.
-> origem sha256: `9ebf70eca8d0b68b4bb6e4f24d099aee2a368c2406671a4c66cc9fa24382264a`
+> origem sha256: `a64470cbab94a5ea6b319ecae9bf63bd141aa5979dd33d34f8cfaed8ff17b5f8`
 
 ---
 
@@ -14,7 +14,7 @@ id: LANE-TESTES-LEVES
 name: Testes mais leves — o cenário montado uma vez lane
 owner: medalhao
 seam_id: SEAM-TESTES-LEVES
-source_seam_sha256: 03433f7cba7711d00e96e0917140634d2b26c2bbcb8f6eca8cc715a5a8d34d54
+source_seam_sha256: fc066a6f247b110a4dbe01d7da2703c31510081255247b6f9aab1943e2f795e3
 legs:
 - LEG-TESTES-LEVES
 ---

@@ -13,39 +13,39 @@
     "family": "anthropic"
   },
   "verdict": "REVISE",
-  "prompt_sha256": "269d83e260caa2233ba30a690d351f356861b2e27556e5976a22358fe4f5733e",
+  "prompt_sha256": "1490116197d99d664c2d073216550b57672ffb4b147fc4ce12d37fee0b41e577",
   "inputs": [
     {
       "path": "limpa-substituidas/LEG-LIMPA-SUBSTITUIDAS.md",
-      "sha256": "f8cb7a1109f5dd7794ecd2fabc24ac347067558bdc2075c31736bfe4438cf9cb"
+      "sha256": "ebdd43d4ce53751187239d4519cdaca347979e120ffbd896f7a36fc907e3cd93"
     },
     {
       "path": "limpa-substituidas/_lane.md",
-      "sha256": "f00134bde21b4aedddc2450c95df7f270b3820fef690f7856cdf03026cb63bfb"
+      "sha256": "c12bd17b9ddd74f6fe48db8722b45d9cf18393d351a4d6bbd3ff17f8d532e740"
     },
     {
       "path": "perf-bronze-silver/LEG-PERF-BRONZE-SILVER.md",
-      "sha256": "e5282b240d248f983d0808c94bb8b9c89d4dd8f8f243da7f70397b89d07b01c6"
+      "sha256": "6bc208f54ef5b79e091da994ea32ecbd91dad6ee3230cb403d687d8f82e89b9a"
     },
     {
       "path": "perf-bronze-silver/_lane.md",
-      "sha256": "4cc0f08915fe80ab69117ac0e80c83a843f641a99801e56dfcb25497b6289242"
+      "sha256": "5c4c84f08a0fe4fb5a3ff2d69b598173ffca2930cdd0ca9051a1dea12a023cbb"
     },
     {
       "path": "perf-gold/LEG-PERF-GOLD.md",
-      "sha256": "494312f221d51301cf3d91693d51a6324c70d3bbc072b9167ac031bc0a403948"
+      "sha256": "fb4531943fdefdbe4982d283a2371230f06ace50402aaaf91b173c6232881a92"
     },
     {
       "path": "perf-gold/_lane.md",
-      "sha256": "9f0004b4341e68c49a01c66a91b37657c3a3ebe35fbaedf02f65e2c35141086f"
+      "sha256": "62728e9155f80833065ebc0f6b0d3cc8800c5875803b2ac0ae228c2c9b587e7a"
     },
     {
       "path": "testes-leves/LEG-TESTES-LEVES.md",
-      "sha256": "efef0ae9b94396ca88b02fe0d0398e7039ad384b700fdbea7891fbf0faa74610"
+      "sha256": "01cbc555a10caf107246665b58376237e34fc2f22c1b65388c9507eae98d5ab3"
     },
     {
       "path": "testes-leves/_lane.md",
-      "sha256": "65e52127968ec785566ee9bc3b97c8f38ad53f45a5691cf950280516af6c3d8b"
+      "sha256": "376354cbe0d084633d831091cb492c5f69f3daf295e7c9d2237f97f6d271a07c"
     }
   ],
   "objections": [
@@ -53,20 +53,27 @@
       "id": "C1",
       "severity": "high",
       "rank": 1,
-      "attack_class": "unverified-assumption",
-      "swimlane": "LANE-PERF-BRONZE-SILVER",
-      "leg": "LEG-PERF-BRONZE-SILVER",
-      "title": "Configura\u00e7\u00e3o declarada n\u00e3o comprova o heap efetivo",
+      "attack_class": "race",
+      "swimlane": "LANE-LIMPA-SUBSTITUIDAS",
+      "leg": "LEG-LIMPA-SUBSTITUIDAS",
       "location": {
-        "plan_file": "cvg/swimlanes/lanes-perf/perf-bronze-silver/LEG-PERF-BRONZE-SILVER.md",
-        "section": "tasks.B-1; anti_patterns sobre PYSPARK_SUBMIT_ARGS; eval_1"
+        "plan_file": "cvg/swimlanes/lanes-perf/limpa-substituidas/LEG-LIMPA-SUBSTITUIDAS.md",
+        "section": "tasks/B-1, B-2 e eval_2"
       },
-      "evidence": "O plano exige declarar spark.driver.memory no builder e conferir depois de criar que a mem\u00f3ria da sess\u00e3o \u00e9 a declarada.",
-      "body": "Se a JVM j\u00e1 estiver iniciada, conferir a propriedade de configura\u00e7\u00e3o n\u00e3o demonstra que o heap foi iniciado com esse tamanho. A documenta\u00e7\u00e3o do Spark distingue mem\u00f3ria de lan\u00e7amento de configura\u00e7\u00e3o em runtime. O plano n\u00e3o identifica qual observa\u00e7\u00e3o comprova o heap efetivo nem cobre uma JVM pr\u00e9-iniciada sem a SparkSession pretendida. Assim, o teste pode aprovar 6g declarados sobre um processo ainda limitado a 1g, preservando o risco de OOM que motivou a tarefa.",
+      "title": "Aus\u00eancia de retomada n\u00e3o prova aus\u00eancia de execu\u00e7\u00e3o em curso",
+      "body": "A invari\u00e1vel declarada exclui reutiliza\u00e7\u00e3o futura do preparo, mas n\u00e3o exclui o processo original ainda estar reconferindo depois de publicar. Interleaving n\u00e3o exclu\u00eddo pelo plano: A publica; B substitui A; A ainda reconfere; a limpeza encontra o commit de A eleg\u00edvel e remove seu preparo. B-2 s\u00f3 caracteriza a execu\u00e7\u00e3o ativa como aquela sem commit. Tamb\u00e9m n\u00e3o est\u00e1 declarada a estabilidade da aus\u00eancia de revers\u00e3o entre consultar o hist\u00f3rico e remover. A obje\u00e7\u00e3o depende de confirmar se o protocolo j\u00e1 serializa essas opera\u00e7\u00f5es; sem essa evid\u00eancia, a seguran\u00e7a da remo\u00e7\u00e3o n\u00e3o est\u00e1 demonstrada.",
+      "evidence": "B-1 deduz que o preparo n\u00e3o est\u00e1 em uso da proibi\u00e7\u00e3o de retomada. B-2 preserva a execu\u00e7\u00e3o ATIVA descrita como ainda sem commit. Os evals n\u00e3o explicitam execu\u00e7\u00e3o publicada ainda em curso.",
       "cites": [
-        "https://spark.apache.org/docs/3.5.6/configuration.html#application-properties",
-        "cvg/swimlanes/performance-recipe.yaml \u2014 DEC-PERFORMANCE-MEDIDA"
-      ]
+        "cvg/swimlanes/lanes-perf/limpa-substituidas/LEG-LIMPA-SUBSTITUIDAS.md \u00a7 B-1/B-2",
+        "cvg/swimlanes/lanes-perf/perf-bronze-silver/LEG-PERF-BRONZE-SILVER.md \u00a7 B-1: cache mantido at\u00e9 reconfer\u00eancia"
+      ],
+      "resolution": {
+        "disposition": "ACCEPT",
+        "decided_by": "Bruno Nunes",
+        "decided_at": "2026-09-24T02:06:24Z",
+        "owner": "Bruno Nunes",
+        "risk_residual": "Aceito: operador unico, execucoes em sequencia \u2014 A termina antes de B comecar. E a reconferencia publicada le o DESTINO, nao o preparo: apagar o preparo de A nao muda o que A confere. Execucao concorrente fica fora do escopo, como o escritor unico da DEC-CAMADAS-EM-DELTA. Decidido pelo dono ao fechar o Pass 4 da performance na R2, sem editar o plano."
+      }
     },
     {
       "id": "C2",
@@ -75,38 +82,51 @@
       "attack_class": "drift",
       "swimlane": "LANE-PERF-BRONZE-SILVER",
       "leg": "LEG-PERF-BRONZE-SILVER",
-      "title": "Os evals n\u00e3o demonstram a condi\u00e7\u00e3o de entrega de performance",
       "location": {
         "plan_file": "cvg/swimlanes/lanes-perf/perf-bronze-silver/LEG-PERF-BRONZE-SILVER.md",
-        "section": "done_condition; B-1; eval_1\u2013eval_3"
+        "section": "tasks/B-1 e done_condition"
       },
-      "evidence": "A entrega exige Bronze e Silver reais id\u00eanticas \u00e0 produ\u00e7\u00e3o e PERF=MELHOR; os tr\u00eas evals executam sele\u00e7\u00f5es de pytest sobre sess\u00e3o, cache, reconfer\u00eancia e comportamento Bronze.",
-      "body": "A condi\u00e7\u00e3o de entrega promete medi\u00e7\u00e3o real, mas os comandos n\u00e3o vinculam sua aprova\u00e7\u00e3o a um relat\u00f3rio do gate contra as duas baselines nem \u00e0 identidade das sa\u00eddas reais. Todos podem passar com PERF=IGUAL, PIOR ou NAO_MEDIDO. A equival\u00eancia matem\u00e1tica de um exceptAll com contagens iguais n\u00e3o prova que executar essas contagens ficou mais barato. Isso deixa o principal resultado da tarefa sem prova execut\u00e1vel especificada.",
+      "title": "A compara\u00e7\u00e3o prometida pode ser invalidada pela mudan\u00e7a de mem\u00f3ria",
+      "body": "O plano declara mem\u00f3ria e exige PERF=MELHOR contra perf/, mas n\u00e3o identifica a baseline nem demonstra que sua configura\u00e7\u00e3o de mem\u00f3ria coincide com a configura\u00e7\u00e3o nova. O gate explicitamente devolve NAO_MEDIDO quando a mem\u00f3ria difere. Portanto, caso a baseline reflita a mem\u00f3ria herdada que motivou a interven\u00e7\u00e3o, a execu\u00e7\u00e3o correta n\u00e3o pode produzir o veredito exigido. N\u00e3o foi demonstrado que a baseline atual apresenta essa diferen\u00e7a; a compatibilidade permanece uma premissa bloqueante.",
+      "evidence": "B-1 exige mem\u00f3ria declarada e PERF=MELHOR contra a baseline em perf/. A recipe registra como motiva\u00e7\u00e3o a passagem de 1 GB herdado para 6 GB declarados.",
       "cites": [
-        "cvg/swimlanes/performance-recipe.yaml \u2014 DEC-PERFORMANCE-MEDIDA",
-        ".claude/kb/spark-performance/specs/perf-gate.yaml \u2014 result_identity; verdict; nao_medido",
-        "perf/baseline-bronze.json",
-        "perf/baseline-silver.json"
-      ]
+        "cvg/swimlanes/performance-recipe.yaml \u00a7 decisions/rationale sobre 1 GB e 6 GB",
+        ".claude/kb/spark-performance/specs/perf-gate.yaml \u00a7 nao_medido: mem\u00f3ria diferente invalida compara\u00e7\u00e3o",
+        ".claude/skills/spark-perf/SKILL.md \u00a7 comparar"
+      ],
+      "resolution": {
+        "disposition": "ACCEPT",
+        "decided_by": "Bruno Nunes",
+        "decided_at": "2026-09-24T02:06:24Z",
+        "owner": "Bruno Nunes",
+        "risk_residual": "Refutado com fato medido: as tres baselines em perf/ foram medidas com --driver-memory 6g DECLARADO (baseline_v4.sh), a mesma configuracao que o codigo novo declara. A memoria coincide e o gate compara. Decidido pelo dono ao fechar o Pass 4 da performance na R2, sem editar o plano."
+      }
     },
     {
       "id": "C3",
       "severity": "high",
       "rank": 3,
-      "attack_class": "unverified-assumption",
-      "swimlane": "LANE-LIMPA-SUBSTITUIDAS",
-      "leg": "LEG-LIMPA-SUBSTITUIDAS",
-      "title": "O predicado hist\u00f3rico n\u00e3o demonstra que o preparo deixou de estar em uso",
+      "attack_class": "migration",
+      "swimlane": "LANE-PERF-GOLD",
+      "leg": "LEG-PERF-GOLD",
       "location": {
-        "plan_file": "cvg/swimlanes/lanes-perf/limpa-substituidas/LEG-LIMPA-SUBSTITUIDAS.md",
-        "section": "done_condition; B-1; B-2; eval_2"
+        "plan_file": "cvg/swimlanes/lanes-perf/perf-gold/LEG-PERF-GOLD.md",
+        "section": "tasks/B-1 e eval_1"
       },
-      "evidence": "A entrega preserva execu\u00e7\u00e3o em curso; B-1 permite apagar pelo commit INTEGRO substitu\u00eddo e pela aus\u00eancia de revers\u00e3o. eval_2 cobre revertida, sem commit e id vazio.",
-      "body": "Ter um commit hist\u00f3rico eleg\u00edvel n\u00e3o estabelece aus\u00eancia de uma retomada ou reconfer\u00eancia em curso que ainda use aquele preparo. B-2 aproxima execu\u00e7\u00e3o em curso de execu\u00e7\u00e3o sem commit, sem declarar que essa equival\u00eancia \u00e9 uma invariante. Tamb\u00e9m n\u00e3o h\u00e1 cen\u00e1rio expl\u00edcito de execu\u00e7\u00e3o ativa com commit anterior. Se retomadas forem permitidas, a limpeza pode apagar arquivos ainda necess\u00e1rios. A obje\u00e7\u00e3o depende de uma quest\u00e3o n\u00e3o resolvida no plano: existe exclus\u00e3o entre limpeza e uso do preparo, ou proibi\u00e7\u00e3o comprovada de reutilizar a execu\u00e7\u00e3o?",
+      "title": "O estado produzido pelo CHECK combinado n\u00e3o tem comportamento de reentrada",
+      "body": "B-1 cobre tabela nova e tabela existente com seis CHECKs. Depois da primeira execu\u00e7\u00e3o, por\u00e9m, a tabela passa a existir com um CHECK combinado: um terceiro estado, produzido pela pr\u00f3pria mudan\u00e7a, sem comportamento declarado. Uma implementa\u00e7\u00e3o que apenas reconhe\u00e7a os seis CHECKs pode tentar adicionar novamente o CHECK combinado, gerar commits extras ou falhar por constraint j\u00e1 existente. Os cen\u00e1rios nomeados verificam cria\u00e7\u00e3o e legado com seis CHECKs, mas n\u00e3o a segunda publica\u00e7\u00e3o sobre a tabela criada pela otimiza\u00e7\u00e3o.",
+      "evidence": "B-1: tabela NOVA nasce com UM CHECK; tabela que j\u00e1 existe com os seis CHECK \u00e9 reconhecida. eval_1 nomeia check_unico_no_create e tabela_com_seis_check_reconhecida.",
       "cites": [
-        "cvg/swimlanes/performance-recipe.yaml \u2014 DEC-PREPARO-APAGADO-APOS-CONFERIR",
-        "cvg/swimlanes/lanes-perf/limpa-substituidas/LEG-LIMPA-SUBSTITUIDAS.md \u2014 Observable proof"
-      ]
+        "cvg/swimlanes/lanes-perf/perf-gold/LEG-PERF-GOLD.md \u00a7 B-1/eval_1",
+        "cvg/docs/adrs/0009-the-derived-precision-assumes-a-monotonic-sum-with-no-negative-values.md \u00a7 Decision"
+      ],
+      "resolution": {
+        "disposition": "ACCEPT",
+        "decided_by": "Bruno Nunes",
+        "decided_at": "2026-09-24T02:06:24Z",
+        "owner": "Bruno Nunes",
+        "risk_residual": "Aceito, coberto por fora: se a reentrada tentar o CHECK de novo, o ADD CONSTRAINT falha fechado e nada publica. A execucao real roda os assuntos DUAS vezes e confere que a segunda nao adiciona constraint nem falha. Decidido pelo dono ao fechar o Pass 4 da performance na R2, sem editar o plano."
+      }
     },
     {
       "id": "C4",
@@ -115,36 +135,51 @@
       "attack_class": "drift",
       "swimlane": "LANE-TESTES-LEVES",
       "leg": "LEG-TESTES-LEVES",
-      "title": "Sele\u00e7\u00f5es de testes n\u00e3o provam a su\u00edte inteira nem a redu\u00e7\u00e3o de dura\u00e7\u00e3o",
       "location": {
         "plan_file": "cvg/swimlanes/lanes-perf/testes-leves/LEG-TESTES-LEVES.md",
-        "section": "done_condition; B-2; eval_1\u2013eval_3"
+        "section": "done_condition, B-2 e eval_1\u2013eval_3"
       },
-      "evidence": "B-2 exige todos os testes passando e test_gold_assuntos abaixo de 275,5 segundos. eval_1 e eval_3 executam apenas tr\u00eas cen\u00e1rios cada; eval_2 seleciona verifica\u00e7\u00f5es de ids, AST e marca\u00e7\u00f5es.",
-      "body": "Mesmos ids, mesmos corpos e aus\u00eancia de skip n\u00e3o demonstram que todos os testes ainda passam com auxiliares modificados. Os cen\u00e1rios exclu\u00eddos pelas sele\u00e7\u00f5es podem falhar ou consumir mais tempo. Nenhum comando especificado executa e cronometra integralmente test_gold_assuntos, nem exige sua dura\u00e7\u00e3o como condi\u00e7\u00e3o de sucesso. O plano pode receber tr\u00eas evals verdes sem cumprir as duas propriedades centrais de B-2.",
+      "title": "Os evals n\u00e3o demonstram a su\u00edte completa nem o limite de tempo",
+      "body": "A entrega exige todos os testes verdes e test_gold_assuntos abaixo de 275,5 segundos. eval_1 e eval_3 executam somente tr\u00eas sele\u00e7\u00f5es de testes por arquivo; eval_2 seleciona verifica\u00e7\u00f5es estruturais e de isolamento. Nenhum comando exige executar integralmente os dois m\u00f3dulos ou medir a dura\u00e7\u00e3o do m\u00f3dulo completo. Coletar os mesmos ids n\u00e3o demonstra que os testes omitidos passam com as novas fixtures. O loop pode aceitar uma regress\u00e3o em qualquer teste n\u00e3o selecionado, ou uma su\u00edte que continue levando 551 segundos.",
+      "evidence": "done_condition exige todos passam e menos da metade dos 551s. Os comandos fornecidos usam -k; os cen\u00e1rios de eval_2 n\u00e3o declaram execu\u00e7\u00e3o integral nem medi\u00e7\u00e3o.",
       "cites": [
-        "cvg/swimlanes/performance-recipe.yaml \u2014 DEC-TESTES-LEVES-SEM-TOCAR-ASSERCAO",
-        "cvg/swimlanes/lanes-perf/testes-leves/LEG-TESTES-LEVES.md \u2014 proof; B-2"
-      ]
+        "cvg/swimlanes/lanes-perf/testes-leves/LEG-TESTES-LEVES.md \u00a7 done_condition/B-2/evals",
+        "cvg/swimlanes/performance-recipe.yaml \u00a7 SEAM-TESTES-LEVES/independent_proof"
+      ],
+      "resolution": {
+        "disposition": "ACCEPT",
+        "decided_by": "Bruno Nunes",
+        "decided_at": "2026-09-24T02:06:24Z",
+        "owner": "Bruno Nunes",
+        "risk_residual": "Aceito, coberto por fora: os modulos inteiros rodam e sao cronometrados depois do assentamento, como as suites anteriores; tempo dentro de eval e instavel. Decidido pelo dono ao fechar o Pass 4 da performance na R2, sem editar o plano."
+      }
     },
     {
       "id": "C5",
-      "severity": "medium",
+      "severity": "high",
       "rank": 5,
-      "attack_class": "unverified-assumption",
-      "swimlane": "LANE-PERF-GOLD",
-      "leg": "LEG-PERF-GOLD",
-      "title": "Libera\u00e7\u00e3o do cache est\u00e1 especificada somente depois do sucesso",
+      "attack_class": "cross-lane-interface",
+      "swimlane": "LANE-PERF-BRONZE-SILVER",
+      "leg": "LEG-PERF-BRONZE-SILVER",
       "location": {
-        "plan_file": "cvg/swimlanes/lanes-perf/perf-gold/LEG-PERF-GOLD.md",
-        "section": "B-1; B-2; eval_1; eval_2"
+        "plan_file": "cvg/swimlanes/lanes-perf/perf-bronze-silver/LEG-PERF-BRONZE-SILVER.md",
+        "section": "observable_state, produces e done_condition"
       },
-      "evidence": "B-1 libera todo DataFrame persistido depois de publicado e reconferido; B-2 exige que negativo ou diverg\u00eancia impe\u00e7am a publica\u00e7\u00e3o.",
-      "body": "Nos caminhos que B-2 obriga a recusar, o marco 'depois de publicado e reconferido' nunca acontece. O plano n\u00e3o define o ciclo de vida do cache ap\u00f3s falha de CHECK, diverg\u00eancia ou exce\u00e7\u00e3o de escrita, e o teste de unpersist nomeia apenas publica\u00e7\u00e3o bem-sucedida. Uma implementa\u00e7\u00e3o literal pode manter caches a cada tentativa recusada e voltar a esgotar mem\u00f3ria na mesma sess\u00e3o. O mesmo vazio aparece em B-1 da Bronze/Silver.",
+      "title": "A depend\u00eancia libera uma capacidade de performance antes da sua prova",
+      "body": "A tarefa produz bronze e silver performaticas, mas sua done_condition desloca PERF=MELHOR para fora do loop, depois do assentamento. A Gold depende da tarefa, sem depend\u00eancia expl\u00edcita da medi\u00e7\u00e3o posterior. Assim, a capacidade pode ser consumida quando a \u00fanica evid\u00eancia dispon\u00edvel comprova comportamento e sa\u00edda, inclusive se a medi\u00e7\u00e3o futura retornar PIOR. O problema n\u00e3o \u00e9 medir fora do eval: \u00e9 faltar um ponto declarado de decis\u00e3o que impe\u00e7a tratar uma hip\u00f3tese ainda n\u00e3o medida como capacidade entregue. A Gold repete a mesma separa\u00e7\u00e3o entre capacidade prometida e prova posterior.",
+      "evidence": "produces declara bronze e silver performaticas; done_condition chama PERF=MELHOR de VERIFICA\u00c7\u00c3O P\u00d3S-ASSENTAMENTO; a tarefa Gold depende apenas de T-20260924-perf-bronze-silver.",
       "cites": [
-        "cvg/swimlanes/performance-recipe.yaml \u2014 intent.summary",
-        "cvg/swimlanes/lanes-perf/perf-bronze-silver/LEG-PERF-BRONZE-SILVER.md \u2014 B-1; B-2"
-      ]
+        "cvg/swimlanes/lanes-perf/perf-bronze-silver/LEG-PERF-BRONZE-SILVER.md \u00a7 produces/done_condition",
+        "cvg/swimlanes/lanes-perf/perf-gold/LEG-PERF-GOLD.md \u00a7 depends_on/done_condition",
+        ".claude/skills/spark-perf/SKILL.md \u00a7 Depois do veredito"
+      ],
+      "resolution": {
+        "disposition": "ACCEPT",
+        "decided_by": "Bruno Nunes",
+        "decided_at": "2026-09-24T02:06:24Z",
+        "owner": "Bruno Nunes",
+        "risk_residual": "Aceito: performance nao e gate de correcao \u2014 a saida identica e. Se a verificacao pos-assentamento der PIOR ou IGUAL, a mudanca e revertida pela regra do pipeline-performance-guardian. Decidido pelo dono ao fechar o Pass 4 da performance na R2, sem editar o plano."
+      }
     },
     {
       "id": "C6",
@@ -153,36 +188,43 @@
       "attack_class": "unverified-assumption",
       "swimlane": "LANE-TESTES-LEVES",
       "leg": "LEG-TESTES-LEVES",
-      "title": "Copiar o diret\u00f3rio \u00e9 tratado como prova suficiente de isolamento",
       "location": {
         "plan_file": "cvg/swimlanes/lanes-perf/testes-leves/LEG-TESTES-LEVES.md",
-        "section": "B-1; eval_1; anti_patterns"
+        "section": "tasks/B-2 e eval_2"
       },
-      "evidence": "B-1 afirma isolamento por c\u00f3pia das tabelas locais e reescrita de contrato e lago; eval_1 verifica tr\u00eas resultados funcionais.",
-      "body": "O plano n\u00e3o demonstra que todas as refer\u00eancias usadas pelos auxiliares passam a apontar para a c\u00f3pia. Uma refer\u00eancia remanescente ao cen\u00e1rio-base pode manter os testes de leitura verdes enquanto uma republica\u00e7\u00e3o altera o estado usado pelo teste seguinte. Nenhum cen\u00e1rio especificado altera uma c\u00f3pia e verifica a preserva\u00e7\u00e3o do cen\u00e1rio-base e de outra c\u00f3pia. Corpos test_* intactos n\u00e3o resolvem essa lacuna porque os auxiliares determinam quais dados esses corpos exercitam.",
+      "title": "O commit anterior n\u00e3o identifica uma refer\u00eancia est\u00e1vel dos testes selados",
+      "body": "B-2 exige compara\u00e7\u00e3o contra o commit anterior, mas n\u00e3o identifica o commit de refer\u00eancia. Num loop com v\u00e1rios commits, o pai imediato pode j\u00e1 conter altera\u00e7\u00f5es da pr\u00f3pria tarefa. A compara\u00e7\u00e3o ent\u00e3o deixa de provar preserva\u00e7\u00e3o contra a su\u00edte originalmente selada. Al\u00e9m disso, igualdade de corpos pela AST n\u00e3o demonstra literalmente que nenhuma linha mudou, nem cobre altera\u00e7\u00f5es de assinatura ou decorators quando apenas o corpo \u00e9 comparado. O plano promete uma preserva\u00e7\u00e3o mais forte que a verifica\u00e7\u00e3o descrita.",
+      "evidence": "B-2 exige diff vazio contra o commit anterior e descreve um teste que compara o corpo das fun\u00e7\u00f5es pela AST.",
       "cites": [
-        "cvg/swimlanes/performance-recipe.yaml \u2014 DEC-TESTES-LEVES-SEM-TOCAR-ASSERCAO",
-        "cvg/swimlanes/lanes-perf/testes-leves/LEG-TESTES-LEVES.md \u2014 B-1; anti_patterns"
-      ]
+        "cvg/swimlanes/lanes-perf/testes-leves/LEG-TESTES-LEVES.md \u00a7 proof/B-2",
+        "AGENTS.md \u00a7 Regra 3"
+      ],
+      "resolution": {
+        "disposition": "ACCEPT",
+        "decided_by": "Bruno Nunes",
+        "decided_at": "2026-09-24T02:06:24Z",
+        "owner": "Bruno Nunes",
+        "risk_residual": "Aceito, coberto por fora: comparo pela AST e por git diff as funcoes test_* contra o commit SELADO do Pass 5 desta receita, nao contra o pai imediato. Decidido pelo dono ao fechar o Pass 4 da performance na R2, sem editar o plano."
+      }
     }
   ],
   "cross_lane_interfaces": [],
   "fork": {
     "choice": "B",
-    "reason": "Declara\u00e7\u00e3o j\u00e1 presente nos quatro _lane.md; nenhuma escolha realizada pelo advers\u00e1rio.",
+    "reason": "Transcri\u00e7\u00e3o do FORK j\u00e1 declarado nos quatro arquivos _lane.md; nenhuma escolha feita pelo advers\u00e1rio.",
     "per_plan_declared": true
   },
   "open_questions": [
     {
-      "q": "Qual observa\u00e7\u00e3o distingue mem\u00f3ria configurada de heap efetivo da JVM nos cen\u00e1rios de sess\u00e3o reaproveitada?",
+      "q": "Qual garantia existente impede limpeza concorrente com reconfer\u00eancia e revers\u00e3o de uma execu\u00e7\u00e3o que j\u00e1 publicou?",
       "blocks_build": true
     },
     {
-      "q": "Uma execu\u00e7\u00e3o com commit substitu\u00eddo pode ser retomada ou ainda estar usando seu preparo quando a limpeza roda? Qual contrato estabelece a exclus\u00e3o?",
+      "q": "Quais baselines em perf/ ser\u00e3o usadas e qual evid\u00eancia demonstra mem\u00f3ria compat\u00edvel com a execu\u00e7\u00e3o otimizada?",
       "blocks_build": true
     },
     {
-      "q": "Qual etapa execut\u00e1vel exige os relat\u00f3rios reais de performance e a execu\u00e7\u00e3o integral cronometrada das su\u00edtes antes de declarar as tarefas conclu\u00eddas?",
+      "q": "Qual decis\u00e3o impede declarar as capacidades de performance entregues antes do resultado da medi\u00e7\u00e3o p\u00f3s-assentamento?",
       "blocks_build": true
     }
   ],

@@ -1,6 +1,6 @@
 > Projetado de `LEG-TESTES-LEVES.md` pelo Seamwise.
 > **Não edite aqui** — edite a recipe e rode `seamwise plan`.
-> origem sha256: `ec85f01dd904e8d7065877821d07742ca5b98a1cc78c30c5066557c05a61524e`
+> origem sha256: `23ca94f0551b9057b94e638bc36c8f6523cfb60d8b115c36f1795fed2c5ead1f`
 
 ---
 
@@ -46,7 +46,8 @@ tasks:
     when: os testes rodam
     then: a cadeia do cenário é montada UMA vez por módulo numa fixture e cada teste recebe uma CÓPIA
       do diretório — tabelas Delta locais com caminhos relativos no _delta_log, contrato e lago de teste
-      reescritos para a cópia —, isolando os testes entre si como antes; SÓ os auxiliares e as fixtures
+      reescritos para a cópia —, isolando os testes entre si como antes — provado por um cenário que republica
+      numa cópia e confere que o cenário-base e outra cópia ficam intactos; SÓ os auxiliares e as fixtures
       mudam, e nenhuma linha dentro de uma função test_* é alterada.
   - id: B-2
     given: a suíte depois da mudança
@@ -67,10 +68,10 @@ tasks:
   - id: eval_2
     description: Nenhuma asserção mudou
     bash: docker compose -f infra/docker-compose.yml exec -T spark sh -c 'for c in mesmos_ids_coletados
-      corpo_das_funcoes_test_intacto nenhum_skip_ou_xfail; do python3 -m pytest --collect-only -q tests/test_testes_leves.py
-      -k "$c" 2>/dev/null | grep -q "::" || { echo "EVAL=CENARIO_AUSENTE_$c"; exit 1; }; done; python3
-      -m pytest -q tests/test_testes_leves.py -k "mesmos_ids_coletados or corpo_das_funcoes_test_intacto
-      or nenhum_skip_ou_xfail"'
+      corpo_das_funcoes_test_intacto nenhum_skip_ou_xfail copia_isolada_do_cenario_base; do python3 -m
+      pytest --collect-only -q tests/test_testes_leves.py -k "$c" 2>/dev/null | grep -q "::" || { echo
+      "EVAL=CENARIO_AUSENTE_$c"; exit 1; }; done; python3 -m pytest -q tests/test_testes_leves.py -k "mesmos_ids_coletados
+      or corpo_das_funcoes_test_intacto or nenhum_skip_ou_xfail or copia_isolada_do_cenario_base"'
     verifies:
     - B-2
   - id: eval_3
@@ -100,7 +101,7 @@ tasks:
   - src
   rollback: Reverter os arquivos tocados ao commit assentado; remover os criados.
   observability: execuções com memória herdada ou cache não liberado
-source_seam_sha256: 03433f7cba7711d00e96e0917140634d2b26c2bbcb8f6eca8cc715a5a8d34d54
+source_seam_sha256: fc066a6f247b110a4dbe01d7da2703c31510081255247b6f9aab1943e2f795e3
 ---
 # Suíte de assuntos e gold mais rápida com os mesmos testes
 
