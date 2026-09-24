@@ -1,0 +1,10 @@
+{
+  "disposition": "accepted",
+  "draft_sha256": "6afe0f3c262ddeb080348cc26d03ac284eadbd5950abb61e7789e2396730b36e",
+  "fixture": false,
+  "plan_sha256": "52ef5ca58a27342204ea7c74a6f5ab04be91cf4fc0d04e1a4dc8a5023483e6de",
+  "reason": "Pass 4 da memoria 6g fechado na R2. Uma costura: o padrao declarado passa de 1g para o valor medido, 6g.",
+  "reviewed_at": "2026-09-24T19:26:49.909070+00:00",
+  "reviewer": "Bruno Nunes",
+  "schema_version": 1
+}

@@ -1,0 +1,22 @@
+schema_version: 1
+status: SEAM_MAP=READY
+intent_id: DI-PDA-MEMORIA-6G
+source_recipe:
+  name: memoria-recipe.yaml
+  sha256: f4b7e3f9f43e95d0a1937ef36031e42bd42f9e2e40b948cf01ba86f2e4395cde
+intent_sha256: e2694439f1e053d161abb6febf83e6324761f7eafb8a55fad84e0343fc120c03
+system_map_sha256: eef1a2d7580da3fd202f4918be50715b84cdc0efe164fb4e8d26c51d2c0b7982
+evidence_sha256: b24f1acce2da18a69f0156627622bd52a0d9b80c6a7aa3953eedd95802337ee4
+decisions:
+- id: DEC-MEMORIA-6G
+  path: seamwise/decisions/DEC-MEMORIA-6G.md
+  status: accepted
+  sha256: a78028d64c0da443e8349e70f406efe46c3cf631f8a6842e7b9c0b4e5c8e71af
+seams:
+- id: SEAM-MEMORIA-6G
+  path: seamwise/seams/SEAM-MEMORIA-6G.md
+  owner: medalhao
+  evidence:
+  - E-ANCORA-202601
+  swimlane_id: LANE-MEMORIA-6G
+  sha256: 1b38b0ba7f78578dd8ea90bbda3520cac3ae74c86b008ed92648a6de121ddce0

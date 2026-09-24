@@ -1,0 +1,22 @@
+schema_version: 1
+status: DELIVERY_PLAN=READY
+seam_map_sha256: 6501788c7d5cb6398b881fd154989f323f5ca3f1d78fa24316173762fc1e47b5
+swimlanes:
+- id: LANE-MEMORIA-6G
+  seam_id: SEAM-MEMORIA-6G
+  owner: medalhao
+  path: seamwise/swimlanes/LANE-MEMORIA-6G.md
+  sha256: 9704e0e1167f2d7645cd22effba58b1254759c550be7577fa9aeafda615fac8b
+legs:
+- id: LEG-MEMORIA-6G
+  seam_id: SEAM-MEMORIA-6G
+  swimlane_id: LANE-MEMORIA-6G
+  path: seamwise/legs/LEG-MEMORIA-6G.md
+  sha256: ace1f18642c23e0d915876cd131ef851227019a408fb82322798303d0c3ea805
+steel_thread:
+- LEG-MEMORIA-6G
+objections: []
+contentions: []
+steel_thread_path: seamwise/steel-thread.md
+steel_thread_sha256: aedfe8b3fc3dad194ff674a06f4664da2fd1dff07abb55ad1a4d412ee17e5612
+review_authority_sha256: 687e24e84b914d53967c2c49ecbf24b55c8de9f3ac02e218392cb2a6847566aa

@@ -1,0 +1,31 @@
+{
+  "contract": "SeamwiseTaskPlanLineage/v1",
+  "delivery_plan_sha256": "52ef5ca58a27342204ea7c74a6f5ab04be91cf4fc0d04e1a4dc8a5023483e6de",
+  "engine_version": "0.2.0",
+  "intent": {
+    "id": "DI-PDA-MEMORIA-6G",
+    "sha256": "e2694439f1e053d161abb6febf83e6324761f7eafb8a55fad84e0343fc120c03"
+  },
+  "review": {
+    "fixture": false,
+    "plan_sha256": "52ef5ca58a27342204ea7c74a6f5ab04be91cf4fc0d04e1a4dc8a5023483e6de",
+    "reviewed_at": "2026-09-24T19:26:49.909070+00:00",
+    "reviewer": "Bruno Nunes",
+    "sha256": "61db10e98129dc864a097fc6cc275d55560e9a8f74e0cd7bea3c1ccbd31936b2"
+  },
+  "task_plan": {
+    "contract": "TaskPlan/v1",
+    "digest": "dbbab264e587e21ae02dbca73e63332f5118c3d99a10c799d9763570b3450635",
+    "path": "seamwise/task-plan.json"
+  },
+  "units": {
+    "T-20260924-memoria-6g": {
+      "intent": "DI-PDA-MEMORIA-6G",
+      "leg": "LEG-MEMORIA-6G",
+      "seam": "SEAM-MEMORIA-6G",
+      "source_sha256": "ace1f18642c23e0d915876cd131ef851227019a408fb82322798303d0c3ea805",
+      "swimlane": "LANE-MEMORIA-6G",
+      "unit_id": "T-20260924-memoria-6g"
+    }
+  }
+}
