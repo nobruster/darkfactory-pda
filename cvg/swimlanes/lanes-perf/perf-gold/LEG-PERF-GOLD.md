@@ -1,6 +1,6 @@
 > Projetado de `LEG-PERF-GOLD.md` pelo Seamwise.
 > **Não edite aqui** — edite a recipe e rode `seamwise plan`.
-> origem sha256: `a513a7b0cd0e163f28203048a5cb2be28ac0726241d896dcad96c60fe355bbed`
+> origem sha256: `8b7b4127b01dc93f1a533b3dea1c7ef38f3907392f19b84042ecb4e1d0109376`
 
 ---
 
@@ -13,8 +13,7 @@ seam_id: SEAM-PERF-GOLD
 swimlane_id: LANE-PERF-GOLD
 observable_state: Gold e assuntos com menos commits e a mesma saída
 proof: PERF=MELHOR com resultado idêntico.
-requires:
-- bronze e silver performaticas
+requires: []
 produces:
 - gold performatica
 tasks:
@@ -35,8 +34,7 @@ tasks:
   - python3
   - pytest
   - docker
-  depends_on:
-  - T-20260924-perf-bronze-silver
+  depends_on: []
   touches_paths:
   - src/medalhao/gold.py
   - src/medalhao/gold_assuntos.py
@@ -109,7 +107,7 @@ tasks:
   - src/medalhao/silver.py
   rollback: Reverter os arquivos tocados ao commit assentado; remover os criados.
   observability: execuções com memória herdada ou cache não liberado
-source_seam_sha256: dea70f982a9a7aec9b54152cc8fdf614fae8742bef3b9c747fc1136df61968e3
+source_seam_sha256: f585078124d2cfaeee114e0d13fd4e376e383d58d07630fb2e9fcc873de995f5
 ---
 # Gold e assuntos com menos commits e a mesma saída
 

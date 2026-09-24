@@ -13,7 +13,7 @@
     "family": "anthropic"
   },
   "verdict": "REVISE",
-  "prompt_sha256": "3da2457b19564539a197af0705e58311167b70d9584b57d951220e9166be30f4",
+  "prompt_sha256": "99fba25becaf203bc212e2704e8496a28198fd638250804a34eb5ef88170b0a6",
   "inputs": [
     {
       "path": "limpa-substituidas/LEG-LIMPA-SUBSTITUIDAS.md",
@@ -33,11 +33,11 @@
     },
     {
       "path": "perf-gold/LEG-PERF-GOLD.md",
-      "sha256": "a3161fcbc71be0c2985d2622df0a1c54588d81d011fe097e5353d372f48a066b"
+      "sha256": "5fe03dc191cbe54e5a09a20a01b395e57335535b81d9b09ed61f1411649b6064"
     },
     {
       "path": "perf-gold/_lane.md",
-      "sha256": "ac906cfe6c519eebefd9d5affa668aa52cf10f56b3e2c7760b26d1182762b89b"
+      "sha256": "101177fd659975222aeeb351417e784cc9a62a97c56cf4c1442d1daed8edf999"
     },
     {
       "path": "testes-leves/LEG-TESTES-LEVES.md",
@@ -53,53 +53,55 @@
       "id": "C1",
       "severity": "high",
       "rank": 1,
-      "attack_class": "unverified-assumption",
-      "swimlane": "limpa-substituidas",
+      "attack_class": "other",
+      "swimlane": "LANE-LIMPA-SUBSTITUIDAS",
       "leg": "LEG-LIMPA-SUBSTITUIDAS",
+      "title": "Todos os evals usam uma forma de execu\u00e7\u00e3o que o pr\u00f3prio plano declara recusada",
       "location": {
         "plan_file": "cvg/swimlanes/lanes-perf/limpa-substituidas/LEG-LIMPA-SUBSTITUIDAS.md",
-        "section": "tasks[0].behavior[B-1,B-2]"
+        "section": "tasks[0].goal e evals.eval_1\u2013eval_3"
       },
-      "title": "Commit existente n\u00e3o demonstra que a execu\u00e7\u00e3o terminou de usar o preparo",
-      "evidence": "B-1 deduz que o preparo n\u00e3o est\u00e1 em uso porque a execu\u00e7\u00e3o tem commit publicado e foi substitu\u00edda; B-2 descreve execu\u00e7\u00e3o ATIVA como aquela que ainda n\u00e3o tem commit.",
-      "body": "A invari\u00e2ncia de n\u00e3o retomar IDs exclui retomada, mas n\u00e3o exclui uma execu\u00e7\u00e3o original ainda reconferindo sua publica\u00e7\u00e3o. Contraexemplo permitido pelo texto: A publica; B publica e substitui A; a limpeza remove o preparo de A enquanto A ainda o usa na reconfer\u00eancia. O plano n\u00e3o identifica exclus\u00e3o m\u00fatua nem um registro terminal que torne essa sequ\u00eancia imposs\u00edvel. \u00c9 hip\u00f3tese de corrida, n\u00e3o perda observada; se ocorrer, a limpeza interfere na confer\u00eancia e pode apagar o preparo antes de uma revers\u00e3o.",
+      "evidence": "goal permite exclusivamente 'exec -T spark python3 -m pytest'; os tr\u00eas evals executam 'exec -T spark sh -c'.",
+      "body": "Sob a permiss\u00e3o declarada, os evals s\u00e3o recusados antes de coletar qualquer cen\u00e1rio. Isso bloqueia a prova de remo\u00e7\u00e3o e preserva\u00e7\u00e3o. A mesma contradi\u00e7\u00e3o aparece independentemente nos legs PERF-GOLD e TESTES-LEVES. N\u00e3o foi demonstrada uma exce\u00e7\u00e3o de permiss\u00e3o para o executor dos evals.",
       "cites": [
-        "cvg/swimlanes/lanes-perf/limpa-substituidas/LEG-LIMPA-SUBSTITUIDAS.md \u00a7 B-1 e B-2",
-        "cvg/swimlanes/performance-recipe.yaml \u00a7 decisions/DEC-PREPARO-APAGADO-APOS-CONFERIR"
+        "cvg/swimlanes/lanes-perf/limpa-substituidas/LEG-LIMPA-SUBSTITUIDAS.md \u00a7 goal; evals",
+        "cvg/swimlanes/lanes-perf/perf-gold/LEG-PERF-GOLD.md \u00a7 goal; evals",
+        "cvg/swimlanes/lanes-perf/testes-leves/LEG-TESTES-LEVES.md \u00a7 goal; evals"
       ],
+      "proposal": null,
       "resolution": {
         "disposition": "ACCEPT",
         "decided_by": "Bruno Nunes",
-        "decided_at": "2026-09-24T15:57:41Z",
+        "decided_at": "2026-09-24T16:02:47Z",
         "owner": "Bruno Nunes",
-        "risk_residual": "Aceito, como na R2 C1: operador unico, execucoes em sequencia; a reconferencia publicada le o DESTINO, nao o preparo. Execucao concorrente fica fora do escopo (escritor unico). Decidido pelo dono ao fechar o Pass 4 da performance na R3, sem editar o plano."
+        "risk_residual": "Refutado, como na R3 C2, com fato medido: a permissao de escopo minimo e do AGENTE; os evals sao executados pelo MOTOR, fora dela, e rodaram normalmente em todos os loops de 2026-09-24. Decidido pelo dono ao fechar o Pass 4 da performance na R4, sem editar o plano."
       }
     },
     {
       "id": "C2",
       "severity": "high",
       "rank": 2,
-      "attack_class": "other",
-      "swimlane": "perf-gold",
+      "attack_class": "unverified-assumption",
+      "swimlane": "LANE-PERF-GOLD",
       "leg": "LEG-PERF-GOLD",
+      "title": "A prova da reconfer\u00eancia Gold n\u00e3o exercita a condi\u00e7\u00e3o que torna um exceptAll suficiente",
       "location": {
         "plan_file": "cvg/swimlanes/lanes-perf/perf-gold/LEG-PERF-GOLD.md",
-        "section": "tasks[0].goal \u2194 evals[eval_1,eval_2,eval_3]"
+        "section": "behavior.B-1; behavior.B-2; evals.eval_2"
       },
-      "title": "Todos os evals usam uma forma de comando que o pr\u00f3prio plano declara recusada",
-      "evidence": "goal permite apenas 'exec -T spark python3 -m pytest'; os tr\u00eas evals executam 'exec -T spark sh -c'.",
-      "body": "Sob a permiss\u00e3o declarada, os evals s\u00e3o recusados antes de executar qualquer teste. A coleta preventiva tamb\u00e9m est\u00e1 dentro desse shell. Isso impede demonstrar a entrega mesmo com implementa\u00e7\u00e3o correta. O mesmo conflito aparece, independentemente, nos goals e nos tr\u00eas evals de testes-leves e limpa-substituidas. N\u00e3o foi executado um teste de permiss\u00e3o; a contradi\u00e7\u00e3o \u00e9 interna aos planos.",
+      "evidence": "B-1 diz 'uma passada como na Bronze'; eval_2 exige somente negativo recusado e linha trocada divergente.",
+      "body": "Uma implementa\u00e7\u00e3o com apenas um exceptAll, sem comparar cardinalidades, ainda detecta uma linha trocada. Portanto, esse cen\u00e1rio n\u00e3o distingue a implementa\u00e7\u00e3o correta da implementa\u00e7\u00e3o incompleta. Contraexemplo: esperado=[a], gravado=[a,a]; esperado exceptAll gravado \u00e9 vazio, mas os multiconjuntos diferem. Invertendo a orienta\u00e7\u00e3o, o caso sim\u00e9trico de linha ausente escapa. O plano pode ficar verde sem provar a preserva\u00e7\u00e3o de multiplicidades na Gold.",
       "cites": [
-        "cvg/swimlanes/lanes-perf/perf-gold/LEG-PERF-GOLD.md \u00a7 goal e evals",
-        "cvg/swimlanes/lanes-perf/testes-leves/LEG-TESTES-LEVES.md \u00a7 goal e evals",
-        "cvg/swimlanes/lanes-perf/limpa-substituidas/LEG-LIMPA-SUBSTITUIDAS.md \u00a7 goal e evals"
+        "cvg/swimlanes/lanes-perf/perf-gold/LEG-PERF-GOLD.md \u00a7 behavior.B-1; evals.eval_2",
+        ".claude/kb/spark-performance/specs/perf-gate.yaml \u00a7 result_identity.multiconjunto"
       ],
+      "proposal": null,
       "resolution": {
         "disposition": "ACCEPT",
         "decided_by": "Bruno Nunes",
-        "decided_at": "2026-09-24T15:57:41Z",
+        "decided_at": "2026-09-24T16:02:47Z",
         "owner": "Bruno Nunes",
-        "risk_residual": "Refutado com fato medido: a permissao de escopo minimo vale para o AGENTE do loop; os evals sao executados pelo MOTOR (taskspec), fora dela. Nos loops de 2026-09-24 os evals rodaram e reportaram pass/fail normalmente, inclusive nas 5 tentativas da perf-gold. Decidido pelo dono ao fechar o Pass 4 da performance na R3, sem editar o plano."
+        "risk_residual": "Aceito, coberto por fora, como na R3 C6: a costura diz 'uma passada como na Bronze', que exige exceptAll E contagens iguais; confiro no codigo entregue e a execucao real compara o multiconjunto contra a producao. Decidido pelo dono ao fechar o Pass 4 da performance na R4, sem editar o plano."
       }
     },
     {
@@ -107,26 +109,27 @@
       "severity": "high",
       "rank": 3,
       "attack_class": "drift",
-      "swimlane": "perf-bronze-silver",
-      "leg": "LEG-PERF-BRONZE-SILVER",
+      "swimlane": "LANE-TESTES-LEVES",
+      "leg": "LEG-TESTES-LEVES",
+      "title": "Os evals n\u00e3o demonstram todos os testes verdes nem a dura\u00e7\u00e3o exigida",
       "location": {
-        "plan_file": "cvg/swimlanes/lanes-perf/perf-bronze-silver/LEG-PERF-BRONZE-SILVER.md",
-        "section": "observable_state, produces, done_condition e behavior[B-1]"
+        "plan_file": "cvg/swimlanes/lanes-perf/testes-leves/LEG-TESTES-LEVES.md",
+        "section": "done_condition; behavior.B-2; evals"
       },
-      "title": "A capacidade de performance pode ser declarada produzida antes de ser medida",
-      "evidence": "produces declara 'bronze e silver performaticas', mas done_condition desloca PERF=MELHOR para 'VERIFICA\u00c7\u00c3O P\u00d3S-ASSENTAMENTO', fora do loop.",
-      "body": "A decis\u00e3o registrada exige que todo ganho passe pelo gate spark-perf. O plano permite assentar a tarefa sem essa prova e n\u00e3o especifica respons\u00e1vel, bloqueio de conclus\u00e3o ou consequ\u00eancia de PERF n\u00e3o melhorar. A Gold pode ent\u00e3o consumir uma capacidade ainda n\u00e3o demonstrada. A mesma lacuna existe na done_condition da Gold. Tirar tempo inst\u00e1vel dos evals n\u00e3o demonstra o ganho fora deles; os testes declarados podem passar mesmo que a execu\u00e7\u00e3o real regrida.",
+      "evidence": "A conclus\u00e3o exige 'todos passam' e dura\u00e7\u00e3o inferior \u00e0 metade de 551s; eval_1 e eval_3 selecionam apenas tr\u00eas cen\u00e1rios de cada m\u00f3dulo.",
+      "body": "Coletar os mesmos ids e comparar AST n\u00e3o executa os testes omitidos. Auxiliares e fixtures podem mudar a sem\u00e2ntica de todos eles mesmo com corpos intactos. Nenhum eval declara executar integralmente os dois m\u00f3dulos ou medir test_gold_assuntos abaixo de 275,5s. Assim, a folha pode assentar com regress\u00f5es nos cen\u00e1rios omitidos e sem comprovar o ganho que define sua entrega.",
       "cites": [
-        "cvg/swimlanes/lanes-perf/perf-bronze-silver/LEG-PERF-BRONZE-SILVER.md \u00a7 produces, done_condition e B-1",
-        "cvg/swimlanes/performance-recipe.yaml \u00a7 decisions/DEC-PERFORMANCE-MEDIDA",
-        "cvg/swimlanes/lanes-perf/perf-gold/LEG-PERF-GOLD.md \u00a7 requires e done_condition"
+        "cvg/swimlanes/lanes-perf/testes-leves/LEG-TESTES-LEVES.md \u00a7 done_condition; behavior.B-2; evals",
+        "cvg/composicao-medalhao-perf-r2/seamwise/intent.md \u00a7 success",
+        "cvg/composicao-medalhao-perf-r2/seamwise/decisions/DEC-TESTES-LEVES-SEM-TOCAR-ASSERCAO.md \u00a7 Rationale"
       ],
+      "proposal": null,
       "resolution": {
         "disposition": "ACCEPT",
         "decided_by": "Bruno Nunes",
-        "decided_at": "2026-09-24T15:57:41Z",
+        "decided_at": "2026-09-24T16:02:47Z",
         "owner": "Bruno Nunes",
-        "risk_residual": "Aceito, como na R2 C5: performance nao e gate de correcao \u2014 a saida identica e. O gate spark-perf roda na verificacao pos-assentamento; PIOR ou IGUAL e revertido pela regra do guardiao. Decidido pelo dono ao fechar o Pass 4 da performance na R3, sem editar o plano."
+        "risk_residual": "Aceito, coberto por fora, como na R2 C4 e R3 C4: os modulos inteiros rodam cronometrados depois do assentamento. Decidido pelo dono ao fechar o Pass 4 da performance na R4, sem editar o plano."
       }
     },
     {
@@ -134,51 +137,55 @@
       "severity": "high",
       "rank": 4,
       "attack_class": "unverified-assumption",
-      "swimlane": "testes-leves",
-      "leg": "LEG-TESTES-LEVES",
+      "swimlane": "LANE-PERF-BRONZE-SILVER",
+      "leg": "LEG-PERF-BRONZE-SILVER",
+      "title": "A regress\u00e3o selada da Silver fica fora da prova declarada",
       "location": {
-        "plan_file": "cvg/swimlanes/lanes-perf/testes-leves/LEG-TESTES-LEVES.md",
-        "section": "done_condition, behavior[B-2] e evals"
+        "plan_file": "cvg/swimlanes/lanes-perf/perf-bronze-silver/LEG-PERF-BRONZE-SILVER.md",
+        "section": "touches_paths; evals.eval_1\u2013eval_3"
       },
-      "title": "Os evals n\u00e3o demonstram que a su\u00edte inteira passa nem que dura menos de 275,5 segundos",
-      "evidence": "B-2 exige todos os testes verdes e dura\u00e7\u00e3o inferior \u00e0 metade de 551s; eval_1 e eval_3 selecionam tr\u00eas cen\u00e1rios cada, e eval_2 lista verifica\u00e7\u00f5es de cole\u00e7\u00e3o, AST, marcas e isolamento.",
-      "body": "Coletar os mesmos IDs n\u00e3o executa os testes restantes. Nenhum eval declara executar integralmente os dois m\u00f3dulos ou medir a dura\u00e7\u00e3o do m\u00f3dulo de assuntos. Uma fixture pode preservar corpos e IDs, passar os seis cen\u00e1rios selecionados e quebrar outro teste que usa uma variante dos auxiliares. A entrega tamb\u00e9m pode continuar acima de 275,5 segundos sem reprova\u00e7\u00e3o em nenhum dos evals descritos.",
+      "evidence": "A tarefa altera bronze.py e silver.py; eval_3, intitulado 'Nada do comportamento selado mudou', executa somente tests/test_bronze.py.",
+      "body": "Os novos cen\u00e1rios de performance n\u00e3o declaram uma matriz por camada. Nada exige que reconfer\u00eancia e libera\u00e7\u00e3o nos caminhos de falha sejam exercitadas na Silver. Uma implementa\u00e7\u00e3o pode passar os cen\u00e1rios novos apenas pela Bronze e quebrar a integra\u00e7\u00e3o da Silver. A afirma\u00e7\u00e3o de preserva\u00e7\u00e3o das duas camadas excede a cobertura explicitamente exigida.",
       "cites": [
-        "cvg/swimlanes/lanes-perf/testes-leves/LEG-TESTES-LEVES.md \u00a7 done_condition, B-2 e eval_1\u2013eval_3",
-        "cvg/swimlanes/performance-recipe.yaml \u00a7 intent.success e SEAM-TESTES-LEVES.independent_proof"
+        "cvg/swimlanes/lanes-perf/perf-bronze-silver/LEG-PERF-BRONZE-SILVER.md \u00a7 behavior.B-1; behavior.B-2; evals",
+        "cvg/composicao-medalhao-perf-r2/seamwise/decisions/DEC-PERFORMANCE-MEDIDA.md \u00a7 Rationale"
       ],
+      "proposal": null,
       "resolution": {
         "disposition": "ACCEPT",
         "decided_by": "Bruno Nunes",
-        "decided_at": "2026-09-24T15:57:41Z",
+        "decided_at": "2026-09-24T16:02:47Z",
         "owner": "Bruno Nunes",
-        "risk_residual": "Aceito, coberto por fora, como na R2 C4: os modulos inteiros rodam cronometrados depois do assentamento. Decidido pelo dono ao fechar o Pass 4 da performance na R3, sem editar o plano."
+        "risk_residual": "Aceito: a costura SEAM-PERF-BRONZE-SILVER ja foi entregue e saiu desta receita (DEC-PERF-BRONZE-SILVER-ENTREGUE); o adversario leu o arquivo de lane antigo. A regressao da Silver e coberta pela suite inteira rodada por modulo depois do assentamento. Decidido pelo dono ao fechar o Pass 4 da performance na R4, sem editar o plano."
       }
     },
     {
       "id": "C5",
-      "severity": "medium",
+      "severity": "high",
       "rank": 5,
-      "attack_class": "unverified-assumption",
-      "swimlane": "testes-leves",
-      "leg": "LEG-TESTES-LEVES",
+      "attack_class": "drift",
+      "swimlane": "LANE-PERF-GOLD",
+      "leg": "LEG-PERF-GOLD",
+      "title": "A capacidade gold performatica \u00e9 disponibilizada antes da prova que a define",
       "location": {
-        "plan_file": "cvg/swimlanes/lanes-perf/testes-leves/LEG-TESTES-LEVES.md",
-        "section": "behavior[B-2] e evals[eval_2]"
+        "plan_file": "cvg/swimlanes/lanes-perf/perf-gold/LEG-PERF-GOLD.md",
+        "section": "proof; produces; done_condition"
       },
-      "title": "A refer\u00eancia 'commit anterior' n\u00e3o fixa os testes selados",
-      "evidence": "B-2 manda comparar o corpo das fun\u00e7\u00f5es contra 'o commit anterior', sem identificar o commit ou a cole\u00e7\u00e3o de refer\u00eancia.",
-      "body": "Em uma tarefa com v\u00e1rios commits ou tentativas, o commit anterior pode j\u00e1 conter mudan\u00e7as indevidas nos testes. A compara\u00e7\u00e3o passa a provar apenas aus\u00eancia de nova altera\u00e7\u00e3o, n\u00e3o preserva\u00e7\u00e3o do estado selado. O mesmo problema atinge a origem dos 'mesmos ids coletados', cuja refer\u00eancia n\u00e3o est\u00e1 identificada. O plano deixa a prova variar com o hist\u00f3rico usado para execut\u00e1-la.",
+      "evidence": "proof exige PERF=MELHOR; done_condition desloca essa verifica\u00e7\u00e3o para 'P\u00d3S-ASSENTAMENTO', fora do loop.",
+      "body": "Medir fora dos evals pode ser leg\u00edtimo, mas o plano n\u00e3o identifica respons\u00e1vel, recibo ou barreira que impe\u00e7a concluir a capacidade antes da medi\u00e7\u00e3o. TESTES-LEVES consome 'gold performatica' logo ap\u00f3s essa tarefa. A decis\u00e3o aceita exige que todo ganho passe pelo gate; a capacidade pode ser liberada ainda NAO_MEDIDO ou posteriormente resultar PIOR. A mesma lacuna existe na conclus\u00e3o de PERF-BRONZE-SILVER.",
       "cites": [
-        "cvg/swimlanes/lanes-perf/testes-leves/LEG-TESTES-LEVES.md \u00a7 B-2 e eval_2",
-        "cvg/swimlanes/performance-recipe.yaml \u00a7 decisions/DEC-TESTES-LEVES-SEM-TOCAR-ASSERCAO"
+        "cvg/swimlanes/lanes-perf/perf-gold/LEG-PERF-GOLD.md \u00a7 proof; produces; done_condition",
+        "cvg/composicao-medalhao-perf-r2/seamwise/decisions/DEC-PERFORMANCE-MEDIDA.md \u00a7 Rationale",
+        "cvg/swimlanes/lanes-perf/testes-leves/LEG-TESTES-LEVES.md \u00a7 requires; depends_on",
+        "cvg/swimlanes/lanes-perf/perf-bronze-silver/LEG-PERF-BRONZE-SILVER.md \u00a7 done_condition"
       ],
+      "proposal": null,
       "resolution": {
         "disposition": "ACCEPT",
         "decided_by": "Bruno Nunes",
-        "decided_at": "2026-09-24T15:57:41Z",
+        "decided_at": "2026-09-24T16:02:47Z",
         "owner": "Bruno Nunes",
-        "risk_residual": "Aceito, coberto por fora, como na R2 C6: a comparacao pela AST e por git diff usa o commit SELADO do Pass 5 desta receita, gravado pelo script de retomada. Decidido pelo dono ao fechar o Pass 4 da performance na R3, sem editar o plano."
+        "risk_residual": "Aceito, como na R2 C5 e R3 C3: saida identica e o gate de correcao; PERF nao-MELHOR e revertido pela regra do guardiao na verificacao pos-assentamento. Decidido pelo dono ao fechar o Pass 4 da performance na R4, sem editar o plano."
       }
     },
     {
@@ -186,46 +193,46 @@
       "severity": "medium",
       "rank": 6,
       "attack_class": "unverified-assumption",
-      "swimlane": "perf-gold",
-      "leg": "LEG-PERF-GOLD",
+      "swimlane": "LANE-TESTES-LEVES",
+      "leg": "LEG-TESTES-LEVES",
+      "title": "Commit anterior n\u00e3o identifica uma refer\u00eancia est\u00e1vel para os testes selados",
       "location": {
-        "plan_file": "cvg/swimlanes/lanes-perf/perf-gold/LEG-PERF-GOLD.md",
-        "section": "behavior[B-1,B-2] e evals[eval_1,eval_2]"
+        "plan_file": "cvg/swimlanes/lanes-perf/testes-leves/LEG-TESTES-LEVES.md",
+        "section": "behavior.B-2"
       },
-      "title": "A equival\u00eancia da reconfer\u00eancia na Gold n\u00e3o tem prova expl\u00edcita para cardinalidades diferentes",
-      "evidence": "B-1 remete \u00e0 reconfer\u00eancia 'como na Bronze'; o cen\u00e1rio de diverg\u00eancia listado para Gold \u00e9 apenas gold_uma_passada_diverge_linha_trocada.",
-      "body": "Um \u00fanico exceptAll sem a compara\u00e7\u00e3o de contagens detecta uma linha trocada, mas pode aceitar inclus\u00e3o estrita no sentido oposto ao comparado. Por exemplo, A={x} e B={x,x} deixam A exceptAll B vazio. O plano da Gold n\u00e3o lista cen\u00e1rio de cardinalidade ou multiplicidade diferente que reprove essa implementa\u00e7\u00e3o incompleta nos caminhos da Gold principal e dos assuntos. A matem\u00e1tica declarada na Bronze \u00e9 correta; sua aplica\u00e7\u00e3o na Gold permanece insuficientemente demonstrada pelos evals nomeados.",
+      "evidence": "A compara\u00e7\u00e3o das fun\u00e7\u00f5es deve ocorrer 'contra o commit anterior'; os ids devem ser os mesmos 'de antes'.",
+      "body": "N\u00e3o est\u00e1 definido qual commit representa o estado selado. Se a implementa\u00e7\u00e3o interpretar a express\u00e3o como HEAD~1, um commit posterior contendo apenas documenta\u00e7\u00e3o desloca a refer\u00eancia para testes j\u00e1 modificados. O comparador passa a provar identidade com a pr\u00f3pria altera\u00e7\u00e3o, sem provar preserva\u00e7\u00e3o do original. A origem dos ids esperados tamb\u00e9m permanece indeterminada.",
       "cites": [
-        "cvg/swimlanes/lanes-perf/perf-gold/LEG-PERF-GOLD.md \u00a7 B-1, B-2 e eval_2",
-        "cvg/swimlanes/lanes-perf/perf-bronze-silver/LEG-PERF-BRONZE-SILVER.md \u00a7 B-1 e anti_patterns",
-        "cvg/docs/tech-spec/tech-spec-pda-beneficios.md \u00a7 Requirements/R-5 e R-7"
+        "cvg/swimlanes/lanes-perf/testes-leves/LEG-TESTES-LEVES.md \u00a7 behavior.B-2",
+        "cvg/composicao-medalhao-perf-r2/seamwise/decisions/DEC-TESTES-LEVES-SEM-TOCAR-ASSERCAO.md \u00a7 Rationale"
       ],
+      "proposal": null,
       "resolution": {
         "disposition": "ACCEPT",
         "decided_by": "Bruno Nunes",
-        "decided_at": "2026-09-24T15:57:41Z",
+        "decided_at": "2026-09-24T16:02:47Z",
         "owner": "Bruno Nunes",
-        "risk_residual": "Aceito, coberto por fora: a costura da Gold diz 'uma passada como na Bronze', e a da Bronze exige exceptAll E contagens iguais. Confiro no codigo entregue que a igualdade de contagem esta la, e a execucao real compara o multiconjunto contra a producao. Decidido pelo dono ao fechar o Pass 4 da performance na R3, sem editar o plano."
+        "risk_residual": "Aceito, coberto por fora, como na R2 C6 e R3 C5: a referencia e o commit SELADO do Pass 5, gravado em /tmp/perf_selado.txt pelo script. Decidido pelo dono ao fechar o Pass 4 da performance na R4, sem editar o plano."
       }
     }
   ],
   "cross_lane_interfaces": [],
   "fork": {
     "choice": "B",
-    "reason": "Transcrito dos quatro _lane.md; nenhuma escolha feita pelo advers\u00e1rio.",
+    "reason": "Declara\u00e7\u00e3o preexistente nos quatro _lane.md; nenhuma escolha feita pelo advers\u00e1rio.",
     "per_plan_declared": true
   },
   "open_questions": [
     {
-      "q": "Qual evid\u00eancia torna imposs\u00edvel uma execu\u00e7\u00e3o j\u00e1 publicada continuar usando o preparo quando outra publica\u00e7\u00e3o a substitui?",
+      "q": "Qual representa\u00e7\u00e3o can\u00f4nica comporta obje\u00e7\u00f5es ainda abertas? O schema exige resolution com decis\u00e3o humana, incompat\u00edvel com a sa\u00edda n\u00e3o resolvida dos Steps 1\u20132.",
       "blocks_build": true
     },
     {
-      "q": "Qual mecanismo impede concluir a entrega de performance enquanto a verifica\u00e7\u00e3o p\u00f3s-assentamento estiver pendente ou reprovada?",
+      "q": "Existe uma permiss\u00e3o distinta para o executor de evals que autorize sh -c, apesar da restri\u00e7\u00e3o declarada nos planos?",
       "blocks_build": true
     },
     {
-      "q": "Como o dispatcher representa obje\u00e7\u00f5es ainda abertas se o schema local exige uma decis\u00e3o humana em cada resolution?",
+      "q": "Qual respons\u00e1vel e qual barreira controlam a verifica\u00e7\u00e3o PERF=MELHOR p\u00f3s-assentamento antes de declarar a capacidade entregue?",
       "blocks_build": true
     }
   ],
