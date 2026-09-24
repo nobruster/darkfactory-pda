@@ -1,0 +1,182 @@
+{
+  "schema_version": "1.0",
+  "pass": "4-consensus",
+  "adversary": {
+    "engine_id": "codex",
+    "model": "codex",
+    "family": "openai",
+    "engine_version": "codex-cli 0.155.0",
+    "sandbox_mode": "read-only"
+  },
+  "author": {
+    "model": "claude",
+    "family": "anthropic"
+  },
+  "verdict": "REVISE",
+  "prompt_sha256": "8a827f8e3b5550abca1b09c7f79e01bb3696d3adf57ec5786f05fab1d3a846ec",
+  "inputs": [
+    {
+      "path": "adota-produtor/LEG-ADOTA-PRODUTOR.md",
+      "sha256": "09488fb96135ef6ab48941dd5efd26a21fba693d8a524b147c224ae74813c23f"
+    },
+    {
+      "path": "adota-produtor/_lane.md",
+      "sha256": "b94fc3f26a3280f948f74da87f5b6fc78e300b37397941fb548263488c28b9b0"
+    }
+  ],
+  "objections": [
+    {
+      "id": "C1",
+      "severity": "high",
+      "rank": 1,
+      "attack_class": "drift",
+      "swimlane": "LANE-ADOTA-PRODUTOR",
+      "leg": "LEG-ADOTA-PRODUTOR",
+      "location": {
+        "plan_file": "cvg/swimlanes/lanes-adota/adota-produtor/LEG-ADOTA-PRODUTOR.md",
+        "section": "proof; tasks[0].done_condition; evals"
+      },
+      "title": "A prova central da ado\u00e7\u00e3o n\u00e3o \u00e9 exercida pelos evals",
+      "body": "O estado publicado exige PROCEDENCIA=OK e igualdade de AST, mas os tr\u00eas evals selecionam apenas cen\u00e1rios de tests/test_produtor.py. N\u00e3o h\u00e1 verifica\u00e7\u00e3o expl\u00edcita da proced\u00eancia nem compara\u00e7\u00e3o do AST dos m\u00f3dulos contra uma refer\u00eancia anterior identificada. A checagem de AST mencionada em B-2 inspeciona chamadas no arquivo de teste, outra propriedade. Os evals podem passar sem demonstrar que os dois m\u00f3dulos foram adotados e permaneceram iguais fora da exce\u00e7\u00e3o autorizada.",
+      "evidence": "proof: 'PROCEDENCIA=OK e AST igual.' B-2: 'AST do pr\u00f3prio arquivo de teste'. Nenhum seletor dos evals exige proced\u00eancia ou preserva\u00e7\u00e3o do AST dos m\u00f3dulos.",
+      "cites": [
+        "cvg/swimlanes/adota-produtor-recipe.yaml \u2014 intent.success",
+        "cvg/swimlanes/adota-produtor-recipe.yaml \u2014 seams[0].independent_proof",
+        "cvg/swimlanes/lanes-adota/adota-produtor/LEG-ADOTA-PRODUTOR.md \u2014 anti_patterns[1]"
+      ],
+      "resolution": {
+        "disposition": "ACCEPT",
+        "decided_by": "Bruno Nunes",
+        "decided_at": "2026-09-24T23:42:08Z",
+        "owner": "Bruno Nunes",
+        "risk_residual": "Aceito, coberto por fora: depois do loop a cadeia roda scripts/verificar_procedencia.py (exige PROCEDENCIA=OK) e compara por AST cada funcao de spark_produtor.py e gravar_lago.py contra o commit anterior ao loop, admitindo diferenca so em gravar_lago.main. Decidido pelo dono ao fechar o Pass 4 da adocao do produtor na R2, sem editar o plano."
+      }
+    },
+    {
+      "id": "C2",
+      "severity": "high",
+      "rank": 2,
+      "attack_class": "other",
+      "swimlane": "LANE-ADOTA-PRODUTOR",
+      "leg": "LEG-ADOTA-PRODUTOR",
+      "location": {
+        "plan_file": "cvg/swimlanes/lanes-adota/adota-produtor/LEG-ADOTA-PRODUTOR.md",
+        "section": "tasks[0].goal \u2194 eval_1, eval_2, eval_3"
+      },
+      "title": "Todos os evals violam o \u00fanico comando autorizado",
+      "body": "O goal autoriza exclusivamente docker compose exec com python3 -m pytest como comando do cont\u00eainer. Os tr\u00eas evals executam sh -c, la\u00e7os, pipelines e grep. Interpretada literalmente, a autoriza\u00e7\u00e3o impede executar os pr\u00f3prios gates; executar os gates exige desobedecer ao goal. A ambiguidade atinge a verifica\u00e7\u00e3o obrigat\u00f3ria antes de qualquer implementa\u00e7\u00e3o.",
+      "evidence": "goal: 'o \u00daNICO comando liberado ao agente \u00e9 ... exec -T spark python3 -m pytest <arquivo> -k <cenarios>'. Os tr\u00eas evals come\u00e7am com '... exec -T spark sh -c'.",
+      "cites": [
+        "cvg/swimlanes/lanes-adota/adota-produtor/LEG-ADOTA-PRODUTOR.md \u2014 tasks[0].goal",
+        "cvg/swimlanes/lanes-adota/adota-produtor/LEG-ADOTA-PRODUTOR.md \u2014 tasks[0].evals"
+      ],
+      "resolution": {
+        "disposition": "ACCEPT",
+        "decided_by": "Bruno Nunes",
+        "decided_at": "2026-09-24T23:42:08Z",
+        "owner": "Bruno Nunes",
+        "risk_residual": "Refutado, como em todas as rodadas anteriores: a permissao de escopo minimo e do AGENTE; os evals sao executados pelo MOTOR, fora dela. Decidido pelo dono ao fechar o Pass 4 da adocao do produtor na R2, sem editar o plano."
+      }
+    },
+    {
+      "id": "C3",
+      "severity": "high",
+      "rank": 3,
+      "attack_class": "drift",
+      "swimlane": "LANE-ADOTA-PRODUTOR",
+      "leg": "LEG-ADOTA-PRODUTOR",
+      "location": {
+        "plan_file": "cvg/swimlanes/lanes-adota/adota-produtor/LEG-ADOTA-PRODUTOR.md",
+        "section": "tasks[0].done_condition; B-2; evals"
+      },
+      "title": "Execu\u00e7\u00f5es isoladas n\u00e3o demonstram sobreviv\u00eancia da sess\u00e3o compartilhada",
+      "body": "A recipe exige a su\u00edte inteira verde numa JVM compartilhada. Cada eval inicia outro pytest e seleciona exclusivamente testes do novo arquivo. N\u00e3o h\u00e1 cen\u00e1rio exigido que mantenha uma sess\u00e3o do pytest ativa, execute os filhos e demonstre que a sess\u00e3o continua utiliz\u00e1vel depois, nem execu\u00e7\u00e3o conjunta da su\u00edte existente. Inspecionar chamadas pelo AST prova uma restri\u00e7\u00e3o sint\u00e1tica, n\u00e3o a sobreviv\u00eancia da sess\u00e3o. Uma interfer\u00eancia no ambiente compartilhado pode escapar de todos os evals descritos.",
+      "evidence": "done_condition: 'todos os testes passam, numa JVM compartilhada sem ser derrubada'. Todos os comandos de teste dos evals restringem a execu\u00e7\u00e3o a tests/test_produtor.py.",
+      "cites": [
+        "cvg/swimlanes/adota-produtor-recipe.yaml \u2014 intent.success: 'Su\u00edte inteira numa JVM s\u00f3, verde, sem skip.'",
+        "cvg/swimlanes/lanes-adota/adota-produtor/LEG-ADOTA-PRODUTOR.md \u2014 anti_patterns[2]"
+      ],
+      "resolution": {
+        "disposition": "ACCEPT",
+        "decided_by": "Bruno Nunes",
+        "decided_at": "2026-09-24T23:42:08Z",
+        "owner": "Bruno Nunes",
+        "risk_residual": "Aceito, coberto por fora: depois do loop a cadeia roda a suite INTEIRA numa JVM so, com -rsx, recusando skip e xfail. Decidido pelo dono ao fechar o Pass 4 da adocao do produtor na R2, sem editar o plano."
+      }
+    },
+    {
+      "id": "C4",
+      "severity": "medium",
+      "rank": 4,
+      "attack_class": "unverified-assumption",
+      "swimlane": "LANE-ADOTA-PRODUTOR",
+      "leg": "LEG-ADOTA-PRODUTOR",
+      "location": {
+        "plan_file": "cvg/swimlanes/lanes-adota/adota-produtor/LEG-ADOTA-PRODUTOR.md",
+        "section": "B-1; B-2; eval_3"
+      },
+      "title": "Aus\u00eancia de S3_* \u00e9 tratada como prova de impossibilidade de escrita",
+      "body": "O plano transforma a remo\u00e7\u00e3o de uma fam\u00edlia de vari\u00e1veis em garantia universal de falha de qualquer acesso ao MinIO. N\u00e3o estabelece que essas vari\u00e1veis sejam a \u00fanica fonte poss\u00edvel de credenciais ou configura\u00e7\u00e3o, nem exige observar uma tentativa indevida sendo bloqueada antes da escrita. O cen\u00e1rio filho_sem_credencial_s3 pode passar apenas verificando o ambiente, sem demonstrar a propriedade prometida. O risco \u00e9 condicional: a revis\u00e3o n\u00e3o constatou uma fonte alternativa, mas o plano tamb\u00e9m n\u00e3o a exclui.",
+      "evidence": "B-2: 'SEM as vari\u00e1veis S3_* \u2014 qualquer acesso ao MinIO falha em vez de gravar'. eval_3 exige filho_sem_credencial_s3.",
+      "cites": [
+        "cvg/swimlanes/adota-produtor-recipe.yaml \u2014 intent.out_of_scope: 'Regravar o landing de 2026-01.'",
+        "cvg/swimlanes/lanes-adota/adota-produtor/LEG-ADOTA-PRODUTOR.md \u2014 eval_3"
+      ],
+      "resolution": {
+        "disposition": "ACCEPT",
+        "decided_by": "Bruno Nunes",
+        "decided_at": "2026-09-24T23:42:08Z",
+        "owner": "Bruno Nunes",
+        "risk_residual": "Aceito, e medido por fora: a cadeia conta os objetos do landing no MinIO ANTES e DEPOIS do loop e exige a mesma contagem e o mesmo tamanho \u2014 prova direta de que nada foi gravado la. Decidido pelo dono ao fechar o Pass 4 da adocao do produtor na R2, sem editar o plano."
+      }
+    },
+    {
+      "id": "C5",
+      "severity": "medium",
+      "rank": 5,
+      "attack_class": "drift",
+      "swimlane": "LANE-ADOTA-PRODUTOR",
+      "leg": "LEG-ADOTA-PRODUTOR",
+      "location": {
+        "plan_file": "cvg/swimlanes/lanes-adota/adota-produtor/LEG-ADOTA-PRODUTOR.md",
+        "section": "B-2; eval_2; tasks[0].goal"
+      },
+      "title": "A caracteriza\u00e7\u00e3o n\u00e3o cobre o defeito persistido j\u00e1 registrado na decis\u00e3o",
+      "body": "A decis\u00e3o de ado\u00e7\u00e3o registra que linha inv\u00e1lida grava NULL sem o texto bruto e determina fixar o comportamento atual em teste. B-2 compara agregados e tokens, mas n\u00e3o exige observar o valor e o texto da linha inv\u00e1lida persistida. Esses controles n\u00e3o distinguem representa\u00e7\u00f5es diferentes que contribuam igualmente para os agregados. Assim, a su\u00edte pode passar sem caracterizar um defeito j\u00e1 conhecido da grava\u00e7\u00e3o. A obje\u00e7\u00e3o pede esclarecer a cobertura da ado\u00e7\u00e3o, n\u00e3o corrigir o defeito.",
+      "evidence": "DEC-DEFEITOS-LATENTES-FIXADOS registra 'linha inv\u00e1lida grava NULL sem o texto bruto'. B-2 exige controles, recusa, append e diverg\u00eancia na releitura, sem uma asser\u00e7\u00e3o sobre essa representa\u00e7\u00e3o persistida.",
+      "cites": [
+        "cvg/swimlanes/adota-produtor-recipe.yaml \u2014 decisions.DEC-DEFEITOS-LATENTES-FIXADOS",
+        "cvg/swimlanes/lanes-adota/adota-produtor/LEG-ADOTA-PRODUTOR.md \u2014 tasks[0].goal",
+        "cvg/swimlanes/lanes-adota/adota-produtor/LEG-ADOTA-PRODUTOR.md \u2014 B-2"
+      ],
+      "resolution": {
+        "disposition": "ACCEPT",
+        "decided_by": "Bruno Nunes",
+        "decided_at": "2026-09-24T23:42:08Z",
+        "owner": "Bruno Nunes",
+        "risk_residual": "Aceito como residuo: NULL sem texto bruto esta registrado em DEC-DEFEITOS-LATENTES-FIXADOS; a tarefa que o corrigir traz o teste que observa o valor e o texto persistidos. Nao exercido pelo 2026-01 (0 invalidas). Decidido pelo dono ao fechar o Pass 4 da adocao do produtor na R2, sem editar o plano."
+      }
+    }
+  ],
+  "cross_lane_interfaces": [],
+  "fork": {
+    "choice": "B",
+    "reason": "Declara\u00e7\u00e3o existente em _lane.md; n\u00e3o \u00e9 uma escolha do advers\u00e1rio.",
+    "per_plan_declared": true
+  },
+  "open_questions": [
+    {
+      "q": "Qual etapa demonstra PROCEDENCIA=OK e compara o AST contra qual refer\u00eancia imut\u00e1vel, delimitando a exce\u00e7\u00e3o de --destino?",
+      "blocks_build": true
+    },
+    {
+      "q": "A autoriza\u00e7\u00e3o de execu\u00e7\u00e3o inclui os wrappers sh -c declarados nos evals?",
+      "blocks_build": true
+    },
+    {
+      "q": "Qual evid\u00eancia demonstra a sobreviv\u00eancia da sess\u00e3o compartilhada e o sucesso da su\u00edte inteira?",
+      "blocks_build": true
+    }
+  ],
+  "rounds_run": 1
+}
