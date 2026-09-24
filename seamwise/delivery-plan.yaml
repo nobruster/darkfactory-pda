@@ -1,0 +1,44 @@
+schema_version: 1
+status: DELIVERY_PLAN=READY
+seam_map_sha256: 23320ee202b6f9d7285046f9f7da0dc5551bc55ea7672a01f122954cc7270cf9
+swimlanes:
+- id: LANE-ONTOLOGIA
+  seam_id: SEAM-ONTOLOGIA
+  owner: medalhao
+  path: seamwise/swimlanes/LANE-ONTOLOGIA.md
+  sha256: 3c891a5e55059dac375396c0ea8cd0e61fc3aa2e01ce9ac23ef1e7cce3454151
+- id: LANE-ESPECIE-SILVER
+  seam_id: SEAM-ESPECIE-SILVER
+  owner: medalhao
+  path: seamwise/swimlanes/LANE-ESPECIE-SILVER.md
+  sha256: e0268cb6631aa138a3e5dac3d186dde05a173e9329fb8cf6721f7e8924e0916b
+- id: LANE-ONTOLOGIA-POSTGRES
+  seam_id: SEAM-ONTOLOGIA-POSTGRES
+  owner: medalhao
+  path: seamwise/swimlanes/LANE-ONTOLOGIA-POSTGRES.md
+  sha256: b695bc34269f62d74f78480f8993382aa4424f1142342e9bdc6fd7cd8ccaca58
+legs:
+- id: LEG-ONTOLOGIA
+  seam_id: SEAM-ONTOLOGIA
+  swimlane_id: LANE-ONTOLOGIA
+  path: seamwise/legs/LEG-ONTOLOGIA.md
+  sha256: 00ab708741d7c05a95ce5ab2240166ef4371f65309271150f8d4764b555244de
+- id: LEG-ESPECIE-SILVER
+  seam_id: SEAM-ESPECIE-SILVER
+  swimlane_id: LANE-ESPECIE-SILVER
+  path: seamwise/legs/LEG-ESPECIE-SILVER.md
+  sha256: 56e221f620d6f58047237b693407621000778350d87596dcb00e41dafb63776a
+- id: LEG-ONTOLOGIA-POSTGRES
+  seam_id: SEAM-ONTOLOGIA-POSTGRES
+  swimlane_id: LANE-ONTOLOGIA-POSTGRES
+  path: seamwise/legs/LEG-ONTOLOGIA-POSTGRES.md
+  sha256: d137536a8bbb7cf0bc33a4284c4678ac0647ddb233e76b55ec56e0518de213de
+steel_thread:
+- LEG-ONTOLOGIA
+- LEG-ESPECIE-SILVER
+- LEG-ONTOLOGIA-POSTGRES
+objections: []
+contentions: []
+steel_thread_path: seamwise/steel-thread.md
+steel_thread_sha256: 5942ac1074589f0c17cafa817ab1e5e6c19393869312397d97b83624c6d5fd7a
+review_authority_sha256: bcd207979815bc4634e518908cdf9422827e935ebd3fd33bbe421eaede167a42
