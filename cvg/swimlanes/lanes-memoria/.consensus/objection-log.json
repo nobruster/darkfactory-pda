@@ -1,0 +1,147 @@
+{
+  "schema_version": "1.0",
+  "pass": "4-consensus",
+  "adversary": {
+    "engine_id": "codex",
+    "model": "codex",
+    "family": "openai",
+    "engine_version": "codex-cli 0.155.0",
+    "sandbox_mode": "read-only"
+  },
+  "author": {
+    "model": "claude",
+    "family": "anthropic"
+  },
+  "verdict": "REVISE",
+  "prompt_sha256": "97db54c6578b73affc9dd10c0219082c753be13163f271a2f889a29b4435a35d",
+  "inputs": [
+    {
+      "path": "memoria-6g/LEG-MEMORIA-6G.md",
+      "sha256": "77961e0c646b7cecf066282c9dc438d798e2c694ea3b7b6a4d2379be2fc895d4"
+    },
+    {
+      "path": "memoria-6g/_lane.md",
+      "sha256": "c114da9d47effcc40e01fe5a1aed52eb70fdff28d1e345774cfb88d72cfb5afc"
+    }
+  ],
+  "objections": [
+    {
+      "id": "C1",
+      "severity": "high",
+      "rank": 1,
+      "attack_class": "drift",
+      "swimlane": "LANE-MEMORIA-6G",
+      "leg": "LEG-MEMORIA-6G",
+      "location": {
+        "plan_file": "cvg/swimlanes/lanes-memoria/memoria-6g/LEG-MEMORIA-6G.md",
+        "section": "tasks[0].goal \u2194 evals[eval_1,eval_2,eval_3].bash"
+      },
+      "title": "Todos os evals violam a restri\u00e7\u00e3o de execu\u00e7\u00e3o",
+      "evidence": "goal permite exclusivamente exec -T spark python3 -m pytest <arquivo> -k <cenarios>; os tr\u00eas evals usam exec -T spark sh -c, loops, pipelines e grep.",
+      "body": "O executor n\u00e3o consegue cumprir simultaneamente a restri\u00e7\u00e3o expl\u00edcita e os comandos de prova. Se obedecer \u00e0 restri\u00e7\u00e3o, n\u00e3o executa os evals prescritos; se executar os evals, viola o plano. O bloqueio existe antes de qualquer mudan\u00e7a no c\u00f3digo.",
+      "cites": [
+        "cvg/swimlanes/memoria-recipe.yaml \u00a7 seams[0].swimlane.legs[0].tasks[0].goal",
+        "LEG-MEMORIA-6G.md \u00a7 evals"
+      ]
+    },
+    {
+      "id": "C2",
+      "severity": "high",
+      "rank": 2,
+      "attack_class": "drift",
+      "swimlane": "LANE-MEMORIA-6G",
+      "leg": "LEG-MEMORIA-6G",
+      "location": {
+        "plan_file": "cvg/swimlanes/lanes-memoria/memoria-6g/LEG-MEMORIA-6G.md",
+        "section": "done_condition \u2194 evals[eval_3]"
+      },
+      "title": "O gate n\u00e3o prova a su\u00edte inteira numa JVM",
+      "evidence": "eval_3 seleciona apenas sessao_declara_memoria, heap_efetivo_conferido_pela_jvm e uma_passada_igual_a_duas. O arquivo atual cont\u00e9m 12 fun\u00e7\u00f5es de teste.",
+      "body": "Ficam fora os testes existentes de recusa, libera\u00e7\u00e3o de cache, diverg\u00eancias de linhas e valores e reconfer\u00eancia Silver. Al\u00e9m disso, os tr\u00eas evals executam processos pytest separados. Eles podem passar sem provar a condi\u00e7\u00e3o que motivou a corre\u00e7\u00e3o: toda a su\u00edte suportada pela mesma JVM, sem editar testes.",
+      "cites": [
+        "cvg/swimlanes/memoria-recipe.yaml \u00a7 intent.success: Su\u00edte inteira numa JVM s\u00f3, verde",
+        "cvg/swimlanes/memoria-recipe.yaml \u00a7 seams[0].independent_proof",
+        "LEG-MEMORIA-6G.md \u00a7 done_condition",
+        "tests/test_performance.py \u00a7 test_unpersist_depois_de_publicar e demais testes omitidos"
+      ]
+    },
+    {
+      "id": "C3",
+      "severity": "high",
+      "rank": 3,
+      "attack_class": "unverified-assumption",
+      "swimlane": "LANE-MEMORIA-6G",
+      "leg": "LEG-MEMORIA-6G",
+      "location": {
+        "plan_file": "cvg/swimlanes/lanes-memoria/memoria-6g/LEG-MEMORIA-6G.md",
+        "section": "behavior[B-1,B-2] e done_condition"
+      },
+      "title": "Aceita\u00e7\u00e3o e recusa se sobrep\u00f5em entre 5,5 e 6 GiB",
+      "evidence": "B-1 aceita heap efetivo de pelo menos 5,5 GiB para declara\u00e7\u00e3o 6g; B-2 exige recusar heap efetivo menor que o declarado.",
+      "body": "Uma JVM com 5,75 GiB efetivos e declara\u00e7\u00e3o 6g satisfaz o limiar de B-1, mas tamb\u00e9m a condi\u00e7\u00e3o de recusa de B-2. A men\u00e7\u00e3o a espa\u00e7o de sobrevivente n\u00e3o define como distinguir desconto aceito de JVM previamente iniciada com menos mem\u00f3ria. Duas implementa\u00e7\u00f5es incompat\u00edveis podem reivindicar conformidade; o caso de fronteira permanece sem resposta.",
+      "cites": [
+        "LEG-MEMORIA-6G.md \u00a7 behavior.B-1",
+        "LEG-MEMORIA-6G.md \u00a7 behavior.B-2",
+        "cvg/swimlanes/memoria-recipe.yaml \u00a7 seams[0].independent_proof"
+      ]
+    },
+    {
+      "id": "C4",
+      "severity": "medium",
+      "rank": 4,
+      "attack_class": "unverified-assumption",
+      "swimlane": "LANE-MEMORIA-6G",
+      "leg": "LEG-MEMORIA-6G",
+      "location": {
+        "plan_file": "cvg/swimlanes/lanes-memoria/memoria-6g/LEG-MEMORIA-6G.md",
+        "section": "behavior[B-1,B-2] \u2194 evals[eval_1,eval_2]"
+      },
+      "title": "Sele\u00e7\u00e3o por nome n\u00e3o comprova as precondi\u00e7\u00f5es da JVM",
+      "evidence": "B-1 exige JVM ainda n\u00e3o iniciada; B-2 exige JVM j\u00e1 iniciada com menos. Os evals apenas coletam nomes e executam sele\u00e7\u00f5es. A fixture spark existente cria uma sess\u00e3o pelo padr\u00e3o e tem escopo module.",
+      "body": "O plano n\u00e3o especifica como os novos cen\u00e1rios demonstram essas precondi\u00e7\u00f5es opostas. Um teste de heap que reutilize a fixture pode medir uma sess\u00e3o j\u00e1 criada; um teste de recusa pode verificar apenas um pedido absurdamente alto, como o teste existente com 4096g, sem exercitar a transi\u00e7\u00e3o de JVM menor para o novo padr\u00e3o. S\u00e3o riscos de falso positivo, n\u00e3o falhas dos novos testes j\u00e1 comprovadas.",
+      "cites": [
+        "LEG-MEMORIA-6G.md \u00a7 behavior e evals",
+        "tests/test_performance.py \u00a7 spark",
+        "tests/test_performance.py \u00a7 test_sessao_com_memoria_herdada_recusada"
+      ]
+    },
+    {
+      "id": "C5",
+      "severity": "medium",
+      "rank": 5,
+      "attack_class": "drift",
+      "swimlane": "LANE-MEMORIA-6G",
+      "leg": "LEG-MEMORIA-6G",
+      "location": {
+        "plan_file": "cvg/swimlanes/lanes-memoria/memoria-6g/LEG-MEMORIA-6G.md",
+        "section": "done_condition e evals"
+      },
+      "title": "Sucesso declarado para spark-perf n\u00e3o possui prova na entrega",
+      "evidence": "A recipe exige Gate spark-perf compara contra perf/ sem NAO_MEDIDO por mem\u00f3ria. A done_condition e os tr\u00eas evals encerram em propriedades, heap e testes funcionais.",
+      "body": "\u00c9 poss\u00edvel satisfazer todos os crit\u00e9rios da folha sem executar a compara\u00e7\u00e3o que a inten\u00e7\u00e3o declara como sucesso. A baseline Bronze confirma spark.driver.memory=6g, mas isso n\u00e3o \u00e9 evid\u00eancia de que uma execu\u00e7\u00e3o da sess\u00e3o alterada ser\u00e1 compar\u00e1vel pelo gate. A documenta\u00e7\u00e3o dos testes situa a medi\u00e7\u00e3o ap\u00f3s assentamento; o plano n\u00e3o vincula essa etapa \u00e0 conclus\u00e3o.",
+      "cites": [
+        "cvg/swimlanes/memoria-recipe.yaml \u00a7 intent.success",
+        "LEG-MEMORIA-6G.md \u00a7 done_condition e evals",
+        "tests/test_performance.py \u00a7 docstring inicial",
+        "perf/baseline-bronze.json \u00a7 medicao.apps.bronze-perf.ambiente"
+      ]
+    }
+  ],
+  "cross_lane_interfaces": [],
+  "fork": {
+    "choice": "B",
+    "reason": "Transcrito da declara\u00e7\u00e3o existente em _lane.md; n\u00e3o escolhido pelo advers\u00e1rio.",
+    "per_plan_declared": true
+  },
+  "open_questions": [
+    {
+      "q": "Qual \u00e9 a regra vinculante para aceitar o desconto de heap sem deixar passar uma JVM iniciada com mem\u00f3ria insuficiente?",
+      "blocks_build": true
+    },
+    {
+      "q": "A compara\u00e7\u00e3o spark-perf \u00e9 condi\u00e7\u00e3o de conclus\u00e3o desta tarefa ou uma obriga\u00e7\u00e3o posterior com respons\u00e1vel definido?",
+      "blocks_build": false
+    }
+  ],
+  "rounds_run": 1
+}
