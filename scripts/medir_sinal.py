@@ -20,7 +20,11 @@ from decimal import Decimal, localcontext
 # que os 14 derivados, e o número calharia de estar certo.
 PRECISAO = 40
 
-CSV = "_raw/D.SDA.PDA.003.EMI.202601.csv"
+# O caminho do CSV vem por argumento; o default é a competência ancorada.
+# Antes isto era uma constante fixa, e os medidores devolviam MEDIDO tendo
+# varrido o arquivo ERRADO quando chamados para outra competência.
+_PADRAO = "_raw/D.SDA.PDA.003.EMI.202601.csv"
+CSV = sys.argv[1] if len(sys.argv) > 1 else _PADRAO
 IDX_VALOR = 9
 
 GRAMATICA = re.compile(r"^-?\d{1,3}(\.\d{3})*,\d{2}$")

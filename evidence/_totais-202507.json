@@ -1,0 +1,13 @@
+{
+  "arquivo": "D.SDA.PDA.003.EMI.202507.csv",
+  "coluna_valor_indice": 10,
+  "coluna_valor_nome": "Vl Líquido",
+  "count_linhas": 41328100,
+  "linhas_invalidas": 0,
+  "sum_vl_liquido": "73360231002.03",
+  "min_vl_liquido": "0.00",
+  "max_vl_liquido": "182484.34",
+  "precisao_decimal": 40,
+  "segundos": 64,
+  "medido_por": "scripts/medir_ancora.py — independente do pipeline"
+}
