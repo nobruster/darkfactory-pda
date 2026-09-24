@@ -28,10 +28,14 @@ execution_backend: any
 signed_off: true
 signed_off_by: nobru
 signed_off_at: 2026-09-24T22:52:44Z
-accepted: false
-accepted_by: (none)
-accepted_at: (none)
+accepted: true
+accepted_by: converge-loop
+accepted_at: 2026-09-24T23:08:32Z
 signed_off_sig: hmac-sha256-v3:85d3c104:f260dedd1e1b0edc14eb5efbd8eabb8c6bc303577cd6b90690d20b945e98882e
+accepted_tier: 1
+accepted_attempt_id: 0ec4d571-6f8d-4eb3-93f0-2431ec152db2
+accepted_authorization_ref: hmac-sha256-v3:85d3c104:f260dedd1e1b0edc14eb5efbd8eabb8c6bc303577cd6b90690d20b945e98882e
+acceptance_record_digest: sha256:fa6a0e44e79c087330a54905266465c3d6cc6228a50470b43a1eef7345153096
 ---
 
 # Tabela Delta especie: o nome oficial ao lado do texto da fonte

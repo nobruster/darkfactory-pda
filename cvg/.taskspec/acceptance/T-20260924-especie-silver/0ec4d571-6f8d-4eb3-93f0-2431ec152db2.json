@@ -1,0 +1,40 @@
+{
+  "acceptance_tier": 1,
+  "accepted_at": "2026-09-24T23:08:32Z",
+  "accepted_by": "converge-loop",
+  "contract": "AcceptanceRecord/v1",
+  "gate_outcomes": {
+    "authorization": {
+      "code": "AUTHORIZATION_VALID",
+      "status": "pass"
+    },
+    "evaluation": {
+      "code": "EVAL_PASSED",
+      "status": "pass"
+    },
+    "evidence": {
+      "code": "EVIDENCE_SATISFIED",
+      "proof": [
+        "format v3 or earlier: v4 policy receipts are not required"
+      ],
+      "status": "pass"
+    },
+    "preflight": {
+      "code": "PREFLIGHT_PASSED",
+      "status": "pass",
+      "warnings": []
+    }
+  },
+  "outcome": {
+    "code": "ACCEPTED_TIER_1",
+    "status": "accepted"
+  },
+  "receipts": [],
+  "subject": {
+    "attempt_id": "0ec4d571-6f8d-4eb3-93f0-2431ec152db2",
+    "authorization_ref": "hmac-sha256-v3:85d3c104:f260dedd1e1b0edc14eb5efbd8eabb8c6bc303577cd6b90690d20b945e98882e",
+    "base_commit": "8c5b0920326884247839c065f0477684638a5a01",
+    "task_id": "T-20260924-especie-silver",
+    "task_revision_digest": "sha256:8b6786b693a21037ea39c63cc5d9ab8457ede6edd30af3ecd440fd5f6e13bc8f"
+  }
+}
