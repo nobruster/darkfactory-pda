@@ -116,6 +116,7 @@ def main() -> int:
     ap.add_argument("--contrato", default="/app/contracts/competencia-202601.yaml")
     ap.add_argument("--competencia", default="2026-01")
     ap.add_argument("--out", default="/tmp/prova-lago.json")
+    ap.add_argument("--destino", default=CAMINHO)
     args = ap.parse_args()
 
     sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
@@ -146,7 +147,7 @@ def main() -> int:
             print("LAGO=RECUSADO")
             return 1
 
-        destino = f"{CAMINHO}/competencia={args.competencia}"
+        destino = f"{args.destino}/competencia={args.competencia}"
         print(f"  gravando em {destino}", flush=True)
         # append, NUNCA overwrite: o BRD nomeou o overwrite como defeito, e
         # o ADR 0011 decidiu carga incremental. Uma competência regravada
