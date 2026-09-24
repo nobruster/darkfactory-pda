@@ -1,0 +1,117 @@
+# Ontologia dos benefícios emitidos — conceitos da fonte (INSS), versionados.
+#
+# Nada aqui vale sozinho: carregar_ontologia (src/medalhao/ontologia.py) só a aceita se
+# conferir com os bytes de _raw/ e com o contrato. O nome oficial de cada espécie é o texto
+# do dicionário, sem abreviar nem normalizar. O GRUPO de cada espécie NÃO está aqui: vem
+# de grupos_especie do contrato, por referência — duas fontes do mesmo fato divergem em silêncio.
+#
+# As colunas ligam ao termo do glossário pela POSIÇÃO (0 a 13), nunca pelo nome: os
+# cabeçalhos divergem dos termos e as duas 'Espécie' têm cabeçalho idêntico (ADR 0002).
+
+ontologia: beneficios-emitidos
+
+fontes:
+  dicionario:
+    arquivo: dicionario-especies-beneficio.xlsx
+    sha256: fbd909cb40512559d5e934286f600fe042bbac37f409d0caddf90b252f2e62d7
+  glossario:
+    arquivo: glossario-beneficios-emitidos.xlsx
+    sha256: a564f5d7235c944439f99eb6cc49748ab928798d3a89615057d490695915e2a9
+
+colunas:
+  - {posicao: 0, cabecalho: "Despacho", termo: "Despacho"}
+  - {posicao: 1, cabecalho: "Sexo.", termo: "Sexo"}
+  - {posicao: 2, cabecalho: "Clientela", termo: "Clientela"}
+  - {posicao: 3, cabecalho: "Tipo Benefício", termo: "Tipo de Benefício"}
+  - {posicao: 4, cabecalho: "UF", termo: "UF"}
+  - {posicao: 5, cabecalho: "Meio pagamento", termo: "Meio pagamento"}
+  - {posicao: 6, cabecalho: "Banco", termo: "Banco"}
+  - {posicao: 7, cabecalho: "Mun Pagto", termo: "Mun Pagto"}
+  - {posicao: 8, cabecalho: "Mun Resid", termo: "Mun Resid"}
+  - {posicao: 9, cabecalho: "Vl Líquido", termo: "Valor líquido"}
+  - {posicao: 10, cabecalho: "Ramo Atividade", termo: "Ramo Atividade"}
+  - {posicao: 11, cabecalho: "Dt início validade", termo: "Data do início de validade"}
+  - {posicao: 12, cabecalho: "Espécie", termo: "Espécie", papel: codigo}
+  - {posicao: 13, cabecalho: "Espécie", termo: "Espécie", papel: descricao_truncada}
+
+termos:
+  - {nome: "Espécie", descricao: "Nome da espécie do benefício."}
+  - {nome: "Despacho", descricao: "Tipo de despacho na concessão do benefício"}
+  - {nome: "Clientela", descricao: "Divisão do ramo de atividade em urbano e rural."}
+  - {nome: "Sexo", descricao: "Sexo do titular do benefício."}
+  - {nome: "Tipo de Benefício", descricao: "Normal, desdobrado (no caso de mais de uma pessoa com direito ao recebimento) ou  Pensão Alimentícia"}
+  - {nome: "UF", descricao: "Estado onde reside o titular do benefício"}
+  - {nome: "Meio pagamento", descricao: "Indica se o benefício é pago  por conta/corrente ou cartão magnético"}
+  - {nome: "Banco", descricao: "Banco responsável pelo pagamento"}
+  - {nome: "Mun Pagto", descricao: "Município do Órgão Pagador do Benefício"}
+  - {nome: "Mun Resid", descricao: "Município de Residência do titular do benefício"}
+  - {nome: "Valor líquido", descricao: "Valor do pagamento com os descontos (líquido)"}
+  - {nome: "Ramo Atividade", descricao: "Ramo de atividade exercida pelo titular do benefício."}
+  - {nome: "Data do início de validade", descricao: "Data em que o crédito do pagamento do  benefício foi disponibilizado ao banco pagador para saque"}
+
+especies:
+  - {codigo: "01", nome: "Pensão por Morte de Trabalhador Rural"}
+  - {codigo: "02", nome: "Pensão por Morte Acidentária - Trabalhador Rural"}
+  - {codigo: "03", nome: "Pensão por Morte de Empregador Rural"}
+  - {codigo: "04", nome: "Aposentadoria por Invalidez-Trab. Rural"}
+  - {codigo: "05", nome: "Aposentadoria Invalidez Acidentária - Trabalhador Rural"}
+  - {codigo: "06", nome: "Aposentadoria Invalidez Empregador Rural"}
+  - {codigo: "07", nome: "Aposentadoria por Velhice - Trabalhador Rural"}
+  - {codigo: "08", nome: "Aposentadoria por Idade - Empregador Rural"}
+  - {codigo: "10", nome: "Auxílio Doença Acidentário - Trabalhador Rural"}
+  - {codigo: "11", nome: "Amparo Previdenciário Invalidez- Trabalhador Rural"}
+  - {codigo: "12", nome: "Amparo Previdenciário Idade - Trabalhador Rural"}
+  - {codigo: "13", nome: "Auxílio Doença - Trabalhador Rural"}
+  - {codigo: "16", nome: "Auxílio União"}
+  - {codigo: "18", nome: "Auxílio Inclusão à Pessoa com Deficiência"}
+  - {codigo: "21", nome: "Pensão por Morte Previdenciária"}
+  - {codigo: "22", nome: "Pensão por Morte Estatutária"}
+  - {codigo: "23", nome: "Pensão por Morte de Ex-Combatente"}
+  - {codigo: "25", nome: "Auxílio Reclusão"}
+  - {codigo: "26", nome: "Pensão por Morte Especial"}
+  - {codigo: "27", nome: "Pensão Morte Servidor Público Federal"}
+  - {codigo: "28", nome: "Pensão por Morte Regime Geral"}
+  - {codigo: "29", nome: "Pensão por Morte Ex-Combatente Marítimo"}
+  - {codigo: "30", nome: "Renda Mensal Vitalícia por Incapacidade"}
+  - {codigo: "31", nome: "Auxílio por Incapacidade Temporária"}
+  - {codigo: "32", nome: "Aposentadoria por incapacidade permanente"}
+  - {codigo: "33", nome: "Aposentadoria Invalidez Aeronauta"}
+  - {codigo: "34", nome: "Aposentadoria Invalidez Ex-Combatente Marítimo"}
+  - {codigo: "36", nome: "Auxílio Acidente Previdenciário"}
+  - {codigo: "37", nome: "Aposentadoria Extranumerário Capin"}
+  - {codigo: "38", nome: "Aposentadoria Extranumerário Funcionário Público"}
+  - {codigo: "40", nome: "Renda Mensal Vitalícia por Idade"}
+  - {codigo: "41", nome: "Aposentadoria por Idade"}
+  - {codigo: "42", nome: "Aposentadoria por Tempo de Contribuição"}
+  - {codigo: "43", nome: "Aposentadoria por Tempo Serviço Ex-Combatente"}
+  - {codigo: "44", nome: "Aposentadoria Especial de Aeronauta"}
+  - {codigo: "45", nome: "Aposentadoria Tempo Serviço Jornalista"}
+  - {codigo: "46", nome: "Aposentadoria Especial"}
+  - {codigo: "47", nome: "Abono Permanência em Serviço - 35 Anos"}
+  - {codigo: "48", nome: "Abono Permanência em Serviço - 30 Anos"}
+  - {codigo: "49", nome: "Aposentadoria Ordinária"}
+  - {codigo: "51", nome: "Aposentadoria Invalidez Extinto Plano Básico"}
+  - {codigo: "54", nome: "Pensão Indenizatória a Cargo da União"}
+  - {codigo: "55", nome: "Pensão por Morte Extinto Plano Básico"}
+  - {codigo: "56", nome: "Pensão Vitalícia Síndrome Talidomida"}
+  - {codigo: "57", nome: "Aposentadoria Tempo de Serviço de Professor"}
+  - {codigo: "58", nome: "Aposentadoria de Anistiados"}
+  - {codigo: "59", nome: "Pensão por Morte de Anistiados"}
+  - {codigo: "60", nome: "Benefício Indenizatório a cargo da União"}
+  - {codigo: "72", nome: "Aposentadoria Tempo Serviço - Lei de Guerra"}
+  - {codigo: "79", nome: "Vantagens de Servidor Aposentado"}
+  - {codigo: "80", nome: "Auxílio Salario Maternidade"}
+  - {codigo: "82", nome: "Aposentadoria Tempo de Serviço Ex-Sasse"}
+  - {codigo: "83", nome: "Aposentadoria por Invalidez Ex-Sasse"}
+  - {codigo: "84", nome: "Pensão por Morte Ex-Sasse"}
+  - {codigo: "85", nome: "Pensão Vitalícia Seringueiros"}
+  - {codigo: "86", nome: "Pensão Vitalícia Dependentes Seringueiro"}
+  - {codigo: "87", nome: "Amparo Social Pessoa Portadora Deficiência"}
+  - {codigo: "88", nome: "Amparo Social ao Idoso"}
+  - {codigo: "89", nome: "Pensão Esp. Vitimas Hemodiálise-Caruaru"}
+  - {codigo: "91", nome: "Auxílio Doença por Acidente do Trabalho"}
+  - {codigo: "92", nome: "Aposentadoria Invalidez Acidente Trabalho"}
+  - {codigo: "93", nome: "Pensão por Morte Acidente do Trabalho"}
+  - {codigo: "94", nome: "Auxílio Acidente"}
+  - {codigo: "95", nome: "Auxílio Suplementar Acidente Trabalho"}
+  - {codigo: "96", nome: "Pensão Especial Hanseníase Lei 11520/07"}
