@@ -1,0 +1,44 @@
+schema_version: 1
+status: DELIVERY_PLAN=READY
+seam_map_sha256: 20eddcac5d1c873078f2f526a8b1b952848b08e190d967c80c49539c13e40099
+swimlanes:
+- id: LANE-PERF-GOLD
+  seam_id: SEAM-PERF-GOLD
+  owner: medalhao
+  path: seamwise/swimlanes/LANE-PERF-GOLD.md
+  sha256: bc1e1f38787e9b489f6f5bb48f822f353f9b497aad49afb71fcc8fc019aed6f6
+- id: LANE-TESTES-LEVES
+  seam_id: SEAM-TESTES-LEVES
+  owner: medalhao
+  path: seamwise/swimlanes/LANE-TESTES-LEVES.md
+  sha256: 3949c0e2d9a5c53f72db7cfab628033d006def120b17b4831b419621ec052108
+- id: LANE-LIMPA-SUBSTITUIDAS
+  seam_id: SEAM-LIMPA-SUBSTITUIDAS
+  owner: medalhao
+  path: seamwise/swimlanes/LANE-LIMPA-SUBSTITUIDAS.md
+  sha256: ad928d177c2bf8683b9cef3504c814de5f6238a3fbe2458f5f6dca8a92542718
+legs:
+- id: LEG-PERF-GOLD
+  seam_id: SEAM-PERF-GOLD
+  swimlane_id: LANE-PERF-GOLD
+  path: seamwise/legs/LEG-PERF-GOLD.md
+  sha256: 8b7b4127b01dc93f1a533b3dea1c7ef38f3907392f19b84042ecb4e1d0109376
+- id: LEG-TESTES-LEVES
+  seam_id: SEAM-TESTES-LEVES
+  swimlane_id: LANE-TESTES-LEVES
+  path: seamwise/legs/LEG-TESTES-LEVES.md
+  sha256: 72069508b1f6ed1cce1c5a18f9643bf0a46285be7eb74b1ddaa254fdd5cc1b88
+- id: LEG-LIMPA-SUBSTITUIDAS
+  seam_id: SEAM-LIMPA-SUBSTITUIDAS
+  swimlane_id: LANE-LIMPA-SUBSTITUIDAS
+  path: seamwise/legs/LEG-LIMPA-SUBSTITUIDAS.md
+  sha256: e802efdeae4a78f0d5f3e45f0503a3359e732adb8bec92698c7de003a7042efa
+steel_thread:
+- LEG-PERF-GOLD
+- LEG-TESTES-LEVES
+- LEG-LIMPA-SUBSTITUIDAS
+objections: []
+contentions: []
+steel_thread_path: seamwise/steel-thread.md
+steel_thread_sha256: 27cd0ece376e08161e5dd7d611c597963eecd60b94b88e33a7fdc1214673a372
+review_authority_sha256: 8ddcae7849052aafeefe0c7638cb4b51a1786c10d0d12cf9c8a1654e647fa43c

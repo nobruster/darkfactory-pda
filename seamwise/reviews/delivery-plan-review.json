@@ -1,0 +1,10 @@
+{
+  "disposition": "accepted",
+  "draft_sha256": "3fed0fff5bcafea8d52e3cdd4c5cb418f1a4b03848461a2b7da7239c5d178248",
+  "fixture": false,
+  "plan_sha256": "82b3561e31a76989d1b17900468208ff80244ea49a4ba871dde7cd476b19d4ad",
+  "reason": "Pass 4 da performance fechado na R3 com o plano corrigido: CHECK por coluna no proprio CREATE, comando de teste literal para o agente.",
+  "reviewed_at": "2026-09-24T16:02:54.564022+00:00",
+  "reviewer": "Bruno Nunes",
+  "schema_version": 1
+}

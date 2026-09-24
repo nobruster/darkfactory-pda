@@ -1,0 +1,47 @@
+{
+  "contract": "SeamwiseTaskPlanLineage/v1",
+  "delivery_plan_sha256": "82b3561e31a76989d1b17900468208ff80244ea49a4ba871dde7cd476b19d4ad",
+  "engine_version": "0.2.0",
+  "intent": {
+    "id": "DI-PDA-PERFORMANCE",
+    "sha256": "3635bf3ad81b1596d544f9988676fb41fd3526fe97ae6c62bcb349ec42a6c886"
+  },
+  "review": {
+    "fixture": false,
+    "plan_sha256": "82b3561e31a76989d1b17900468208ff80244ea49a4ba871dde7cd476b19d4ad",
+    "reviewed_at": "2026-09-24T16:02:54.564022+00:00",
+    "reviewer": "Bruno Nunes",
+    "sha256": "1f8d081f902dcbd1e946502043be364041108361323cbf7150dd41e682ba9d7b"
+  },
+  "task_plan": {
+    "contract": "TaskPlan/v1",
+    "digest": "2f475f1dda41cf5133a664e3d9c5872fad61556f0910929df16581c05f4f5ab0",
+    "path": "seamwise/task-plan.json"
+  },
+  "units": {
+    "T-20260924-limpa-substituidas": {
+      "intent": "DI-PDA-PERFORMANCE",
+      "leg": "LEG-LIMPA-SUBSTITUIDAS",
+      "seam": "SEAM-LIMPA-SUBSTITUIDAS",
+      "source_sha256": "e802efdeae4a78f0d5f3e45f0503a3359e732adb8bec92698c7de003a7042efa",
+      "swimlane": "LANE-LIMPA-SUBSTITUIDAS",
+      "unit_id": "T-20260924-limpa-substituidas"
+    },
+    "T-20260924-perf-gold": {
+      "intent": "DI-PDA-PERFORMANCE",
+      "leg": "LEG-PERF-GOLD",
+      "seam": "SEAM-PERF-GOLD",
+      "source_sha256": "8b7b4127b01dc93f1a533b3dea1c7ef38f3907392f19b84042ecb4e1d0109376",
+      "swimlane": "LANE-PERF-GOLD",
+      "unit_id": "T-20260924-perf-gold"
+    },
+    "T-20260924-testes-leves": {
+      "intent": "DI-PDA-PERFORMANCE",
+      "leg": "LEG-TESTES-LEVES",
+      "seam": "SEAM-TESTES-LEVES",
+      "source_sha256": "72069508b1f6ed1cce1c5a18f9643bf0a46285be7eb74b1ddaa254fdd5cc1b88",
+      "swimlane": "LANE-TESTES-LEVES",
+      "unit_id": "T-20260924-testes-leves"
+    }
+  }
+}
