@@ -49,6 +49,10 @@ decisions:
   status: accepted
   owner: Bruno Nunes
   rationale: 'ADR 0010, decidido pelo dono em 2026-09-24: a ontologia versionada é a fonte da verdade; a Delta especie e o Postgres são projeções reconferidas, consultadas por agentes e BI fora do Spark. Postgres como fonte foi rejeitado: dado editado no banco escapa da cadeia.'
+- id: DEC-ONTOLOGIA-LAYOUT-DO-CONTRATO
+  status: accepted
+  owner: Bruno Nunes
+  rationale: 'Correção de 2026-09-24, depois de TASK_LOOP=STALLED: o plano mandava conferir o cabeçalho de todo CSV de _raw, e o agente recusou com razão — medido, 2025-07 e 2025-08 têm 13 colunas com uma só ''Espécie'' na posição 0, e 2025-09 e 2026-01 têm 14 com as duas ''Espécie'' em 12 e 13. A fonte mudou de layout entre 2025-08 e 2025-09. A ontologia descreve o layout do contrato e confere contra a fonte que o contrato declara; outro layout exige contrato próprio, medido.'
 seams:
 - id: SEAM-ONTOLOGIA
   name: Ontologia versionada
@@ -64,6 +68,7 @@ seams:
   independent_proof: Carregador confere 65 nomes, 13 termos e o sha256 contra _raw/.
   decision_ids:
   - ADR-0010-ONTOLOGIA-FONTE
+  - DEC-ONTOLOGIA-LAYOUT-DO-CONTRATO
   rejected_alternatives:
   - alternative: Ler o dicionário direto do .xlsx em cada consumidor
     reason: cada consumidor faria sua própria interpretação, sem ligação coluna-termo revisada.
@@ -101,11 +106,11 @@ seams:
         - id: B-1
           given: os bytes oficiais em /dados/_raw (dicionario-especies-beneficio.xlsx e glossario-beneficios-emitidos.xlsx, com sha256 em /dados/_raw/CHECKSUMS.txt) e o contrato contracts/competencia-202601.yaml com grupos_especie
           when: carregar_ontologia lê src/ontologia/beneficios-emitidos.yaml
-          then: 'devolve a ontologia com: as duas fontes e o sha256 de cada, que confere com o arquivo e com a linha do CHECKSUMS.txt — cujas linhas têm o formato ''<sha256>  _raw/<arquivo>'', casadas pelo NOME do arquivo, porque no contêiner o diretório é /dados/_raw; as 14 colunas do CSV, cada uma por POSIÇÃO de 0 a 13 com o cabeçalho e o termo do glossário que representa — o cabeçalho declarado de cada posição é IGUAL ao da primeira linha (latin-1, separador '';'') de todo D.SDA.PDA.003.EMI.*.csv em /dados/_raw; as posições 12 e 13 são as duas ''Espécie'', com papel codigo e descricao_truncada (ADR 0002), e nenhuma ligação é feita pelo nome; os 13 termos com a descrição IGUAL à do glossário; as 65 espécies, código de 2 dígitos em texto, com o nome oficial IGUAL, caractere a caractere e sem normalização, ao texto extraído do dicionário (medido: nenhum dos 65 tem espaço nas pontas nem está fora de NFC), e o grupo de cada uma lido de contrato.grupos_especie.grupos, por referência. O atributo sha256 da ontologia é o sha256 do JSON canônico (chaves ordenadas, sem espaços) do conteúdo RESOLVIDO — fontes, colunas, termos, espécies com o grupo vindo do contrato —, para que uma mudança de grupo no contrato mude a versão. Os .xlsx são lidos só com a biblioteca padrão (zipfile e xml), sem openpyxl, porque o contêiner não tem rede.'
+          then: 'devolve a ontologia com: as duas fontes e o sha256 de cada, que confere com o arquivo e com a linha do CHECKSUMS.txt — cujas linhas têm o formato ''<sha256>  _raw/<arquivo>'', casadas pelo NOME do arquivo, porque no contêiner o diretório é /dados/_raw; as 14 colunas do CSV, cada uma por POSIÇÃO de 0 a 13 com o cabeçalho e o termo do glossário que representa — o cabeçalho declarado de cada posição é IGUAL ao da primeira linha do CSV que o CONTRATO declara como fonte (contrato.procedencia.fonte, hoje _raw/D.SDA.PDA.003.EMI.202601.csv, achado em /dados/_raw pelo nome), lida com contrato.layout.encoding e contrato.layout.separador, e o total de colunas é contrato.layout.total_colunas — NUNCA o de todo CSV de _raw: medido em 2026-09-24, 2025-07 e 2025-08 têm OUTRO layout (13 colunas, uma só ''Espécie'', na posição 0), e a ontologia descreve o layout do contrato; as posições 12 e 13 são as duas ''Espécie'', com papel codigo e descricao_truncada (ADR 0002), e nenhuma ligação é feita pelo nome; os 13 termos com a descrição IGUAL à do glossário; as 65 espécies, código de 2 dígitos em texto, com o nome oficial IGUAL, caractere a caractere e sem normalização, ao texto extraído do dicionário (medido: nenhum dos 65 tem espaço nas pontas nem está fora de NFC), e o grupo de cada uma lido de contrato.grupos_especie.grupos, por referência. O atributo sha256 da ontologia é o sha256 do JSON canônico (chaves ordenadas, sem espaços) do conteúdo RESOLVIDO — fontes, colunas, termos, espécies com o grupo vindo do contrato —, para que uma mudança de grupo no contrato mude a versão. Os .xlsx são lidos só com a biblioteca padrão (zipfile e xml), sem openpyxl, porque o contêiner não tem rede.'
         - id: B-2
           given: uma ontologia, uma fonte ou um contrato que não conferem, ou que não foram lidos
           when: carregar_ontologia confere
-          then: 'recusa, nunca devolve ontologia parcial: sha256 divergente do arquivo ou do CHECKSUMS.txt, código a mais ou a menos que o dicionário, nome diferente do dicionário, código sem grupo ou em dois grupos, termo que o glossário não tem ou com descrição diferente, cabeçalho diferente do CSV na mesma posição, posição de coluna faltando ou repetida, carregar_contrato devolvendo a string NAO_MEDIDO ou grupos_especie ausente — cada caso com o motivo nomeado; zero espécies lidas, zero termos lidos, nenhum CSV em /dados/_raw ou arquivo ausente devolvem NAO_MEDIDO, não OK (Regra 9). Os cenários de recusa usam cópias em tmp_path, nunca alteram /dados/_raw. Nenhum cenário usa skip, xfail ou importorskip, nem retorna antes de afirmar: fonte ausente no ambiente de teste FALHA o teste.'
+          then: 'recusa, nunca devolve ontologia parcial: sha256 divergente do arquivo ou do CHECKSUMS.txt, código a mais ou a menos que o dicionário, nome diferente do dicionário, código sem grupo ou em dois grupos, termo que o glossário não tem ou com descrição diferente, cabeçalho diferente do CSV na mesma posição, posição de coluna faltando ou repetida, carregar_contrato devolvendo a string NAO_MEDIDO ou grupos_especie ausente — cada caso com o motivo nomeado; um CSV de OUTRO layout em /dados/_raw não é motivo de recusa nem é lido; zero espécies lidas, zero termos lidos, o CSV da fonte do contrato ausente ou arquivo ausente devolvem NAO_MEDIDO, não OK (Regra 9). Os cenários de recusa usam cópias em tmp_path, nunca alteram /dados/_raw. Nenhum cenário usa skip, xfail ou importorskip, nem retorna antes de afirmar: fonte ausente no ambiente de teste FALHA o teste.'
         evals:
         - id: eval_1
           description: A ontologia real confere com o INSS e com o contrato
@@ -114,7 +119,7 @@ seams:
           - B-1
         - id: eval_2
           description: Divergência recusa com motivo
-          bash: docker compose -f infra/docker-compose.yml exec -T spark sh -c 'for c in sha256_divergente_recusa checksums_divergente_recusa nome_diferente_recusa codigo_sem_grupo_recusa codigo_em_dois_grupos_recusa termo_fora_do_glossario_recusa descricao_de_termo_diferente_recusa cabecalho_trocado_recusa posicao_repetida_recusa; do python3 -m pytest --collect-only -q tests/test_ontologia.py -k "$c" 2>/dev/null | grep -q "::" || { echo "EVAL=CENARIO_AUSENTE_$c"; exit 1; }; done; python3 -m pytest -q tests/test_ontologia.py -k "sha256_divergente_recusa or checksums_divergente_recusa or nome_diferente_recusa or codigo_sem_grupo_recusa or codigo_em_dois_grupos_recusa or termo_fora_do_glossario_recusa or descricao_de_termo_diferente_recusa or cabecalho_trocado_recusa or posicao_repetida_recusa"'
+          bash: docker compose -f infra/docker-compose.yml exec -T spark sh -c 'for c in sha256_divergente_recusa checksums_divergente_recusa nome_diferente_recusa codigo_sem_grupo_recusa codigo_em_dois_grupos_recusa termo_fora_do_glossario_recusa descricao_de_termo_diferente_recusa cabecalho_trocado_recusa posicao_repetida_recusa csv_de_outro_layout_ignorado; do python3 -m pytest --collect-only -q tests/test_ontologia.py -k "$c" 2>/dev/null | grep -q "::" || { echo "EVAL=CENARIO_AUSENTE_$c"; exit 1; }; done; python3 -m pytest -q tests/test_ontologia.py -k "sha256_divergente_recusa or checksums_divergente_recusa or nome_diferente_recusa or codigo_sem_grupo_recusa or codigo_em_dois_grupos_recusa or termo_fora_do_glossario_recusa or descricao_de_termo_diferente_recusa or cabecalho_trocado_recusa or posicao_repetida_recusa or csv_de_outro_layout_ignorado"'
           verifies:
           - B-2
         - id: eval_3
@@ -155,6 +160,7 @@ seams:
   independent_proof: 65 linhas na competência real, 65 nomes distintos, multiconjunto 0/0.
   decision_ids:
   - ADR-0010-ONTOLOGIA-FONTE
+  - DEC-ONTOLOGIA-LAYOUT-DO-CONTRATO
   rejected_alternatives:
   - alternative: Coluna nome_oficial acrescentada à Silver principal
     reason: mudaria o schema da Silver selada e reescreveria 41 milhões de linhas.
@@ -244,6 +250,7 @@ seams:
   independent_proof: Contagens 2/13/14/5/65 relidas do banco iguais à ontologia; sha256 na tabela carga.
   decision_ids:
   - ADR-0010-ONTOLOGIA-FONTE
+  - DEC-ONTOLOGIA-LAYOUT-DO-CONTRATO
   rejected_alternatives:
   - alternative: Postgres como fonte da verdade
     reason: dado editado no banco não passa por costura, adversário, selo nem escopo (Regra 11).
