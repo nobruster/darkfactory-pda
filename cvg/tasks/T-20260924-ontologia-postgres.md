@@ -28,10 +28,14 @@ execution_backend: any
 signed_off: true
 signed_off_by: nobru
 signed_off_at: 2026-09-24T22:52:45Z
-accepted: false
-accepted_by: (none)
-accepted_at: (none)
+accepted: true
+accepted_by: converge-loop
+accepted_at: 2026-09-24T23:10:56Z
 signed_off_sig: hmac-sha256-v3:85d3c104:bcb837632e7f3633a0e7e5f6b2f69ca706c96b56437592b745bb4700bc0d1e09
+accepted_tier: 1
+accepted_attempt_id: 8ecc6d1c-56b5-4981-a23d-7878f1612f6b
+accepted_authorization_ref: hmac-sha256-v3:85d3c104:bcb837632e7f3633a0e7e5f6b2f69ca706c96b56437592b745bb4700bc0d1e09
+acceptance_record_digest: sha256:e785d93d235f12d6533a6db7682f2f750aa5949246809d8a9b5c177d3cc9b165
 ---
 
 # Projeção da ontologia no Postgres, carregada numa transação e reconferida
