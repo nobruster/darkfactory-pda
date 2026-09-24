@@ -211,3 +211,75 @@ def test_linha_a_mais_diverge(spark, tmp_path):
 def test_silver_reconfere_numa_passada(spark):
     fonte = inspect.getsource(silver._conferir_tabela)
     assert "_diferenca_numa_passada" in fonte and fonte.count("exceptAll") == 0
+
+
+# ---------------------------------------------------------------- memória do driver (JVM nova)
+
+_SRC = str(Path(__file__).resolve().parent.parent / "src")
+
+
+def _em_jvm_nova(codigo, submit_args=None):
+    """Roda `codigo` num processo filho: só numa JVM ainda não iniciada o builder muda o heap."""
+    import os
+    import subprocess
+
+    env = dict(os.environ)
+    env.pop("PYSPARK_SUBMIT_ARGS", None)
+    if submit_args:
+        env["PYSPARK_SUBMIT_ARGS"] = submit_args
+    prelude = f"import sys; sys.path.insert(0, {_SRC!r})\nfrom medalhao import bronze\n"
+    return subprocess.run(
+        [sys.executable, "-c", prelude + codigo], capture_output=True, text=True, env=env, timeout=300
+    )
+
+
+def _heap_impresso(saida):
+    return int(next(l for l in saida.splitlines() if l.startswith("HEAP=")).split("=")[1])
+
+
+def test_memoria_padrao_e_seis_gigas():
+    assert bronze.MEMORIA_DRIVER_PADRAO == "6g"
+    assert inspect.signature(bronze.criar_sessao).parameters["memoria_driver"].default == "6g"
+    r = _em_jvm_nova(
+        "s = bronze.criar_sessao('filho')\n"
+        "print('DRIVER=' + s.sparkContext.getConf().get('spark.driver.memory'))\n"
+    )
+    assert r.returncode == 0, r.stderr[-2000:]
+    assert "DRIVER=6g" in r.stdout
+
+
+def test_heap_efetivo_do_padrao():
+    r = _em_jvm_nova(
+        "s = bronze.criar_sessao('filho')\n"
+        "print('HEAP=%d' % bronze.heap_efetivo(s))\n"
+    )
+    assert r.returncode == 0, r.stderr[-2000:]
+    assert _heap_impresso(r.stdout) >= bronze.FOLGA_DO_HEAP * bronze._bytes_de("6g")
+
+
+def test_heap_menor_que_declarado_recusado():
+    r = _em_jvm_nova(
+        "try:\n"
+        "    bronze.criar_sessao('filho')\n"
+        "    print('SEM_RECUSA')\n"
+        "except bronze.SessaoRecusada as e:\n"
+        "    print('RECUSADA=' + str(e))\n",
+        submit_args="--driver-memory 2g pyspark-shell",
+    )
+    assert r.returncode == 0, r.stderr[-2000:]
+    saida = next((l for l in r.stdout.splitlines() if l.startswith(("RECUSADA=", "SEM_RECUSA"))), "")
+    assert saida.startswith("RECUSADA="), r.stdout[-2000:]
+    assert "declarado" in saida and "efetivo" in saida
+
+
+def test_pedido_explicito_prevalece():
+    r = _em_jvm_nova(
+        "s = bronze.criar_sessao('filho', memoria_driver='2g')\n"
+        "print('DRIVER=' + s.sparkContext.getConf().get('spark.driver.memory'))\n"
+        "print('HEAP=%d' % bronze.heap_efetivo(s))\n"
+    )
+    assert r.returncode == 0, r.stderr[-2000:]
+    assert "DRIVER=2g" in r.stdout
+    heap = _heap_impresso(r.stdout)
+    assert heap >= bronze.FOLGA_DO_HEAP * bronze._bytes_de("2g")
+    assert heap < bronze.FOLGA_DO_HEAP * bronze._bytes_de("6g")

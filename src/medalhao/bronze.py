@@ -90,7 +90,10 @@ class BronzeConferido:
 # ---------------------------------------------------------------- sessão
 
 
-MEMORIA_DRIVER_PADRAO = "1g"
+# 6g é o valor com que as baselines de perf/ foram medidas (Bronze de 506s para 374s de
+# executor); o 1g de antes estourava a suíte. Declarado aqui, no builder — nunca em
+# PYSPARK_SUBMIT_ARGS ou spark-defaults.
+MEMORIA_DRIVER_PADRAO = "6g"
 ADAPTATIVO_PADRAO = True
 PARTICOES_SHUFFLE_PADRAO = 8
 # O heap efetivo (maxMemory) fica abaixo do -Xmx: a JVM desconta um espaço de sobrevivente.
