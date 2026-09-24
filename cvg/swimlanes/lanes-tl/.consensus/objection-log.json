@@ -1,0 +1,168 @@
+{
+  "schema_version": "1.0",
+  "pass": "4-consensus",
+  "adversary": {
+    "engine_id": "codex",
+    "model": "codex",
+    "family": "openai",
+    "engine_version": "codex-cli 0.155.0",
+    "sandbox_mode": "read-only"
+  },
+  "author": {
+    "model": "claude",
+    "family": "anthropic"
+  },
+  "verdict": "REVISE",
+  "prompt_sha256": "0b1916151116ae3798b36bf707204bf01db46c1be546e32fd0ffa38530be5ee1",
+  "inputs": [
+    {
+      "path": "retira-regra-antiga/LEG-RETIRA-REGRA-ANTIGA.md",
+      "sha256": "1f10def2fb96600c8651f3020cd516348b1bc7bdfb73403134b0182a04e0d6fd"
+    },
+    {
+      "path": "retira-regra-antiga/_lane.md",
+      "sha256": "5c47bc2209e5a9c47d207267af46369f4012037bba31a20eacccad664bcbf26a"
+    }
+  ],
+  "objections": [
+    {
+      "id": "C1",
+      "severity": "high",
+      "rank": 1,
+      "attack_class": "drift",
+      "swimlane": "LANE-RETIRA-REGRA-ANTIGA",
+      "leg": "LEG-RETIRA-REGRA-ANTIGA",
+      "location": {
+        "plan_file": "cvg/swimlanes/lanes-tl/retira-regra-antiga/LEG-RETIRA-REGRA-ANTIGA.md",
+        "section": "tasks[0].goal \u2194 evals[eval_1,eval_2,eval_3].bash"
+      },
+      "title": "Todos os evals contradizem o comando autorizado",
+      "body": "O goal permite exclusivamente exec -T spark python3 -m pytest. Os tr\u00eas evals executam exec -T spark sh -c, contendo loops, pipelines e grep. Executar a prova prescrita viola a restri\u00e7\u00e3o; obedecer \u00e0 restri\u00e7\u00e3o impede executar os evals como escritos.",
+      "evidence": "goal: 'o \u00daNICO comando liberado'; evals: 'exec -T spark sh -c'.",
+      "cites": [
+        "cvg/swimlanes/teste-limpeza-recipe.yaml \u00a7 tasks[0].goal",
+        "cvg/swimlanes/lanes-tl/retira-regra-antiga/LEG-RETIRA-REGRA-ANTIGA.md \u00a7 evals"
+      ],
+      "resolution": {
+        "disposition": "ACCEPT",
+        "decided_by": "Bruno Nunes",
+        "decided_at": "2026-09-24T20:16:20Z",
+        "owner": "Bruno Nunes",
+        "risk_residual": "Refutado, como na R3 C2 e R4 C1 da performance e na R2 C2 da memoria: a permissao de escopo minimo e do AGENTE; os evals sao executados pelo MOTOR, fora dela, e rodaram em todos os loops de 2026-09-24. Decidido pelo dono ao fechar o Pass 4 da teste da limpeza na R2, sem editar o plano."
+      }
+    },
+    {
+      "id": "C2",
+      "severity": "high",
+      "rank": 2,
+      "attack_class": "drift",
+      "swimlane": "LANE-RETIRA-REGRA-ANTIGA",
+      "leg": "LEG-RETIRA-REGRA-ANTIGA",
+      "location": {
+        "plan_file": "cvg/swimlanes/lanes-tl/retira-regra-antiga/LEG-RETIRA-REGRA-ANTIGA.md",
+        "section": "done_condition; behavior[B-2]; evals"
+      },
+      "title": "Os evals n\u00e3o provam o m\u00f3dulo inteiro numa \u00fanica JVM",
+      "body": "A recipe exige execu\u00e7\u00e3o conjunta, mas cada eval inicia outro processo pytest e executa apenas um subconjunto. Mesmo cobrindo todos os nomes, tr\u00eas execu\u00e7\u00f5es verdes n\u00e3o demonstram que a sess\u00e3o Spark compartilhada suporta o m\u00f3dulo completo: falhas acumuladas de estado ou recursos podem aparecer somente na execu\u00e7\u00e3o conjunta.",
+      "evidence": "A recipe declara 'Su\u00edte inteira numa JVM s\u00f3, verde'; cada eval termina com uma sele\u00e7\u00e3o -k diferente.",
+      "cites": [
+        "cvg/swimlanes/teste-limpeza-recipe.yaml \u00a7 intent.success",
+        "cvg/swimlanes/teste-limpeza-recipe.yaml \u00a7 seams[0].independent_proof",
+        "cvg/swimlanes/lanes-tl/retira-regra-antiga/LEG-RETIRA-REGRA-ANTIGA.md \u00a7 behavior[B-2]"
+      ],
+      "resolution": {
+        "disposition": "ACCEPT",
+        "decided_by": "Bruno Nunes",
+        "decided_at": "2026-09-24T20:16:20Z",
+        "owner": "Bruno Nunes",
+        "risk_residual": "Aceito, coberto por fora: logo depois do loop o script da cadeia roda a suite INTEIRA (nao so o modulo) numa JVM so \u2014 foi exatamente essa execucao que achou o teste contraditorio. A cobertura de nomes, que a R1 pedia, ja foi corrigida (14 de 14 em algum eval). Decidido pelo dono ao fechar o Pass 4 da teste da limpeza na R2, sem editar o plano."
+      }
+    },
+    {
+      "id": "C3",
+      "severity": "medium",
+      "rank": 3,
+      "attack_class": "unverified-assumption",
+      "swimlane": "LANE-RETIRA-REGRA-ANTIGA",
+      "leg": "LEG-RETIRA-REGRA-ANTIGA",
+      "location": {
+        "plan_file": "cvg/swimlanes/lanes-tl/retira-regra-antiga/LEG-RETIRA-REGRA-ANTIGA.md",
+        "section": "behavior[B-1,B-2]; anti_patterns"
+      },
+      "title": "A guarda de nomes n\u00e3o prova preserva\u00e7\u00e3o dos demais testes",
+      "body": "A condi\u00e7\u00e3o exige que nenhuma outra fun\u00e7\u00e3o test_* mude. Uma lista exata de nomes continua correta se uma asser\u00e7\u00e3o existente for removida ou enfraquecida. Os evals podem ficar verdes apesar de uma altera\u00e7\u00e3o expressamente proibida; falta uma prova vinculada \u00e0 vers\u00e3o anterior dos corpos preservados.",
+      "evidence": "B-1: 'nenhuma outra fun\u00e7\u00e3o test_* do m\u00f3dulo muda'; B-2 especifica somente a lista exata.",
+      "cites": [
+        "cvg/swimlanes/teste-limpeza-recipe.yaml \u00a7 decisions[DEC-RETIRA-REGRA-ANTIGA-LIMPEZA]",
+        "cvg/swimlanes/lanes-tl/retira-regra-antiga/LEG-RETIRA-REGRA-ANTIGA.md \u00a7 done_condition"
+      ],
+      "resolution": {
+        "disposition": "ACCEPT",
+        "decided_by": "Bruno Nunes",
+        "decided_at": "2026-09-24T20:16:20Z",
+        "owner": "Bruno Nunes",
+        "risk_residual": "Aceito, coberto por fora: depois do loop, uma conferencia por AST compara o corpo de cada funcao test_* e de cada helper de tests/test_limpeza.py com o commit selado c97d9e2 (ultima escrita do arquivo, pela entrega T-20260924-limpa-substituidas); so pode faltar test_commit_seguido_de_outro_preserva e so pode sobrar test_lista_de_testes_da_limpeza. Decidido pelo dono ao fechar o Pass 4 da teste da limpeza na R2, sem editar o plano."
+      }
+    },
+    {
+      "id": "C4",
+      "severity": "medium",
+      "rank": 4,
+      "attack_class": "unverified-assumption",
+      "swimlane": "LANE-RETIRA-REGRA-ANTIGA",
+      "leg": "LEG-RETIRA-REGRA-ANTIGA",
+      "location": {
+        "plan_file": "cvg/swimlanes/lanes-tl/retira-regra-antiga/LEG-RETIRA-REGRA-ANTIGA.md",
+        "section": "evals[eval_1,eval_2,eval_3]; behavior[B-2]"
+      },
+      "title": "Coleta e sa\u00edda zero n\u00e3o demonstram que todos os cen\u00e1rios passaram",
+      "body": "A pr\u00e9-checagem exige apenas um nodeid contendo ::, e a execu\u00e7\u00e3o verifica o resultado agregado do pytest. Um cen\u00e1rio coletado pode terminar como skipped ou xfailed sem reprovar o comando. A guarda de nomes tamb\u00e9m permanece satisfeita nesse caso. Assim, os evals podem declarar sucesso sem comprovar 'todos passam'.",
+      "evidence": "Pr\u00e9-checagem: '--collect-only ... | grep -q \"::\"'; nenhum eval exige resultado passed para cada cen\u00e1rio.",
+      "cites": [
+        "cvg/swimlanes/lanes-tl/retira-regra-antiga/LEG-RETIRA-REGRA-ANTIGA.md \u00a7 behavior[B-2]",
+        "AGENTS.md \u00a7 Regra 3"
+      ],
+      "resolution": {
+        "disposition": "ACCEPT",
+        "decided_by": "Bruno Nunes",
+        "decided_at": "2026-09-24T20:16:20Z",
+        "owner": "Bruno Nunes",
+        "risk_residual": "Aceito, coberto por fora: a suite inteira roda com -rsx e a cadeia recusa qualquer skipped/xfailed no modulo; a mesma conferencia por AST recusa marcador skip/xfail novo. Decidido pelo dono ao fechar o Pass 4 da teste da limpeza na R2, sem editar o plano."
+      }
+    },
+    {
+      "id": "C5",
+      "severity": "low",
+      "rank": 5,
+      "attack_class": "unverified-assumption",
+      "swimlane": "LANE-RETIRA-REGRA-ANTIGA",
+      "leg": "LEG-RETIRA-REGRA-ANTIGA",
+      "location": {
+        "plan_file": "cvg/swimlanes/lanes-tl/retira-regra-antiga/LEG-RETIRA-REGRA-ANTIGA.md",
+        "section": "tasks[0].rollback"
+      },
+      "title": "O rollback n\u00e3o identifica a vers\u00e3o que deve restaurar",
+      "body": "O plano manda restaurar o arquivo inteiro do 'commit assentado', sem identificar esse commit. Escolher uma base anterior \u00e0 inclus\u00e3o dos testes novos pode apagar cobertura adicional, ultrapassando a exce\u00e7\u00e3o autorizada para um \u00fanico teste. A refer\u00eancia necess\u00e1ria \u00e0 recupera\u00e7\u00e3o fica aberta no momento de execut\u00e1-la.",
+      "evidence": "'Restaurar tests/test_limpeza.py do commit assentado.'",
+      "cites": [
+        "cvg/swimlanes/lanes-tl/retira-regra-antiga/LEG-RETIRA-REGRA-ANTIGA.md \u00a7 rollback",
+        "cvg/swimlanes/teste-limpeza-recipe.yaml \u00a7 decisions[DEC-RETIRA-REGRA-ANTIGA-LIMPEZA]"
+      ],
+      "resolution": {
+        "disposition": "ACCEPT",
+        "decided_by": "Bruno Nunes",
+        "decided_at": "2026-09-24T20:16:20Z",
+        "owner": "Bruno Nunes",
+        "risk_residual": "Aceito: a versao a restaurar e a de tests/test_limpeza.py no commit c97d9e2 (a ultima escrita do arquivo, igual em main ate o loop, loop, depois das entregas da limpeza de substituidas); registrado aqui, sem editar a folha. Decidido pelo dono ao fechar o Pass 4 da teste da limpeza na R2, sem editar o plano."
+      }
+    }
+  ],
+  "cross_lane_interfaces": [],
+  "fork": {
+    "choice": "B",
+    "reason": "Transcri\u00e7\u00e3o da declara\u00e7\u00e3o existente em _lane.md; nenhuma escolha feita pelo advers\u00e1rio.",
+    "per_plan_declared": true
+  },
+  "open_questions": [],
+  "rounds_run": 1
+}
