@@ -11,7 +11,7 @@
         "epoch_change"
       ]
     },
-    "epoch": "T-20260924-especie-silver@e141fba6163f",
+    "epoch": "T-20260924-especie-silver@45be351bc153",
     "grants": [
       {
         "capability": "fs.read",
@@ -301,7 +301,7 @@
     "id": "T-20260924-especie-silver",
     "spec_ref": {
       "path": "cvg/tasks/T-20260924-especie-silver.md",
-      "sha256": "e141fba6163f41e7d57f2e1737c7005ca6d0eb515dde9f7725754d7ef1a0460d"
+      "sha256": "45be351bc153355f71c1d95ccc9d94e859ce9db2a0600876318d3bd6b8fb971b"
     }
   },
   "topology": {

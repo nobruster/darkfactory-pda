@@ -4,7 +4,7 @@
 
 - **Spec (canonical):** `cvg/tasks/T-20260924-especie-silver.md`
 - **Contract:** `cvg/execution/T-20260924-especie-silver/execution-profile.yaml`
-- **Epoch:** `T-20260924-especie-silver@e141fba6163f`
+- **Epoch:** `T-20260924-especie-silver@45be351bc153`
 - **Project conventions:** `AGENTS.md` (read it once; it is the router)
 
 ## Goal

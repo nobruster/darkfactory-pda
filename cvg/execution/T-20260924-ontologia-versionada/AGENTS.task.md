@@ -4,7 +4,7 @@
 
 - **Spec (canonical):** `cvg/tasks/T-20260924-ontologia-versionada.md`
 - **Contract:** `cvg/execution/T-20260924-ontologia-versionada/execution-profile.yaml`
-- **Epoch:** `T-20260924-ontologia-versionada@4160c7836eea`
+- **Epoch:** `T-20260924-ontologia-versionada@d07dd95c6a07`
 - **Project conventions:** `AGENTS.md` (read it once; it is the router)
 
 ## Goal

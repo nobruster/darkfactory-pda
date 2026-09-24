@@ -11,7 +11,7 @@
         "epoch_change"
       ]
     },
-    "epoch": "T-20260924-ontologia-postgres@f6d38a3eef20",
+    "epoch": "T-20260924-ontologia-postgres@fdf08d7d284f",
     "grants": [
       {
         "capability": "fs.read",
@@ -301,7 +301,7 @@
     "id": "T-20260924-ontologia-postgres",
     "spec_ref": {
       "path": "cvg/tasks/T-20260924-ontologia-postgres.md",
-      "sha256": "f6d38a3eef203ee7a0e767b8505c47ec02a368ee1e1f86c67104db9c057a49aa"
+      "sha256": "fdf08d7d284f0ffb6bbca1188d5d3a3af603bb06846be6aeb34cfe5c5f774a76"
     }
   },
   "topology": {

@@ -4,7 +4,7 @@
 
 - **Spec (canonical):** `cvg/tasks/T-20260924-ontologia-postgres.md`
 - **Contract:** `cvg/execution/T-20260924-ontologia-postgres/execution-profile.yaml`
-- **Epoch:** `T-20260924-ontologia-postgres@f6d38a3eef20`
+- **Epoch:** `T-20260924-ontologia-postgres@fdf08d7d284f`
 - **Project conventions:** `AGENTS.md` (read it once; it is the router)
 
 ## Goal
