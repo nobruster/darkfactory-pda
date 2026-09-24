@@ -28,10 +28,14 @@ execution_backend: any
 signed_off: true
 signed_off_by: nobru
 signed_off_at: 2026-09-24T23:43:16Z
-accepted: false
-accepted_by: (none)
-accepted_at: (none)
+accepted: true
+accepted_by: converge-loop
+accepted_at: 2026-09-24T23:54:59Z
 signed_off_sig: hmac-sha256-v3:85d3c104:a275b8a74137f320d45be379e3ee5649c9e17192ec725cceed230a42e7c813b0
+accepted_tier: 1
+accepted_attempt_id: cc12a9c6-8e4c-435d-b6dd-18121a91b090
+accepted_authorization_ref: hmac-sha256-v3:85d3c104:a275b8a74137f320d45be379e3ee5649c9e17192ec725cceed230a42e7c813b0
+acceptance_record_digest: sha256:7f5e762457dbbf50cd76b7412616fa331ee67e776610fba933509eab62f69bf6
 ---
 
 # Adotar o produtor Spark e o gravador do lago, sem mudar o que eles fazem
