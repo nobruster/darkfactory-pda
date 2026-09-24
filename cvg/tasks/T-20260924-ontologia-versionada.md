@@ -28,10 +28,14 @@ execution_backend: any
 signed_off: true
 signed_off_by: nobru
 signed_off_at: 2026-09-24T22:52:43Z
-accepted: false
-accepted_by: (none)
-accepted_at: (none)
+accepted: true
+accepted_by: converge-loop
+accepted_at: 2026-09-24T22:56:27Z
 signed_off_sig: hmac-sha256-v3:85d3c104:08c0d6d57ecd2cd90dcd639dc9317027bab43f9336ee5d59d80ebda84bc640c3
+accepted_tier: 1
+accepted_attempt_id: 080f644d-8d29-4e82-aa6e-7e0cbc69e241
+accepted_authorization_ref: hmac-sha256-v3:85d3c104:08c0d6d57ecd2cd90dcd639dc9317027bab43f9336ee5d59d80ebda84bc640c3
+acceptance_record_digest: sha256:2d39704859ce6a10c028de5d10d13eae2d0e9020f33cec65d4bc8c7b6c7bd74e
 ---
 
 # Ontologia versionada dos benefícios emitidos, reconferida contra os bytes do INSS
