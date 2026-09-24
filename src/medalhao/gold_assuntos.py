@@ -269,6 +269,8 @@ def _garantir_tabela(spark: SparkSession, caminho: str, schema, chaves: Tuple[st
     construtor = DeltaTable.createIfNotExists(spark).location(caminho)
     for campo in schema:
         construtor = construtor.addColumn(campo.name, campo.dataType, nullable=campo.name not in chaves)
+    for coluna in monetarias:  # os CHECK nascem NO CREATE: um commit em vez de um por coluna
+        construtor = construtor.property(f"delta.constraints.{coluna}_nao_negativo", f"{coluna} >= 0")
     construtor.partitionedBy("competencia").execute()
     propriedades = _delta_table(spark, caminho).detail().select("properties").first()[0] or {}
     for coluna in monetarias:
@@ -281,8 +283,7 @@ def _conferir_tabela(spark: SparkSession, caminho: str, versao: int, esperado: D
     """RELÊ a versão commitada e compara o MULTICONJUNTO de todas as colunas, nos dois sentidos."""
     cols = esperado.columns
     lido = _ler_versao(spark, caminho, versao).where(F.col("competencia") == competencia).select(*cols)
-    so_esperado = esperado.select(*cols).exceptAll(lido).count()
-    so_lido = lido.exceptAll(esperado.select(*cols)).count()
+    so_esperado, so_lido = bronze._diferenca_numa_passada(esperado.select(*cols), lido)
     return so_esperado == 0 and so_lido == 0, {"versao": versao, "so_no_esperado": so_esperado, "so_no_lido": so_lido}
 
 
@@ -323,8 +324,18 @@ def _publicar_tabela(spark, r, tabela, destino, linhas, chaves, monetarias, id_e
 # ---------------------------------------------------------------- execução
 
 
-def executar_gold_assuntos(
+def executar_gold_assuntos(spark: SparkSession, **kwargs) -> GoldAssuntos:
+    """Monta, fecha com a âncora e só então publica — e libera todo cache em QUALQUER caminho."""
+    persistidos: List[DataFrame] = []
+    try:
+        return _executar_gold_assuntos(spark, persistidos, **kwargs)
+    finally:
+        bronze._liberar(*persistidos)
+
+
+def _executar_gold_assuntos(
     spark: SparkSession,
+    persistidos: List[DataFrame],
     *,
     caminho_contrato,
     silver_destino: str = SILVER_PADRAO,
@@ -361,6 +372,7 @@ def executar_gold_assuntos(
         grupos = _mapa_de_grupos(spark, contrato.grupos_especie)
         id_execucao = id_execucao or uuid.uuid4().hex
         fat = montar_fat_especie(linhas, grupos, competencia, pol).persist()
+        persistidos.append(fat)
         kpis = montar_kpis_nacionais(fat, linhas, competencia, pol)
         preparo = f"{preparo_raiz.rstrip('/')}/execucao={id_execucao}"
         destinos = (("fat_especie", f"{preparo}/fat_especie", fat, ("especie_codigo", "competencia"), MONETARIAS_FAT),

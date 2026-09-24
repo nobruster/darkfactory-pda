@@ -84,6 +84,7 @@ class GoldReconciliado:
     motivo: str = ""
     versao_silver: Optional[int] = None
     gravacao: Optional[dict] = None
+    cache: Optional[DataFrame] = None  # o persistido das candidatas; quem publica (ou encerra) libera
 
 
 class CadeiaParou(Exception):
@@ -213,8 +214,7 @@ def _conferir_tabela(
     """RELÊ a versão commitada e compara o MULTICONJUNTO de TODAS as colunas, nos dois sentidos."""
     cols = list(GOLD_COLUNAS)
     lido = _ler_versao(spark, caminho, versao).where(F.col("competencia") == competencia).select(*cols)
-    so_esperado = esperado.select(*cols).exceptAll(lido).count()
-    so_lido = lido.exceptAll(esperado.select(*cols)).count()
+    so_esperado, so_lido = bronze._diferenca_numa_passada(esperado.select(*cols), lido)
     total_lido = lido.agg(F.sum("vl_liquido_total")).collect()[0][0]
     divergentes = () if total_lido == controles.get("sum_vl_liquido") else ("sum_vl_liquido",)
     ok = so_esperado == 0 and so_lido == 0 and not divergentes
@@ -345,6 +345,7 @@ def agregar(
     if entrada.linhas is None:
         return GoldReconciliado(NAO_MEDIDO, competencia, motivo="SILVER_SEM_LINHAS")
 
+    persistida = None
     try:
         de_outra = entrada.linhas.where(F.col("competencia") != competencia).limit(1).count()
         if de_outra:
@@ -352,7 +353,7 @@ def agregar(
                 base, [_diferenca("competencia", "linhas_de_outra_competencia", competencia, "outra")],
                 "COMPETENCIA_DIVERGE",
             )
-        candidatas = _agregar(entrada.linhas, competencia, pol).persist()
+        candidatas = persistida = _agregar(entrada.linhas, competencia, pol).persist()
         controles = {"sum_vl_liquido": candidatas.agg(F.sum("vl_liquido_total")).collect()[0][0]}
         if preparo_raiz:
             preparo = f"{preparo_raiz.rstrip('/')}/execucao={id_execucao or uuid.uuid4().hex}"
@@ -363,6 +364,7 @@ def agregar(
             )
             if not ok:
                 d = _diferenca("gravacao", "reconferencia_no_preparo", "multiconjunto igual", json.dumps(detalhe, default=str))
+                bronze._liberar(persistida)
                 return _diverge(base, [d])
             candidatas = _ler_versao(spark, preparo, _versao_atual(spark, preparo)).where(
                 F.col("competencia") == competencia
@@ -370,14 +372,16 @@ def agregar(
             base = replace(base, gravacao={"preparo": preparo})
         dif, mapa, soma = _reconciliar(candidatas, contrato, entrada, competencia)
     except Exception as exc:  # não conseguiu medir: não é NAO_MEDIDO
+        bronze._liberar(persistida)
         return GoldReconciliado(ERRO_LEITURA, competencia, motivo=f"{type(exc).__name__}: {exc}")
 
     controles_gold = dict(entrada.controles)
     controles_gold["sum_vl_liquido"] = soma
     resultado = replace(base, controles=controles_gold, total_por_codigo=mapa)
     if dif:
+        bronze._liberar(persistida)
         return _diverge(resultado, dif)
-    return replace(resultado, linhas=candidatas, reconciliacao=INTEGRO)
+    return replace(resultado, linhas=candidatas, reconciliacao=INTEGRO, cache=persistida)
 
 
 # ---------------------------------------------------------------- envelope e diagnóstico
@@ -592,17 +596,20 @@ def publicar(
     linhas = gold.linhas.select(*GOLD_COLUNAS)
     controles = {"sum_vl_liquido": gold.controles["sum_vl_liquido"]}
 
-    _garantir_tabela(spark, destino, pol)
-    existia = bronze._competencia_existe(spark, destino, comp)
-    versao_anterior = _versao_atual(spark, destino)
-    publicar_competencia(spark, linhas, destino, comp, meta, evolucao_aditiva=evolucao_aditiva)
-    versao = _versao_atual(spark, destino)
-    ok, detalhe = _conferir_tabela(spark, destino, versao, linhas, controles, comp, pol)
-    if not ok:
-        bronze._reverter_competencia(spark, destino, comp, existia, versao_anterior, meta)
-        d = _diferenca("gravacao", "reconferencia_publicada", "multiconjunto igual", json.dumps(detalhe, default=str))
-        return _diverge(gold, [d])
-    return replace(gold, gravacao={**(gold.gravacao or {}), "destino": destino, "versao": versao, "id_execucao": id_execucao})
+    try:
+        _garantir_tabela(spark, destino, pol)
+        existia = bronze._competencia_existe(spark, destino, comp)
+        versao_anterior = _versao_atual(spark, destino)
+        publicar_competencia(spark, linhas, destino, comp, meta, evolucao_aditiva=evolucao_aditiva)
+        versao = _versao_atual(spark, destino)
+        ok, detalhe = _conferir_tabela(spark, destino, versao, linhas, controles, comp, pol)
+        if not ok:
+            bronze._reverter_competencia(spark, destino, comp, existia, versao_anterior, meta)
+            d = _diferenca("gravacao", "reconferencia_publicada", "multiconjunto igual", json.dumps(detalhe, default=str))
+            return _diverge(gold, [d])
+        return replace(gold, gravacao={**(gold.gravacao or {}), "destino": destino, "versao": versao, "id_execucao": id_execucao})
+    finally:
+        bronze._liberar(gold.cache)  # só depois da reconferência, em todo caminho
 
 
 def executar_gold(
@@ -640,6 +647,8 @@ def executar_gold(
     )
     gold = guardado.get("gold")
     if gold is None or not desfecho.autorizado_publicar:
+        if gold is not None:
+            bronze._liberar(gold.cache)
         return desfecho, gold
     contrato = contrato_mod.carregar_contrato(caminho_contrato)
     return desfecho, publicar(
@@ -756,12 +765,15 @@ def executar_gold_da_silver(
         veredito=evidencia.ACEITO, causa="JULGADO", codigo_saida=0,
         caminho_pacote=caminho_pacote, duracao_segundos=0.0, autorizado_publicar=True,
     )
-    return publicar(
-        spark, contrato, g, desfecho, destino=destino, id_execucao=id_execucao,
-        evolucao_aditiva=evolucao_aditiva,
-        metadados_extra={
-            "versao_silver": versao_silver,
-            "caminho_pacote": str(caminho_pacote),
-            "sha256_pacote": sha_pacote,
-        },
-    )
+    try:
+        return publicar(
+            spark, contrato, g, desfecho, destino=destino, id_execucao=id_execucao,
+            evolucao_aditiva=evolucao_aditiva,
+            metadados_extra={
+                "versao_silver": versao_silver,
+                "caminho_pacote": str(caminho_pacote),
+                "sha256_pacote": sha_pacote,
+            },
+        )
+    finally:
+        bronze._liberar(g.cache)
