@@ -1,0 +1,40 @@
+{
+  "acceptance_tier": 1,
+  "accepted_at": "2026-09-24T17:32:52Z",
+  "accepted_by": "converge-loop",
+  "contract": "AcceptanceRecord/v1",
+  "gate_outcomes": {
+    "authorization": {
+      "code": "AUTHORIZATION_VALID",
+      "status": "pass"
+    },
+    "evaluation": {
+      "code": "EVAL_PASSED",
+      "status": "pass"
+    },
+    "evidence": {
+      "code": "EVIDENCE_SATISFIED",
+      "proof": [
+        "format v3 or earlier: v4 policy receipts are not required"
+      ],
+      "status": "pass"
+    },
+    "preflight": {
+      "code": "PREFLIGHT_PASSED",
+      "status": "pass",
+      "warnings": []
+    }
+  },
+  "outcome": {
+    "code": "ACCEPTED_TIER_1",
+    "status": "accepted"
+  },
+  "receipts": [],
+  "subject": {
+    "attempt_id": "39b5002a-0914-4257-ad77-f55e50a9db20",
+    "authorization_ref": "hmac-sha256-v3:85d3c104:34117010bd08a87c77237f73ecf4930dbc13625382796de2c10065a70f1a11fd",
+    "base_commit": "580b214520072ef08d3b999ad1fe0008c7fab5e9",
+    "task_id": "T-20260924-perf-gold",
+    "task_revision_digest": "sha256:9b3f6d1848c62a73a4f95407ed6f1f183d7f5b72d9b2c23db77ef3caff8c0b14"
+  }
+}

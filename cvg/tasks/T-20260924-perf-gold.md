@@ -28,10 +28,14 @@ execution_backend: any
 signed_off: true
 signed_off_by: nobru
 signed_off_at: 2026-09-24T16:05:43Z
-accepted: false
-accepted_by: (none)
-accepted_at: (none)
+accepted: true
+accepted_by: converge-loop
+accepted_at: 2026-09-24T17:32:52Z
 signed_off_sig: hmac-sha256-v3:85d3c104:34117010bd08a87c77237f73ecf4930dbc13625382796de2c10065a70f1a11fd
+accepted_tier: 1
+accepted_attempt_id: 39b5002a-0914-4257-ad77-f55e50a9db20
+accepted_authorization_ref: hmac-sha256-v3:85d3c104:34117010bd08a87c77237f73ecf4930dbc13625382796de2c10065a70f1a11fd
+acceptance_record_digest: sha256:8365784e3f897689f16bf3fbb18e10eb908082f135c2d4acf9e1cb344749a9b1
 ---
 
 # Cache liberado e constraints num commit só na Gold
