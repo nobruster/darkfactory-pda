@@ -28,10 +28,14 @@ execution_backend: any
 signed_off: true
 signed_off_by: nobru
 signed_off_at: 2026-09-24T14:45:18Z
-accepted: false
-accepted_by: (none)
-accepted_at: (none)
+accepted: true
+accepted_by: converge-loop
+accepted_at: 2026-09-24T15:13:09Z
 signed_off_sig: hmac-sha256-v3:85d3c104:d6d7c6fc998c8191c20c844f24ce201b4ac87ab6e4679901001811b5574ecb7a
+accepted_tier: 1
+accepted_attempt_id: 4813260e-6849-4d33-a630-450e90195b9b
+accepted_authorization_ref: hmac-sha256-v3:85d3c104:d6d7c6fc998c8191c20c844f24ce201b4ac87ab6e4679901001811b5574ecb7a
+acceptance_record_digest: sha256:4ac1c162b67379d445d295aab52ac5294a8bda39d48b37506dec3d6df8984631
 ---
 
 # Memória declarada, cache liberado e reconferência numa passada
