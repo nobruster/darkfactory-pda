@@ -2,7 +2,7 @@ FORK: B (task-driven) — rota única desde a v3.4 — o consenso sempre entrega
 
 > Projetado de `LANE-LIMPA-SUBSTITUIDAS.md` pelo Seamwise.
 > **Não edite aqui** — edite a recipe e rode `seamwise plan`.
-> origem sha256: `3b62c020a0478382113e52c264a6c143d2090836cb89876d15da50ba9f63260d`
+> origem sha256: `ad928d177c2bf8683b9cef3504c814de5f6238a3fbe2458f5f6dca8a92542718`
 
 ---
 
@@ -14,7 +14,7 @@ id: LANE-LIMPA-SUBSTITUIDAS
 name: Limpeza do preparo de execuções substituídas lane
 owner: medalhao
 seam_id: SEAM-LIMPA-SUBSTITUIDAS
-source_seam_sha256: b42c7f3e0e3d690107c9bc9ea6f210895282aa94294122df923a9d58d5d1c70b
+source_seam_sha256: 02be7477392925b75e5d60e068f38963938d6ae69b299c969b7fe7f387b60420
 legs:
 - LEG-LIMPA-SUBSTITUIDAS
 ---

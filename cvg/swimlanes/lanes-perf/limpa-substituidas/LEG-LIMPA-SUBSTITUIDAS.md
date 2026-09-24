@@ -1,6 +1,6 @@
 > Projetado de `LEG-LIMPA-SUBSTITUIDAS.md` pelo Seamwise.
 > **Não edite aqui** — edite a recipe e rode `seamwise plan`.
-> origem sha256: `b269155d2ea899dc1e45ac0525192f5a7f242ac76567adb865adb50dc54e12a0`
+> origem sha256: `e802efdeae4a78f0d5f3e45f0503a3359e732adb8bec92698c7de003a7042efa`
 
 ---
 
@@ -20,7 +20,9 @@ produces:
 tasks:
 - id: T-20260924-limpa-substituidas
   title: Limpar o preparo de execuções substituídas
-  goal: Não deixar sobras de execuções antigas.
+  goal: Não deixar sobras de execuções antigas. Para rodar testes, o ÚNICO comando liberado ao agente
+    é `docker compose -f infra/docker-compose.yml exec -T spark python3 -m pytest <arquivo> -k <cenarios>`
+    — outras formas são recusadas pela permissão.
   done_condition: O preparo de execução substituída cuja publicação foi conferida é apagado; revertida,
     em curso ou sem commit fica.
   effort: S
@@ -98,7 +100,7 @@ tasks:
   - src/pda
   rollback: Reverter os arquivos tocados ao commit assentado; remover os criados.
   observability: execuções com memória herdada ou cache não liberado
-source_seam_sha256: b42c7f3e0e3d690107c9bc9ea6f210895282aa94294122df923a9d58d5d1c70b
+source_seam_sha256: 02be7477392925b75e5d60e068f38963938d6ae69b299c969b7fe7f387b60420
 ---
 # Nenhum preparo de execução conferida sobrevive
 

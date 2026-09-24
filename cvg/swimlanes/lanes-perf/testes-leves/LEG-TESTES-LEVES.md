@@ -1,6 +1,6 @@
 > Projetado de `LEG-TESTES-LEVES.md` pelo Seamwise.
 > **Não edite aqui** — edite a recipe e rode `seamwise plan`.
-> origem sha256: `23ca94f0551b9057b94e638bc36c8f6523cfb60d8b115c36f1795fed2c5ead1f`
+> origem sha256: `72069508b1f6ed1cce1c5a18f9643bf0a46285be7eb74b1ddaa254fdd5cc1b88`
 
 ---
 
@@ -20,7 +20,9 @@ produces:
 tasks:
 - id: T-20260924-testes-leves
   title: Cenário de teste montado uma vez por módulo
-  goal: Tirar dos testes a montagem da cadeia real a cada teste.
+  goal: Tirar dos testes a montagem da cadeia real a cada teste. Para rodar testes, o ÚNICO comando liberado
+    ao agente é `docker compose -f infra/docker-compose.yml exec -T spark python3 -m pytest <arquivo>
+    -k <cenarios>` — outras formas são recusadas pela permissão.
   done_condition: Os mesmos ids de teste de tests/test_gold.py e tests/test_gold_assuntos.py são coletados,
     nenhuma linha dentro de uma função test_* mudou, todos passam, e test_gold_assuntos leva menos da
     metade dos 551s medidos.
@@ -101,7 +103,7 @@ tasks:
   - src
   rollback: Reverter os arquivos tocados ao commit assentado; remover os criados.
   observability: execuções com memória herdada ou cache não liberado
-source_seam_sha256: fc066a6f247b110a4dbe01d7da2703c31510081255247b6f9aab1943e2f795e3
+source_seam_sha256: cca54e9a3f80b29246f12fee1ab79882004445eb595a3c77ee008aa93db0f2e2
 ---
 # Suíte de assuntos e gold mais rápida com os mesmos testes
 
