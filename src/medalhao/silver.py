@@ -317,8 +317,7 @@ def _conferir_tabela(
     """
     cols = list(SILVER_COLUNAS)
     lido = _ler_versao(spark, caminho, versao).where(F.col("competencia") == competencia).select(*cols)
-    so_esperado = esperado.select(*cols).exceptAll(lido).count()
-    so_lido = lido.exceptAll(esperado.select(*cols)).count()
+    so_esperado, so_lido = bronze._diferenca_numa_passada(esperado.select(*cols), lido)
     observados, _ = bronze.medir_controles(lido, politica)
     divergentes = bronze._controles_iguais(observados, controles, politica)
 
@@ -568,6 +567,14 @@ def executar_classificacao(
 
 
 def _gravar(spark, contrato, r, destino, preparo_raiz, id_execucao, versao_bronze, evolucao):
+    """Grava e reconfere; o que foi persistido só é liberado DEPOIS, em todo caminho (o finally)."""
+    try:
+        return _gravar_e_reconferir(spark, contrato, r, destino, preparo_raiz, id_execucao, versao_bronze, evolucao)
+    finally:
+        bronze._liberar(r.linhas)
+
+
+def _gravar_e_reconferir(spark, contrato, r, destino, preparo_raiz, id_execucao, versao_bronze, evolucao):
     pol = contrato.politica_decimal
     comp = r.competencia
     meta = _metadados_do_commit(r, id_execucao, versao_bronze)

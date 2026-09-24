@@ -80,6 +80,7 @@ class BronzeConferido:
     fechamento: Optional[dict] = None
     motivo: str = ""
     gravacao: Optional[dict] = None
+    cache: Optional[DataFrame] = field(default=None, repr=False, compare=False)
 
     @property
     def controles_divergentes(self) -> Tuple[str, ...]:
@@ -89,11 +90,42 @@ class BronzeConferido:
 # ---------------------------------------------------------------- sessão
 
 
-def criar_sessao(nome: str = "bronze") -> SparkSession:
+MEMORIA_DRIVER_PADRAO = "1g"
+ADAPTATIVO_PADRAO = True
+PARTICOES_SHUFFLE_PADRAO = 8
+# O heap efetivo (maxMemory) fica abaixo do -Xmx: a JVM desconta um espaço de sobrevivente.
+FOLGA_DO_HEAP = 0.85
+
+
+class SessaoRecusada(RuntimeError):
+    """A sessão criada não tem o que o código declarou — não se roda sobre memória herdada."""
+
+
+def _bytes_de(memoria: str) -> int:
+    m = re.fullmatch(r"(\d+)([kmgt]?)b?", str(memoria).strip().lower())
+    if not m:
+        raise ValueError(f"memória ilegível: {memoria!r}")
+    return int(m.group(1)) * 1024 ** ("kmgt".index(m.group(2)) + 1 if m.group(2) else 0)
+
+
+def heap_efetivo(spark: SparkSession) -> int:
+    """O heap que a JVM TEM — a propriedade de configuração não prova nada numa JVM já iniciada."""
+    return int(spark._jvm.java.lang.Runtime.getRuntime().maxMemory())
+
+
+def criar_sessao(
+    nome: str = "bronze",
+    memoria_driver: str = MEMORIA_DRIVER_PADRAO,
+    adaptativo: bool = ADAPTATIVO_PADRAO,
+    particoes_shuffle: int = PARTICOES_SHUFFLE_PADRAO,
+) -> SparkSession:
     import os
 
     construtor = (
         SparkSession.builder.appName(nome)
+        .config("spark.driver.memory", memoria_driver)
+        .config("spark.sql.adaptive.enabled", str(bool(adaptativo)).lower())
+        .config("spark.sql.shuffle.partitions", str(int(particoes_shuffle)))
         .config("spark.sql.ansi.enabled", "true")
         .config("spark.sql.extensions", "io.delta.sql.DeltaSparkSessionExtension")
         .config("spark.sql.catalog.spark_catalog", "org.apache.spark.sql.delta.catalog.DeltaCatalog")
@@ -113,7 +145,12 @@ def criar_sessao(nome: str = "bronze") -> SparkSession:
         )
     spark = construtor.getOrCreate()
     spark.conf.set("spark.sql.ansi.enabled", "true")
+    spark.conf.set("spark.sql.adaptive.enabled", str(bool(adaptativo)).lower())
+    spark.conf.set("spark.sql.shuffle.partitions", str(int(particoes_shuffle)))
     spark.sparkContext.setLogLevel("WARN")
+    efetivo, declarado = heap_efetivo(spark), _bytes_de(memoria_driver)
+    if efetivo < declarado * FOLGA_DO_HEAP:
+        raise SessaoRecusada(f"heap efetivo {efetivo} < declarado {declarado} ({memoria_driver})")
     return spark
 
 
@@ -496,6 +533,22 @@ def _competencia_existe(spark: SparkSession, destino: str, competencia: str) -> 
     return spark.read.format("delta").load(destino).where(F.col("competencia") == competencia).limit(1).count() > 0
 
 
+def _diferenca_numa_passada(esperado: DataFrame, lido: DataFrame) -> Tuple[int, int]:
+    """(só no esperado, só no lido) com UM exceptAll e as contagens.
+
+    |B−A| = |B| − |A| + |A−B|: os mesmos dois números que os dois exceptAll davam.
+    Multiconjuntos de mesmo tamanho em que um está contido no outro são iguais.
+    """
+    so_esperado = esperado.exceptAll(lido).count()
+    return so_esperado, lido.count() - esperado.count() + so_esperado
+
+
+def _liberar(*dfs) -> None:
+    for df in dfs:
+        if df is not None:
+            df.unpersist()
+
+
 def _conferir_tabela(
     spark: SparkSession, caminho: str, versao: int, esperado: DataFrame, controles: Dict[str, Any],
     competencia: str, politica, total_por_codigo: Optional[Dict[str, Decimal]] = None,
@@ -506,8 +559,7 @@ def _conferir_tabela(
     """
     cols = list(COLUNAS)
     lido = _ler_versao(spark, caminho, versao).where(F.col("competencia") == competencia).select(*cols)
-    so_esperado = esperado.select(*cols).exceptAll(lido).count()
-    so_lido = lido.exceptAll(esperado.select(*cols)).count()
+    so_esperado, so_lido = _diferenca_numa_passada(esperado.select(*cols), lido)
     observados, por_codigo = medir_controles(lido, politica)
     divergentes = _controles_iguais(observados, controles, politica)
     if total_por_codigo is not None and por_codigo != total_por_codigo:
@@ -629,6 +681,21 @@ def _medir(spark, contrato, competencia, raiz, procedencia) -> BronzeConferido:
     base = bruto.select(
         "especie_codigo", "especie_descricao", "vl_liquido", F.lit(competencia).alias("competencia")
     ).persist(StorageLevel.MEMORY_AND_DISK)
+    try:
+        return _medir_persistido(
+            spark, contrato, competencia, base, arquivos, particoes, dados, fora, objetos,
+            prefixo, prova, procedencia, ignorados,
+        )
+    except BaseException:
+        base.unpersist()
+        raise
+
+
+def _medir_persistido(
+    spark, contrato, competencia, base, arquivos, particoes, dados, fora, objetos, prefixo, prova,
+    procedencia, ignorados,
+) -> BronzeConferido:
+    pol = contrato.politica_decimal
     controles, por_codigo = medir_controles(base, pol)
     if controles["count_linhas"] == 0:
         base.unpersist()
@@ -696,6 +763,7 @@ def _medir(spark, contrato, competencia, raiz, procedencia) -> BronzeConferido:
         defeitos=tuple(defeitos),
         particoes=contagens,
         fechamento=fechamento,
+        cache=base if estado == INTEGRO else None,
     )
 
 
@@ -770,6 +838,20 @@ def publicar_bronze(
 
 
 def _gravar(
+    spark, contrato, medido, destino, preparo_raiz, id_execucao, versao_camada_anterior, evolucao,
+    metadados_extra=None, julgado=None,
+):
+    """Grava e reconfere; o cache só é liberado DEPOIS, em todo caminho (o finally)."""
+    try:
+        return _gravar_e_reconferir(
+            spark, contrato, medido, destino, preparo_raiz, id_execucao, versao_camada_anterior, evolucao,
+            metadados_extra, julgado,
+        )
+    finally:
+        _liberar(medido.cache, medido.linhas)
+
+
+def _gravar_e_reconferir(
     spark, contrato, medido, destino, preparo_raiz, id_execucao, versao_camada_anterior, evolucao,
     metadados_extra=None, julgado=None,
 ):
