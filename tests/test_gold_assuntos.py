@@ -22,7 +22,7 @@ from pyspark.sql import functions as F  # noqa: E402
 from pyspark.sql.types import DecimalType  # noqa: E402
 
 import test_gold as tg  # noqa: E402
-from test_gold import spark  # noqa: E402,F401  (a mesma sessão de teste)
+from test_gold import cadeias_por_modulo, spark  # noqa: E402,F401  (a mesma sessão de teste)
 from medalhao import bronze, gold_assuntos as ga, silver  # noqa: E402
 from pda.contrato import carregar_contrato  # noqa: E402
 
@@ -58,9 +58,18 @@ def _preparar(spark, tmp_path, *, gold_principal=True):
     d, s, _ = tg._cadeia_publicada(spark, tmp_path, cen)
     assert s.estado == silver.INTEGRO
     if gold_principal:
+        _gold_principal_publicada(spark, tmp_path, cen, d)
+    return cen, d, _contrato_com(cen, tmp_path, "com-grupos")
+
+
+def _gold_principal_publicada(spark, tmp_path, cen, d):
+    """Gold principal publicada sobre a cadeia — montada uma vez por módulo, copiada por teste."""
+    def montar():
         g = tg._gold_da_silver(spark, cen, d)
         assert g.estado == ga.INTEGRO, (g.estado, g.motivo)
-    return cen, d, _contrato_com(cen, tmp_path, "com-grupos")
+
+    texto_contrato = Path(cen.contrato).read_text(encoding="utf-8").replace(str(Path(tmp_path)), "<BASE>")
+    tg._copiar_cenario_montado(("gold-principal", cen.comp, cen.hash, texto_contrato), tmp_path, montar)
 
 
 def _rodar(spark, tmp_path, d, contrato, **kw):

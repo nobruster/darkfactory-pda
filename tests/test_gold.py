@@ -13,7 +13,9 @@ import decimal
 import hashlib
 import json
 import os
+import shutil
 import sys
+import tempfile
 import time
 from decimal import Decimal
 from pathlib import Path
@@ -780,7 +782,72 @@ def test_marca_de_procedencia_vira_evidencia(spark, tmp_path):
 # ---------------------------------------------------------------- Gold lê a Silver (SEAM-GOLD-LE-SILVER)
 
 
+_CADEIAS: dict = {}
+_RAIZ_CADEIAS: list = []
+
+
+@pytest.fixture(scope="module", autouse=True)
+def cadeias_por_modulo():
+    """A cadeia real de cada cenário é montada UMA vez por módulo; cada teste recebe uma cópia."""
+    yield
+    _CADEIAS.clear()
+    while _RAIZ_CADEIAS:
+        shutil.rmtree(_RAIZ_CADEIAS.pop(), ignore_errors=True)
+
+
+def _reapontar(obj, de, para):
+    """Cópia de `obj` com o prefixo `de` trocado por `para` em todo texto e caminho."""
+    if isinstance(obj, str):
+        return obj.replace(de, para)
+    if isinstance(obj, Path):
+        return Path(str(obj).replace(de, para))
+    if isinstance(obj, dict):
+        return {k: _reapontar(v, de, para) for k, v in obj.items()}
+    if isinstance(obj, (list, tuple)):
+        return type(obj)(_reapontar(v, de, para) for v in obj)
+    if dataclasses.is_dataclass(obj) and not isinstance(obj, type):
+        return dataclasses.replace(
+            obj, **{f.name: _reapontar(getattr(obj, f.name), de, para) for f in dataclasses.fields(obj) if f.init}
+        )
+    return obj
+
+
+def _copiar_cenario_montado(chave, base, construir):
+    """Monta `construir()` na primeira vez; depois copia o diretório montado e reescreve os
+    caminhos absolutos gravados nos `_delta_log` (as tabelas Delta usam caminhos relativos)."""
+    base = Path(base)
+    if chave not in _CADEIAS:
+        resultado = construir()
+        raiz = Path(tempfile.mkdtemp(prefix="cenario-base-"))
+        _RAIZ_CADEIAS.append(raiz)
+        shutil.copytree(base, raiz / "base", dirs_exist_ok=True)
+        _CADEIAS[chave] = (raiz / "base", str(base), resultado)
+        return resultado
+    origem, base_antiga, resultado = _CADEIAS[chave]
+    for filho in origem.iterdir():
+        if filho.name.startswith("c-"):
+            continue  # o cenário (contrato e lago) é o do próprio teste
+        alvo = base / filho.name
+        if filho.is_dir():
+            shutil.copytree(filho, alvo, dirs_exist_ok=True)
+        else:
+            shutil.copy2(filho, alvo)
+    for log in base.glob("*/_delta_log/*.json"):
+        texto = log.read_text(encoding="utf-8")
+        if base_antiga in texto:
+            log.write_text(texto.replace(base_antiga, str(base)), encoding="utf-8")
+            log.with_name(f".{log.name}.crc").unlink(missing_ok=True)  # o checksum era do texto antigo
+    return _reapontar(resultado, base_antiga, str(base))
+
+
 def _cadeia_publicada(spark, base, cen, *, com_pacote=True):
+    """Bronze, Silver publicada e os três destinos sob `base` — montados uma vez por módulo."""
+    texto_contrato = Path(cen.contrato).read_text(encoding="utf-8").replace(str(Path(base)), "<BASE>")
+    chave = ("cadeia", com_pacote, cen.comp, cen.hash, texto_contrato)
+    return _copiar_cenario_montado(chave, base, lambda: _montar_cadeia(spark, base, cen, com_pacote=com_pacote))
+
+
+def _montar_cadeia(spark, base, cen, *, com_pacote=True):
     """Bronze (pela ingestão julgada ou direto), Silver publicada e os três destinos sob `base`."""
     from medalhao import ingestao
 
