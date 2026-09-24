@@ -13,6 +13,17 @@ protegia `fabrica/contracts/` e deixava `_raw/` com 12 GB aberto.
 arquivo existe no papel e não protege nada — foi a objeção #11 do inss,
 onde `evidence/*-run.json` não casava com nenhum packet real.
 
+⚠ Até 2026-09-24 a cerca morta era IMPRESSA e não reprovava: o script
+dizia ".github/workflows — casa com ZERO arquivo" e em seguida CERCAS=OK.
+Um verificador que acusa e aprova na mesma saída é decoração (Regra 8).
+Agora cerca morta reprova, salvo isenção NOMEADA em MORTAS_ACEITAS, uma a
+uma e com o motivo — isenção genérica devolveria o mesmo furo (Regra 11).
+
+A simetria total entre as cercas NÃO é exigida, de propósito: as cercas de
+motor (converge/bin, task-spec/src...) valem só para o agente, e os padrões
+de segredo (**/.env, **/id_rsa...) só para o gate. Medido em 2026-09-24: 22
+assimetrias, todas intencionais.
+
 Token: CERCAS=OK|DIVERGEM|ERRO
 """
 import io
@@ -31,6 +42,14 @@ EXIGIDOS = [
     "cvg/docs/adrs",
     "evidence",
 ]
+
+# Cercas que casam com zero arquivo POR DECISÃO, cada uma com o motivo.
+MORTAS_ACEITAS = {
+    ".github/workflows": (
+        "decisão do dono em 2026-09-24: cerca preventiva — não há CI ainda, "
+        "e quando houver, quem roda a verificação já nasce cercado"
+    ),
+}
 
 
 def do_settings() -> set[str]:
@@ -91,6 +110,7 @@ def main() -> int:
     print()
     print("  cercas que apontam para caminho inexistente:")
     mortas = 0
+    aceitas = 0
     for alvo in sorted(s | g):
         if alvo.startswith("**") or "*" in alvo.split("/")[0]:
             continue
@@ -103,16 +123,28 @@ def main() -> int:
             pai = Path(base).parent if not Path(base).is_dir() else Path(base)
             padrao = alvo[len(str(pai)) :].lstrip("/") if pai != Path(".") else alvo
             casou = pai.is_dir() and any(pai.glob(padrao))
-            if not casou:
-                print(f"    {alvo}  — casa com ZERO arquivo")
-                mortas += 1
-        elif not Path(base).exists():
+        else:
+            casou = Path(base).exists()
+        if casou:
+            continue
+        if alvo in MORTAS_ACEITAS:
+            print(f"    {alvo}  — zero arquivo, ACEITA: {MORTAS_ACEITAS[alvo]}")
+            aceitas += 1
+        else:
             print(f"    {alvo}  — casa com ZERO arquivo")
             mortas += 1
-    if not mortas:
+    if not mortas and not aceitas:
         print("    nenhuma")
+    for alvo in sorted(MORTAS_ACEITAS):
+        if alvo not in s | g:
+            print(f"    aviso: isenção de {alvo} sem cerca correspondente — remova a isenção")
+        elif Path(alvo).exists():
+            print(f"    aviso: {alvo} passou a existir — a isenção pode sair")
 
     print()
+    if mortas:
+        print(f"  {mortas} cerca(s) morta(s): existem no papel e não protegem nada")
+        problemas += mortas
     if problemas:
         print(f"  {problemas} divergência(s) entre as cercas")
         print("CERCAS=DIVERGEM")
