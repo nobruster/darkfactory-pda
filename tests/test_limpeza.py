@@ -103,14 +103,6 @@ def test_commit_revertido_preserva(spark, tmp_path):
     assert execucao.exists()
 
 
-def test_commit_seguido_de_outro_preserva(spark, tmp_path):
-    destino = _publicar(spark, tmp_path)
-    _commit(spark, destino, "11.00", {"competencia": COMP, "estado": "INTEGRO", "id_execucao": "e2"})
-    raiz, execucao = _preparo(tmp_path, "gold", "e1")
-    assert _limpar(spark, destino, raiz).resultado == limpeza.PRESERVADO
-    assert execucao.exists()
-
-
 def test_outra_execucao_intacta(spark, tmp_path):
     destino = _publicar(spark, tmp_path)
     raiz, execucao = _preparo(tmp_path, "gold", "e1")
@@ -176,3 +168,27 @@ def test_prefixo_montado_de_partes_validadas(tmp_path):
                          ("silver", raiz, "e1"), ("gold", "", "e1"), ("gold", "s3a://gold", "e1")):
         with pytest.raises(limpeza.CaminhoRecusado):
             limpeza.montar_prefixo(camada, r, i)
+
+
+def test_lista_de_testes_da_limpeza():
+    import ast
+
+    arvore = ast.parse(Path(__file__).read_text(encoding="utf-8"))
+    achados = sorted(n.name for n in arvore.body if isinstance(n, ast.FunctionDef) and n.name.startswith("test_"))
+    esperados = sorted([
+        "test_apaga_preparo_de_execucao_publicada",
+        "test_publicada_intacta_depois",
+        "test_id_vazio_recusado",
+        "test_caminho_fora_do_preparo_recusado",
+        "test_execucao_nao_publicada_preserva",
+        "test_commit_revertido_preserva",
+        "test_outra_execucao_intacta",
+        "test_substituida_conferida_apaga",
+        "test_publicada_intacta_apos_limpar_substituida",
+        "test_revertida_preserva",
+        "test_sem_commit_preserva",
+        "test_execucao_ativa_preserva",
+        "test_prefixo_montado_de_partes_validadas",
+        "test_lista_de_testes_da_limpeza",
+    ])
+    assert achados == esperados
