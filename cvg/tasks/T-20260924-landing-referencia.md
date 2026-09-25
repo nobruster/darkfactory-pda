@@ -28,10 +28,14 @@ execution_backend: any
 signed_off: true
 signed_off_by: nobru
 signed_off_at: 2026-09-25T01:42:10Z
-accepted: false
-accepted_by: (none)
-accepted_at: (none)
+accepted: true
+accepted_by: converge-loop
+accepted_at: 2026-09-25T02:02:36Z
 signed_off_sig: hmac-sha256-v3:85d3c104:f6c2c20742ad825dbf6abdb431a6d096682f0ec28163fcef22ec4e0318f47da4
+accepted_tier: 1
+accepted_attempt_id: 1c735cd1-1c4a-47d7-8f4e-36ec0dd0bcb3
+accepted_authorization_ref: hmac-sha256-v3:85d3c104:f6c2c20742ad825dbf6abdb431a6d096682f0ec28163fcef22ec4e0318f47da4
+acceptance_record_digest: sha256:308eeef8f4423d7f66c2b4dd9c23a21b39715cf37009aaed04cfabf1c39a76e9
 ---
 
 # O dicionário e o glossário do INSS no landing, como vieram

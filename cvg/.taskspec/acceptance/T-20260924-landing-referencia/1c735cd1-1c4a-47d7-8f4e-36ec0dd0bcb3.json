@@ -1,0 +1,40 @@
+{
+  "acceptance_tier": 1,
+  "accepted_at": "2026-09-25T02:02:36Z",
+  "accepted_by": "converge-loop",
+  "contract": "AcceptanceRecord/v1",
+  "gate_outcomes": {
+    "authorization": {
+      "code": "AUTHORIZATION_VALID",
+      "status": "pass"
+    },
+    "evaluation": {
+      "code": "EVAL_PASSED",
+      "status": "pass"
+    },
+    "evidence": {
+      "code": "EVIDENCE_SATISFIED",
+      "proof": [
+        "format v3 or earlier: v4 policy receipts are not required"
+      ],
+      "status": "pass"
+    },
+    "preflight": {
+      "code": "PREFLIGHT_PASSED",
+      "status": "pass",
+      "warnings": []
+    }
+  },
+  "outcome": {
+    "code": "ACCEPTED_TIER_1",
+    "status": "accepted"
+  },
+  "receipts": [],
+  "subject": {
+    "attempt_id": "1c735cd1-1c4a-47d7-8f4e-36ec0dd0bcb3",
+    "authorization_ref": "hmac-sha256-v3:85d3c104:f6c2c20742ad825dbf6abdb431a6d096682f0ec28163fcef22ec4e0318f47da4",
+    "base_commit": "47e635d82beb770130752199117b5b72f81eb606",
+    "task_id": "T-20260924-landing-referencia",
+    "task_revision_digest": "sha256:f4f1fabda4e3fdb9d0d0685137c22beb49f68e66d23ee95982f4a6018045d6e3"
+  }
+}
