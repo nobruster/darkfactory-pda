@@ -28,10 +28,14 @@ execution_backend: any
 signed_off: true
 signed_off_by: nobru
 signed_off_at: 2026-09-25T18:05:46Z
-accepted: false
-accepted_by: (none)
-accepted_at: (none)
+accepted: true
+accepted_by: converge-loop
+accepted_at: 2026-09-25T19:20:42Z
 signed_off_sig: hmac-sha256-v3:85d3c104:3e1571f2c12460309d804e84aca6bb66a25b373d649f4586a5cfbebdfdef1226
+accepted_tier: 1
+accepted_attempt_id: 7721c311-2a5d-4397-b052-4926818d3a66
+accepted_authorization_ref: hmac-sha256-v3:85d3c104:3e1571f2c12460309d804e84aca6bb66a25b373d649f4586a5cfbebdfdef1226
+acceptance_record_digest: sha256:f9bd019d922b6e0ab036cd2d918b09e12f493abea91687a4fbc1ccd3f8449c67
 ---
 
 # Os assuntos evoluem por padrão
