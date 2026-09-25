@@ -1,0 +1,29 @@
+schema_version: 1
+status: SEAM_MAP=READY
+intent_id: DI-PDA-NOME-OFICIAL-GOLD
+source_recipe:
+  name: nome-oficial-recipe.yaml
+  sha256: cdec4fdd7a6d2d2f44c22162157b971901eba7bbf1bc2c4b50f95d82349948ad
+intent_sha256: f97d5ad7ff90ba904f5169263d8af1885696a3a712dd6a11f58c7e56a194158c
+system_map_sha256: 744a01a4513eaa2263afdadc1ed637a2ff63fb37f62760b052ad6bc70794be58
+evidence_sha256: b24f1acce2da18a69f0156627622bd52a0d9b80c6a7aa3953eedd95802337ee4
+decisions:
+- id: DEC-NOME-OFICIAL-NA-GOLD
+  path: seamwise/decisions/DEC-NOME-OFICIAL-NA-GOLD.md
+  status: accepted
+  sha256: 576ad6ec9c3f8d1c86c64f3260792a0926be1d60c1351818d5aed1d7ef315305
+seams:
+- id: SEAM-GOLD-NOME-OFICIAL
+  path: seamwise/seams/SEAM-GOLD-NOME-OFICIAL.md
+  owner: medalhao
+  evidence:
+  - E-ANCORA-202601
+  swimlane_id: LANE-GOLD-NOME-OFICIAL
+  sha256: 7c9a8df96f90fbe767b5c0082526bb26f6fb227ee20fda4b18c94445b11d887e
+- id: SEAM-FAT-ESPECIE-NOME-OFICIAL
+  path: seamwise/seams/SEAM-FAT-ESPECIE-NOME-OFICIAL.md
+  owner: medalhao
+  evidence:
+  - E-ANCORA-202601
+  swimlane_id: LANE-FAT-ESPECIE-NOME-OFICIAL
+  sha256: 404af2431105633c842f26b8a78f4874bd279f20dfb31ca6cf3d6f695111733a

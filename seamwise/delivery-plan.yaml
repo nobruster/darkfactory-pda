@@ -1,0 +1,33 @@
+schema_version: 1
+status: DELIVERY_PLAN=READY
+seam_map_sha256: 57e34959a3e7afd8cda7ec3ad34acab38cd7b848c1127ee3841569849369f480
+swimlanes:
+- id: LANE-GOLD-NOME-OFICIAL
+  seam_id: SEAM-GOLD-NOME-OFICIAL
+  owner: medalhao
+  path: seamwise/swimlanes/LANE-GOLD-NOME-OFICIAL.md
+  sha256: 56a2aa72d2c4b39ec2c07b93cfeb9cdfbe5d88b5de4f0e4261e549e139ad550c
+- id: LANE-FAT-ESPECIE-NOME-OFICIAL
+  seam_id: SEAM-FAT-ESPECIE-NOME-OFICIAL
+  owner: medalhao
+  path: seamwise/swimlanes/LANE-FAT-ESPECIE-NOME-OFICIAL.md
+  sha256: 7a20a72d582e87e3ba8c4ff45c8f40daf61d3a7c4406e101f12a64eb903acc6c
+legs:
+- id: LEG-GOLD-NOME-OFICIAL
+  seam_id: SEAM-GOLD-NOME-OFICIAL
+  swimlane_id: LANE-GOLD-NOME-OFICIAL
+  path: seamwise/legs/LEG-GOLD-NOME-OFICIAL.md
+  sha256: 958861aeb61900e6b71fe0ec04be8a08319c5186d2b62877ee6452748b645f94
+- id: LEG-FAT-ESPECIE-NOME-OFICIAL
+  seam_id: SEAM-FAT-ESPECIE-NOME-OFICIAL
+  swimlane_id: LANE-FAT-ESPECIE-NOME-OFICIAL
+  path: seamwise/legs/LEG-FAT-ESPECIE-NOME-OFICIAL.md
+  sha256: 4ca1595dbc10fb8ac6a8dba007bf1d8bcab2051197791380a51f5cc4da464ae9
+steel_thread:
+- LEG-GOLD-NOME-OFICIAL
+- LEG-FAT-ESPECIE-NOME-OFICIAL
+objections: []
+contentions: []
+steel_thread_path: seamwise/steel-thread.md
+steel_thread_sha256: 06719a0b3bf28ad2814ee97a5a26d64d47a9352820e5a0069ff055510d1eabf7
+review_authority_sha256: 666707608c160aeffb2312a5f7fd435f6deca020024284b1c5dfcf33f1078d90

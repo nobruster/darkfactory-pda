@@ -1,0 +1,10 @@
+{
+  "disposition": "accepted",
+  "draft_sha256": "988e04fd566deabfbc98087aeb0b2a5f2f9255deba39e46bdd6d1082247f86ec",
+  "fixture": false,
+  "plan_sha256": "6d31bfc1cc9c9fda2c8e96488a613dcf7d20739bf2724d3133e58ffcefecc426",
+  "reason": "Pass 4 da receita D fechado na R3. Duas costuras: nome oficial na Gold principal e na fat_especie.",
+  "reviewed_at": "2026-09-25T13:54:25.570841+00:00",
+  "reviewer": "Bruno Nunes",
+  "schema_version": 1
+}

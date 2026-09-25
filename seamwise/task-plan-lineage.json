@@ -1,0 +1,39 @@
+{
+  "contract": "SeamwiseTaskPlanLineage/v1",
+  "delivery_plan_sha256": "6d31bfc1cc9c9fda2c8e96488a613dcf7d20739bf2724d3133e58ffcefecc426",
+  "engine_version": "0.2.0",
+  "intent": {
+    "id": "DI-PDA-NOME-OFICIAL-GOLD",
+    "sha256": "f97d5ad7ff90ba904f5169263d8af1885696a3a712dd6a11f58c7e56a194158c"
+  },
+  "review": {
+    "fixture": false,
+    "plan_sha256": "6d31bfc1cc9c9fda2c8e96488a613dcf7d20739bf2724d3133e58ffcefecc426",
+    "reviewed_at": "2026-09-25T13:54:25.570841+00:00",
+    "reviewer": "Bruno Nunes",
+    "sha256": "e2a9f549d597c3f15f78ec3217259c560d66cd953e70596f3ed0af8e76f9dea2"
+  },
+  "task_plan": {
+    "contract": "TaskPlan/v1",
+    "digest": "94d5cde1ce56c1abc8f9dcf5e88c4e2b5397cda6ee15ac693bacd9e86c33c041",
+    "path": "seamwise/task-plan.json"
+  },
+  "units": {
+    "T-20260925-fat-especie-nome-oficial": {
+      "intent": "DI-PDA-NOME-OFICIAL-GOLD",
+      "leg": "LEG-FAT-ESPECIE-NOME-OFICIAL",
+      "seam": "SEAM-FAT-ESPECIE-NOME-OFICIAL",
+      "source_sha256": "4ca1595dbc10fb8ac6a8dba007bf1d8bcab2051197791380a51f5cc4da464ae9",
+      "swimlane": "LANE-FAT-ESPECIE-NOME-OFICIAL",
+      "unit_id": "T-20260925-fat-especie-nome-oficial"
+    },
+    "T-20260925-gold-nome-oficial": {
+      "intent": "DI-PDA-NOME-OFICIAL-GOLD",
+      "leg": "LEG-GOLD-NOME-OFICIAL",
+      "seam": "SEAM-GOLD-NOME-OFICIAL",
+      "source_sha256": "958861aeb61900e6b71fe0ec04be8a08319c5186d2b62877ee6452748b645f94",
+      "swimlane": "LANE-GOLD-NOME-OFICIAL",
+      "unit_id": "T-20260925-gold-nome-oficial"
+    }
+  }
+}
