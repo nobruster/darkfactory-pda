@@ -1,0 +1,228 @@
+{
+  "schema_version": "1.0",
+  "pass": "4-consensus",
+  "adversary": {
+    "engine_id": "codex",
+    "model": "codex",
+    "family": "openai",
+    "engine_version": "codex-cli 0.155.0",
+    "sandbox_mode": "read-only"
+  },
+  "author": {
+    "model": "claude",
+    "family": "anthropic"
+  },
+  "verdict": "REVISE",
+  "prompt_sha256": "a18acc94b7e3e594b141c9a356fd1321bdb33bdeb0562d5e33b696389fe60b2d",
+  "inputs": [
+    {
+      "path": "bronze-nomeia-o-landing/LEG-BRONZE-NOMEIA-O-LANDING.md",
+      "sha256": "f239708bedf2e93fae8b1fdfb7ecf611aa86455d0510bec65e3d7d9a4013dd94"
+    },
+    {
+      "path": "bronze-nomeia-o-landing/_lane.md",
+      "sha256": "62f79e3305f7a729ac46a5ecdc4ae220d158bc35d994955f3a2b6fd564756d36"
+    },
+    {
+      "path": "bronze-referencia/LEG-BRONZE-REFERENCIA.md",
+      "sha256": "e61cf4f068aba60559ad7d584248cd1764249a1e77d6d70a9f578f0acdf4e3b2"
+    },
+    {
+      "path": "bronze-referencia/_lane.md",
+      "sha256": "a3d143994a9fd2cdb5631f521051cb16a24a557e11f98e310d802f84f6aee0e4"
+    },
+    {
+      "path": "especie-da-bronze/LEG-ESPECIE-DA-BRONZE.md",
+      "sha256": "18f660d91bac3f8880060ab12b461b7f905ded656a975262e71c204697eaf811"
+    },
+    {
+      "path": "especie-da-bronze/_lane.md",
+      "sha256": "8bdd4fbf0e0c76b6ac86e4673baa40a608fe7a30fecf066675c5217693602d2f"
+    },
+    {
+      "path": "gold-referencia/LEG-GOLD-REFERENCIA.md",
+      "sha256": "242f73ddf985f3b6d9f898fcc0d78fae1c74e658b7b0703c38a856e2d63f9288"
+    },
+    {
+      "path": "gold-referencia/_lane.md",
+      "sha256": "b167d526ff16089144b0af1b6b0e84c593b56364397b4fc66507b3f13296a65e"
+    },
+    {
+      "path": "landing-referencia/LEG-LANDING-REFERENCIA.md",
+      "sha256": "9c3fc26da40a4733028c8f27a7564fd1dbdcd9f3ab374cfbf2c0e2bf492893cd"
+    },
+    {
+      "path": "landing-referencia/_lane.md",
+      "sha256": "9ae8d36abcdde4e4b75f796a94cd0dd31e0afc7aefe440d936983c0f3cadb279"
+    },
+    {
+      "path": "silver-glossario/LEG-SILVER-GLOSSARIO.md",
+      "sha256": "aa9b43210ef1085f11c9676ad7572735fa4d88bce41aadd310ce452d88907ecb"
+    },
+    {
+      "path": "silver-glossario/_lane.md",
+      "sha256": "741f4da4a1170f1938b2859513bdc1091960d2be5be272ebc578643fb182cded"
+    }
+  ],
+  "objections": [
+    {
+      "id": "C1",
+      "severity": "high",
+      "rank": 1,
+      "attack_class": "cross-lane-interface",
+      "swimlane": "gold-referencia",
+      "leg": "LEG-GOLD-REFERENCIA",
+      "title": "A condi\u00e7\u00e3o de consumo conjunto n\u00e3o identifica as vers\u00f5es aprovadas",
+      "location": {
+        "plan_file": "cvg/swimlanes/lanes-ref/gold-referencia/LEG-GOLD-REFERENCIA.md",
+        "section": "tasks[0].behavior B-1 e B-2"
+      },
+      "evidence": "B-1 publica e depois reconfere cada commit; B-2 declara publica\u00e7\u00f5es independentes e permite consumo conjunto somente quando ambas estiverem INTEGRO. Os estados s\u00e3o prometidos no resultado da chamada, mas n\u00e3o h\u00e1 contrato que os vincule \u00e0s vers\u00f5es Gold que o consumidor deve abrir.",
+      "body": "Contraexemplo: uma execu\u00e7\u00e3o termina com ambas INTEGRO; outra substitui dim_especie e falha antes de concluir dim_termo. Um consumidor que abre as tabelas atuais pode combinar a esp\u00e9cie nova com o termo anterior usando o sucesso da execu\u00e7\u00e3o anterior. Tamb\u00e9m pode observar um commit antes de sua reconfer\u00eancia. O id_execucao nos metadados n\u00e3o especifica, sozinho, como reconhecer um par aprovado nem como excluir um commit DIVERGE. A independ\u00eancia das publica\u00e7\u00f5es \u00e9 permitida; a promessa de leitura conjunta segura permanece sem interface verific\u00e1vel.",
+      "cites": [
+        "cvg/swimlanes/lanes-ref/gold-referencia/LEG-GOLD-REFERENCIA.md \u2014 B-1/B-2",
+        "cvg/docs/adrs/0015-every-source-file-passes-landing-bronze-silver-gold-reference-included.md \u2014 Decision: consumo l\u00ea da Gold; Consequences: consumidor ser\u00e1 tratado na receita B"
+      ],
+      "resolution": {
+        "disposition": "ACCEPT",
+        "decided_by": "Bruno Nunes",
+        "decided_at": "2026-09-25T01:39:35Z",
+        "owner": "Bruno Nunes",
+        "risk_residual": "Aceito, e adiado para a receita B, que define o consumo: o Postgres le a Gold nas versoes cujos commits das DUAS dimensoes estao INTEGRO com o mesmo id_execucao, nunca a versao atual. Decidido pelo dono ao fechar o Pass 4 da referencia pelo medalhao na R4, sem editar o plano."
+      }
+    },
+    {
+      "id": "C2",
+      "severity": "high",
+      "rank": 2,
+      "attack_class": "race",
+      "swimlane": "bronze-nomeia-o-landing",
+      "leg": "LEG-BRONZE-NOMEIA-O-LANDING",
+      "title": "Confer\u00eancias antes e depois n\u00e3o provam quais bytes a leitura consumiu",
+      "location": {
+        "plan_file": "cvg/swimlanes/lanes-ref/bronze-nomeia-o-landing/LEG-BRONZE-NOMEIA-O-LANDING.md",
+        "section": "tasks[0].behavior B-1; eval_1"
+      },
+      "evidence": "A listagem e a prova s\u00e3o capturadas antes da leitura e reconferidas antes do commit; B-1 conclui que, se a parti\u00e7\u00e3o mudou no meio, a Bronze devolve DIVERGE.",
+      "body": "Mesmo comparando todos os hashes nas duas confer\u00eancias, o seguinte intercalamento satisfaz a igualdade: captura dos objetos A; substitui\u00e7\u00e3o por B; leitura de B; restaura\u00e7\u00e3o de A; reconfer\u00eancia de A. O commit pode registrar hashes de A para dados derivados de B. O plano n\u00e3o declara uma garantia de imutabilidade durante a leitura nem vincula a leitura \u00e0s mesmas vers\u00f5es dos objetos conferidos. Assim, a conclus\u00e3o universal sobre mudan\u00e7as no meio \u00e9 mais forte que a prote\u00e7\u00e3o descrita. O cen\u00e1rio de teste listado n\u00e3o explicita esse caso de troca e restaura\u00e7\u00e3o.",
+      "cites": [
+        "cvg/swimlanes/lanes-ref/bronze-nomeia-o-landing/LEG-BRONZE-NOMEIA-O-LANDING.md \u2014 B-1 e test_particao_mudou_no_meio_diverge",
+        "cvg/docs/adrs/0015-every-source-file-passes-landing-bronze-silver-gold-reference-included.md \u2014 Decision: cada commit registra a camada que efetivamente leu"
+      ],
+      "resolution": {
+        "disposition": "ACCEPT",
+        "decided_by": "Bruno Nunes",
+        "decided_at": "2026-09-25T01:39:35Z",
+        "owner": "Bruno Nunes",
+        "risk_residual": "Aceito como premissa declarada: o landing e imutavel \u2014 o gravador recusa particao ocupada, o landing de referencia nunca sobrescreve \u2014, com um escritor por competencia. A troca-e-restauracao durante a leitura exigiria violar as duas. Decidido pelo dono ao fechar o Pass 4 da referencia pelo medalhao na R4, sem editar o plano."
+      }
+    },
+    {
+      "id": "C3",
+      "severity": "medium",
+      "rank": 3,
+      "attack_class": "cross-lane-interface",
+      "swimlane": "bronze-referencia",
+      "leg": "LEG-BRONZE-REFERENCIA",
+      "title": "id_execucao obrigat\u00f3rio no commit n\u00e3o tem origem contratada",
+      "location": {
+        "plan_file": "cvg/swimlanes/lanes-ref/bronze-referencia/LEG-BRONZE-REFERENCIA.md",
+        "section": "tasks[0].behavior B-1"
+      },
+      "evidence": "publicar(spark, landing, destino, arquivo, sha256) deve gravar id_execucao. A prova produzida pelo landing cont\u00e9m arquivo, sha256, tamanho, origem e instante, sem id_execucao.",
+      "body": "N\u00e3o est\u00e1 definido se id_execucao identifica a chamada Bronze, a carga dos dois arquivos ou a execu\u00e7\u00e3o anterior de landing. A assinatura n\u00e3o o recebe e o produtor n\u00e3o o fornece. Implementa\u00e7\u00f5es incompat\u00edveis podem gerar um identificador por arquivo, compartilhar um identificador entre publica\u00e7\u00f5es ou tentar extrair uma chave inexistente. A presen\u00e7a de qualquer string no commit pode passar pelo teste de linhagem sem provar a correla\u00e7\u00e3o desejada. Trata-se de uma lacuna no significado de um campo j\u00e1 exigido, n\u00e3o de pedido de novo rastreamento.",
+      "cites": [
+        "cvg/swimlanes/lanes-ref/bronze-referencia/LEG-BRONZE-REFERENCIA.md \u2014 B-1",
+        "cvg/swimlanes/lanes-ref/landing-referencia/LEG-LANDING-REFERENCIA.md \u2014 B-1: campos de _PROCEDENCIA.json"
+      ],
+      "resolution": {
+        "disposition": "ACCEPT",
+        "decided_by": "Bruno Nunes",
+        "decided_at": "2026-09-25T01:39:35Z",
+        "owner": "Bruno Nunes",
+        "risk_residual": "Aceito: o id_execucao e gerado por chamada (uuid), como a especie ja faz, e registrado em cada commit daquela chamada. Decidido pelo dono ao fechar o Pass 4 da referencia pelo medalhao na R4, sem editar o plano."
+      }
+    },
+    {
+      "id": "C4",
+      "severity": "medium",
+      "rank": 4,
+      "attack_class": "unverified-assumption",
+      "swimlane": "especie-da-bronze",
+      "leg": "LEG-ESPECIE-DA-BRONZE",
+      "title": "Os evals n\u00e3o demonstram a preserva\u00e7\u00e3o de todos os testes existentes",
+      "location": {
+        "plan_file": "cvg/swimlanes/lanes-ref/especie-da-bronze/LEG-ESPECIE-DA-BRONZE.md",
+        "section": "tasks[0].done_condition, behavior B-2 e eval_3"
+      },
+      "evidence": "B-2 exige que todos os test_* existentes permane\u00e7am intactos e passem; eval_3 seleciona apenas grava_nome_oficial_e_texto_da_fonte, reconferencia_acusa_linha_alterada e outra_competencia_intacta.",
+      "body": "Os evals apresentados demonstram apenas os cen\u00e1rios selecionados. N\u00e3o demonstram que a sele\u00e7\u00e3o cobre todos os testes anteriores nem que seus corpos permaneceram intactos. Uma regress\u00e3o fora dos filtros ou uma altera\u00e7\u00e3o de expectativa pode coexistir com os tr\u00eas evals verdes. A mesma diferen\u00e7a entre promessa e evid\u00eancia aparece em bronze-nomeia-o-landing, cujos evals_2/3 tamb\u00e9m selecionam subconjuntos. Sem outra verifica\u00e7\u00e3o declarada, o gate n\u00e3o sustenta a done_condition de regress\u00e3o integral.",
+      "cites": [
+        "cvg/swimlanes/lanes-ref/especie-da-bronze/LEG-ESPECIE-DA-BRONZE.md \u2014 done_condition, B-2, eval_3",
+        "cvg/swimlanes/lanes-ref/bronze-nomeia-o-landing/LEG-BRONZE-NOMEIA-O-LANDING.md \u2014 B-2, eval_2, eval_3"
+      ],
+      "resolution": {
+        "disposition": "ACCEPT",
+        "decided_by": "Bruno Nunes",
+        "decided_at": "2026-09-25T01:39:35Z",
+        "owner": "Bruno Nunes",
+        "risk_residual": "Aceito, coberto por fora: depois dos loops a cadeia confere por AST que nenhum test_* existente de test_bronze.py e test_especie.py mudou ou saiu, e roda a suite INTEIRA numa JVM so. Decidido pelo dono ao fechar o Pass 4 da referencia pelo medalhao na R4, sem editar o plano."
+      }
+    },
+    {
+      "id": "C5",
+      "severity": "medium",
+      "rank": 5,
+      "attack_class": "other",
+      "swimlane": "landing-referencia",
+      "leg": "LEG-LANDING-REFERENCIA",
+      "title": "O comando exclusivo autorizado exclui os pr\u00f3prios evals",
+      "location": {
+        "plan_file": "cvg/swimlanes/lanes-ref/landing-referencia/LEG-LANDING-REFERENCIA.md",
+        "section": "tasks[0].goal e evals"
+      },
+      "evidence": "O goal libera exclusivamente docker compose ... exec -T spark python3 -m pytest <arquivo> -k <cenarios>. Todos os evals usam docker compose ... exec -T spark sh -c, com la\u00e7os, grep e coleta pr\u00e9via.",
+      "body": "Executar literalmente os evals viola a restri\u00e7\u00e3o expl\u00edcita de comando; executar somente o comando autorizado omite a checagem de presen\u00e7a individual dos cen\u00e1rios. O agente recebe obriga\u00e7\u00f5es incompat\u00edveis e precisa escolher qual descumprir. O mesmo conflito textual se repete nas seis legs. N\u00e3o est\u00e1 declarado se os wrappers s\u00e3o uma exce\u00e7\u00e3o autorizada para o executor do gate.",
+      "cites": [
+        "cvg/swimlanes/lanes-ref/landing-referencia/LEG-LANDING-REFERENCIA.md \u2014 goal e evals",
+        "cvg/swimlanes/lanes-ref/silver-glossario/LEG-SILVER-GLOSSARIO.md \u2014 goal e evals"
+      ],
+      "resolution": {
+        "disposition": "ACCEPT",
+        "decided_by": "Bruno Nunes",
+        "decided_at": "2026-09-25T01:39:35Z",
+        "owner": "Bruno Nunes",
+        "risk_residual": "Refutado, como em todas as rodadas anteriores: a permissao de escopo minimo e do AGENTE; os evals sao executados pelo MOTOR, fora dela. Decidido pelo dono ao fechar o Pass 4 da referencia pelo medalhao na R4, sem editar o plano."
+      }
+    }
+  ],
+  "cross_lane_interfaces": [],
+  "fork": {
+    "choice": "B",
+    "reason": "Reproduz a rota j\u00e1 declarada nos seis _lane.md; n\u00e3o constitui escolha do advers\u00e1rio.",
+    "per_plan_declared": true
+  },
+  "open_questions": [
+    {
+      "q": "Qual contrato permite ao consumidor identificar e abrir exatamente as duas vers\u00f5es Gold que terminaram INTEGRO na execu\u00e7\u00e3o correspondente?",
+      "blocks_build": true
+    },
+    {
+      "q": "Existe uma garantia documentada de imutabilidade ou de leitura da mesma vers\u00e3o dos objetos do landing durante toda a publica\u00e7\u00e3o Bronze?",
+      "blocks_build": true
+    },
+    {
+      "q": "Qual \u00e9 o significado, a origem e o alcance de id_execucao em bronze_referencia?",
+      "blocks_build": true
+    },
+    {
+      "q": "Qual verifica\u00e7\u00e3o demonstra que todos os testes anteriores passaram sem altera\u00e7\u00e3o, al\u00e9m dos subconjuntos selecionados nos evals?",
+      "blocks_build": true
+    },
+    {
+      "q": "Os wrappers sh -c dos evals s\u00e3o autorizados apesar da exclusividade do comando direto de pytest?",
+      "blocks_build": true
+    }
+  ],
+  "rounds_run": 1
+}
