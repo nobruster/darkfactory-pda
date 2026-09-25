@@ -192,13 +192,38 @@ def test_tabela_de_quatro_colunas_evolui_aditiva(spark, tmp_path):
 
     contrato, g = _agregar(spark, tmp_path, esp)
     with pytest.raises(gold.EvolucaoRecusada):
-        _publicar(spark, tmp_path, contrato, g, destino)
+        _publicar(spark, tmp_path, contrato, g, destino, evolucao_aditiva=False)
     r, _ = _publicar(spark, tmp_path, contrato, g, destino, evolucao_aditiva=True)
     assert r.gravacao["destino"] == destino
 
     tabela = spark.read.format("delta").load(destino)
     assert tuple(tabela.columns) == gold.GOLD_COLUNAS
     assert _nomes_publicados(spark, destino) == {c: f"Nome {c}" for c in CODIGOS}
+    intacta = tabela.where(F.col("competencia") == "2026-02").collect()
+    assert sorted((r["especie_codigo"], r["vl_liquido_total"]) for r in intacta) == [
+        ("01", Decimal("10.00")), ("02", Decimal("20.00")),
+    ]
+    assert {r["nome_oficial"] for r in intacta} == {None}
+
+
+def test_gold_evolui_por_padrao_sem_sinalizador(spark, tmp_path):
+    cen = tg._cenario(spark, tmp_path)
+    d, s, _ = tg._cadeia_publicada(spark, tmp_path, cen)
+    esp = str(tmp_path / "especie")
+    _gravar_especie(spark, esp)
+    antiga = tg._df_gold(spark, [("01", "A", "10.00"), ("02", "B", "20.00")], "2026-02")
+    antiga.write.format("delta").partitionBy("competencia").save(d["gold"])
+    assert tuple(spark.read.format("delta").load(d["gold"]).columns) == gold.GOLD_COLUNAS[:4]
+
+    g = gold.executar_gold_da_silver(  # a entrada da carga real, sem passar evolucao_aditiva
+        spark, caminho_contrato=cen.contrato, silver_destino=d["silver"], bronze_destino=d["bronze"],
+        destino=d["gold"], preparo_raiz=d["prep_g"], id_execucao="g1", especie_destino=esp,
+    )
+    assert g.estado == gold.INTEGRO and g.gravacao["destino"] == d["gold"], (g.estado, g.motivo, g.diferencas)
+
+    tabela = spark.read.format("delta").load(d["gold"])
+    assert tuple(tabela.columns) == gold.GOLD_COLUNAS
+    assert _nomes_publicados(spark, d["gold"]) == {c: f"Nome {c}" for c in CODIGOS}
     intacta = tabela.where(F.col("competencia") == "2026-02").collect()
     assert sorted((r["especie_codigo"], r["vl_liquido_total"]) for r in intacta) == [
         ("01", Decimal("10.00")), ("02", Decimal("20.00")),

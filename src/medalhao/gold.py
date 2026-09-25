@@ -57,13 +57,30 @@ classificar = bronze.classificar
 bloqueia = bronze.bloqueia
 criar_sessao = bronze.criar_sessao
 verificar_evolucao = bronze.verificar_evolucao
-publicar_competencia = bronze.publicar_competencia
 ler_competencia_publicada = bronze.ler_competencia_publicada
 _delta_table = bronze._delta_table
 _versao_atual = bronze._versao_atual
 _historico = bronze._historico
 _ler_versao = bronze._ler_versao
 _diferenca = bronze._diferenca
+
+
+def publicar_competencia(
+    spark: SparkSession,
+    linhas: DataFrame,
+    destino: str,
+    competencia: str,
+    metadados: dict,
+    evolucao_aditiva: bool = False,
+) -> None:
+    """Como a da Bronze, mas a Gold de 4 colunas é publicada na tabela de 5: só `nome_oficial` ausente vira nulo.
+
+    Qualquer outra coluna removida, e toda troca de tipo, segue recusada por `verificar_evolucao`.
+    """
+    alvo = spark.read.format("delta").load(destino).schema
+    if "nome_oficial" in alvo.names and "nome_oficial" not in linhas.columns:
+        linhas = linhas.withColumn("nome_oficial", F.lit(None).cast(alvo["nome_oficial"].dataType))
+    bronze.publicar_competencia(spark, linhas, destino, competencia, metadados, evolucao_aditiva=evolucao_aditiva)
 
 
 @dataclass(frozen=True)
@@ -624,7 +641,7 @@ def publicar(
     *,
     destino: str = DESTINO_PADRAO,
     id_execucao: Optional[str] = None,
-    evolucao_aditiva: bool = False,
+    evolucao_aditiva: bool = True,
     metadados_extra: Optional[dict] = None,
 ) -> GoldReconciliado:
     """Passo POSTERIOR: publica se e somente se autorizado E pacote em disco E anexo conferido.
@@ -679,7 +696,7 @@ def executar_gold(
     id_execucao: Optional[str] = None,
     bronze_kwargs: Optional[dict] = None,
     silver_kwargs: Optional[dict] = None,
-    evolucao_aditiva: bool = False,
+    evolucao_aditiva: bool = True,
     especie_destino: Optional[str] = None,
 ):
     """Cadeia inteira sob `orquestracao.conduzir`; publica só com autorização, pacote e anexo."""
@@ -786,7 +803,7 @@ def executar_gold_da_silver(
     destino: str = DESTINO_PADRAO,
     preparo_raiz: str = PREPARO_PADRAO,
     id_execucao: Optional[str] = None,
-    evolucao_aditiva: bool = False,
+    evolucao_aditiva: bool = True,
     especie_destino: Optional[str] = None,
 ) -> GoldReconciliado:
     """Gold principal lendo SÓ a Silver publicada — nunca a landing nem o CSV.
