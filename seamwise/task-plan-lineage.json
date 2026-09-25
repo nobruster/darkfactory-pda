@@ -1,0 +1,71 @@
+{
+  "contract": "SeamwiseTaskPlanLineage/v1",
+  "delivery_plan_sha256": "943c5205f9092d192755722fe29d486632814ab237af146178e7d50e2d6789e3",
+  "engine_version": "0.2.0",
+  "intent": {
+    "id": "DI-PDA-REFERENCIA-MEDALHAO",
+    "sha256": "748d85ba85793da4f6df16a28fb384b5276043d258463905e73371697a1f1bfd"
+  },
+  "review": {
+    "fixture": false,
+    "plan_sha256": "943c5205f9092d192755722fe29d486632814ab237af146178e7d50e2d6789e3",
+    "reviewed_at": "2026-09-25T01:40:25.143164+00:00",
+    "reviewer": "Bruno Nunes",
+    "sha256": "d6639c72ba642f23df6375fe5f1619cd690f7d78c157b2de12246813e4aa1423"
+  },
+  "task_plan": {
+    "contract": "TaskPlan/v1",
+    "digest": "5165da112ec70d80ac36e342c932113424579508123aa8f55b207cef6ed3914d",
+    "path": "seamwise/task-plan.json"
+  },
+  "units": {
+    "T-20260924-bronze-nomeia-o-landing": {
+      "intent": "DI-PDA-REFERENCIA-MEDALHAO",
+      "leg": "LEG-BRONZE-NOMEIA-O-LANDING",
+      "seam": "SEAM-BRONZE-NOMEIA-O-LANDING",
+      "source_sha256": "cc373ab19aa8ec78b635dc592c7757e13288d1c0e4f1c9cfe15b3d7be0861b9b",
+      "swimlane": "LANE-BRONZE-NOMEIA-O-LANDING",
+      "unit_id": "T-20260924-bronze-nomeia-o-landing"
+    },
+    "T-20260924-bronze-referencia": {
+      "intent": "DI-PDA-REFERENCIA-MEDALHAO",
+      "leg": "LEG-BRONZE-REFERENCIA",
+      "seam": "SEAM-BRONZE-REFERENCIA",
+      "source_sha256": "b824945283031e0cf0654256934851d3e3f7e112581bdd398ff40c2f659ce94f",
+      "swimlane": "LANE-BRONZE-REFERENCIA",
+      "unit_id": "T-20260924-bronze-referencia"
+    },
+    "T-20260924-especie-da-bronze": {
+      "intent": "DI-PDA-REFERENCIA-MEDALHAO",
+      "leg": "LEG-ESPECIE-DA-BRONZE",
+      "seam": "SEAM-ESPECIE-DA-BRONZE",
+      "source_sha256": "98e93ad5af4478d5bd5e12fee8d722d9959b51fead523cce0e43fd759b666f6e",
+      "swimlane": "LANE-ESPECIE-DA-BRONZE",
+      "unit_id": "T-20260924-especie-da-bronze"
+    },
+    "T-20260924-gold-referencia": {
+      "intent": "DI-PDA-REFERENCIA-MEDALHAO",
+      "leg": "LEG-GOLD-REFERENCIA",
+      "seam": "SEAM-GOLD-REFERENCIA",
+      "source_sha256": "96301c7b1eb783f245821cb207c00dacebfbeddaba773b4a6dca3e6fc60dcfcb",
+      "swimlane": "LANE-GOLD-REFERENCIA",
+      "unit_id": "T-20260924-gold-referencia"
+    },
+    "T-20260924-landing-referencia": {
+      "intent": "DI-PDA-REFERENCIA-MEDALHAO",
+      "leg": "LEG-LANDING-REFERENCIA",
+      "seam": "SEAM-LANDING-REFERENCIA",
+      "source_sha256": "de1f5404b40e5f128709b1d735771cf15579acac24c77c45ad37b4da6967ef41",
+      "swimlane": "LANE-LANDING-REFERENCIA",
+      "unit_id": "T-20260924-landing-referencia"
+    },
+    "T-20260924-silver-glossario": {
+      "intent": "DI-PDA-REFERENCIA-MEDALHAO",
+      "leg": "LEG-SILVER-GLOSSARIO",
+      "seam": "SEAM-SILVER-GLOSSARIO",
+      "source_sha256": "a0cb1738d5975cf22b40787126adf528b53e02ba286b4bdd905a9fe59a31b4a7",
+      "swimlane": "LANE-SILVER-GLOSSARIO",
+      "unit_id": "T-20260924-silver-glossario"
+    }
+  }
+}

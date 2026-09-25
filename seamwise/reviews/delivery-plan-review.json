@@ -1,0 +1,10 @@
+{
+  "disposition": "accepted",
+  "draft_sha256": "dec8271bfdef03ce04f9db7cca2267467ecc528895242d2c1974dbcd80af0a05",
+  "fixture": false,
+  "plan_sha256": "943c5205f9092d192755722fe29d486632814ab237af146178e7d50e2d6789e3",
+  "reason": "Pass 4 da referencia pelo medalhao fechado na R4. Seis costuras: landing, bronze, silver e gold da referencia, e a Bronze nomeando o landing.",
+  "reviewed_at": "2026-09-25T01:40:25.143164+00:00",
+  "reviewer": "Bruno Nunes",
+  "schema_version": 1
+}

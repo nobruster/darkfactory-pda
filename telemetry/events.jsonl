@@ -40,3 +40,6 @@
 {"attributes":{"source":{"name":"corrige-produtor-recipe.yaml","sha256":"6628af5f7b88ce6dbe93458d2075df601e25aeff871020b137b9314a74fa180b"}},"authorization":false,"event":"seamwise.map","schema_version":1,"time":"2026-09-25T00:25:43.418341+00:00","token":"SEAM_MAP=READY"}
 {"attributes":{"lanes":3,"legs":3},"authorization":false,"event":"seamwise.plan","schema_version":1,"time":"2026-09-25T00:25:43.476218+00:00","token":"DELIVERY_PLAN=NEEDS_REVIEW"}
 {"attributes":{"fixture":false,"reviewer":"Bruno Nunes"},"authorization":false,"event":"seamwise.review","schema_version":1,"time":"2026-09-25T00:25:43.768499+00:00","token":"DELIVERY_PLAN=READY"}
+{"attributes":{"source":{"name":"referencia-recipe.yaml","sha256":"7ebbcc529306ea990007bfd5eb5088a1b537fe3c600cc427e7f011cff5e31829"}},"authorization":false,"event":"seamwise.map","schema_version":1,"time":"2026-09-25T01:40:24.754792+00:00","token":"SEAM_MAP=READY"}
+{"attributes":{"lanes":6,"legs":6},"authorization":false,"event":"seamwise.plan","schema_version":1,"time":"2026-09-25T01:40:24.841996+00:00","token":"DELIVERY_PLAN=NEEDS_REVIEW"}
+{"attributes":{"fixture":false,"reviewer":"Bruno Nunes"},"authorization":false,"event":"seamwise.review","schema_version":1,"time":"2026-09-25T01:40:25.170803+00:00","token":"DELIVERY_PLAN=READY"}

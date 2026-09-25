@@ -1,0 +1,77 @@
+schema_version: 1
+status: DELIVERY_PLAN=READY
+seam_map_sha256: 2e3faa104bdf97e7f566409ce2364863063e4e3f11bc3b9559e1d326b0209d5d
+swimlanes:
+- id: LANE-BRONZE-NOMEIA-O-LANDING
+  seam_id: SEAM-BRONZE-NOMEIA-O-LANDING
+  owner: medalhao
+  path: seamwise/swimlanes/LANE-BRONZE-NOMEIA-O-LANDING.md
+  sha256: 1d26ab33b02750bb18083da2ed8c67faee8b1f9be8213f6ea65d3c25198be880
+- id: LANE-LANDING-REFERENCIA
+  seam_id: SEAM-LANDING-REFERENCIA
+  owner: medalhao
+  path: seamwise/swimlanes/LANE-LANDING-REFERENCIA.md
+  sha256: cbe74eb05a6a62a9232eda01f9739aa88af0bd1594dbf9ea56c41e20f42b3c60
+- id: LANE-BRONZE-REFERENCIA
+  seam_id: SEAM-BRONZE-REFERENCIA
+  owner: medalhao
+  path: seamwise/swimlanes/LANE-BRONZE-REFERENCIA.md
+  sha256: c65557976174baf14ce50feebf85405928dc90e5394ca02d1a94cc34cdaf885d
+- id: LANE-SILVER-GLOSSARIO
+  seam_id: SEAM-SILVER-GLOSSARIO
+  owner: medalhao
+  path: seamwise/swimlanes/LANE-SILVER-GLOSSARIO.md
+  sha256: 8023a6c959d5ba2b0d2748864e56f1e1e79e240f43686b9cf762b8db0d54b6a6
+- id: LANE-ESPECIE-DA-BRONZE
+  seam_id: SEAM-ESPECIE-DA-BRONZE
+  owner: medalhao
+  path: seamwise/swimlanes/LANE-ESPECIE-DA-BRONZE.md
+  sha256: c62a71ab253f774bf7f21f9afec3ea69fdd29ca4a1d0e73da820655f9c62ae8d
+- id: LANE-GOLD-REFERENCIA
+  seam_id: SEAM-GOLD-REFERENCIA
+  owner: medalhao
+  path: seamwise/swimlanes/LANE-GOLD-REFERENCIA.md
+  sha256: c95325b832db47c630e1ef8c101529e046eb6c6ea49fa076764b7ca33f503e1a
+legs:
+- id: LEG-BRONZE-NOMEIA-O-LANDING
+  seam_id: SEAM-BRONZE-NOMEIA-O-LANDING
+  swimlane_id: LANE-BRONZE-NOMEIA-O-LANDING
+  path: seamwise/legs/LEG-BRONZE-NOMEIA-O-LANDING.md
+  sha256: cc373ab19aa8ec78b635dc592c7757e13288d1c0e4f1c9cfe15b3d7be0861b9b
+- id: LEG-LANDING-REFERENCIA
+  seam_id: SEAM-LANDING-REFERENCIA
+  swimlane_id: LANE-LANDING-REFERENCIA
+  path: seamwise/legs/LEG-LANDING-REFERENCIA.md
+  sha256: de1f5404b40e5f128709b1d735771cf15579acac24c77c45ad37b4da6967ef41
+- id: LEG-BRONZE-REFERENCIA
+  seam_id: SEAM-BRONZE-REFERENCIA
+  swimlane_id: LANE-BRONZE-REFERENCIA
+  path: seamwise/legs/LEG-BRONZE-REFERENCIA.md
+  sha256: b824945283031e0cf0654256934851d3e3f7e112581bdd398ff40c2f659ce94f
+- id: LEG-SILVER-GLOSSARIO
+  seam_id: SEAM-SILVER-GLOSSARIO
+  swimlane_id: LANE-SILVER-GLOSSARIO
+  path: seamwise/legs/LEG-SILVER-GLOSSARIO.md
+  sha256: a0cb1738d5975cf22b40787126adf528b53e02ba286b4bdd905a9fe59a31b4a7
+- id: LEG-ESPECIE-DA-BRONZE
+  seam_id: SEAM-ESPECIE-DA-BRONZE
+  swimlane_id: LANE-ESPECIE-DA-BRONZE
+  path: seamwise/legs/LEG-ESPECIE-DA-BRONZE.md
+  sha256: 98e93ad5af4478d5bd5e12fee8d722d9959b51fead523cce0e43fd759b666f6e
+- id: LEG-GOLD-REFERENCIA
+  seam_id: SEAM-GOLD-REFERENCIA
+  swimlane_id: LANE-GOLD-REFERENCIA
+  path: seamwise/legs/LEG-GOLD-REFERENCIA.md
+  sha256: 96301c7b1eb783f245821cb207c00dacebfbeddaba773b4a6dca3e6fc60dcfcb
+steel_thread:
+- LEG-BRONZE-NOMEIA-O-LANDING
+- LEG-LANDING-REFERENCIA
+- LEG-BRONZE-REFERENCIA
+- LEG-SILVER-GLOSSARIO
+- LEG-ESPECIE-DA-BRONZE
+- LEG-GOLD-REFERENCIA
+objections: []
+contentions: []
+steel_thread_path: seamwise/steel-thread.md
+steel_thread_sha256: 2ebe9cf4d9adc1c00146d6bc5ab9bc65cbac966e50959c309a333f96b7fbdb12
+review_authority_sha256: f531ec43e86160a4bc22cdd598df04733abad22dfc52acb91383ac13ebddbb2e

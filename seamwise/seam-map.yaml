@@ -1,0 +1,57 @@
+schema_version: 1
+status: SEAM_MAP=READY
+intent_id: DI-PDA-REFERENCIA-MEDALHAO
+source_recipe:
+  name: referencia-recipe.yaml
+  sha256: 7ebbcc529306ea990007bfd5eb5088a1b537fe3c600cc427e7f011cff5e31829
+intent_sha256: 748d85ba85793da4f6df16a28fb384b5276043d258463905e73371697a1f1bfd
+system_map_sha256: 8c9fdf820750859895750cdcd79b98ed0941c9c2c8719c31c6e7e9d9abb50f47
+evidence_sha256: b24f1acce2da18a69f0156627622bd52a0d9b80c6a7aa3953eedd95802337ee4
+decisions:
+- id: DEC-REFERENCIA-PELO-MEDALHAO
+  path: seamwise/decisions/DEC-REFERENCIA-PELO-MEDALHAO.md
+  status: accepted
+  sha256: df1b0e6ca2d01892c6e3107fa347d092df07a75bd3603116c43a50dd112d00d0
+seams:
+- id: SEAM-BRONZE-NOMEIA-O-LANDING
+  path: seamwise/seams/SEAM-BRONZE-NOMEIA-O-LANDING.md
+  owner: medalhao
+  evidence:
+  - E-ANCORA-202601
+  swimlane_id: LANE-BRONZE-NOMEIA-O-LANDING
+  sha256: d557e754c65ec03ca80b6b91f1ba4f9375a3d3cc4ba84bc5bb2e2de0a911f3c3
+- id: SEAM-LANDING-REFERENCIA
+  path: seamwise/seams/SEAM-LANDING-REFERENCIA.md
+  owner: medalhao
+  evidence:
+  - E-ANCORA-202601
+  swimlane_id: LANE-LANDING-REFERENCIA
+  sha256: 5b9e4ab4652a2661035ca7387787853f5b7d7ef517b3a5ef032f90727bac3ce7
+- id: SEAM-BRONZE-REFERENCIA
+  path: seamwise/seams/SEAM-BRONZE-REFERENCIA.md
+  owner: medalhao
+  evidence:
+  - E-ANCORA-202601
+  swimlane_id: LANE-BRONZE-REFERENCIA
+  sha256: 66e9e38de3bdccbd6d3dad3b2e8537adc007aa770ebabae44dc2a98618b39867
+- id: SEAM-SILVER-GLOSSARIO
+  path: seamwise/seams/SEAM-SILVER-GLOSSARIO.md
+  owner: medalhao
+  evidence:
+  - E-ANCORA-202601
+  swimlane_id: LANE-SILVER-GLOSSARIO
+  sha256: 166f68c576dfacd6ba523596a5443a856423123d9bc0e8ab72049768365183d6
+- id: SEAM-ESPECIE-DA-BRONZE
+  path: seamwise/seams/SEAM-ESPECIE-DA-BRONZE.md
+  owner: medalhao
+  evidence:
+  - E-ANCORA-202601
+  swimlane_id: LANE-ESPECIE-DA-BRONZE
+  sha256: 6859b0449c65bdc48ce0a881acfbf2182384fd803c978f25066090912eec00d7
+- id: SEAM-GOLD-REFERENCIA
+  path: seamwise/seams/SEAM-GOLD-REFERENCIA.md
+  owner: medalhao
+  evidence:
+  - E-ANCORA-202601
+  swimlane_id: LANE-GOLD-REFERENCIA
+  sha256: 28691dec36b0e62a10d297dde05d07e28d73af358d3ec706769c0e65a505c21f
