@@ -1,0 +1,22 @@
+schema_version: 1
+status: DELIVERY_PLAN=READY
+seam_map_sha256: 827f11b8a136f2a6e5b95930283e8f2a0bffdc11ff1010399a411e8e24b4a37e
+swimlanes:
+- id: LANE-GUARDA-NOME-OFICIAL
+  seam_id: SEAM-GUARDA-NOME-OFICIAL
+  owner: medalhao
+  path: seamwise/swimlanes/LANE-GUARDA-NOME-OFICIAL.md
+  sha256: 2b41863fc36ebebe4760bb561dedd5919ccb0ca676d3298f0759895c046792fd
+legs:
+- id: LEG-GUARDA-NOME-OFICIAL
+  seam_id: SEAM-GUARDA-NOME-OFICIAL
+  swimlane_id: LANE-GUARDA-NOME-OFICIAL
+  path: seamwise/legs/LEG-GUARDA-NOME-OFICIAL.md
+  sha256: fb232e94552d6730343a3b3c8f617b63307c231777d0e89ebef1c7824d379618
+steel_thread:
+- LEG-GUARDA-NOME-OFICIAL
+objections: []
+contentions: []
+steel_thread_path: seamwise/steel-thread.md
+steel_thread_sha256: d357d9a2d07aeec1d0d4c807c5b551895c6b5cfb8ba5908a23c372535386c1b5
+review_authority_sha256: 1db730eec5937ad57b6bbdecef32c375ba4fe904e58a05e705972a37fb357c73

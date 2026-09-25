@@ -1,0 +1,10 @@
+{
+  "disposition": "accepted",
+  "draft_sha256": "b0b942190da4baf4f4993323c5b05f120de4391b0fe0542c61fa4491c510d0d2",
+  "fixture": false,
+  "plan_sha256": "9e381aa84cee5e90d38ba449976649a596edd74c0f64fd81726f183c93589496",
+  "reason": "Pass 4 da receita F fechado na R1. Uma costura: a guarda registra a mudanca autorizada.",
+  "reviewed_at": "2026-09-25T16:50:51.040275+00:00",
+  "reviewer": "Bruno Nunes",
+  "schema_version": 1
+}

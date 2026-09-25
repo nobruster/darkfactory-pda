@@ -1,0 +1,22 @@
+schema_version: 1
+status: SEAM_MAP=READY
+intent_id: DI-PDA-GUARDA-NOME-OFICIAL
+source_recipe:
+  name: guarda-nome-recipe.yaml
+  sha256: 4861ccf599935f34d393d0cf4159f77df931d6fcdb86c0897320e099adbd8bd6
+intent_sha256: 7faa20335a3609a80a1d9feb548222d4a35409ab5eaf0a5c40bb4910cb1e14fe
+system_map_sha256: 2380f56df3871c1375ba158f51ee3121618030485ea8c3d5981984e82239c7cc
+evidence_sha256: b24f1acce2da18a69f0156627622bd52a0d9b80c6a7aa3953eedd95802337ee4
+decisions:
+- id: DEC-GUARDA-REGISTRA-NOME-OFICIAL
+  path: seamwise/decisions/DEC-GUARDA-REGISTRA-NOME-OFICIAL.md
+  status: accepted
+  sha256: 6efeb206592ef3417526b1464f7900d73fea6663f0ca4705f37d2c70f22e910a
+seams:
+- id: SEAM-GUARDA-NOME-OFICIAL
+  path: seamwise/seams/SEAM-GUARDA-NOME-OFICIAL.md
+  owner: medalhao
+  evidence:
+  - E-ANCORA-202601
+  swimlane_id: LANE-GUARDA-NOME-OFICIAL
+  sha256: 2f14c70090d54bb2484e9079b8417f8e5f4970cc35a5cdfee5d3035a8683605b

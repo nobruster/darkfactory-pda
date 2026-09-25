@@ -1,0 +1,31 @@
+{
+  "contract": "SeamwiseTaskPlanLineage/v1",
+  "delivery_plan_sha256": "9e381aa84cee5e90d38ba449976649a596edd74c0f64fd81726f183c93589496",
+  "engine_version": "0.2.0",
+  "intent": {
+    "id": "DI-PDA-GUARDA-NOME-OFICIAL",
+    "sha256": "7faa20335a3609a80a1d9feb548222d4a35409ab5eaf0a5c40bb4910cb1e14fe"
+  },
+  "review": {
+    "fixture": false,
+    "plan_sha256": "9e381aa84cee5e90d38ba449976649a596edd74c0f64fd81726f183c93589496",
+    "reviewed_at": "2026-09-25T16:50:51.040275+00:00",
+    "reviewer": "Bruno Nunes",
+    "sha256": "b1cb0cd84cb5f9556edddfbabfad9e0bb49b8a561310a2ced91806bc1cc63465"
+  },
+  "task_plan": {
+    "contract": "TaskPlan/v1",
+    "digest": "801d6d469761ea4dcdd62c0095b030e8ca4e7a0627970ab11f8a7a692dd364fe",
+    "path": "seamwise/task-plan.json"
+  },
+  "units": {
+    "T-20260925-guarda-registra-nome-oficial": {
+      "intent": "DI-PDA-GUARDA-NOME-OFICIAL",
+      "leg": "LEG-GUARDA-NOME-OFICIAL",
+      "seam": "SEAM-GUARDA-NOME-OFICIAL",
+      "source_sha256": "fb232e94552d6730343a3b3c8f617b63307c231777d0e89ebef1c7824d379618",
+      "swimlane": "LANE-GUARDA-NOME-OFICIAL",
+      "unit_id": "T-20260925-guarda-registra-nome-oficial"
+    }
+  }
+}

@@ -1,0 +1,105 @@
+{
+  "api_version": "taskspec.dev/v1",
+  "approved": true,
+  "kind": "TaskPlan",
+  "metadata": {
+    "delivery_plan_review_sha256": "b1cb0cd84cb5f9556edddfbabfad9e0bb49b8a561310a2ced91806bc1cc63465",
+    "delivery_plan_sha256": "9e381aa84cee5e90d38ba449976649a596edd74c0f64fd81726f183c93589496",
+    "name": "DI-PDA-GUARDA-NOME-OFICIAL",
+    "producer": "seamwise",
+    "producer_version": "0.2.0",
+    "seamwise_plan_status": "DELIVERY_PLAN=READY",
+    "source": "seamwise/task-plan.json"
+  },
+  "units": [
+    {
+      "agent": "any",
+      "anti_patterns": [
+        "Do not recalcular ou reescrever todas as impressões: apagaria a proteção sobre as outras 47; instead trocar só o token nomeado.",
+        "Do not afrouxar a comparação da guarda: Regra 3: nunca ajustar o verificador para passar; instead registrar a mudança autorizada, e só ela.",
+        "Do not tirar test_gold.py de MODULOS: a guarda deixaria de proteger a Gold; instead manter MODULOS."
+      ],
+      "behaviors": [
+        {
+          "given": "a guarda, que acusa test_gold.py::test_commit_carrega_a_forma porque a sua tupla literal ganhou 'nome_oficial' por exceção nomeada (receita D)",
+          "id": "B-1",
+          "then": "dentro de _ANTES_GOLD, o token 'commit_carrega_a_forma a48ab419462c1eba 1' passa a 'commit_carrega_a_forma 942ea6bcdf6c9ad3 1' — a impressão medida no contêiner, com o mesmo método da guarda (16 hex do sha256 do ast.dump, Python 3.10.12) —, e uma linha de comentário acima de _ANTES_GOLD registra a exceção: 'commit_carrega_a_forma: nome_oficial na tupla — DEC-NOME-OFICIAL-NA-GOLD, 2026-09-25'. As outras 47 impressões, _ANTES_ASSUNTOS, MODULOS, as funções de apoio e os quatro test_* da guarda ficam EXATAMENTE como estão.",
+          "when": "a tarefa atualiza a guarda"
+        },
+        {
+          "given": "a guarda atualizada",
+          "id": "B-2",
+          "then": "test_corpo_das_funcoes_test_intacto passa, e continua acusando qualquer OUTRA mudança em test_gold.py ou test_gold_assuntos.py; test_mesmos_ids_coletados, test_nenhum_skip_ou_xfail e test_copia_isolada_do_cenario_base passam sem edição. Nenhum cenário usa skip, xfail ou importorskip.",
+          "when": "a guarda roda"
+        }
+      ],
+      "context": "Intent DI-PDA-GUARDA-NOME-OFICIAL; seam SEAM-GUARDA-NOME-OFICIAL; swimlane LANE-GUARDA-NOME-OFICIAL; capability leg LEG-GUARDA-NOME-OFICIAL. Done condition: Em tests/test_testes_leves.py muda EXATAMENTE o token 'commit_carrega_a_forma a48ab419462c1eba 1' para 'commit_carrega_a_forma 942ea6bcdf6c9ad3 1', mais um comentário que nomeia a exceção; os testes da guarda passam.",
+      "creates_paths": [],
+      "depends_on": [],
+      "do_not_touch": [
+        "_raw",
+        "contracts",
+        "cvg/docs/adrs",
+        "src",
+        "infra",
+        "tests/test_gold.py",
+        "tests/test_gold_assuntos.py"
+      ],
+      "done_condition": "Em tests/test_testes_leves.py muda EXATAMENTE o token 'commit_carrega_a_forma a48ab419462c1eba 1' para 'commit_carrega_a_forma 942ea6bcdf6c9ad3 1', mais um comentário que nomeia a exceção; os testes da guarda passam.",
+      "effort": "S",
+      "evals": [
+        {
+          "command": "docker compose -f infra/docker-compose.yml exec -T spark sh -c 'for c in corpo_das_funcoes_test_intacto mesmos_ids_coletados; do python3 -m pytest --collect-only -q tests/test_testes_leves.py -k \"$c\" 2>/dev/null | grep -q \"::\" || { echo \"EVAL=CENARIO_AUSENTE_$c\"; exit 1; }; done; python3 -m pytest -q tests/test_testes_leves.py -k \"corpo_das_funcoes_test_intacto or mesmos_ids_coletados\"'",
+          "description": "A guarda aceita a mudança registrada",
+          "expected_duration_sec": 10,
+          "id": "eval_1",
+          "terminal": false,
+          "verifies": [
+            "B-1",
+            "B-2"
+          ]
+        },
+        {
+          "command": "docker compose -f infra/docker-compose.yml exec -T spark sh -c 'for c in nenhum_skip_ou_xfail copia_isolada_do_cenario_base; do python3 -m pytest --collect-only -q tests/test_testes_leves.py -k \"$c\" 2>/dev/null | grep -q \"::\" || { echo \"EVAL=CENARIO_AUSENTE_$c\"; exit 1; }; done; python3 -m pytest -q tests/test_testes_leves.py -k \"nenhum_skip_ou_xfail or copia_isolada_do_cenario_base\"'",
+          "description": "O resto da guarda igual",
+          "expected_duration_sec": 10,
+          "id": "eval_2",
+          "terminal": false,
+          "verifies": [
+            "B-2"
+          ]
+        },
+        {
+          "command": "docker compose -f infra/docker-compose.yml exec -T spark sh -c 'for c in corpo_das_funcoes_test_intacto nenhum_skip_ou_xfail; do python3 -m pytest --collect-only -q tests/test_testes_leves.py -k \"$c\" 2>/dev/null | grep -q \"::\" || { echo \"EVAL=CENARIO_AUSENTE_$c\"; exit 1; }; done; python3 -m pytest -q tests/test_testes_leves.py -k \"corpo_das_funcoes_test_intacto or nenhum_skip_ou_xfail\"'",
+          "description": "Tudo da guarda",
+          "expected_duration_sec": 10,
+          "id": "eval_3",
+          "terminal": true,
+          "verifies": [
+            "B-1",
+            "B-2"
+          ]
+        }
+      ],
+      "execution_backend": "any",
+      "goal": "Registrar na guarda test_testes_leves.py a impressão nova de test_commit_carrega_a_forma, a única mudança autorizada pelo dono num teste selado da Gold. Para rodar testes, o ÚNICO comando liberado ao agente é `docker compose -f infra/docker-compose.yml exec -T spark python3 -m pytest <arquivo> -k <cenarios>`.",
+      "id": "T-20260925-guarda-registra-nome-oficial",
+      "observability": "mudanças em teste selado registradas na guarda",
+      "profile": "standard",
+      "required_tools": [
+        "git",
+        "bash",
+        "python3",
+        "pytest",
+        "docker"
+      ],
+      "rollback": "Reverter tests/test_testes_leves.py.",
+      "source_note": "seamwise/legs/LEG-GUARDA-NOME-OFICIAL.md#T-20260925-guarda-registra-nome-oficial",
+      "title": "A guarda dos testes selados registra a mudança autorizada na Gold",
+      "touches_paths": [
+        "tests/test_testes_leves.py"
+      ],
+      "why": "Registrar na guarda test_testes_leves.py a impressão nova de test_commit_carrega_a_forma, a única mudança autorizada pelo dono num teste selado da Gold. Para rodar testes, o ÚNICO comando liberado ao agente é `docker compose -f infra/docker-compose.yml exec -T spark python3 -m pytest <arquivo> -k <cenarios>`."
+    }
+  ]
+}
