@@ -28,10 +28,14 @@ execution_backend: any
 signed_off: true
 signed_off_by: nobru
 signed_off_at: 2026-09-25T00:26:26Z
-accepted: false
-accepted_by: (none)
-accepted_at: (none)
+accepted: true
+accepted_by: converge-loop
+accepted_at: 2026-09-25T00:50:06Z
 signed_off_sig: hmac-sha256-v3:85d3c104:4b4f2a06f6e44c59d2043adaf54a9596e6db860a6ce45352eacda0a83ab9ec48
+accepted_tier: 1
+accepted_attempt_id: bda78fe7-6e30-4c13-b367-1655af26c45a
+accepted_authorization_ref: hmac-sha256-v3:85d3c104:4b4f2a06f6e44c59d2043adaf54a9596e6db860a6ce45352eacda0a83ab9ec48
+acceptance_record_digest: sha256:3048f768d6f7788c7412567e74335d2a951252d454b05af1daff5b5302d30c14
 ---
 
 # Produtor e gravador com a gramática do juiz, carga única e rejeitos com o texto bruto
