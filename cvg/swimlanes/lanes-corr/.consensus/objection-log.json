@@ -1,0 +1,198 @@
+{
+  "schema_version": "1.0",
+  "pass": "4-consensus",
+  "adversary": {
+    "engine_id": "codex",
+    "model": "codex",
+    "family": "openai",
+    "engine_version": "codex-cli 0.155.0",
+    "sandbox_mode": "read-only"
+  },
+  "author": {
+    "model": "claude",
+    "family": "anthropic"
+  },
+  "verdict": "REVISE",
+  "prompt_sha256": "794ae8219713dd2bc0f534bec8a8f06f1ba02370b5f1d9538d8d0c647f418517",
+  "inputs": [
+    {
+      "path": "gramatica-do-juiz/LEG-GRAMATICA-DO-JUIZ.md",
+      "sha256": "43f8f77316f89d108fbe4cc2cc8a65b8e0f994c1bc70c6ded4c32a18389fd1cf"
+    },
+    {
+      "path": "gramatica-do-juiz/_lane.md",
+      "sha256": "ac89dbb54a2104b5e284f657e8823ca36cc583216c001106c3600e6a40519ef1"
+    },
+    {
+      "path": "produtor-e-gravador-corrigem/LEG-PRODUTOR-E-GRAVADOR-CORRIGEM.md",
+      "sha256": "85681c58d218263e68cfe07e2348c256eb66f787642d832313d7841b7aa01f34"
+    },
+    {
+      "path": "produtor-e-gravador-corrigem/_lane.md",
+      "sha256": "2d4da076c1a1ba56497884f08d3fba230674dd38ece1b56d161ef286b3f0f632"
+    },
+    {
+      "path": "vinculador-gramatica/LEG-VINCULADOR-GRAMATICA.md",
+      "sha256": "8dc3f24dcb330ae50a90b66ca4d679cf4f9868f6a0c0481dd01259dbc8e3d578"
+    },
+    {
+      "path": "vinculador-gramatica/_lane.md",
+      "sha256": "218cf38aaf7a0a4058ea0ad6b1c8062852c44fdbcf383c4289e3d5b6ccf0fa78"
+    }
+  ],
+  "objections": [
+    {
+      "id": "C1",
+      "severity": "high",
+      "rank": 1,
+      "attack_class": "cross-lane-interface",
+      "swimlane": "produtor-e-gravador-corrigem",
+      "leg": "LEG-PRODUTOR-E-GRAVADOR-CORRIGEM",
+      "title": "O isolamento dos rejeitos depende do valor padr\u00e3o do argumento",
+      "location": {
+        "plan_file": "cvg/swimlanes/lanes-corr/produtor-e-gravador-corrigem/LEG-PRODUTOR-E-GRAVADOR-CORRIGEM.md",
+        "section": "B-1; anti_patterns"
+      },
+      "evidence": "B-1 oferece --rejeitos e declara seu padr\u00e3o fora da tabela; o anti_pattern pro\u00edbe rejeitos dentro da tabela porque a Bronze os leria como dado.",
+      "body": "N\u00e3o est\u00e1 definido o comportamento quando --rejeitos aponta para o pr\u00f3prio destino ou para um descendente dele. Com ambos inicialmente vazios, a checagem de ocupa\u00e7\u00e3o n\u00e3o demonstra separa\u00e7\u00e3o. Uma implementa\u00e7\u00e3o que apenas usa o padr\u00e3o externo pode permitir essa configura\u00e7\u00e3o e contaminar a leitura da Bronze, ou deixar uma carga parcial ap\u00f3s gravar rejeitos. A obriga\u00e7\u00e3o existente de isolamento n\u00e3o tem um caso expl\u00edcito de recusa de destinos sobrepostos.",
+      "cites": [
+        "LEG-PRODUTOR-E-GRAVADOR-CORRIGEM.md \u00a7 B-1",
+        "LEG-PRODUTOR-E-GRAVADOR-CORRIGEM.md \u00a7 anti_patterns: gravar os rejeitos dentro do diret\u00f3rio da tabela"
+      ],
+      "resolution": {
+        "disposition": "ACCEPT",
+        "decided_by": "Bruno Nunes",
+        "decided_at": "2026-09-25T00:25:08Z",
+        "owner": "Bruno Nunes",
+        "risk_residual": "Aceito como residuo registrado: o padrao de --rejeitos fica FORA do diretorio da tabela, e so o dono ou o orquestrador passam o argumento. Uma guarda no codigo que recuse --rejeitos dentro do destino fica como proxima melhoria, em tarefa propria. Decidido pelo dono ao fechar o Pass 4 da correcao do produtor na R3, sem editar o plano."
+      }
+    },
+    {
+      "id": "C2",
+      "severity": "high",
+      "rank": 2,
+      "attack_class": "unverified-assumption",
+      "swimlane": "vinculador-gramatica",
+      "leg": "LEG-VINCULADOR-GRAMATICA",
+      "title": "Os evals n\u00e3o demonstram a preserva\u00e7\u00e3o das recusas de proced\u00eancia",
+      "location": {
+        "plan_file": "cvg/swimlanes/lanes-corr/vinculador-gramatica/LEG-VINCULADOR-GRAMATICA.md",
+        "section": "B-2; eval_2; eval_3"
+      },
+      "evidence": "B-2 exige que todos os test_* existentes passem. Os seletores omitem, entre outros, conteudo_divergente_nao_grava, conteudo_divergente_multiconjunto_com_mesma_soma_nao_grava, manifesto_mudou_antes_de_gravar_diverge e prova_divergente_nao_sobrescreve.",
+      "body": "A troca de ler_fonte altera precisamente a representa\u00e7\u00e3o usada na compara\u00e7\u00e3o de conte\u00fado. Os evals podem passar mesmo que uma parti\u00e7\u00e3o com o mesmo total e conte\u00fado diferente seja aceita. A preserva\u00e7\u00e3o textual dos testes n\u00e3o prova que continuam passando, e o plano n\u00e3o inclui uma execu\u00e7\u00e3o completa que cubra os testes omitidos.",
+      "cites": [
+        "tests/test_vincular_procedencia.py:134",
+        "tests/test_vincular_procedencia.py:144",
+        "tests/test_vincular_procedencia.py:198",
+        "tests/test_vincular_procedencia.py:267",
+        "cvg/docs/tech-spec/tech-spec-pda-beneficios.md \u00a7 Requirements R-7 e W-2"
+      ],
+      "resolution": {
+        "disposition": "ACCEPT",
+        "decided_by": "Bruno Nunes",
+        "decided_at": "2026-09-25T00:25:08Z",
+        "owner": "Bruno Nunes",
+        "risk_residual": "Aceito, coberto por fora: depois dos loops a cadeia roda a suite INTEIRA numa JVM so, que executa todos os testes existentes do vinculador, e confere por AST que nenhum test_* existente mudou. Decidido pelo dono ao fechar o Pass 4 da correcao do produtor na R3, sem editar o plano."
+      }
+    },
+    {
+      "id": "C3",
+      "severity": "high",
+      "rank": 3,
+      "attack_class": "unverified-assumption",
+      "swimlane": "produtor-e-gravador-corrigem",
+      "leg": "LEG-PRODUTOR-E-GRAVADOR-CORRIGEM",
+      "title": "A recusa sem \u00e2ncora fica fora dos evals ap\u00f3s mudan\u00e7as nas fixtures",
+      "location": {
+        "plan_file": "cvg/swimlanes/lanes-corr/produtor-e-gravador-corrigem/LEG-PRODUTOR-E-GRAVADOR-CORRIGEM.md",
+        "section": "B-2; eval_1\u2013eval_3"
+      },
+      "evidence": "B-2 autoriza mudan\u00e7as na \u00e2ncora da fixture contratos e em _rodar_main, mas os evals n\u00e3o selecionam test_contrato_nao_medido_recusa nem test_zero_linhas_nao_grava.",
+      "body": "Os testes omitidos dependem de recursos que esta tarefa pode alterar. Portanto, mesmo sem editar seus corpos, podem deixar de passar enquanto todos os evals ficam verdes. Isso deixa sem prova uma fronteira vinculante: impedir grava\u00e7\u00e3o com contrato NAO_MEDIDO.",
+      "cites": [
+        "tests/test_produtor.py:347",
+        "tests/test_produtor.py:356",
+        "cvg/docs/tech-spec/tech-spec-pda-beneficios.md \u00a7 Requirements R-1"
+      ],
+      "resolution": {
+        "disposition": "ACCEPT",
+        "decided_by": "Bruno Nunes",
+        "decided_at": "2026-09-25T00:25:08Z",
+        "owner": "Bruno Nunes",
+        "risk_residual": "Aceito, coberto por fora: a suite inteira executa contrato_nao_medido_recusa e zero_linhas_nao_grava; a AST confere que seus corpos nao mudaram. Decidido pelo dono ao fechar o Pass 4 da correcao do produtor na R3, sem editar o plano."
+      }
+    },
+    {
+      "id": "C4",
+      "severity": "medium",
+      "rank": 4,
+      "attack_class": "other",
+      "swimlane": "gramatica-do-juiz",
+      "leg": "LEG-GRAMATICA-DO-JUIZ",
+      "title": "Os evals usam um comando proibido pelo pr\u00f3prio goal",
+      "location": {
+        "plan_file": "cvg/swimlanes/lanes-corr/gramatica-do-juiz/LEG-GRAMATICA-DO-JUIZ.md",
+        "section": "goal; eval_1\u2013eval_3"
+      },
+      "evidence": "O goal libera exclusivamente exec -T spark python3 -m pytest <arquivo> -k <cenarios>; todos os evals usam exec -T spark sh -c, com la\u00e7o, --collect-only e grep.",
+      "body": "Executar literalmente os evals viola a restri\u00e7\u00e3o expressa; executar somente o comando permitido elimina a checagem de exist\u00eancia de cada cen\u00e1rio. O executor precisa escolher entre duas instru\u00e7\u00f5es incompat\u00edveis. A mesma contradi\u00e7\u00e3o aparece nas outras duas pernas.",
+      "cites": [
+        "LEG-GRAMATICA-DO-JUIZ.md \u00a7 goal e evals",
+        "LEG-PRODUTOR-E-GRAVADOR-CORRIGEM.md \u00a7 goal e evals",
+        "LEG-VINCULADOR-GRAMATICA.md \u00a7 goal e evals"
+      ],
+      "resolution": {
+        "disposition": "ACCEPT",
+        "decided_by": "Bruno Nunes",
+        "decided_at": "2026-09-25T00:25:08Z",
+        "owner": "Bruno Nunes",
+        "risk_residual": "Refutado, como em todas as rodadas anteriores: a permissao de escopo minimo e do AGENTE; os evals sao executados pelo MOTOR, fora dela. Decidido pelo dono ao fechar o Pass 4 da correcao do produtor na R3, sem editar o plano."
+      }
+    },
+    {
+      "id": "C5",
+      "severity": "medium",
+      "rank": 5,
+      "attack_class": "drift",
+      "swimlane": "produtor-e-gravador-corrigem",
+      "leg": "LEG-PRODUTOR-E-GRAVADOR-CORRIGEM",
+      "title": "A prova declarada sobre 2026-01 n\u00e3o \u00e9 coberta pela entrega execut\u00e1vel",
+      "location": {
+        "plan_file": "cvg/swimlanes/lanes-corr/produtor-e-gravador-corrigem/LEG-PRODUTOR-E-GRAVADOR-CORRIGEM.md",
+        "section": "proof; Observable proof; B-1; done_condition; evals"
+      },
+      "evidence": "A proof declara 'Produtor sobre o CSV real de 2026-01 d\u00e1 a \u00e2ncora'; B-1 usa CSV de fixture, e os tr\u00eas evals executam apenas cen\u00e1rios de tests/test_produtor.py.",
+      "body": "\u00c9 poss\u00edvel satisfazer a done_condition e todos os evals sem ler a compet\u00eancia real. Logo, a entrega n\u00e3o demonstra o estado observ\u00e1vel que anuncia. O ADR 0006 distingue explicitamente o contrato do produtor da prova de uma execu\u00e7\u00e3o real. Est\u00e1 aberta a decis\u00e3o de escopo sobre onde essa prova j\u00e1 prometida ser\u00e1 obtida; fixtures n\u00e3o a substituem.",
+      "cites": [
+        "LEG-PRODUTOR-E-GRAVADOR-CORRIGEM.md \u00a7 Observable proof",
+        "cvg/docs/adrs/0006-the-judge-ships-before-the-spark-producer-that-it-will-judge.md \u00a7 Consequences",
+        "cvg/docs/tech-spec/tech-spec-pda-beneficios.md \u00a7 Requirements R-5"
+      ],
+      "resolution": {
+        "disposition": "ACCEPT",
+        "decided_by": "Bruno Nunes",
+        "decided_at": "2026-09-25T00:25:08Z",
+        "owner": "Bruno Nunes",
+        "risk_residual": "Aceito, coberto por fora: depois dos loops a cadeia roda o produtor corrigido sobre o CSV real de 2026-01 e exige os controles da ancora (41572553 linhas, soma 78521752562.12, 0 invalidas). Decidido pelo dono ao fechar o Pass 4 da correcao do produtor na R3, sem editar o plano."
+      }
+    }
+  ],
+  "cross_lane_interfaces": [],
+  "fork": {
+    "choice": "B",
+    "reason": "Declara\u00e7\u00e3o j\u00e1 existente nos tr\u00eas _lane.md; reproduzida, n\u00e3o escolhida pelo advers\u00e1rio.",
+    "per_plan_declared": true
+  },
+  "open_questions": [
+    {
+      "q": "Como registrar obje\u00e7\u00f5es ainda abertas se o schema exige resolution com uma decis\u00e3o humana que ainda n\u00e3o ocorreu?",
+      "blocks_build": true
+    },
+    {
+      "q": "A execu\u00e7\u00e3o sobre o CSV real prometida na proof pertence a esta entrega ou a uma valida\u00e7\u00e3o externa identificada no plano?",
+      "blocks_build": true
+    }
+  ],
+  "rounds_run": 1
+}
