@@ -28,10 +28,14 @@ execution_backend: any
 signed_off: true
 signed_off_by: nobru
 signed_off_at: 2026-09-25T01:41:34Z
-accepted: false
-accepted_by: (none)
-accepted_at: (none)
+accepted: true
+accepted_by: converge-loop
+accepted_at: 2026-09-25T01:59:31Z
 signed_off_sig: hmac-sha256-v3:85d3c104:8bbe8f4591093c9e3fc91bd57213746e7caa82d6415bee9be1fd4962deea021f
+accepted_tier: 1
+accepted_attempt_id: 7e292395-8b57-4f20-b940-ca3bdc7116c4
+accepted_authorization_ref: hmac-sha256-v3:85d3c104:8bbe8f4591093c9e3fc91bd57213746e7caa82d6415bee9be1fd4962deea021f
+acceptance_record_digest: sha256:d866edc6bbf09d5420f5477fd94b059e496b3bb8ba5ddd3dbe264b2c421b0a23
 ---
 
 # A Bronze registra qual partição do landing leu
