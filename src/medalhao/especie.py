@@ -18,6 +18,7 @@ import json
 import re
 import uuid
 from dataclasses import dataclass, field, replace
+from types import SimpleNamespace
 from typing import Dict, List, Optional, Tuple
 
 from pyspark.sql import DataFrame, SparkSession
@@ -30,6 +31,7 @@ INTEGRO = bronze.INTEGRO
 DIVERGE = bronze.DIVERGE
 NAO_MEDIDO = bronze.NAO_MEDIDO
 ERRO_LEITURA = bronze.ERRO_LEITURA
+RECUSADO = "RECUSADO"
 
 SILVER_PADRAO = "s3a://silver/pda/beneficios-emitidos"
 DESTINO_PADRAO = "s3a://silver/pda/especie"
@@ -222,6 +224,145 @@ def publicar_especie(
             linhas=lidas.select(*COLUNAS),
             gravacao={"destino": destino, "versao": detalhe["versao"], "id_execucao": id_execucao},
             controles={"linhas": len(pares), "com_prefixo": sum(1 for x in calculadas if x[4])},
+        )
+    except Exception as exc:  # noqa: BLE001 — não conseguiu medir: não é NAO_MEDIDO
+        return replace(r, estado=ERRO_LEITURA, motivo=f"{type(exc).__name__}: {exc}", linhas=None)
+
+
+# ---------------------------------------------------------------- nomes lidos da Bronze do dicionário
+
+
+class ConformacaoRecusada(Exception):
+    """O dicionário da Bronze não se conforma — recusado, nunca gravado pela metade."""
+
+    def __init__(self, motivo: str):
+        super().__init__(motivo)
+        self.motivo = motivo
+
+
+def conformar_dicionario(
+    registros: List[Tuple[Optional[str], Optional[str]]],
+) -> Tuple[Dict[str, Optional[str]], Dict[str, int]]:
+    """{codigo de 2 dígitos: nome oficial COMO VEIO} e os descartes contados. Levanta ConformacaoRecusada.
+
+    Linha com as duas células vazias é descartada (`vazias`); linha com coluna_a não numérica é o
+    cabeçalho (`cabecalho`). Dois códigos que colidem depois de conformados recusam — nenhum é escolhido.
+    """
+    nomes: Dict[str, Optional[str]] = {}
+    origem: Dict[str, List[str]] = {}
+    descartes = {"cabecalho": 0, "vazias": 0}
+    for a, b in registros:
+        bruto = (a or "").strip()
+        if not bruto and not (b or "").strip():
+            descartes["vazias"] += 1
+        elif not bruto.isdigit():
+            descartes["cabecalho"] += 1
+        else:
+            codigo = bruto.zfill(2)
+            origem.setdefault(codigo, []).append(bruto)
+            nomes[codigo] = b
+    colididos = {c: v for c, v in sorted(origem.items()) if len(v) > 1}
+    if colididos:
+        raise ConformacaoRecusada(f"CODIGO_COLIDIDO: {colididos}")
+    return nomes, descartes
+
+
+def _ler_dicionario(spark: SparkSession, caminho: str, versao: int, sha: str) -> List[Tuple[Optional[str], Optional[str]]]:
+    """A ÚNICA leitura da Bronze do dicionário: a versão fixada, SÓ o sha256 pedido, na ordem das linhas."""
+    lidas = (
+        bronze._ler_versao(spark, caminho, versao)
+        .where(F.col("sha256_arquivo") == sha)
+        .orderBy("linha")
+        .select("coluna_a", "coluna_b")
+        .collect()
+    )
+    return [(r["coluna_a"], r["coluna_b"]) for r in lidas]
+
+
+def publicar_especie_da_bronze(
+    spark: SparkSession,
+    bronze_dicionario: str,
+    sha256: str,
+    sha256_aprovado: str,
+    silver: str,
+    destino: str,
+    competencia: str,
+    grupos,
+    id_execucao: Optional[str] = None,
+) -> EspecieResultado:
+    """Como publicar_especie, mas o nome oficial vem da Bronze do dicionário e o grupo do contrato.
+
+    `grupos` é contrato.grupos_especie. sha256 diferente do aprovado recusa SEM ler nem gravar;
+    sha256 ausente da Bronze é NAO_MEDIDO; código colidido recusa SEM gravar.
+    """
+    if not re.fullmatch(r"[A-Za-z0-9._-]+", competencia or ""):
+        return EspecieResultado(ERRO_LEITURA, str(competencia), motivo="COMPETENCIA_INVALIDA")
+    r = EspecieResultado(INTEGRO, competencia)
+    if sha256 != sha256_aprovado:
+        return replace(r, estado=RECUSADO, motivo="DICIONARIO_NAO_APROVADO")
+    if grupos is None:
+        return replace(r, estado=NAO_MEDIDO, motivo="SEM_GRUPOS_ESPECIE")
+    id_execucao = id_execucao or uuid.uuid4().hex
+    try:
+        if not _e_delta(spark, bronze_dicionario):
+            return replace(r, estado=NAO_MEDIDO, motivo="BRONZE_AUSENTE")
+        versao_bronze = bronze._versao_atual(spark, bronze_dicionario)
+        registros = _ler_dicionario(spark, bronze_dicionario, versao_bronze, sha256)
+        if not registros:
+            return replace(r, estado=NAO_MEDIDO, motivo="SHA256_AUSENTE_DA_BRONZE")
+        try:
+            nomes, descartes = conformar_dicionario(registros)
+        except ConformacaoRecusada as exc:
+            return replace(r, estado=RECUSADO, motivo=exc.motivo)
+        if not nomes:
+            return replace(r, estado=NAO_MEDIDO, motivo="NENHUMA_ESPECIE", controles=dict(descartes))
+        grupo_de = {c: g.grupo for g in grupos.grupos for c in g.codigos}
+        ontologia = SimpleNamespace(
+            especies=[{"codigo": c, "nome": n, "grupo": grupo_de.get(c)} for c, n in sorted(nomes.items())]
+        )
+
+        antes = _versao_do_destino(spark, destino)
+        versao_silver = bronze._versao_atual(spark, silver)
+        r = replace(r, versao_silver=versao_silver)
+        pares = _ler_pares(spark, silver, competencia, versao_silver)
+        motivo, dif = conferir_silver(ontologia, pares)
+        if motivo:
+            estado = NAO_MEDIDO if motivo == NAO_MEDIDO else DIVERGE
+            detalhe = "SILVER_SEM_LINHAS_NA_COMPETENCIA" if estado == NAO_MEDIDO else motivo
+            return replace(
+                r, estado=estado, diferencas=tuple(dif), controles={"linhas_da_silver": len(pares)},
+                motivo=f"{detalhe}: destino sem versão nova (versão {antes})",
+            )
+        calculadas = calcular_especie(ontologia, pares, competencia)
+        linhas = spark.createDataFrame(calculadas, SCHEMA)
+        _garantir_tabela(spark, destino)
+        existia = bronze._competencia_existe(spark, destino, competencia)
+        anterior = bronze._versao_atual(spark, destino)
+        meta = {
+            "estado": INTEGRO,
+            "competencia": competencia,
+            "versao_silver": versao_silver,
+            "versao_bronze_dicionario": versao_bronze,
+            "sha256_arquivo": sha256,
+            "descartes": descartes,
+            "id_execucao": id_execucao,
+        }
+        bronze.publicar_competencia(spark, linhas, destino, competencia, meta)
+        ok, detalhe = reconferir_especie(spark, destino, id_execucao, linhas, competencia)
+        if not ok:
+            bronze._reverter_competencia(spark, destino, competencia, existia, anterior, meta)
+            d = bronze._diferenca("gravacao", "reconferencia_publicada:especie", "multiconjunto igual",
+                                  json.dumps(detalhe, default=str))
+            return replace(r, estado=DIVERGE, motivo="DIVERGE", diferencas=(d,))
+        lidas = bronze._ler_versao(spark, destino, detalhe["versao"]).where(F.col("competencia") == competencia)
+        return replace(
+            r,
+            linhas=lidas.select(*COLUNAS),
+            gravacao={"destino": destino, "versao": detalhe["versao"], "id_execucao": id_execucao},
+            controles={
+                "linhas": len(pares), "com_prefixo": sum(1 for x in calculadas if x[4]),
+                "descartes_cabecalho": descartes["cabecalho"], "descartes_vazias": descartes["vazias"],
+            },
         )
     except Exception as exc:  # noqa: BLE001 — não conseguiu medir: não é NAO_MEDIDO
         return replace(r, estado=ERRO_LEITURA, motivo=f"{type(exc).__name__}: {exc}", linhas=None)

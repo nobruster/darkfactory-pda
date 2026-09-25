@@ -14,11 +14,17 @@ from pathlib import Path
 import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
+sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from pyspark.sql import functions as F  # noqa: E402
 
 from medalhao import bronze, especie  # noqa: E402
-from medalhao.ontologia import Ontologia, carregar_ontologia  # noqa: E402
+from medalhao import bronze_referencia as br  # noqa: E402
+from medalhao.ontologia import ARQUIVO_CONTRATO, Ontologia, carregar_ontologia  # noqa: E402
+from pda import contrato as contrato_mod  # noqa: E402
+from pda.contrato import GrupoEspecie, GruposEspecie  # noqa: E402
+from produtor import landing_referencia as lr  # noqa: E402
+from test_bronze_referencia import _landing, _sha, _xlsx  # noqa: E402
 
 COMP = "2026-01"
 OUTRA = "2026-02"
@@ -272,3 +278,124 @@ def test_colapsos_desfeitos_pelo_nome(spark, real):
     assert colapsados.agg(F.sum("n")).first()[0] == 24
     for x in lido.collect():
         assert x["descricao_fonte"] is not None and x["nome_oficial"]  # nada corrigido em silêncio nem perdido
+
+
+# ---------------------------------------------------------------- nomes lidos da Bronze do dicionário
+
+DICIO = lr.ARQUIVOS[0]
+NOME_B_COM_ESPACO = NOME_B + " "  # o nome oficial é o texto da fonte: nada de aparar
+DICIONARIO = [
+    (1, "Código", "Descrição"),
+    (2, None, None),
+    (3, "1", NOME_A),
+    (4, "2", NOME_B_COM_ESPACO),
+    (5, "03", NOME_C),
+]
+GRUPOS = GruposEspecie(
+    grupos=(
+        GrupoEspecie("Aposentadoria", ("01",)),
+        GrupoEspecie("Pensao", ("02",)),
+        GrupoEspecie("Auxilio", ("03",)),
+    ),
+    aprovado_por="teste", aprovado_em="2026-01-01", regra="teste",
+)
+
+
+def _bronze_dicionario(spark, base, linhas=DICIONARIO):
+    """A Bronze do dicionário publicada por bronze_referencia; devolve (caminho da tabela, sha256)."""
+    dados = _xlsx(linhas)
+    landing = _landing(spark, Path(base), dados)
+    raiz = Path(base) / "bronze"
+    res = br.publicar(spark, str(landing), str(raiz), DICIO, _sha(dados))
+    assert res.estado == br.PUBLICADO, res
+    return str(raiz / br.TABELAS[DICIO]), _sha(dados)
+
+
+def _da_bronze(spark, base, linhas=DICIONARIO, silver_linhas=None, **kw):
+    tabela, sha = _bronze_dicionario(spark, base, linhas)
+    silver = _silver(spark, base, silver_linhas if silver_linhas is not None else _linhas_ok())
+    destino = str(Path(base) / "especie")
+    r = especie.publicar_especie_da_bronze(spark, tabela, sha, sha, silver, destino, COMP, GRUPOS, **kw)
+    return r, tabela, sha, silver, destino
+
+
+def test_especie_da_bronze_nomes_da_bronze(spark, tmp_path):
+    r, _, _, _, destino = _da_bronze(spark, tmp_path, id_execucao="b1")
+    assert r.estado == especie.INTEGRO, (r.estado, r.motivo, r.diferencas)
+    lido = _lido(spark, destino)
+    assert tuple(lido.columns) == especie.COLUNAS
+    linhas = {x["especie_codigo"]: x for x in lido.collect()}
+    assert set(linhas) == {"01", "02", "03"}  # "1" e "2" viram código de 2 dígitos
+    assert linhas["01"]["nome_oficial"] == NOME_A and linhas["01"]["grupo"] == "Aposentadoria"
+    assert linhas["02"]["nome_oficial"] == NOME_B_COM_ESPACO  # como veio, sem aparar
+    assert linhas["03"]["nome_oficial"] == NOME_C and linhas["03"]["descricao_fonte"] == "TEXTO QUE NAO BATE"
+    assert {c: x["texto_fonte_confere_prefixo"] for c, x in linhas.items()} == {"01": True, "02": True, "03": False}
+    assert linhas["02"]["descricao_fonte"] == NOME_B[:20] + "   "
+
+
+def test_especie_da_bronze_linhagem_das_duas_camadas(spark, tmp_path):
+    r, tabela, sha, silver, destino = _da_bronze(spark, tmp_path, id_execucao="b2")
+    assert r.estado == especie.INTEGRO
+    meta = {v: json.loads(m) for v, m in bronze._historico(spark, destino) if m}
+    commit = meta[r.gravacao["versao"]]
+    assert commit["versao_silver"] == bronze._versao_atual(spark, silver) == r.versao_silver
+    assert commit["versao_bronze_dicionario"] == bronze._versao_atual(spark, tabela)
+    assert commit["sha256_arquivo"] == sha
+    assert commit["descartes"] == {"cabecalho": 1, "vazias": 1}
+    assert commit["id_execucao"] == "b2" and commit["competencia"] == COMP
+
+
+def test_especie_da_bronze_conta_descartes(spark, tmp_path):
+    r, *_ = _da_bronze(spark, tmp_path)
+    assert r.estado == especie.INTEGRO
+    assert r.controles["descartes_cabecalho"] == 1 and r.controles["descartes_vazias"] == 1
+    nomes, descartes = especie.conformar_dicionario([("Código", "x"), (None, None), ("  ", None), ("7", "N")])
+    assert nomes == {"07": "N"} and descartes == {"cabecalho": 1, "vazias": 2}
+
+
+def test_especie_da_bronze_codigo_fora_recusa(spark, tmp_path):
+    r, *_, destino = _da_bronze(spark, tmp_path, silver_linhas=_linhas_ok() + [("99", "DESCONHECIDA", COMP)])
+    assert r.estado == especie.DIVERGE and r.motivo.startswith("CODIGO_FORA_DA_ONTOLOGIA")
+    assert "destino sem versão nova" in r.motivo and r.linhas is None
+    assert not especie._e_delta(spark, destino)
+
+
+def test_especie_da_bronze_dicionario_nao_aprovado_recusa(spark, tmp_path):
+    destino = str(Path(tmp_path) / "especie")
+    # caminhos inexistentes: só recusar antes de ler evita o erro de leitura
+    r = especie.publicar_especie_da_bronze(
+        spark, str(tmp_path / "nao-existe"), "a" * 64, "b" * 64, str(tmp_path / "silver"), destino, COMP, GRUPOS
+    )
+    assert r.estado == especie.RECUSADO and r.motivo == "DICIONARIO_NAO_APROVADO"
+    assert not especie._e_delta(spark, destino)
+
+
+def test_especie_da_bronze_codigo_colidido_recusa(spark, tmp_path):
+    colidido = DICIONARIO + [(6, "01", "OUTRO NOME")]  # "1" e "01" caem no mesmo código
+    r, *_, destino = _da_bronze(spark, tmp_path, linhas=colidido)
+    assert r.estado == especie.RECUSADO and r.motivo.startswith("CODIGO_COLIDIDO")
+    assert "01" in r.motivo and not especie._e_delta(spark, destino)
+
+
+def test_especie_da_bronze_ponta_a_ponta_real(spark, tmp_path):
+    ontologia = carregar_ontologia()
+    assert not isinstance(ontologia, str), f"ontologia: {getattr(ontologia, 'motivo', ontologia)}"
+    sha = ontologia.fontes["dicionario"]["sha256"]
+    landing = tmp_path / "landing"
+    assert lr.gravar(spark, "/dados/_raw", str(landing))[DICIO] == lr.GRAVADO
+    raiz = tmp_path / "bronze"
+    res = br.publicar(spark, str(landing), str(raiz), DICIO, sha)
+    assert res.estado == br.PUBLICADO, res
+    contrato = contrato_mod.carregar_contrato(ARQUIVO_CONTRATO)
+    destino = str(tmp_path / "especie")
+    r = especie.publicar_especie_da_bronze(
+        spark, str(raiz / br.TABELAS[DICIO]), sha, sha, SILVER_REAL, destino, COMP, contrato.grupos_especie,
+        id_execucao="real-bronze",
+    )
+    assert r.estado == especie.INTEGRO, (r.estado, r.motivo, r.diferencas)
+    lido = _lido(spark, destino)
+    assert lido.count() == 65
+    assert lido.select("nome_oficial").distinct().count() == 65
+    assert lido.where(F.col("texto_fonte_confere_prefixo")).count() == 43
+    oficial = {e["codigo"]: e["nome"] for e in ontologia.especies}  # extraído por OUTRO parser
+    assert {x["especie_codigo"]: x["nome_oficial"] for x in lido.collect()} == oficial
