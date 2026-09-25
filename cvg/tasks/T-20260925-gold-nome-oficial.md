@@ -28,10 +28,14 @@ execution_backend: any
 signed_off: true
 signed_off_by: nobru
 signed_off_at: 2026-09-25T13:55:00Z
-accepted: false
-accepted_by: (none)
-accepted_at: (none)
+accepted: true
+accepted_by: converge-loop
+accepted_at: 2026-09-25T14:16:57Z
 signed_off_sig: hmac-sha256-v3:85d3c104:b7a66d23a7bb4bcb6622577804778218859183e1d1e03eb13d62c5fa72e4dce3
+accepted_tier: 1
+accepted_attempt_id: 257cc371-9a66-4e6a-9f63-89b7da5cb47a
+accepted_authorization_ref: hmac-sha256-v3:85d3c104:b7a66d23a7bb4bcb6622577804778218859183e1d1e03eb13d62c5fa72e4dce3
+acceptance_record_digest: sha256:126fe5a6dea22f6775cf1ec336955284e171919ce464705ddc88bd374ef796c7
 ---
 
 # A Gold principal ganha o nome oficial, lido da Silver especie
