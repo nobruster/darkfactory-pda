@@ -28,10 +28,14 @@ execution_backend: any
 signed_off: true
 signed_off_by: nobru
 signed_off_at: 2026-09-25T18:02:19Z
-accepted: false
-accepted_by: (none)
-accepted_at: (none)
+accepted: true
+accepted_by: converge-loop
+accepted_at: 2026-09-25T18:34:31Z
 signed_off_sig: hmac-sha256-v3:85d3c104:6d6de6251f4c95f2c6fe82bdd7e16c03a9473d7ab9f749cf81c3831c37aa0923
+accepted_tier: 1
+accepted_attempt_id: 2690a457-2fce-4ebf-bc95-36fd3efe6c60
+accepted_authorization_ref: hmac-sha256-v3:85d3c104:6d6de6251f4c95f2c6fe82bdd7e16c03a9473d7ab9f749cf81c3831c37aa0923
+acceptance_record_digest: sha256:0263b8dcb969bfeb15be3e71e29ff1a6e34144dbd4d9fe9bc08cb34520ef0182
 ---
 
 # A Silver e a ingestão evoluem por padrão
