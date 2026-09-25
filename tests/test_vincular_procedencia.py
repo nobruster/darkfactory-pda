@@ -292,3 +292,101 @@ def test_reexecucao_com_outro_id_e_identica(spark, tmp_path):
     assert r.veredito == vp.INTEGRO
     assert _prova(raiz).read_bytes() == bytes_antes
     assert json.loads(bytes_antes)["id_execucao"] == "exec-1"
+
+
+# ---------------------------------------------------------------- gramática do juiz
+
+LINHAS_GRAMATICA = [
+    ("01", "Aposentadoria", "1,5"),
+    ("02", "Pensao", "-5,00"),
+    ("01", "Aposentadoria", "1.234,56"),
+    ("02", "Pensao", "0,10"),
+]
+
+_FILHO_GRAVADOR = r"""
+import pickle, sys
+src, contrato, csv, destino, rejeitos, out = sys.argv[1:7]
+sys.path.insert(0, src)
+from pyspark.sql import SparkSession
+from pda import contrato as cm
+from produtor import gravar_lago as gl
+
+def _sessao(nome):
+    real = (SparkSession.builder.appName(nome)
+            .config("spark.sql.ansi.enabled", "true").getOrCreate())
+    real.sparkContext.setLogLevel("WARN")
+    return real
+
+gl._sessao = _sessao
+with open(contrato, "rb") as f:
+    cm.carregar_contrato = lambda _caminho, _c=pickle.load(f): _c
+sys.argv = ["gravar_lago", csv, "--contrato", "-", "--competencia", "2026-01",
+            "--destino", destino, "--rejeitos", rejeitos, "--out", out]
+raise SystemExit(gl.main())
+"""
+
+
+def _contrato_gramatica(csv: Path) -> Contrato:
+    base = _contrato(csv)
+    ancora = Ancora(count_linhas=4, sum_vl_liquido=Decimal("1236.16"),
+                    min_vl_liquido=Decimal("0.10"), max_vl_liquido=Decimal("1234.56"),
+                    linhas_invalidas=1, aprovado_por="teste", aprovado_em="2026-09-23")
+    return Contrato(**{**base.__dict__, "ancora": ancora})
+
+
+def _normalizar(controles: dict) -> dict:
+    def n(x):
+        try:
+            return str(Decimal(str(x)))
+        except Exception:  # noqa: BLE001
+            return str(x)
+    return {k: n(v) for k, v in controles.items()}
+
+
+def test_vinculador_usa_a_gramatica_do_juiz():
+    texto = Path(vp.__file__).read_text(encoding="utf-8")
+    assert "gramatica.valor_decimal" in texto
+    assert "rlike" not in texto
+    assert "{1,3}" not in texto
+
+
+def test_vinculador_e_gravador_medem_igual(spark, tmp_path):
+    from produtor import gravar_lago as gl
+
+    csv = _csv(tmp_path, linhas=LINHAS_GRAMATICA)
+    contrato = _contrato_gramatica(csv)
+    do_vinculador = _normalizar(vp._controles(vp.ler_fonte(spark, csv, contrato)))
+    do_gravador = _normalizar(gl._controles(gl._ler_fonte(spark, csv, contrato)))
+    assert do_vinculador == do_gravador
+    assert do_vinculador["count_linhas"] == "4"
+    assert do_vinculador["linhas_invalidas"] == "1"
+    assert Decimal(do_vinculador["sum_vl_liquido"]) == Decimal("1236.16")
+
+
+def test_vinculador_prova_particao_do_gravador_corrigido(spark, tmp_path):
+    import os
+    import pickle
+    import subprocess
+
+    csv = _csv(tmp_path, linhas=LINHAS_GRAMATICA)
+    contrato = _contrato_gramatica(csv)
+    pkl = tmp_path / "contrato.pkl"
+    pkl.write_bytes(pickle.dumps(contrato))
+    raiz = tmp_path / "lago"
+    env = {k: v for k, v in os.environ.items() if not k.startswith("S3_")}
+    env["PYSPARK_SUBMIT_ARGS"] = (
+        "--master local[1] --conf spark.ui.enabled=false "
+        "--conf spark.sql.shuffle.partitions=1 pyspark-shell")
+    env["PYTHONDONTWRITEBYTECODE"] = "1"
+    src = Path(__file__).resolve().parent.parent / "src"
+    r = subprocess.run(
+        [sys.executable, "-c", _FILHO_GRAVADOR, str(src), str(pkl), str(csv),
+         f"file://{raiz}", f"file://{tmp_path / 'rejeitos'}", str(tmp_path / "prova-lago.json")],
+        cwd=tmp_path, env=env, capture_output=True, text=True, timeout=600)
+    assert r.returncode == 0, (r.stdout + r.stderr)[-3000:]
+    assert "LAGO=GRAVADO" in r.stdout
+
+    v = _vincular(spark, contrato, csv, raiz)
+    assert v.veredito == vp.GRAVADO, (v.motivo, v.diferencas)
+    assert _prova(raiz).exists()
+    assert v.prova["controles"]["linhas_invalidas"] == "1"

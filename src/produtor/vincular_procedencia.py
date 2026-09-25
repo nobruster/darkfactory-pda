@@ -27,6 +27,8 @@ from typing import Optional
 from pyspark.sql import functions as F
 from pyspark.sql.types import DecimalType, StringType, StructField, StructType
 
+from produtor import gramatica
+
 NOME_PROVA = "_PROCEDENCIA.json"
 GRAVADO, INTEGRO, DIVERGE, NAO_MEDIDO = "GRAVADO", "INTEGRO", "DIVERGE", "NAO_MEDIDO"
 
@@ -154,10 +156,8 @@ def ler_fonte(spark, csv, contrato):
         .schema(esquema)
         .csv(str(csv))
     )
-    limpo = F.trim(F.col(f"c{layout.posicoes['vl_liquido']}"))
-    valido = F.when(limpo.rlike(r"^-?\d{1,3}(\.\d{3})*,\d{2}$"), limpo).otherwise(F.lit(None))
-    valor = F.regexp_replace(F.regexp_replace(valido, r"\.", ""), ",", ".").cast(
-        DecimalType(pol.precisao, pol.escala))
+    valor = gramatica.valor_decimal(
+        F.col(f"c{layout.posicoes['vl_liquido']}"), pol.precisao, pol.escala)
     return bruto.select(
         F.trim(F.col(f"c{layout.posicoes['especie']}")).alias(_COLUNAS[0]),
         F.col(f"c{layout.posicoes['descricao_especie']}").alias(_COLUNAS[1]),
