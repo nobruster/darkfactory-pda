@@ -28,10 +28,14 @@ execution_backend: any
 signed_off: true
 signed_off_by: nobru
 signed_off_at: 2026-09-25T18:03:17Z
-accepted: false
-accepted_by: (none)
-accepted_at: (none)
+accepted: true
+accepted_by: converge-loop
+accepted_at: 2026-09-25T18:50:30Z
 signed_off_sig: hmac-sha256-v3:85d3c104:879829b5b138f3fd9c4695fcdcaf181f821d62bd640f93471fe6cb68f7066ba1
+accepted_tier: 1
+accepted_attempt_id: 904e3fc4-175d-4525-861c-91dbb0f0f37b
+accepted_authorization_ref: hmac-sha256-v3:85d3c104:879829b5b138f3fd9c4695fcdcaf181f821d62bd640f93471fe6cb68f7066ba1
+acceptance_record_digest: sha256:0537f6dd4c344694ad8ba68befdcf98c095375bc6fc8f42a70172e71841e6d95
 ---
 
 # A Gold evolui por padrão

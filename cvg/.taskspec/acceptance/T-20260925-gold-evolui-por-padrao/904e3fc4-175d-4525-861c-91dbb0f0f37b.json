@@ -1,0 +1,40 @@
+{
+  "acceptance_tier": 1,
+  "accepted_at": "2026-09-25T18:50:30Z",
+  "accepted_by": "converge-loop",
+  "contract": "AcceptanceRecord/v1",
+  "gate_outcomes": {
+    "authorization": {
+      "code": "AUTHORIZATION_VALID",
+      "status": "pass"
+    },
+    "evaluation": {
+      "code": "EVAL_PASSED",
+      "status": "pass"
+    },
+    "evidence": {
+      "code": "EVIDENCE_SATISFIED",
+      "proof": [
+        "format v3 or earlier: v4 policy receipts are not required"
+      ],
+      "status": "pass"
+    },
+    "preflight": {
+      "code": "PREFLIGHT_PASSED",
+      "status": "pass",
+      "warnings": []
+    }
+  },
+  "outcome": {
+    "code": "ACCEPTED_TIER_1",
+    "status": "accepted"
+  },
+  "receipts": [],
+  "subject": {
+    "attempt_id": "904e3fc4-175d-4525-861c-91dbb0f0f37b",
+    "authorization_ref": "hmac-sha256-v3:85d3c104:879829b5b138f3fd9c4695fcdcaf181f821d62bd640f93471fe6cb68f7066ba1",
+    "base_commit": "5c852bfa9cb3ad52310f8cdedcc0b40e5b6ae9c3",
+    "task_id": "T-20260925-gold-evolui-por-padrao",
+    "task_revision_digest": "sha256:a487545b45cb9c13687abddddcaa32afd80cb6ee80fc2e5ebd5a1c8a25824615"
+  }
+}
