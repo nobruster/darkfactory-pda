@@ -44,7 +44,7 @@ ERRO_LEITURA = bronze.ERRO_LEITURA
 BLOQUEADO = silver.BLOQUEADO
 PROCEDENCIA_NAO_VINCULADA = bronze.PROCEDENCIA_NAO_VINCULADA
 
-GOLD_COLUNAS = ("especie_codigo", "especie_descricao", "vl_liquido_total", "competencia")
+GOLD_COLUNAS = ("especie_codigo", "especie_descricao", "vl_liquido_total", "competencia", "nome_oficial")
 MOTOR = "spark-delta"
 
 DESTINO_PADRAO = "s3a://gold/pda/beneficios-emitidos"
@@ -85,6 +85,7 @@ class GoldReconciliado:
     versao_silver: Optional[int] = None
     gravacao: Optional[dict] = None
     cache: Optional[DataFrame] = None  # o persistido das candidatas; quem publica (ou encerra) libera
+    silver_especie: Optional[dict] = None  # {caminho, versao} da Silver especie que deu o nome; None = sem nome
 
 
 class CadeiaParou(Exception):
@@ -118,18 +119,37 @@ def _soma_exata(valores, politica) -> Decimal:
 # ---------------------------------------------------------------- agregação
 
 
-def _agregar(linhas_silver: DataFrame, competencia: str, politica) -> DataFrame:
-    """Uma linha por código, NO MOTOR. O acumulador é o DecimalType declarado."""
+def _agregar(linhas_silver: DataFrame, competencia: str, politica, nomes: Optional[DataFrame] = None) -> DataFrame:
+    """Uma linha por código, NO MOTOR. O acumulador é o DecimalType declarado.
+
+    O nome oficial entra num left join DEPOIS do groupBy — antes, multiplicaria linhas.
+    Sem `nomes`, a coluna existe e é nula em toda linha.
+    """
     acc = tipo_acumulador(politica)
-    return (
+    agregado = (
         linhas_silver.groupBy("especie_codigo")
         .agg(
             F.min("especie_descricao").alias("especie_descricao"),
             F.sum(F.col("vl_liquido").cast(acc)).cast(acc).alias("vl_liquido_total"),
         )
         .withColumn("competencia", F.lit(competencia))
-        .select(*GOLD_COLUNAS)
     )
+    if nomes is None:
+        agregado = agregado.withColumn("nome_oficial", F.lit(None).cast(StringType()))
+    else:
+        agregado = agregado.join(nomes, "especie_codigo", "left")
+    return agregado.select(*GOLD_COLUNAS)
+
+
+def _ler_nomes_da_especie(spark: SparkSession, especie_destino: str, competencia: str):
+    """Silver especie lida numa versão V fixada UMA vez: (nomes, V)."""
+    versao = _versao_atual(spark, especie_destino)
+    nomes = (
+        _ler_versao(spark, especie_destino, versao)
+        .where(F.col("competencia") == competencia)
+        .select("especie_codigo", "nome_oficial")
+    )
+    return nomes, versao
 
 
 def _mapa_e_soma(candidatas: DataFrame, politica) -> Tuple[Dict[str, Decimal], Decimal, int, List[str]]:
@@ -193,6 +213,7 @@ def _garantir_tabela(spark: SparkSession, caminho: str, politica) -> None:
         .addColumn("especie_descricao", StringType())
         .addColumn("vl_liquido_total", tipo_acumulador(politica))
         .addColumn("competencia", StringType(), nullable=False)
+        .addColumn("nome_oficial", StringType())
         .partitionedBy("competencia")
         .execute()
     )
@@ -209,25 +230,40 @@ def _gravar_preparo(spark: SparkSession, linhas: DataFrame, preparo: str, compet
 
 def _conferir_tabela(
     spark: SparkSession, caminho: str, versao: int, esperado: DataFrame, controles: Dict[str, Any],
-    competencia: str, politica,
+    competencia: str, politica, com_nome: bool = False,
 ) -> Tuple[bool, dict]:
-    """RELÊ a versão commitada e compara o MULTICONJUNTO de TODAS as colunas, nos dois sentidos."""
-    cols = list(GOLD_COLUNAS)
-    lido = _ler_versao(spark, caminho, versao).where(F.col("competencia") == competencia).select(*cols)
+    """RELÊ a versão commitada e compara o MULTICONJUNTO de TODAS as colunas, nos dois sentidos.
+
+    Com `com_nome`, as 5 colunas (nome_oficial incluído). Sem ele, as colunas do esperado —
+    e o nome_oficial publicado tem de ser nulo em toda linha.
+    """
+    cols = list(GOLD_COLUNAS) if com_nome else list(esperado.columns)
+    lido_todo = _ler_versao(spark, caminho, versao).where(F.col("competencia") == competencia)
+    lido = lido_todo.select(*cols)
     so_esperado, so_lido = bronze._diferenca_numa_passada(esperado.select(*cols), lido)
     total_lido = lido.agg(F.sum("vl_liquido_total")).collect()[0][0]
     divergentes = () if total_lido == controles.get("sum_vl_liquido") else ("sum_vl_liquido",)
-    ok = so_esperado == 0 and so_lido == 0 and not divergentes
+    nomes_nao_nulos = 0
+    if not com_nome and "nome_oficial" in lido_todo.columns:
+        nomes_nao_nulos = lido_todo.where(F.col("nome_oficial").isNotNull()).count()
+    ok = so_esperado == 0 and so_lido == 0 and not divergentes and nomes_nao_nulos == 0
     return ok, {
         "versao": versao,
         "so_no_esperado": so_esperado,
         "so_no_lido": so_lido,
         "controles_divergentes": divergentes,
+        "nomes_nao_nulos": nomes_nao_nulos,
     }
 
 
 def _metadados_do_commit(r: GoldReconciliado, id_execucao: str) -> dict:
+    nome = (
+        {"silver_especie": r.silver_especie}
+        if r.silver_especie
+        else {"nome_oficial": NAO_MEDIDO, "motivo_nome_oficial": "SEM_SILVER_ESPECIE"}
+    )
     return {
+        **nome,
         "estado": r.estado,
         "competencia": r.competencia,
         "hash_procedencia": r.hash_procedencia,
@@ -306,6 +342,7 @@ def agregar(
     preparo_raiz: Optional[str] = None,
     id_execucao: Optional[str] = None,
     versao_camada_anterior: Optional[int] = None,
+    especie_destino: Optional[str] = None,
 ) -> GoldReconciliado:
     """Agrega e reconcilia as CANDIDATAS. Nunca publica e nunca toca o destino.
 
@@ -347,20 +384,34 @@ def agregar(
 
     persistida = None
     try:
+        nomes = None
+        if especie_destino is not None:
+            nomes, versao_especie = _ler_nomes_da_especie(spark, especie_destino, competencia)
+            base = replace(base, silver_especie={"caminho": especie_destino, "versao": versao_especie})
         de_outra = entrada.linhas.where(F.col("competencia") != competencia).limit(1).count()
         if de_outra:
             return _diverge(
                 base, [_diferenca("competencia", "linhas_de_outra_competencia", competencia, "outra")],
                 "COMPETENCIA_DIVERGE",
             )
-        candidatas = persistida = _agregar(entrada.linhas, competencia, pol).persist()
+        candidatas = persistida = _agregar(entrada.linhas, competencia, pol, nomes).persist()
+        if nomes is not None:
+            sem_nome = sorted(
+                r[0] for r in candidatas.where(F.col("nome_oficial").isNull()).select("especie_codigo").collect()
+            )
+            if sem_nome:
+                bronze._liberar(persistida)
+                return _diverge(
+                    base, [_diferenca("nome_oficial", "NOME_OFICIAL_AUSENTE", "nome na Silver especie", sem_nome)]
+                )
         controles = {"sum_vl_liquido": candidatas.agg(F.sum("vl_liquido_total")).collect()[0][0]}
         if preparo_raiz:
             preparo = f"{preparo_raiz.rstrip('/')}/execucao={id_execucao or uuid.uuid4().hex}"
             _garantir_tabela(spark, preparo, pol)
             _gravar_preparo(spark, candidatas, preparo, competencia, {"competencia": competencia, "estado": "PREPARO"})
             ok, detalhe = _conferir_tabela(
-                spark, preparo, _versao_atual(spark, preparo), candidatas, controles, competencia, pol
+                spark, preparo, _versao_atual(spark, preparo), candidatas, controles, competencia, pol,
+                com_nome=nomes is not None,
             )
             if not ok:
                 d = _diferenca("gravacao", "reconferencia_no_preparo", "multiconjunto igual", json.dumps(detalhe, default=str))
@@ -602,7 +653,9 @@ def publicar(
         versao_anterior = _versao_atual(spark, destino)
         publicar_competencia(spark, linhas, destino, comp, meta, evolucao_aditiva=evolucao_aditiva)
         versao = _versao_atual(spark, destino)
-        ok, detalhe = _conferir_tabela(spark, destino, versao, linhas, controles, comp, pol)
+        ok, detalhe = _conferir_tabela(
+            spark, destino, versao, linhas, controles, comp, pol, com_nome=gold.silver_especie is not None
+        )
         if not ok:
             bronze._reverter_competencia(spark, destino, comp, existia, versao_anterior, meta)
             d = _diferenca("gravacao", "reconferencia_publicada", "multiconjunto igual", json.dumps(detalhe, default=str))
@@ -627,6 +680,7 @@ def executar_gold(
     bronze_kwargs: Optional[dict] = None,
     silver_kwargs: Optional[dict] = None,
     evolucao_aditiva: bool = False,
+    especie_destino: Optional[str] = None,
 ):
     """Cadeia inteira sob `orquestracao.conduzir`; publica só com autorização, pacote e anexo."""
     from pda import contrato as contrato_mod
@@ -636,7 +690,7 @@ def executar_gold(
     executar = montar_leitura_da_cadeia(
         spark, caminho_csv=caminho_csv, raiz=raiz, procedencia=procedencia,
         bronze_kwargs=bronze_kwargs, silver_kwargs=silver_kwargs,
-        gold_kwargs={"preparo_raiz": preparo_raiz, "id_execucao": id_execucao},
+        gold_kwargs={"preparo_raiz": preparo_raiz, "id_execucao": id_execucao, "especie_destino": especie_destino},
         resultado=guardado,
     )
     desfecho = orquestracao.conduzir(
@@ -733,6 +787,7 @@ def executar_gold_da_silver(
     preparo_raiz: str = PREPARO_PADRAO,
     id_execucao: Optional[str] = None,
     evolucao_aditiva: bool = False,
+    especie_destino: Optional[str] = None,
 ) -> GoldReconciliado:
     """Gold principal lendo SÓ a Silver publicada — nunca a landing nem o CSV.
 
@@ -757,7 +812,7 @@ def executar_gold_da_silver(
     id_execucao = id_execucao or uuid.uuid4().hex
     g = agregar(
         spark, contrato, s, preparo_raiz=preparo_raiz, id_execucao=id_execucao,
-        versao_camada_anterior=versao_silver,
+        versao_camada_anterior=versao_silver, especie_destino=especie_destino,
     )
     if g.estado != INTEGRO:
         return g

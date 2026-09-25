@@ -367,7 +367,7 @@ def test_commit_carrega_a_forma(spark, tmp_path):
         "hash_procedencia", "linhas", "defeitos", "cobertura", "reconciliacao",
     } <= campos
     assert tuple(g.linhas.columns) == gold.GOLD_COLUNAS == (
-        "especie_codigo", "especie_descricao", "vl_liquido_total", "competencia",
+        "especie_codigo", "especie_descricao", "vl_liquido_total", "competencia", "nome_oficial",
     )
     _, dono, _ = gold.ler_competencia_publicada(spark, str(tmp_path / "dest"), COMP)
     assert set(dono) >= {
