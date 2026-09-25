@@ -1,90 +1,94 @@
-# Onde parei — 24/09/2026, madrugada
+# Onde parei — 24/09/2026, noite
 
-O dono pediu para parar. Isto é só para retomar sem reconstruir contexto; o
-histórico completo está no `git log` desta branch.
+Isto é para retomar sem reconstruir contexto. O histórico completo está no
+`git log`; as decisões, nos ADRs (`cvg/docs/adrs/`, 0000–0014) e no
+[`ESTADO.md`](ESTADO.md).
 
-## O que está em produção (MinIO, Delta) — 2026-01 publicada
+## O que está em produção
 
-| Camada | Tabela | Versão | Linhas | Soma | Estado |
+| Onde | O quê | Versão | Linhas | Soma | Estado |
 |---|---|---|---:|---:|---|
-| Landing | `s3a://landing/pda/beneficios-emitidos` + `_PROCEDENCIA.json` | — | 41.572.553 | 78.521.752.562,12 | vinculada ao CSV `505725d9…` |
-| Bronze | `s3a://bronze/pda/beneficios-emitidos` | v4 | 41.572.553 | 78.521.752.562,12 | `INTEGRO`, commit nomeia o pacote `ACEITO` da ingestão |
+| Landing | `s3a://landing/pda/beneficios-emitidos` + `_PROCEDENCIA.json` | — | 41.572.553 | 78.521.752.562,12 | vinculada ao CSV `505725d9…` · 95 objetos, 126.778.295 bytes |
+| Bronze | `s3a://bronze/pda/beneficios-emitidos` | v4 | 41.572.553 | 78.521.752.562,12 | `INTEGRO` |
 | Silver | `s3a://silver/pda/beneficios-emitidos` | v5 | 41.572.553 | 78.521.752.562,12 | `INTEGRO` |
-| Gold | `s3a://gold/pda/beneficios-emitidos` | v3 | 65 códigos | 78.521.752.562,12 | `INTEGRO`, lida **só da Silver** (17 s; antes 1326 s) |
-| Assuntos | `s3a://gold/pda/assuntos/fat_especie` e `kpis_nacionais` | v7 | 65 / 1 | 78.521.752.562,12 | `INTEGRO`, código a código igual à Gold |
+| Silver | `s3a://silver/pda/especie` | v1 | 65 | — | nome oficial do INSS ao lado do texto da fonte; 65 nomes distintos (os 11 colapsos desfeitos), 43 textos iguais ao prefixo |
+| Gold | `s3a://gold/pda/beneficios-emitidos` | v3 | 65 códigos | 78.521.752.562,12 | `INTEGRO` |
+| Assuntos | `fat_especie`, `kpis_nacionais` | v7 | 65 / 1 | 78.521.752.562,12 | `INTEGRO` |
+| Postgres | `pda-postgres`, banco e schema `ontologia` | carga 1 | 2/13/14/5/65 | — | projeção da ontologia, reconferida; sha256 da ontologia na tabela `carga` |
 
-Execução real que publicou: `v4-20260924T011752` (evidência em
-`/app/trabalho/evidencia/`). Preparos antigos e prefixos de teste já foram
-apagados; `_preparo` vazio.
+Só a competência **2026-01** está no lago.
 
-## Cadeias entregues (todas `LOCAL_SETTLED`, receipt `pass/pass`)
+## A cadeia — onde termina
 
-Primeira descida (7) · contrato-ext · medalhão Delta (bronze, silver, gold) ·
-procedência (vinculador, bronze lê a prova) · **v4** (ingestão julgada, gold
-lê a silver, grupos no contrato, gold por assuntos, limpeza do preparo).
-Suíte: **327 testes verdes por módulo** (numa JVM só estoura o heap de 1 GB
-herdado — é o que a cadeia de performance corrige).
+A cadeia encadeia branches `task/*`, sem merge. A ponta é
+**`task/vinculador-gramatica`** (`bf984d6`), com a árvore limpa.
 
-Contrato: mapa dos 11 colapsos e `grupos_especie` (65 códigos por texto, 6
-nomeados em Outros) aprovados pelo dono, com nome e data.
-
-## Onde a cadeia de PERFORMANCE parou
-
-Receita `cvg/swimlanes/performance-recipe.yaml`, 4 costuras: memória
-declarada + `unpersist` + reconferência numa passada (bronze/silver);
-`unpersist` + um CHECK só (gold/assuntos); testes mais leves; limpeza de
-execuções substituídas.
-
-| Passe | Estado |
+| Verificador | Hoje |
 |---|---|
-| 3 · 4 | 🟢 `CHECK_CONSENSUS=OK` na R2 (commit `16cd810`) |
-| Arquivo da composição v4 | 🟢 `ca40f3c` |
-| **5 · Tasking** | 🟡 **no meio** — compose `MATERIALIZED`; `perf-bronze-silver` e `perf-gold` **seladas**; `testes-leves` e `limpa-substituidas` **não seladas**; **nada deste passe commitado** (a árvore tem `seamwise/`, `cvg/tasks/T-20260924-*`, `cvg/receipts/` sem commit — é o estado esperado, não lixo) |
-| 7 · Bind | ⬜ |
-| 8 · Loop | ⬜ 4 loops |
+| Suíte inteira numa JVM só | **460 passed**, sem skip nem xfail |
+| `scripts/verificar_procedencia.py` | `PROCEDENCIA=OK` — 20 de 20 em `src/`, cada um com Task-Spec selada |
+| `scripts/verificar_cercas.py` | `CERCAS=OK` — `.github/workflows` cercado por isenção nomeada |
+| `scripts/checar_w1.py` | `W1=OK` |
 
-Baselines de performance em `perf/` (gate `spark-perf`, 6 GB declarados,
-ruído `PERF=IGUAL`): bronze executor 374 s, silver 678 s, assuntos 167 s.
+O que foi entregue desde a madrugada de 24/09, em ordem:
 
-## O comando para retomar
+1. **Performance** — memória declarada (6 GB), reconferência numa passada.
+   `PERF=MELHOR` com saída idêntica à produção; a ablação mostrou que o ganho
+   é do código, não do `shuffle.partitions`.
+2. **Teste da regra antiga da limpeza** retirado por lista nomeada.
+3. **Dicionários do INSS** em `_raw/` (444, sha256 no `CHECKSUMS.txt`).
+4. **Ontologia** (ADR 0014) — `src/ontologia/beneficios-emitidos.yaml`, a
+   fonte da verdade; a Delta `especie` e o Postgres são projeções.
+5. **Linha `pds` reunida** (`dae1042`) — ADRs 0010–0013 dela. O ADR da
+   ontologia foi renumerado de 0010 para 0014.
+6. **Verificadores de cercas e de procedência** consertados — acusavam e
+   aprovavam na mesma saída.
+7. **Produtor adotado** pela cadeia (Regra 11) — `PROCEDENCIA=OK` pela
+   primeira vez.
+8. **Defeitos latentes do produtor corrigidos** — `src/produtor/gramatica.py`
+   dá o veredito do juiz nos três módulos Spark; ANSI; partição ou rejeitos
+   ocupados recusam; rejeitos com o texto bruto em
+   `s3a://landing/pda/beneficios-emitidos-rejeitos` (cópia; a tabela segue com
+   todas as linhas). O produtor corrigido sobre o CSV real de 2026-01 dá a
+   âncora exata.
+
+## O que falta
+
+| Item | Por quê |
+|---|---|
+| **Contratos das competências de 2025** | O layout mudou entre 2025-08 e 2025-09 (ADR 0013): 2025-07 e 2025-08 têm 13 colunas e uma só "Espécie", na posição 0. Ingerir com o contrato de 2026-01 poria o código da espécie em "Despacho", em silêncio. Cada competência precisa de contrato próprio, **medido** (Regra 2) |
+| Guarda de `--rejeitos` dentro do destino | Resíduo aceito na R3 da correção do produtor. Hoje só o dono ou o orquestrador passam o argumento |
+| Fase 2 da Gold | `fat_uf`, `fat_banco`, perfil demográfico — exigem a landing com as 14 colunas |
+| `MEDALHAO.md` | defasado em relação a este arquivo |
+| **Publicar** | `git push` das branches `task/*` até `task/vinculador-gramatica`, e do merge da `pds`. O push é do dono, do terminal dele |
+
+## Como retomar
 
 ```bash
 # de dentro do WSL Ubuntu-24.04
-bash ~/retomar_perf.sh      # sela o que falta, Pass 5 commit, Pass 7, os 4 loops
+cd ~/darkfactory-pda
+git checkout task/vinculador-gramatica
+docker compose -f infra/docker-compose.yml up -d      # minio, postgres, spark
+python3 scripts/verificar_procedencia.py | tail -1     # PROCEDENCIA=OK
+python3 scripts/verificar_cercas.py | tail -1          # CERCAS=OK
 ```
 
-Ele confere a branch (`task/limpa-preparo`), para no primeiro loop que não
-assentar e confere os caminhos de cada tarefa (Regra 10 pelos dois lados).
+Uma receita nova segue o molde das de hoje: gerador em `~/gerar_*.py`, R1
+corrige só o que toca dinheiro, publicação ou deleção, R2 decide sem editar —
+**salvo contradição real entre o plano e um teste selado**, que se corrige
+antes do loop (custou um `STALLED` e quase um segundo).
 
-## Depois do Pass 8 — verificação pós-assentamento prometida no Pass 4
+## Armadilhas desta fábrica (também no `AGENTS.md` do template)
 
-1. Rodar de novo bronze, silver e assuntos com event log e 6 GB e comparar
-   com `perf/` pela skill: só aceitar `PERF=MELHOR` com saída **idêntica** à
-   produção (controles + multiconjunto 0/0). `PIOR`/`IGUAL` → reverter.
-2. Rodar os assuntos **duas vezes** — a segunda não pode acrescentar CHECK
-   nem falhar (R2 C3).
-3. Rodar `test_gold.py` e `test_gold_assuntos.py` **inteiros, cronometrados**;
-   meta: assuntos abaixo de 275 s (hoje 551 s).
-4. Comparar pela AST e por `git diff` as funções `test_*` contra o commit
-   selado do Pass 5 (gravado em `/tmp/perf_selado.txt` pelo script).
-
-## Pendências fora da performance
-
-- **Fase 2 da Gold:** landing v2 com as 14 colunas → `fat_uf`, `fat_banco`,
-  perfil demográfico.
-- `scripts/medir_colapso.py`: piso da Regra 9 (conta descartes, zero linhas
-  é `NAO_MEDIDO`).
-- `cvg/MEDALHAO.md` está defasado em relação a este arquivo.
-- **Publicar:** muitos commits locais aqui e no template (`main`). O push é
-  do dono, do terminal dele (o Git Credential Manager pede interação).
-
-## Armadilhas desta sessão (já na bancada, `AGENTS.md` do template)
-
-- Nunca montar comando destrutivo por `wsl.exe -- bash -lc '… $var …'`: o
-  shell do Windows expande a variável vazia. Um `mc rm l/$p/` virou `l//` (o
-  site inteiro) — o `mc` recusou. Apagar é por script, caminho literal, lista
-  fechada.
-- Enquanto um loop inplace roda, **nada mais** escreve neste repositório.
+- Nunca montar comando por `wsl.exe -- bash -lc '… $var …'`: o shell do
+  Windows expande a variável vazia. Script em arquivo, sempre — e conferir as
+  linhas de variável com `sed -n` antes de rodar.
+- **Árvore limpa não prova que o loop terminou**: ele comita o trabalho do
+  agente antes da conferência final. Nada escreve no repositório enquanto
+  houver `cvg loop` vivo — um commit no meio deu `BLAST_RADIUS`.
+- Plano que fatia em tarefas módulos que **dividem fixtures de teste** cria um
+  estado intermediário impossível. Tarefa única, ou fixtures separadas.
+- Medir antes de escrever a premissa: "todo CSV de `_raw/`" ignorava que o
+  layout mudou — o loop recusou com razão.
 - O agente do loop pode rodar **só** `docker compose -f infra/docker-compose.yml
-  exec -T spark python3 -m pytest…` (autorizado pelo dono, escopo mínimo),
-  via `~/bin/claude-loop-testes` e `CVG_CLAUDE_CMD` no `~/pass8_tarefa.sh`.
+  exec -T spark python3 -m pytest…`, via `~/bin/claude-loop-testes`.
