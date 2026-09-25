@@ -28,10 +28,14 @@ execution_backend: any
 signed_off: true
 signed_off_by: nobru
 signed_off_at: 2026-09-25T03:23:57Z
-accepted: false
-accepted_by: (none)
-accepted_at: (none)
+accepted: true
+accepted_by: converge-loop
+accepted_at: 2026-09-25T03:32:46Z
 signed_off_sig: hmac-sha256-v3:85d3c104:fb8e710e751508ba013b7e22fd9f7153528701d49cf2089b212d42387910e7f4
+accepted_tier: 1
+accepted_attempt_id: 33f7d5b3-83c5-48da-8c70-e73a4c210a48
+accepted_authorization_ref: hmac-sha256-v3:85d3c104:fb8e710e751508ba013b7e22fd9f7153528701d49cf2089b212d42387910e7f4
+acceptance_record_digest: sha256:9509ed63a39b3d969e1c6c6ea0f5cff64afd90f896bdb9d7660cbb462cd53897
 ---
 
 # O Postgres carrega os próprios arquivos e é validado contra a Gold
