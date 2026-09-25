@@ -28,10 +28,14 @@ execution_backend: any
 signed_off: true
 signed_off_by: nobru
 signed_off_at: 2026-09-25T18:02:01Z
-accepted: false
-accepted_by: (none)
-accepted_at: (none)
+accepted: true
+accepted_by: converge-loop
+accepted_at: 2026-09-25T18:22:55Z
 signed_off_sig: hmac-sha256-v3:85d3c104:d429a8c1aece7b9dca52d0acf3250a97f3662cdfd9ab24690129466f9db7ce11
+accepted_tier: 1
+accepted_attempt_id: b3bf9bcf-f42a-4b9c-85dd-8820c0715c55
+accepted_authorization_ref: hmac-sha256-v3:85d3c104:d429a8c1aece7b9dca52d0acf3250a97f3662cdfd9ab24690129466f9db7ce11
+acceptance_record_digest: sha256:5b8d339756315f36cf864916057e0ad36e26e54406808c7faca0c075dc3f871e
 ---
 
 # A sessão declara o que herdava, e a Bronze evolui por padrão
