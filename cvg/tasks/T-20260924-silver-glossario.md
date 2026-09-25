@@ -28,10 +28,14 @@ execution_backend: any
 signed_off: true
 signed_off_by: nobru
 signed_off_at: 2026-09-25T01:41:37Z
-accepted: false
-accepted_by: (none)
-accepted_at: (none)
+accepted: true
+accepted_by: converge-loop
+accepted_at: 2026-09-25T02:25:11Z
 signed_off_sig: hmac-sha256-v3:85d3c104:f00921af3d79b0cf96c38a425bd4c09298e36fec35320ba73a1b1684b57a4940
+accepted_tier: 1
+accepted_attempt_id: c1538d4a-c0f2-404c-b50c-19cdc8f21482
+accepted_authorization_ref: hmac-sha256-v3:85d3c104:f00921af3d79b0cf96c38a425bd4c09298e36fec35320ba73a1b1684b57a4940
+acceptance_record_digest: sha256:bd1ed6880cbf53841a7619970ac701123713bc2f037c14a3c526c5000257f0f0
 ---
 
 # O glossário conformado na Silver, a partir da Bronze
