@@ -28,10 +28,14 @@ execution_backend: any
 signed_off: true
 signed_off_by: nobru
 signed_off_at: 2026-09-25T01:41:36Z
-accepted: false
-accepted_by: (none)
-accepted_at: (none)
+accepted: true
+accepted_by: converge-loop
+accepted_at: 2026-09-25T02:13:46Z
 signed_off_sig: hmac-sha256-v3:85d3c104:494ce4f04857cfa7740ee2954ebb38ec5a365fdbd1c21bca304dafce6d2db56d
+accepted_tier: 1
+accepted_attempt_id: 2ec8474f-20de-4803-8274-9d8fc533102b
+accepted_authorization_ref: hmac-sha256-v3:85d3c104:494ce4f04857cfa7740ee2954ebb38ec5a365fdbd1c21bca304dafce6d2db56d
+acceptance_record_digest: sha256:6efd8c9d323eb1197919447e215594aad0034c5ce5c32084049abd42ea0ce730
 ---
 
 # A Bronze do dicionário e do glossário, lida do landing
