@@ -525,7 +525,7 @@ def executar_classificacao(
     preparo_raiz: str = PREPARO_PADRAO,
     id_execucao: Optional[str] = None,
     versao_camada_anterior: Optional[int] = None,
-    evolucao_aditiva: bool = False,
+    evolucao_aditiva: bool = True,
 ) -> SilverClassificado:
     """Classifica a competência a partir de Bronze (objeto `entrada` ou tabela `bronze_destino`).
 

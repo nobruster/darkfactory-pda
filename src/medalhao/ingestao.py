@@ -164,7 +164,7 @@ def executar_ingestao(
     preparo_raiz: str = bronze.PREPARO_PADRAO,
     id_execucao: Optional[str] = None,
     bronze_kwargs: Optional[dict] = None,
-    evolucao_aditiva: bool = False,
+    evolucao_aditiva: bool = True,
 ):
     """Julga sob `orquestracao.conduzir`; publica a Bronze só com autorização. Devolve (Desfecho, Bronze)."""
     id_execucao = id_execucao or uuid.uuid4().hex
