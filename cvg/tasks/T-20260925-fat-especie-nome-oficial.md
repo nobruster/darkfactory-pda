@@ -28,10 +28,14 @@ execution_backend: any
 signed_off: true
 signed_off_by: nobru
 signed_off_at: 2026-09-25T13:56:58Z
-accepted: false
-accepted_by: (none)
-accepted_at: (none)
+accepted: true
+accepted_by: converge-loop
+accepted_at: 2026-09-25T14:51:22Z
 signed_off_sig: hmac-sha256-v3:85d3c104:a6f0f5032e4a5982afc533dc697c63b2b5ed310926a7e140e386de4ab1537604
+accepted_tier: 1
+accepted_attempt_id: f72e356b-17e5-4394-956a-918008f4b899
+accepted_authorization_ref: hmac-sha256-v3:85d3c104:a6f0f5032e4a5982afc533dc697c63b2b5ed310926a7e140e386de4ab1537604
+acceptance_record_digest: sha256:3957a5c09b7cc041b67bcb7e93a699b568d8eaccc9ff5a8867dd0ca3159e6d01
 ---
 
 # A fat_especie ganha o nome oficial, da mesma especie que a Gold principal usou
