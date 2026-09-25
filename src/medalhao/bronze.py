@@ -100,6 +100,15 @@ ADAPTATIVO_PADRAO = True
 PARTICOES_SHUFFLE_PADRAO = 8
 # O heap efetivo (maxMemory) fica abaixo do -Xmx: a JVM desconta um espaço de sobrevivente.
 FOLGA_DO_HEAP = 0.85
+# Retenção de tabela Delta NOVA: histórico e arquivos removidos são evidência — cinco anos.
+RETENCAO_PADRAO = "interval 1825 days"
+PRATICAS_DELTA = {
+    "spark.databricks.delta.schema.autoMerge.enabled": "false",
+    "spark.databricks.delta.retentionDurationCheck.enabled": "true",
+    "spark.databricks.delta.replaceWhere.constraintCheck.enabled": "true",
+    "spark.databricks.delta.properties.defaults.logRetentionDuration": RETENCAO_PADRAO,
+    "spark.databricks.delta.properties.defaults.deletedFileRetentionDuration": RETENCAO_PADRAO,
+}
 
 
 class SessaoRecusada(RuntimeError):
@@ -135,6 +144,8 @@ def criar_sessao(
         .config("spark.sql.extensions", "io.delta.sql.DeltaSparkSessionExtension")
         .config("spark.sql.catalog.spark_catalog", "org.apache.spark.sql.delta.catalog.DeltaCatalog")
     )
+    for chave, valor in PRATICAS_DELTA.items():
+        construtor = construtor.config(chave, valor)
     if os.environ.get("S3_ENDPOINT"):
         construtor = (
             construtor.config("spark.hadoop.fs.s3a.endpoint", os.environ["S3_ENDPOINT"])
@@ -152,6 +163,8 @@ def criar_sessao(
     spark.conf.set("spark.sql.ansi.enabled", "true")
     spark.conf.set("spark.sql.adaptive.enabled", str(bool(adaptativo)).lower())
     spark.conf.set("spark.sql.shuffle.partitions", str(int(particoes_shuffle)))
+    for chave, valor in PRATICAS_DELTA.items():
+        spark.conf.set(chave, valor)
     spark.sparkContext.setLogLevel("WARN")
     efetivo, declarado = heap_efetivo(spark), _bytes_de(memoria_driver)
     if efetivo < declarado * FOLGA_DO_HEAP:
@@ -524,8 +537,11 @@ def _ler_versao(spark: SparkSession, caminho: str, versao: int) -> DataFrame:
 
 
 def verificar_evolucao(schema_atual: StructType, schema_novo: StructType) -> Tuple[str, ...]:
-    """Só ADITIVA: coluna nova passa; mudança de tipo de coluna existente é recusada."""
+    """Só ADITIVA: coluna nova passa; mudança de tipo ou coluna removida é recusada."""
     atual = {f.name: f.dataType for f in schema_atual}
+    removidas = [nome for nome in atual if nome not in {f.name for f in schema_novo}]
+    if removidas:
+        raise EvolucaoRecusada(f"colunas removidas {removidas} — remoção é recusada")
     for campo in schema_novo:
         if campo.name in atual and atual[campo.name] != campo.dataType:
             raise EvolucaoRecusada(
@@ -817,7 +833,7 @@ def executar_leitura(
     preparo_raiz: str = PREPARO_PADRAO,
     id_execucao: Optional[str] = None,
     versao_camada_anterior: Optional[int] = None,
-    evolucao_aditiva: bool = False,
+    evolucao_aditiva: bool = True,
 ) -> BronzeConferido:
     """Lê a partição SOLICITADA (nunca a raiz inteira), confere e, só se INTEGRO, grava.
 
@@ -857,7 +873,7 @@ def publicar_bronze(
     preparo_raiz: str = PREPARO_PADRAO,
     id_execucao: Optional[str] = None,
     versao_camada_anterior: Optional[int] = None,
-    evolucao_aditiva: bool = False,
+    evolucao_aditiva: bool = True,
     metadados_extra: Optional[dict] = None,
     julgado: Optional[dict] = None,
 ) -> BronzeConferido:
