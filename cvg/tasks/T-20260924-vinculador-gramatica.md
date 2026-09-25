@@ -28,10 +28,14 @@ execution_backend: any
 signed_off: true
 signed_off_by: nobru
 signed_off_at: 2026-09-25T00:26:45Z
-accepted: false
-accepted_by: (none)
-accepted_at: (none)
+accepted: true
+accepted_by: converge-loop
+accepted_at: 2026-09-25T00:54:42Z
 signed_off_sig: hmac-sha256-v3:85d3c104:2e7efe519a52bdd1910c02cc0da5ea991fdb1922a7703fc3f192b3f3e0ede5e7
+accepted_tier: 1
+accepted_attempt_id: 7216f818-1eb5-40e4-b04d-331d75c94ff0
+accepted_authorization_ref: hmac-sha256-v3:85d3c104:2e7efe519a52bdd1910c02cc0da5ea991fdb1922a7703fc3f192b3f3e0ede5e7
+acceptance_record_digest: sha256:08de957e323ca41ac283de6878ef463b5732a15e050b429197b110b336446967
 ---
 
 # O vinculador de procedência com a mesma gramática do gravador
