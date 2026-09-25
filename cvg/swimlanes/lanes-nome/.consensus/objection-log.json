@@ -1,0 +1,212 @@
+{
+  "schema_version": "1.0",
+  "pass": "4-consensus",
+  "adversary": {
+    "engine_id": "codex",
+    "model": "codex",
+    "family": "openai",
+    "engine_version": "codex-cli 0.155.0",
+    "sandbox_mode": "read-only"
+  },
+  "author": {
+    "model": "claude",
+    "family": "anthropic"
+  },
+  "verdict": "REVISE",
+  "prompt_sha256": "8454a284e048f1bc81cb110091f1f8d654eff9200abfcbf7a71e1feffeec1c2d",
+  "inputs": [
+    {
+      "path": "fat-especie-nome-oficial/LEG-FAT-ESPECIE-NOME-OFICIAL.md",
+      "sha256": "561f5b31dc435685401bcbb40e36904213ee7f70a5a19bb6292d6d3efba02d0d"
+    },
+    {
+      "path": "fat-especie-nome-oficial/_lane.md",
+      "sha256": "8c2e5a3431f4af0a16964a04d49c241036622517453a2c22ca2d2adab2fb0819"
+    },
+    {
+      "path": "gold-nome-oficial/LEG-GOLD-NOME-OFICIAL.md",
+      "sha256": "e18fc2e90e1af306936a87f747e5b196b0082a5b0e61b88e982201b11da431c1"
+    },
+    {
+      "path": "gold-nome-oficial/_lane.md",
+      "sha256": "3f4a5cd8cfd87386f0a293378f9145b776b16faaf8742e6bc08290042885a83d"
+    }
+  ],
+  "objections": [
+    {
+      "id": "C1",
+      "severity": "high",
+      "rank": 1,
+      "attack_class": "unverified-assumption",
+      "swimlane": "LANE-GOLD-NOME-OFICIAL",
+      "leg": "LEG-GOLD-NOME-OFICIAL",
+      "location": {
+        "plan_file": "cvg/swimlanes/lanes-nome/gold-nome-oficial/LEG-GOLD-NOME-OFICIAL.md",
+        "section": "tasks[0].behavior[B-1]; anti_patterns[0]"
+      },
+      "title": "Juntar depois do groupBy n\u00e3o prova preserva\u00e7\u00e3o da cardinalidade",
+      "body": "A posi\u00e7\u00e3o da jun\u00e7\u00e3o evita multiplicar a entrada da agrega\u00e7\u00e3o, mas n\u00e3o impede multiplicar o agregado publicado. Contraprova: uma linha agregada do c\u00f3digo 01 com total 100 e duas linhas da especie para esse c\u00f3digo e compet\u00eancia produzem duas linhas de 100. Controles calculados antes do join continuam corretos; reconferir contra o mesmo DataFrame multiplicado tamb\u00e9m pode passar. O plano n\u00e3o cita uma garantia verific\u00e1vel de unicidade da Silver nem exige um cen\u00e1rio que rompa essa premissa. A invari\u00e2ncia prometida permanece sem prova para essa entrada.",
+      "evidence": "B-1: 'juntada DEPOIS do groupBy ... em left join'; anti_patterns: juntar antes 'multiplicaria linhas e mudaria os controles'.",
+      "cites": [
+        "cvg/docs/tech-spec/tech-spec-pda-beneficios.md \u00a7 Requirements, R-3 e R-5",
+        "cvg/swimlanes/lanes-nome/gold-nome-oficial/LEG-GOLD-NOME-OFICIAL.md \u00a7 behavior B-1"
+      ],
+      "resolution": {
+        "disposition": "ACCEPT",
+        "decided_by": "Bruno Nunes",
+        "decided_at": "2026-09-25T13:49:25Z",
+        "owner": "Bruno Nunes",
+        "risk_residual": "Aceito, ja coberto: _reconciliar da Gold acusa codigo_duplicado e soma_das_linhas (gold.py:154-157, medido pelo agente de mapa); por fora, a publicacao exige 65 linhas e 65 codigos distintos. Decidido pelo dono ao fechar o Pass 4 da receita D na R3, sem editar o plano."
+      }
+    },
+    {
+      "id": "C2",
+      "severity": "high",
+      "rank": 2,
+      "attack_class": "cross-lane-interface",
+      "swimlane": "LANE-FAT-ESPECIE-NOME-OFICIAL",
+      "leg": "LEG-FAT-ESPECIE-NOME-OFICIAL",
+      "location": {
+        "plan_file": "cvg/swimlanes/lanes-nome/fat-especie-nome-oficial/LEG-FAT-ESPECIE-NOME-OFICIAL.md",
+        "section": "tasks[0].behavior[B-1]"
+      },
+      "title": "O commit da Gold n\u00e3o est\u00e1 vinculado explicitamente \u00e0 compet\u00eancia da fat",
+      "body": "O plano identifica caminho e vers\u00e3o da especie, mas deixa impl\u00edcito qual commit da Gold fornece esse par. Contraprova: janeiro foi publicado usando especie V2; depois fevereiro foi publicado usando V3. Se 'o commit que ele j\u00e1 consulta' for o mais recente da tabela, reconstruir a fat de janeiro usar\u00e1 V3. Filtrar janeiro na Silver n\u00e3o recupera a escolha V2. A execu\u00e7\u00e3o pode publicar nomes diferentes daqueles usados pela Gold de janeiro, contrariando a prova observ\u00e1vel. Trata-se de uma sele\u00e7\u00e3o n\u00e3o especificada, n\u00e3o de uma corrida comprovada no c\u00f3digo.",
+      "evidence": "'l\u00ea silver_especie {caminho, versao} do commit da Gold principal que ele j\u00e1 consulta'; proof: 'Mesma vers\u00e3o da especie nas duas tabelas.'",
+      "cites": [
+        "cvg/swimlanes/lanes-nome/fat-especie-nome-oficial/LEG-FAT-ESPECIE-NOME-OFICIAL.md \u00a7 proof e behavior B-1",
+        "cvg/docs/adrs/0015-every-source-file-passes-landing-bronze-silver-gold-reference-included.md \u00a7 Decision: cada commit registra a vers\u00e3o ou parti\u00e7\u00e3o e prova da camada lida"
+      ],
+      "resolution": {
+        "disposition": "ACCEPT",
+        "decided_by": "Bruno Nunes",
+        "decided_at": "2026-09-25T13:49:25Z",
+        "owner": "Bruno Nunes",
+        "risk_residual": "Aceito, ja coberto pelo desenho existente: ler_competencia_publicada devolve os metadados do ULTIMO commit que NOMEIA a competencia, nunca o mais recente da tabela (bronze.py, 'nunca os metadados do commit V em si, que pode ser de outra competencia'). Decidido pelo dono ao fechar o Pass 4 da receita D na R3, sem editar o plano."
+      }
+    },
+    {
+      "id": "C3",
+      "severity": "high",
+      "rank": 3,
+      "attack_class": "unverified-assumption",
+      "swimlane": "LANE-GOLD-NOME-OFICIAL",
+      "leg": "LEG-GOLD-NOME-OFICIAL",
+      "location": {
+        "plan_file": "cvg/swimlanes/lanes-nome/gold-nome-oficial/LEG-GOLD-NOME-OFICIAL.md",
+        "section": "tasks[0].behavior[B-1]; behavior[B-2]"
+      },
+      "title": "Linha correspondente sem valor de nome escapa da recusa descrita",
+      "body": "A recusa est\u00e1 definida para c\u00f3digo 'sem linha na especie', embora o invariante pro\u00edba nome nulo quando a especie est\u00e1 presente. Contraprova: existe uma linha para c\u00f3digo e compet\u00eancia, mas nome_oficial \u00e9 NULL. A jun\u00e7\u00e3o encontra a linha, o schema de destino aceita NULL e a reconfer\u00eancia pode concordar com o esperado igualmente nulo. O plano n\u00e3o demonstra que o contrato da Silver exclui essa entrada nem exige explicitamente essa contraprova. Isso permite implementar a condi\u00e7\u00e3o escrita e ainda violar o invariante declarado.",
+      "evidence": "'um c\u00f3digo da Gold sem linha na especie devolve DIVERGE'; 'nunca nulo calado com a especie presente'; 'nome_oficial como texto ANUL\u00c1VEL, sem CHECK'.",
+      "cites": [
+        "cvg/swimlanes/lanes-nome/gold-nome-oficial/LEG-GOLD-NOME-OFICIAL.md \u00a7 behavior B-1",
+        "cvg/swimlanes/lanes-nome/gold-nome-oficial/LEG-GOLD-NOME-OFICIAL.md \u00a7 behavior B-2: nulo \u00e9 o comportamento declarado para aus\u00eancia de especie_destino"
+      ],
+      "resolution": {
+        "disposition": "ACCEPT",
+        "decided_by": "Bruno Nunes",
+        "decided_at": "2026-09-25T13:49:25Z",
+        "owner": "Bruno Nunes",
+        "risk_residual": "Aceito como residuo, coberto por fora: a publicacao em producao exige nenhum nome_oficial nulo na Gold com a especie presente; a especie v2 tem os 65 nomes. Decidido pelo dono ao fechar o Pass 4 da receita D na R3, sem editar o plano."
+      }
+    },
+    {
+      "id": "C4",
+      "severity": "high",
+      "rank": 4,
+      "attack_class": "cross-lane-interface",
+      "swimlane": "LANE-FAT-ESPECIE-NOME-OFICIAL",
+      "leg": "LEG-FAT-ESPECIE-NOME-OFICIAL",
+      "location": {
+        "plan_file": "cvg/swimlanes/lanes-nome/fat-especie-nome-oficial/LEG-FAT-ESPECIE-NOME-OFICIAL.md",
+        "section": "tasks[0].behavior[B-1] e behavior[B-2]"
+      },
+      "title": "Refer\u00eancia presente mas inv\u00e1lida n\u00e3o tem desfecho especificado",
+      "body": "B-1 pressup\u00f5e um par caminho/vers\u00e3o v\u00e1lido; B-2 cobre somente aus\u00eancia da chave. Ficam sem contrato silver_especie=null, par incompleto e vers\u00e3o registrada indispon\u00edvel. Confundir esses casos com aus\u00eancia publicaria nomes nulos sob NAO_MEDIDO, escondendo uma refer\u00eancia quebrada; recorrer \u00e0 vers\u00e3o atual violaria a identidade prometida. Uma exce\u00e7\u00e3o incidental tamb\u00e9m n\u00e3o define o desfecho observ\u00e1vel. A lista de cen\u00e1rios n\u00e3o exercita essa fronteira.",
+      "evidence": "'a presen\u00e7a ou aus\u00eancia da especie \u00e9 decidida S\u00d3 pela chave silver_especie'; B-2: 'commit SEM a chave silver_especie'.",
+      "cites": [
+        "cvg/swimlanes/lanes-nome/fat-especie-nome-oficial/LEG-FAT-ESPECIE-NOME-OFICIAL.md \u00a7 behavior B-1/B-2 e anti_patterns",
+        "cvg/docs/adrs/0015-every-source-file-passes-landing-bronze-silver-gold-reference-included.md \u00a7 Decision: linhagem por commit"
+      ],
+      "resolution": {
+        "disposition": "ACCEPT",
+        "decided_by": "Bruno Nunes",
+        "decided_at": "2026-09-25T13:49:25Z",
+        "owner": "Bruno Nunes",
+        "risk_residual": "Aceito como residuo: versao indisponivel levanta erro de leitura, nao vira NAO_MEDIDO; o tratamento explicito de referencia nula ou incompleta fica para a receita de limpeza. Decidido pelo dono ao fechar o Pass 4 da receita D na R3, sem editar o plano."
+      }
+    },
+    {
+      "id": "C5",
+      "severity": "medium",
+      "rank": 5,
+      "attack_class": "unverified-assumption",
+      "swimlane": "LANE-GOLD-NOME-OFICIAL",
+      "leg": "LEG-GOLD-NOME-OFICIAL",
+      "location": {
+        "plan_file": "cvg/swimlanes/lanes-nome/gold-nome-oficial/LEG-GOLD-NOME-OFICIAL.md",
+        "section": "tasks[0].done_condition; behavior[B-2]; evals[eval_3]"
+      },
+      "title": "O eval n\u00e3o comprova a compatibilidade prometida com os testes existentes",
+      "body": "A done-condition exige os testes existentes passando, e B-2 promete preservar todos os controles. Entretanto, eval_3 seleciona somente tr\u00eas cen\u00e1rios de test_gold.py. Uma regress\u00e3o em qualquer cen\u00e1rio n\u00e3o selecionado permite todos os evals verdes sem cumprir a done-condition. N\u00e3o alterar os testes preserva o or\u00e1culo, mas n\u00e3o demonstra que a implementa\u00e7\u00e3o continua passando por ele.",
+      "evidence": "done_condition: 'os testes ... e os existentes passam'; eval_3 seleciona apenas 'commit_carrega_a_forma or reconfere_multiconjunto_das_linhas or publica_em_um_unico_commit'.",
+      "cites": [
+        "cvg/swimlanes/lanes-nome/gold-nome-oficial/LEG-GOLD-NOME-OFICIAL.md \u00a7 done_condition, behavior B-2 e eval_3"
+      ],
+      "resolution": {
+        "disposition": "ACCEPT",
+        "decided_by": "Bruno Nunes",
+        "decided_at": "2026-09-25T13:49:25Z",
+        "owner": "Bruno Nunes",
+        "risk_residual": "Aceito, coberto por fora: AST dos testes (so a tupla literal muda em test_gold.py) e suite INTEIRA numa JVM so. Decidido pelo dono ao fechar o Pass 4 da receita D na R3, sem editar o plano."
+      }
+    },
+    {
+      "id": "C6",
+      "severity": "medium",
+      "rank": 6,
+      "attack_class": "other",
+      "swimlane": "LANE-FAT-ESPECIE-NOME-OFICIAL",
+      "leg": "LEG-FAT-ESPECIE-NOME-OFICIAL",
+      "location": {
+        "plan_file": "cvg/swimlanes/lanes-nome/fat-especie-nome-oficial/LEG-FAT-ESPECIE-NOME-OFICIAL.md",
+        "section": "tasks[0].goal; evals[eval_1..eval_3]"
+      },
+      "title": "Os evals usam uma forma de execu\u00e7\u00e3o que o pr\u00f3prio goal n\u00e3o autoriza",
+      "body": "O goal declara uma \u00fanica forma permitida: exec -T spark python3 -m pytest. Todos os evals usam exec -T spark sh -c, com la\u00e7o, pipeline e comandos adicionais. N\u00e3o h\u00e1 exce\u00e7\u00e3o registrada para o executor dos evals. Uma aplica\u00e7\u00e3o literal da restri\u00e7\u00e3o impede executar a prova exigida; executar o eval pressup\u00f5e uma exce\u00e7\u00e3o n\u00e3o declarada. A quest\u00e3o \u00e9 contratual: n\u00e3o foi constatado bloqueio efetivo do ambiente.",
+      "evidence": "goal: 'o \u00daNICO comando liberado ao agente \u00e9 ... spark python3 -m pytest'; evals: '... spark sh -c ...'.",
+      "cites": [
+        "cvg/swimlanes/lanes-nome/fat-especie-nome-oficial/LEG-FAT-ESPECIE-NOME-OFICIAL.md \u00a7 goal e evals"
+      ],
+      "resolution": {
+        "disposition": "ACCEPT",
+        "decided_by": "Bruno Nunes",
+        "decided_at": "2026-09-25T13:49:25Z",
+        "owner": "Bruno Nunes",
+        "risk_residual": "Refutado, como em todas as rodadas anteriores: a permissao de escopo minimo e do AGENTE; os evals sao executados pelo MOTOR, fora dela. Decidido pelo dono ao fechar o Pass 4 da receita D na R3, sem editar o plano."
+      }
+    }
+  ],
+  "cross_lane_interfaces": [],
+  "fork": {
+    "choice": "B",
+    "reason": "Reproduz a declara\u00e7\u00e3o dos dois arquivos _lane.md; n\u00e3o \u00e9 uma escolha do advers\u00e1rio.",
+    "per_plan_declared": true
+  },
+  "open_questions": [
+    {
+      "q": "Qual garantia vinculante da Silver especie exclui duplicidade por c\u00f3digo/compet\u00eancia e nome nulo na vers\u00e3o lida? Essa garantia n\u00e3o foi identificada nos planos examinados.",
+      "blocks_build": true
+    },
+    {
+      "q": "Qual regra identifica o commit da Gold correspondente \u00e0 compet\u00eancia e \u00e0 publica\u00e7\u00e3o que a fat deve acompanhar?",
+      "blocks_build": true
+    },
+    {
+      "q": "Como representar obje\u00e7\u00f5es ainda n\u00e3o decididas no fluxo de ingest\u00e3o? O schema local exige resolu\u00e7\u00e3o humana j\u00e1 preenchida, enquanto o playbook pro\u00edbe o advers\u00e1rio de decidi-la.",
+      "blocks_build": true
+    }
+  ],
+  "rounds_run": 1
+}
