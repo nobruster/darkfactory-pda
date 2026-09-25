@@ -1,0 +1,237 @@
+schema_version: 1
+intent:
+  id: DI-PDA-NOME-OFICIAL-GOLD
+  title: O nome oficial nas tabelas da Gold
+  summary: A Gold principal e a fat_especie ganham nome_oficial, lido da Silver especie; controles intactos.
+  claim: proposed
+  source:
+    uri: cvg/docs/tech-spec/tech-spec-pda-beneficios.md
+    captured_at: '2026-09-21T00:00:00Z'
+    sha256: e619ead9d343282533110bc8cb8f1203614d8e733565b21e3157df2b8f157b88
+  success:
+  - Gold 2026-01 republicada com nome_oficial e os controles idênticos aos da v3.
+  - fat_especie com o nome da mesma versão da especie que a Gold principal usou.
+  out_of_scope:
+  - kpis_nacionais (não é por código).
+  - Outras competências (ficam com nome nulo).
+system_map:
+  claim: proposed
+  components:
+  - Gold principal
+  - fat_especie
+  external_dependencies:
+  - Silver especie v2 (produção)
+  unknowns: []
+evidence:
+- id: E-ANCORA-202601
+  claim: external
+  source:
+    uri: cvg/docs/adrs/0001-the-2026-01-anchor-is-41572553-rows-summing-78521752562-12.md
+    captured_at: '2026-09-21T00:00:00Z'
+    sha256: 0505a743963abfb09a257373a431c3878b25cf6c19d71467c722da9830779acd
+  confidence: 1.0
+  summary: 'Competência 2026-01 medida na origem: 41572553 linhas, soma 78521752562.12.'
+decisions:
+- id: DEC-NOME-OFICIAL-NA-GOLD
+  status: accepted
+  owner: Bruno Nunes
+  rationale: 'Decidido pelo dono em 2026-09-25: ''use a tabela de espécie'' — nome oficial nas tabelas da Gold — e ''evoluir as tabelas atuais''. A Gold lê o nome da Silver especie (ADR 0015); a única mudança em teste selado é a tupla literal de test_commit_carrega_a_forma, por exceção nomeada.'
+seams:
+- id: SEAM-GOLD-NOME-OFICIAL
+  name: Gold com nome oficial
+  description: Separa o nome oficial do texto truncado na Gold.
+  evidence:
+  - E-ANCORA-202601
+  responsibility: Juntar o nome da Silver especie depois da agregação.
+  consumes:
+  - especie na silver
+  produces: &id001
+  - gold com nome oficial
+  owner: medalhao
+  independent_proof: Controles idênticos com e sem o nome.
+  decision_ids:
+  - DEC-NOME-OFICIAL-NA-GOLD
+  rejected_alternatives:
+  - alternative: Tabelas novas ao lado das atuais
+    reason: o dono escolheu evoluir as tabelas atuais (2026-09-25).
+  swimlane:
+    id: LANE-GOLD-NOME-OFICIAL
+    name: Gold com nome oficial lane
+    owner: medalhao
+    legs:
+    - id: LEG-GOLD-NOME-OFICIAL
+      observable_state: Gold com nome oficial
+      proof: Controles idênticos com e sem o nome.
+      requires: []
+      produces: *id001
+      tasks:
+      - id: T-20260925-gold-nome-oficial
+        title: A Gold principal ganha o nome oficial, lido da Silver especie
+        goal: Pôr o nome oficial da espécie na Gold principal, ligado pelo código, sem mudar nenhum controle e sem quebrar os testes selados que montam a Gold sem a especie. Para rodar testes, o ÚNICO comando liberado ao agente é `docker compose -f infra/docker-compose.yml exec -T spark python3 -m pytest <arquivo> -k <cenarios>`.
+        done_condition: GOLD_COLUNAS termina em nome_oficial; com o caminho da Silver especie a Gold publica o nome, sem ele publica nulo com o motivo no commit; em tests/test_gold.py muda só a tupla literal de test_commit_carrega_a_forma; os testes de tests/test_gold_nome_oficial.py e os existentes passam.
+        effort: M
+        profile: standard
+        execution_backend: any
+        required_tools: &id003
+        - git
+        - bash
+        - python3
+        - pytest
+        - docker
+        depends_on: []
+        touches_paths:
+        - src/medalhao/gold.py
+        - tests/test_gold.py
+        creates_paths:
+        - tests/test_gold_nome_oficial.py
+        behavior:
+        - id: B-1
+          given: uma Silver de benefícios e uma Silver especie da mesma competência, em tmp_path
+          when: executar_gold_da_silver, executar_gold e agregar rodam com o parâmetro novo especie_destino (Optional[str], padrão None) apontando para a Silver especie
+          then: 'GOLD_COLUNAS passa a ser (especie_codigo, especie_descricao, vl_liquido_total, competencia, nome_oficial) — a coluna nova no FIM, onde a evolução de schema a põe; a Silver especie é lida numa versão V fixada UMA vez (versionAsOf), filtrada pela competência, e juntada DEPOIS do groupBy por especie_codigo, em left join — a contagem, a soma, o mínimo, o máximo e o total_por_codigo saem IDÊNTICOS aos de sem o nome; um código da Gold sem linha na especie devolve DIVERGE com a diferença NOME_OFICIAL_AUSENTE e nada é publicado (Regra 9: nunca nulo calado com a especie presente); o commit registra versao_silver_especie = V; _garantir_tabela declara nome_oficial como texto ANULÁVEL, sem CHECK; _conferir_tabela compara pelas colunas do esperado, para os testes existentes que montam o esperado com 4 colunas seguirem valendo. Numa tabela Gold já publicada com 4 colunas, a publicação com evolucao_aditiva=True acrescenta nome_oficial e deixa as outras competências intactas, com nome nulo.'
+        - id: B-2
+          given: a Gold chamada SEM especie_destino, como nos testes selados existentes
+          when: a Gold é publicada
+          then: 'nome_oficial é nulo em toda linha e o commit registra nome_oficial: ''NAO_MEDIDO'' com o motivo ''SEM_SILVER_ESPECIE'' — nunca uma ausência calada; todos os controles saem como antes. Em tests/test_gold.py a ÚNICA mudança é acrescentar "nome_oficial" ao FIM da tupla literal de test_commit_carrega_a_forma; nenhum outro test_* muda nem sai. Em tests/test_gold_nome_oficial.py entram test_nome_oficial_vem_da_silver_especie, test_controles_iguais_com_e_sem_nome, test_codigo_sem_nome_diverge_e_nao_publica, test_sem_especie_nome_nulo_e_registrado, test_commit_nomeia_a_versao_da_especie, test_especie_lida_na_versao_fixada e test_tabela_de_quatro_colunas_evolui_aditiva. Nenhum cenário usa skip, xfail ou importorskip; os testes gravam só em tmp_path, nunca no MinIO; a Silver especie de fixture é uma tabela Delta em tmp_path com o schema de medalhao.especie.'
+        evals:
+        - id: eval_1
+          description: O nome vem da Silver especie e os controles não mudam
+          bash: docker compose -f infra/docker-compose.yml exec -T spark sh -c 'for c in nome_oficial_vem_da_silver_especie controles_iguais_com_e_sem_nome commit_nomeia_a_versao_da_especie especie_lida_na_versao_fixada; do python3 -m pytest --collect-only -q tests/test_gold_nome_oficial.py -k "$c" 2>/dev/null | grep -q "::" || { echo "EVAL=CENARIO_AUSENTE_$c"; exit 1; }; done; python3 -m pytest -q tests/test_gold_nome_oficial.py -k "nome_oficial_vem_da_silver_especie or controles_iguais_com_e_sem_nome or commit_nomeia_a_versao_da_especie or especie_lida_na_versao_fixada"'
+          verifies:
+          - B-1
+        - id: eval_2
+          description: Ausência não é silêncio, e a tabela evolui
+          bash: docker compose -f infra/docker-compose.yml exec -T spark sh -c 'for c in codigo_sem_nome_diverge_e_nao_publica sem_especie_nome_nulo_e_registrado tabela_de_quatro_colunas_evolui_aditiva; do python3 -m pytest --collect-only -q tests/test_gold_nome_oficial.py -k "$c" 2>/dev/null | grep -q "::" || { echo "EVAL=CENARIO_AUSENTE_$c"; exit 1; }; done; python3 -m pytest -q tests/test_gold_nome_oficial.py -k "codigo_sem_nome_diverge_e_nao_publica or sem_especie_nome_nulo_e_registrado or tabela_de_quatro_colunas_evolui_aditiva"'
+          verifies:
+          - B-1
+          - B-2
+        - id: eval_3
+          description: A Gold existente segue igual
+          bash: docker compose -f infra/docker-compose.yml exec -T spark sh -c 'for c in commit_carrega_a_forma reconfere_multiconjunto_das_linhas publica_em_um_unico_commit; do python3 -m pytest --collect-only -q tests/test_gold.py -k "$c" 2>/dev/null | grep -q "::" || { echo "EVAL=CENARIO_AUSENTE_$c"; exit 1; }; done; python3 -m pytest -q tests/test_gold.py -k "commit_carrega_a_forma or reconfere_multiconjunto_das_linhas or publica_em_um_unico_commit"'
+          verifies:
+          - B-2
+        anti_patterns:
+        - action: juntar a especie ANTES do groupBy
+          reason: multiplicaria linhas e mudaria os controles
+          instead: left join depois da agregação por código
+        - action: tornar especie_destino obrigatório
+          reason: quebraria ~25 testes selados que montam a Gold sem ela
+          instead: opcional, com o motivo registrado quando ausente
+        - action: editar outro teste existente além da tupla de test_commit_carrega_a_forma
+          reason: a exceção à regra do teste selado é nomeada
+          instead: testes novos no arquivo novo
+        do_not_touch:
+        - _raw
+        - contracts
+        - cvg/docs/adrs
+        - src/pda
+        - src/ontologia
+        - infra
+        - src/produtor
+        - src/medalhao/especie.py
+        - src/medalhao/bronze.py
+        - src/medalhao/silver.py
+        - tests/test_gold_assuntos.py
+        - tests/test_performance_gold.py
+        - src/medalhao/gold_assuntos.py
+        rollback: Reverter src/medalhao/gold.py e tests/test_gold.py; remover tests/test_gold_nome_oficial.py.
+        observability: Gold publicada sem nome oficial
+- id: SEAM-FAT-ESPECIE-NOME-OFICIAL
+  name: Fat especie com nome oficial
+  description: Separa a fat da versão da especie que ela usa.
+  evidence:
+  - E-ANCORA-202601
+  responsibility: Ler o nome na versão registrada pela Gold principal.
+  consumes:
+  - gold com nome oficial
+  produces: &id002
+  - fat com nome oficial
+  owner: medalhao
+  independent_proof: Mesma versão da especie nas duas tabelas.
+  decision_ids:
+  - DEC-NOME-OFICIAL-NA-GOLD
+  rejected_alternatives:
+  - alternative: Tabelas novas ao lado das atuais
+    reason: o dono escolheu evoluir as tabelas atuais (2026-09-25).
+  swimlane:
+    id: LANE-FAT-ESPECIE-NOME-OFICIAL
+    name: Fat especie com nome oficial lane
+    owner: medalhao
+    legs:
+    - id: LEG-FAT-ESPECIE-NOME-OFICIAL
+      observable_state: Fat especie com nome oficial
+      proof: Mesma versão da especie nas duas tabelas.
+      requires:
+      - gold com nome oficial
+      produces: *id002
+      tasks:
+      - id: T-20260925-fat-especie-nome-oficial
+        title: A fat_especie ganha o nome oficial, da mesma especie que a Gold principal usou
+        goal: Pôr o nome oficial na fat_especie lendo a Silver especie na MESMA versão que a Gold principal registrou — sem a Gold ler a Gold. Para rodar testes, o ÚNICO comando liberado ao agente é `docker compose -f infra/docker-compose.yml exec -T spark python3 -m pytest <arquivo> -k <cenarios>`.
+        done_condition: FAT_COLUNAS termina em nome_oficial, lido da especie na versão registrada pela Gold principal; os testes de tests/test_assuntos_nome_oficial.py e os existentes de tests/test_gold_assuntos.py passam.
+        effort: S
+        profile: standard
+        execution_backend: any
+        required_tools: *id003
+        depends_on:
+        - T-20260925-gold-nome-oficial
+        touches_paths:
+        - src/medalhao/gold_assuntos.py
+        creates_paths:
+        - tests/test_assuntos_nome_oficial.py
+        behavior:
+        - id: B-1
+          given: uma Gold principal publicada COM especie_destino (commit com versao_silver_especie)
+          when: executar_gold_assuntos roda
+          then: lê versao_silver_especie do commit da Gold principal que ele já consulta, lê a Silver especie NESSA versão (versionAsOf), filtrada pela competência, e junta nome_oficial por especie_codigo depois de montar a fat — montar_fat_especie ganha um parâmetro opcional nomes (DataFrame, padrão None) —; FAT_COLUNAS passa a terminar em nome_oficial, no FIM; os controles da fat e dos kpis saem idênticos aos de sem o nome; um código sem nome devolve DIVERGE sem publicar; a tabela da fat declara nome_oficial anulável e evolui só de forma aditiva.
+        - id: B-2
+          given: uma Gold principal publicada SEM especie (commit sem versao_silver_especie)
+          when: executar_gold_assuntos roda
+          then: 'nome_oficial é nulo e o commit registra nome_oficial: ''NAO_MEDIDO'' com o motivo; nenhum teste de tests/test_gold_assuntos.py muda. Em tests/test_assuntos_nome_oficial.py entram test_fat_nome_da_mesma_especie_da_gold, test_fat_controles_iguais_com_e_sem_nome, test_fat_codigo_sem_nome_diverge, test_fat_sem_especie_nome_nulo_e_registrado e test_fat_nome_oficial_no_fim_das_colunas. Nenhum cenário usa skip, xfail ou importorskip; os testes gravam só em tmp_path, nunca no MinIO; a Silver especie de fixture é uma tabela Delta em tmp_path com o schema de medalhao.especie.'
+        evals:
+        - id: eval_1
+          description: O nome da mesma especie
+          bash: docker compose -f infra/docker-compose.yml exec -T spark sh -c 'for c in fat_nome_da_mesma_especie_da_gold fat_controles_iguais_com_e_sem_nome fat_nome_oficial_no_fim_das_colunas; do python3 -m pytest --collect-only -q tests/test_assuntos_nome_oficial.py -k "$c" 2>/dev/null | grep -q "::" || { echo "EVAL=CENARIO_AUSENTE_$c"; exit 1; }; done; python3 -m pytest -q tests/test_assuntos_nome_oficial.py -k "fat_nome_da_mesma_especie_da_gold or fat_controles_iguais_com_e_sem_nome or fat_nome_oficial_no_fim_das_colunas"'
+          verifies:
+          - B-1
+        - id: eval_2
+          description: Ausência não é silêncio
+          bash: docker compose -f infra/docker-compose.yml exec -T spark sh -c 'for c in fat_codigo_sem_nome_diverge fat_sem_especie_nome_nulo_e_registrado; do python3 -m pytest --collect-only -q tests/test_assuntos_nome_oficial.py -k "$c" 2>/dev/null | grep -q "::" || { echo "EVAL=CENARIO_AUSENTE_$c"; exit 1; }; done; python3 -m pytest -q tests/test_assuntos_nome_oficial.py -k "fat_codigo_sem_nome_diverge or fat_sem_especie_nome_nulo_e_registrado"'
+          verifies:
+          - B-1
+          - B-2
+        - id: eval_3
+          description: Os assuntos existentes seguem iguais
+          bash: docker compose -f infra/docker-compose.yml exec -T spark sh -c 'for c in fat_especie_fecha_com_a_ancora commit_nomeia_versoes_lidas publica_com_replacewhere; do python3 -m pytest --collect-only -q tests/test_gold_assuntos.py -k "$c" 2>/dev/null | grep -q "::" || { echo "EVAL=CENARIO_AUSENTE_$c"; exit 1; }; done; python3 -m pytest -q tests/test_gold_assuntos.py -k "fat_especie_fecha_com_a_ancora or commit_nomeia_versoes_lidas or publica_com_replacewhere"'
+          verifies:
+          - B-2
+        anti_patterns:
+        - action: ler o nome da Gold principal
+          reason: a Gold lê da Silver
+          instead: a Silver especie na versão que a Gold principal registrou
+        - action: ler a especie na versão atual
+          reason: a fat e a Gold principal poderiam divergir no nome
+          instead: a versão registrada no commit da Gold principal
+        - action: editar um teste de tests/test_gold_assuntos.py
+          reason: acrescentar, não mudar
+          instead: arquivo de teste novo
+        do_not_touch:
+        - _raw
+        - contracts
+        - cvg/docs/adrs
+        - src/pda
+        - src/ontologia
+        - infra
+        - src/produtor
+        - src/medalhao/especie.py
+        - src/medalhao/bronze.py
+        - src/medalhao/silver.py
+        - tests/test_gold_assuntos.py
+        - tests/test_performance_gold.py
+        - src/medalhao/gold.py
+        - tests/test_gold.py
+        rollback: Reverter src/medalhao/gold_assuntos.py; remover tests/test_assuntos_nome_oficial.py.
+        observability: fat_especie sem nome oficial
+steel_thread:
+- LEG-GOLD-NOME-OFICIAL
+- LEG-FAT-ESPECIE-NOME-OFICIAL
