@@ -274,3 +274,193 @@ def test_sem_credencial_no_codigo():
     fonte = Path(proj.__file__).read_text(encoding="utf-8")
     for var in ("PG_PASSWORD", "PG_USER", "PG_HOST"):
         assert os.environ[var] not in fonte or len(os.environ[var]) < 4
+
+
+# ---------------------------------------------------------------- projeção validada pela Gold
+
+from pda.contrato import carregar_contrato  # noqa: E402
+
+from medalhao import bronze, gold_referencia as gold_ref  # noqa: E402
+from medalhao import ontologia as onto_mod  # noqa: E402
+from medalhao.projecao_postgres import NAO_MEDIDO, projetar_validado  # noqa: E402
+
+COMP = "2026-03"
+
+
+@pytest.fixture(scope="session")
+def spark():
+    return bronze.criar_sessao("teste-projecao-postgres")
+
+
+@pytest.fixture(scope="module")
+def contrato():
+    return carregar_contrato(onto_mod.ARQUIVO_CONTRATO)
+
+
+def _sha_glossario(onto: Ontologia) -> str:
+    return onto.fontes["glossario"]["sha256"]
+
+
+def _gravar_gold(spark, raiz, onto, competencia=COMP, especies=None, termos=None, modo="overwrite"):
+    """Gold falsa em tmp_path, montada da ontologia versionada (não do código sob teste)."""
+    if especies is None:
+        especies = [(e["codigo"], e["nome"], e["grupo"]) for e in onto.especies]
+    if termos is None:
+        termos = [(t["nome"], t["descricao"]) for t in onto.termos]
+    esp = spark.createDataFrame(
+        [(c, n, g, None, None, competencia) for c, n, g in especies], gold_ref.ESPECIE_SCHEMA
+    )
+    ter = spark.createDataFrame(
+        [(t, d, _sha_glossario(onto)) for t, d in termos], gold_ref.TERMO_SCHEMA
+    )
+    esp.write.format("delta").mode(modo).save(f"{raiz}/dim_especie")
+    ter.write.format("delta").mode(modo).save(f"{raiz}/dim_termo")
+
+
+@pytest.fixture
+def gold(spark, tmp_path, ontologia):
+    raiz = str(tmp_path / "gold")
+    _gravar_gold(spark, raiz, ontologia)
+    return raiz
+
+
+def _validar(spark, ontologia, contrato, schema, gold, **kw):
+    return projetar_validado(spark, ontologia, contrato, schema, COMP, gold=gold, **kw)
+
+
+def test_validado_carrega_os_proprios_arquivos(spark, ontologia, contrato, schema, gold, monkeypatch):
+    lidos = []
+    original = onto_mod.ler_xlsx
+
+    def espia(fonte):
+        lidos.append(type(fonte).__name__)
+        return original(fonte)
+
+    monkeypatch.setattr(onto_mod, "ler_xlsx", espia)
+    r = _validar(spark, ontologia, contrato, schema, gold)
+    assert r.veredito == PROJETADA, r
+    assert lidos == ["BytesIO", "BytesIO"]  # o parser da ontologia, sobre os bytes já conferidos
+    assert r.contagens == {"fonte": 2, "termo": 13, "coluna": 14, "grupo": 5, "especie": 65}
+    especie = _consultar(schema, "SELECT codigo, nome, grupo FROM especie")
+    assert set(especie) == {(e["codigo"], e["nome"], e["grupo"]) for e in ontologia.especies}
+    assert _sha_gravado(schema) == ontologia.sha256
+
+
+def test_validado_confere_contra_a_gold(spark, ontologia, contrato, schema, gold):
+    r = _validar(spark, ontologia, contrato, schema, gold)
+    assert r.veredito == PROJETADA, r
+    linhas = _consultar(
+        schema, "SELECT id, competencia, versao_dim_especie, versao_dim_termo FROM validacao_gold"
+    )
+    assert len(linhas) == 1 and linhas[0][0] == 1 and linhas[0][1] == COMP
+    chaves = _consultar(
+        schema,
+        "SELECT kcu.column_name FROM information_schema.table_constraints tc "
+        "JOIN information_schema.key_column_usage kcu "
+        "ON kcu.constraint_name = tc.constraint_name AND kcu.table_schema = tc.table_schema "
+        "WHERE tc.table_schema = %s AND tc.table_name = 'validacao_gold' "
+        "AND tc.constraint_type = 'PRIMARY KEY'",
+        schema,
+    )
+    assert chaves == [("id",)]
+
+
+def test_validado_gold_divergente_desfaz(spark, ontologia, contrato, schema, gold, tmp_path):
+    assert _validar(spark, ontologia, contrato, schema, gold).veredito == PROJETADA
+    esp = [(e["codigo"], e["nome"], e["grupo"]) for e in ontologia.especies]
+    esp[0] = (esp[0][0], "nome adulterado", esp[0][2])
+    ruim = str(tmp_path / "gold_ruim")
+    _gravar_gold(spark, ruim, ontologia, especies=esp)
+    r = _validar(spark, _outra(ontologia), contrato, schema, ruim)
+    assert r.veredito == DIVERGENTE and r.divergencia == "dim_especie"
+    assert _sha_gravado(schema) == ontologia.sha256
+    assert _consultar(schema, "SELECT count(*) FROM validacao_gold")[0][0] == 1
+
+
+def test_validado_glossario_divergente_desfaz(spark, ontologia, contrato, schema, gold, tmp_path):
+    assert _validar(spark, ontologia, contrato, schema, gold).veredito == PROJETADA
+    ter = [(t["nome"], t["descricao"]) for t in ontologia.termos]
+    ter[0] = (ter[0][0], "descrição adulterada")
+    ruim = str(tmp_path / "gold_ruim")
+    _gravar_gold(spark, ruim, ontologia, termos=ter)  # defeito SÓ na dim_termo
+    r = _validar(spark, _outra(ontologia), contrato, schema, ruim)
+    assert r.veredito == DIVERGENTE and r.divergencia == "dim_termo"
+    assert _sha_gravado(schema) == ontologia.sha256
+
+
+def test_validado_segunda_carga_troca_a_validacao(spark, ontologia, contrato, schema, gold):
+    assert _validar(spark, ontologia, contrato, schema, gold).veredito == PROJETADA
+    antes = _consultar(schema, "SELECT versao_dim_especie, versao_dim_termo FROM validacao_gold")
+    _gravar_gold(spark, gold, ontologia, modo="overwrite")  # novos commits nas duas dimensões
+    assert _validar(spark, ontologia, contrato, schema, gold).veredito == PROJETADA
+    depois = _consultar(schema, "SELECT versao_dim_especie, versao_dim_termo FROM validacao_gold")
+    assert len(depois) == 1
+    assert depois[0][0] > antes[0][0] and depois[0][1] > antes[0][1]
+
+
+def test_validado_linha_repetida_na_gold_diverge(spark, ontologia, contrato, schema, tmp_path):
+    esp = [(e["codigo"], e["nome"], e["grupo"]) for e in ontologia.especies]
+    ruim = str(tmp_path / "gold_repetida")
+    _gravar_gold(spark, ruim, ontologia, especies=esp + [esp[0]])
+    r = _validar(spark, ontologia, contrato, schema, ruim)
+    assert r.veredito == DIVERGENTE and r.divergencia == "dim_especie"
+
+
+def test_validado_compara_o_que_foi_gravado(spark, ontologia, contrato, schema, gold, monkeypatch):
+    """A estrutura Python bate com a Gold; o que foi gravado no Postgres, não — tem de divergir."""
+    original = proj._inserir
+
+    def grava_errado(cur, esquema, tabela, linhas):
+        if tabela == "especie":
+            linhas = [
+                (c, "gravado errado" if i == 0 else n, g)
+                for i, (c, n, g) in enumerate(sorted(linhas))
+            ]
+        return original(cur, esquema, tabela, linhas)
+
+    monkeypatch.setattr(proj, "_inserir", grava_errado)
+    r = _validar(spark, ontologia, contrato, schema, gold)
+    assert r.veredito == DIVERGENTE and r.divergencia == "dim_especie"
+
+
+def test_validado_gold_vazia_nao_medido(spark, ontologia, contrato, schema, gold, tmp_path):
+    assert _validar(spark, ontologia, contrato, schema, gold).veredito == PROJETADA
+    # Gold sem linhas da competência pedida
+    r = projetar_validado(spark, _outra(ontologia), contrato, schema, "2099-12", gold=gold)
+    assert r.veredito == NAO_MEDIDO and r.divergencia == "dim_especie"
+    # Gold sem nenhuma tabela
+    r = _validar(spark, _outra(ontologia), contrato, schema, str(tmp_path / "nao_existe"))
+    assert r.veredito == NAO_MEDIDO
+    assert _sha_gravado(schema) == ontologia.sha256  # sem commit: a carga anterior segue
+
+
+def test_validado_sha256_nao_aprovado_recusa(spark, ontologia, contrato, schema, gold, monkeypatch):
+    _proibir_conexao(monkeypatch)
+    fontes = {k: dict(v) for k, v in ontologia.fontes.items()}
+    fontes["glossario"]["sha256"] = "0" * 64
+    with pytest.raises(ProjecaoRecusada) as erro:
+        _validar(spark, dataclasses.replace(ontologia, fontes=fontes), contrato, schema, gold)
+    assert erro.value.motivo == "SHA256_NAO_APROVADO"
+
+
+def test_validado_registra_versoes_da_gold(spark, ontologia, contrato, schema, gold):
+    for _ in range(2):  # empurra as versões para além de 0
+        _gravar_gold(spark, gold, ontologia, modo="overwrite")
+    r = _validar(spark, ontologia, contrato, schema, gold)
+    assert r.veredito == PROJETADA, r
+    v_esp = gold_ref._versao_atual(spark, f"{gold}/dim_especie")
+    v_ter = gold_ref._versao_atual(spark, f"{gold}/dim_termo")
+    assert v_esp >= 2 and v_ter >= 2
+    assert r.versoes == {"dim_especie": v_esp, "dim_termo": v_ter}
+    assert _consultar(schema, "SELECT versao_dim_especie, versao_dim_termo FROM validacao_gold") == [
+        (v_esp, v_ter)
+    ]
+
+
+def test_validado_real_contra_a_gold_de_producao(spark, ontologia, contrato, schema):
+    """Os .xlsx reais de /dados/_raw contra a Gold de produção (só leitura), num schema 'teste_'."""
+    r = projetar_validado(spark, ontologia, contrato, schema, contrato.competencia)
+    assert r.veredito == PROJETADA, r
+    assert r.contagens["especie"] == 65
+    (linha,) = _consultar(schema, "SELECT competencia FROM validacao_gold")
+    assert linha[0] == contrato.competencia
