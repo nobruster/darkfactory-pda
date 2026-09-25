@@ -28,10 +28,14 @@ execution_backend: any
 signed_off: true
 signed_off_by: nobru
 signed_off_at: 2026-09-25T01:42:07Z
-accepted: false
-accepted_by: (none)
-accepted_at: (none)
+accepted: true
+accepted_by: converge-loop
+accepted_at: 2026-09-25T02:37:31Z
 signed_off_sig: hmac-sha256-v3:85d3c104:4e07c863718cb6eec0d1004f256ea8e5dd4f2d22711037921ceda3deb5297b14
+accepted_tier: 1
+accepted_attempt_id: 6e694d80-e539-452c-b2ee-90aeb5591761
+accepted_authorization_ref: hmac-sha256-v3:85d3c104:4e07c863718cb6eec0d1004f256ea8e5dd4f2d22711037921ceda3deb5297b14
+acceptance_record_digest: sha256:9fa489811b54a8f89364da21f517760f57c4afb30e75795741bb008f64af5dfa
 ---
 
 # A especie tira os nomes da Bronze do dicionário
