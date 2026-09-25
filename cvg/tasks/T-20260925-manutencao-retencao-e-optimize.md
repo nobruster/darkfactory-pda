@@ -28,10 +28,14 @@ execution_backend: any
 signed_off: true
 signed_off_by: nobru
 signed_off_at: 2026-09-25T18:05:47Z
-accepted: false
-accepted_by: (none)
-accepted_at: (none)
+accepted: true
+accepted_by: converge-loop
+accepted_at: 2026-09-25T19:29:33Z
 signed_off_sig: hmac-sha256-v3:85d3c104:59840164fcb7302eded70a75b7c22472ef236b2349ef3005b6dc1d96c59192c3
+accepted_tier: 1
+accepted_attempt_id: d7a5d593-2449-40d5-afe2-279f71cb0368
+accepted_authorization_ref: hmac-sha256-v3:85d3c104:59840164fcb7302eded70a75b7c22472ef236b2349ef3005b6dc1d96c59192c3
+acceptance_record_digest: sha256:47c430bbabf3cddf3ff7a477bcafeb13696499237af187857b7d075b2845d921
 ---
 
 # Manutenção: retenção nas tabelas publicadas e OPTIMIZE com prova
