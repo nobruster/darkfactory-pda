@@ -1,0 +1,175 @@
+{
+  "schema_version": "1.0",
+  "pass": "4-consensus",
+  "adversary": {
+    "engine_id": "codex",
+    "model": "codex",
+    "family": "openai",
+    "engine_version": "codex-cli 0.155.0",
+    "sandbox_mode": "read-only"
+  },
+  "author": {
+    "model": "claude",
+    "family": "anthropic"
+  },
+  "verdict": "REVISE",
+  "prompt_sha256": "92a8e73d8efd3e32f0d053a21e6fa3ae315888c2c0b4ad42a2bbc86245e3decf",
+  "inputs": [
+    {
+      "path": "guarda-nome-oficial/LEG-GUARDA-NOME-OFICIAL.md",
+      "sha256": "9ac1afd93bebafac54cf4c2c410eb29bf1a55bcdd924fe1312f25cf4328b5423"
+    },
+    {
+      "path": "guarda-nome-oficial/_lane.md",
+      "sha256": "9a2fb38d6bdc5c7817d0d9ca8bcdd06901103000854d62952710fb528930ee7d"
+    }
+  ],
+  "objections": [
+    {
+      "id": "C1",
+      "severity": "high",
+      "rank": 1,
+      "attack_class": "auth",
+      "swimlane": "LANE-GUARDA-NOME-OFICIAL",
+      "leg": "LEG-GUARDA-NOME-OFICIAL",
+      "location": {
+        "plan_file": "cvg/swimlanes/lanes-guarda/guarda-nome-oficial/LEG-GUARDA-NOME-OFICIAL.md",
+        "section": "tasks[0].goal \u2194 evals[eval_1,eval_2,eval_3].bash"
+      },
+      "title": "Todos os evals usam uma forma de execu\u00e7\u00e3o exclu\u00edda pela autoriza\u00e7\u00e3o declarada",
+      "body": "O goal libera exclusivamente exec -T spark python3 -m pytest. Os tr\u00eas evals executam exec -T spark sh -c, com loops, pipelines e m\u00faltiplas invoca\u00e7\u00f5es. Seguir os evals viola a restri\u00e7\u00e3o literal; seguir a restri\u00e7\u00e3o impede executar os evals como escritos. A autoriza\u00e7\u00e3o dessa composi\u00e7\u00e3o permanece em aberto.",
+      "evidence": "goal: 'o \u00daNICO comando liberado'; evals: 'exec -T spark sh -c'.",
+      "cites": [
+        "LEG-GUARDA-NOME-OFICIAL.md: tasks[0].goal",
+        "LEG-GUARDA-NOME-OFICIAL.md: tasks[0].evals"
+      ],
+      "resolution": {
+        "disposition": "ACCEPT",
+        "decided_by": "Bruno Nunes",
+        "decided_at": "2026-09-25T16:50:15Z",
+        "owner": "Bruno Nunes",
+        "risk_residual": "Refutado, como em todas as rodadas anteriores: a permissao de escopo minimo e do AGENTE; os evals sao executados pelo MOTOR, fora dela. Decidido pelo dono ao fechar o Pass 4 da receita F na R1, sem editar o plano."
+      }
+    },
+    {
+      "id": "C2",
+      "severity": "high",
+      "rank": 2,
+      "attack_class": "unverified-assumption",
+      "swimlane": "LANE-GUARDA-NOME-OFICIAL",
+      "leg": "LEG-GUARDA-NOME-OFICIAL",
+      "location": {
+        "plan_file": "cvg/swimlanes/lanes-guarda/guarda-nome-oficial/LEG-GUARDA-NOME-OFICIAL.md",
+        "section": "done_condition; behavior[B-1]; evals"
+      },
+      "title": "Os evals n\u00e3o demonstram que a pr\u00f3pria guarda recebeu somente a edi\u00e7\u00e3o autorizada",
+      "body": "Os testes inspecionados verificam test_gold.py e test_gold_assuntos.py. Eles n\u00e3o comparam o pr\u00f3prio test_testes_leves.py com uma base. Uma altera\u00e7\u00e3o adicional na compara\u00e7\u00e3o da guarda poderia passar nesses evals. Tamb\u00e9m n\u00e3o verificam a presen\u00e7a do coment\u00e1rio exigido. A prova central de um token e um coment\u00e1rio fica declarada, sem procedimento de confer\u00eancia no plano.",
+      "evidence": "MODULOS cont\u00e9m apenas tests/test_gold.py e tests/test_gold_assuntos.py; test_corpo_das_funcoes_test_intacto percorre MODULOS. Nenhum eval confere o diff do arquivo autorizado.",
+      "cites": [
+        "LEG-GUARDA-NOME-OFICIAL.md: done_condition e B-1",
+        "tests/test_testes_leves.py: MODULOS e test_corpo_das_funcoes_test_intacto",
+        "AGENTS.md: Regra 3"
+      ],
+      "resolution": {
+        "disposition": "ACCEPT",
+        "decided_by": "Bruno Nunes",
+        "decided_at": "2026-09-25T16:50:15Z",
+        "owner": "Bruno Nunes",
+        "risk_residual": "Aceito, coberto por fora: depois do loop a cadeia exige que o diff de tests/test_testes_leves.py seja exatamente o token da impressao e a linha de comentario, e nada mais. Decidido pelo dono ao fechar o Pass 4 da receita F na R1, sem editar o plano."
+      }
+    },
+    {
+      "id": "C3",
+      "severity": "medium",
+      "rank": 3,
+      "attack_class": "drift",
+      "swimlane": "LANE-GUARDA-NOME-OFICIAL",
+      "leg": "LEG-GUARDA-NOME-OFICIAL",
+      "location": {
+        "plan_file": "cvg/swimlanes/lanes-guarda/guarda-nome-oficial/LEG-GUARDA-NOME-OFICIAL.md",
+        "section": "done_condition; evals[eval_3]"
+      },
+      "title": "A prova de su\u00edte inteira numa JVM desapareceu na proje\u00e7\u00e3o",
+      "body": "A recipe de origem exige su\u00edte inteira numa JVM, verde. O leg exige apenas testes da guarda. Seus evals executam subconjuntos em processos separados; eval_3, apesar de chamado Tudo da guarda, seleciona somente dois dos quatro testes. Assim, entregar este leg n\u00e3o comprova o crit\u00e9rio registrado na origem. A extens\u00e3o pretendida de 'su\u00edte inteira' precisa ser decidida, sem ampliar o escopo por infer\u00eancia.",
+      "evidence": "recipe: success inclui 'Su\u00edte inteira numa JVM, verde'; independent_proof inclui 'su\u00edte inteira verde'. eval_3 seleciona 'corpo_das_funcoes_test_intacto or nenhum_skip_ou_xfail'.",
+      "cites": [
+        "cvg/swimlanes/guarda-nome-recipe.yaml: intent.success",
+        "cvg/swimlanes/guarda-nome-recipe.yaml: seams[0].independent_proof",
+        "LEG-GUARDA-NOME-OFICIAL.md: done_condition e eval_3"
+      ],
+      "resolution": {
+        "disposition": "ACCEPT",
+        "decided_by": "Bruno Nunes",
+        "decided_at": "2026-09-25T16:50:15Z",
+        "owner": "Bruno Nunes",
+        "risk_residual": "Aceito, coberto por fora: depois do loop a cadeia roda a suite INTEIRA numa JVM so. Decidido pelo dono ao fechar o Pass 4 da receita F na R1, sem editar o plano."
+      }
+    },
+    {
+      "id": "C4",
+      "severity": "medium",
+      "rank": 4,
+      "attack_class": "unverified-assumption",
+      "swimlane": "LANE-GUARDA-NOME-OFICIAL",
+      "leg": "LEG-GUARDA-NOME-OFICIAL",
+      "location": {
+        "plan_file": "cvg/swimlanes/lanes-guarda/guarda-nome-oficial/LEG-GUARDA-NOME-OFICIAL.md",
+        "section": "behavior[B-2]"
+      },
+      "title": "A garantia de acusar qualquer outra mudan\u00e7a excede a cobertura da guarda",
+      "body": "A guarda compara ASTs das fun\u00e7\u00f5es test_* de primeiro n\u00edvel. Mudan\u00e7as em auxiliares, fixtures ou constantes externas a essas fun\u00e7\u00f5es n\u00e3o alteram necessariamente essas impress\u00f5es. Logo, a frase 'qualquer OUTRA mudan\u00e7a' promete prote\u00e7\u00e3o integral dos arquivos que o mecanismo n\u00e3o oferece. Altera\u00e7\u00f5es sem\u00e2nticas fora dos corpos selados podem escapar dessa verifica\u00e7\u00e3o.",
+      "evidence": "_funcoes_test seleciona somente ast.FunctionDef cujo nome come\u00e7a com test_; o pr\u00f3prio docstring informa que auxiliares e fixtures j\u00e1 mudaram mantendo os corpos selados.",
+      "cites": [
+        "LEG-GUARDA-NOME-OFICIAL.md: B-2",
+        "tests/test_testes_leves.py: docstring e _funcoes_test"
+      ],
+      "resolution": {
+        "disposition": "ACCEPT",
+        "decided_by": "Bruno Nunes",
+        "decided_at": "2026-09-25T16:50:15Z",
+        "owner": "Bruno Nunes",
+        "risk_residual": "Aceito: a guarda protege os corpos das funcoes test_* (e os ids coletados), nao auxiliares nem fixtures; o texto do plano exagerou o alcance, a guarda nao muda. Decidido pelo dono ao fechar o Pass 4 da receita F na R1, sem editar o plano."
+      }
+    },
+    {
+      "id": "C5",
+      "severity": "medium",
+      "rank": 5,
+      "attack_class": "build-order",
+      "swimlane": "LANE-GUARDA-NOME-OFICIAL",
+      "leg": "LEG-GUARDA-NOME-OFICIAL",
+      "location": {
+        "plan_file": "cvg/swimlanes/lanes-guarda/guarda-nome-oficial/LEG-GUARDA-NOME-OFICIAL.md",
+        "section": "requires; tasks[0].depends_on; behavior[B-1]"
+      },
+      "title": "A mudan\u00e7a pr\u00e9via na Gold \u00e9 pressuposta, mas n\u00e3o vinculada \u00e0 base de execu\u00e7\u00e3o",
+      "body": "A recipe declara consumo de gold com nome oficial, enquanto o leg n\u00e3o declara requisito nem depend\u00eancia. O checkout consultado j\u00e1 cont\u00e9m nome_oficial na tupla, portanto n\u00e3o h\u00e1 evid\u00eancia de aus\u00eancia atual. Contudo, o plano n\u00e3o identifica uma base que assegure essa pr\u00e9-condi\u00e7\u00e3o em execu\u00e7\u00e3o isolada. Aplicado \u00e0 base anterior, o novo baseline reprova o teste intacto, e a tarefa n\u00e3o pode editar test_gold.py para resolver a incompatibilidade.",
+      "evidence": "requires: []; depends_on: []; B-1 pressup\u00f5e que a tupla j\u00e1 ganhou nome_oficial; tests/test_gold.py:370 cont\u00e9m esse campo no checkout consultado.",
+      "cites": [
+        "cvg/swimlanes/guarda-nome-recipe.yaml: seams[0].consumes",
+        "LEG-GUARDA-NOME-OFICIAL.md: requires, depends_on, B-1 e do_not_touch",
+        "seamwise/decisions/DEC-NOME-OFICIAL-NA-GOLD.md: Rationale"
+      ],
+      "resolution": {
+        "disposition": "ACCEPT",
+        "decided_by": "Bruno Nunes",
+        "decided_at": "2026-09-25T16:50:15Z",
+        "owner": "Bruno Nunes",
+        "risk_residual": "Aceito: o loop corta da branch task/fat-especie-nome-oficial, que ja contem nome_oficial na tupla (conferido: a guarda acusa exatamente essa funcao nessa base). Decidido pelo dono ao fechar o Pass 4 da receita F na R1, sem editar o plano."
+      }
+    }
+  ],
+  "cross_lane_interfaces": [],
+  "fork": {
+    "choice": "B",
+    "reason": "Transcri\u00e7\u00e3o do FORK j\u00e1 declarado em _lane.md; nenhuma escolha feita pelo advers\u00e1rio.",
+    "per_plan_declared": true
+  },
+  "open_questions": [
+    {
+      "q": "O schema local 1.1 exige resolution com FIX ou ACCEPT, decided_by e decided_at em cada obje\u00e7\u00e3o. Este ataque n\u00e3o recebeu decis\u00f5es humanas. Os campos foram omitidos deliberadamente: este registro ainda n\u00e3o conforma ao schema de resolu\u00e7\u00e3o e n\u00e3o pode fechar o gate. Como o dispatch representa obje\u00e7\u00f5es abertas antes do SHARPEN?",
+      "blocks_build": true
+    }
+  ],
+  "rounds_run": 1
+}
