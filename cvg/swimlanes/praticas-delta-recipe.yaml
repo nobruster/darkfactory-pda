@@ -1,0 +1,545 @@
+schema_version: 1
+intent:
+  id: DI-PDA-PRATICAS-DELTA
+  title: Boas práticas Delta em todas as camadas
+  summary: Evolução aditiva por padrão, sessão declarada, retenção de 5 anos, OPTIMIZE pós-carga.
+  claim: proposed
+  source:
+    uri: cvg/docs/tech-spec/tech-spec-pda-beneficios.md
+    captured_at: '2026-09-21T00:00:00Z'
+    sha256: e619ead9d343282533110bc8cb8f1203614d8e733565b21e3157df2b8f157b88
+  success:
+  - Suíte inteira verde.
+  - Toda tabela Delta do lago com retenção de 5 anos.
+  - OPTIMIZE com dado idêntico.
+  out_of_scope:
+  - VACUUM (só sob pedido do dono).
+  - Sessões do produtor (Parquet, não Delta).
+system_map:
+  claim: proposed
+  components:
+  - sessão
+  - entradas das camadas
+  - manutenção
+  external_dependencies:
+  - Delta 3.2.1
+  unknowns: []
+evidence:
+- id: E-ANCORA-202601
+  claim: external
+  source:
+    uri: cvg/docs/adrs/0001-the-2026-01-anchor-is-41572553-rows-summing-78521752562-12.md
+    captured_at: '2026-09-21T00:00:00Z'
+    sha256: 0505a743963abfb09a257373a431c3878b25cf6c19d71467c722da9830779acd
+  confidence: 1.0
+  summary: 'Competência 2026-01 medida na origem: 41572553 linhas, soma 78521752562.12.'
+- id: E-ADR-0017
+  claim: external
+  source:
+    uri: cvg/docs/adrs/0017-delta-practices-additive-evolution-by-default-five-year-retention-optimize-after-load.md
+    captured_at: '2026-09-25T00:00:00Z'
+    sha256: 417ae6ba4fde5ab10a249bad70356eaa32c59ee4ed34d167d23e8691adce660a
+  confidence: 1.0
+  summary: 'Decisões do dono: evolução aditiva por padrão, 5 anos, OPTIMIZE, VACUUM só sob pedido.'
+decisions:
+- id: ADR-0017-PRATICAS-DELTA
+  status: accepted
+  owner: Bruno Nunes
+  rationale: ADR 0017 — decisões do dono de 2026-09-25 sobre as práticas Delta do medalhão.
+seams:
+- id: SEAM-SESSAO-E-BRONZE
+  name: Sessão e Bronze com padrões Delta
+  description: 'Boas práticas Delta: Sessão e Bronze com padrões Delta.'
+  evidence:
+  - E-ADR-0017
+  responsibility: Sessão e Bronze com padrões Delta
+  consumes:
+  - adr 0017
+  produces: &id001
+  - sessao declarada
+  owner: medalhao
+  independent_proof: Tabela nova com retenção; Bronze evolui.
+  decision_ids:
+  - ADR-0017-PRATICAS-DELTA
+  rejected_alternatives:
+  - alternative: mergeSchema livre
+    reason: troca de tipo passaria (Regra 5).
+  swimlane:
+    id: LANE-SESSAO-E-BRONZE
+    name: Sessão e Bronze com padrões Delta lane
+    owner: medalhao
+    legs:
+    - id: LEG-SESSAO-E-BRONZE
+      observable_state: Sessão e Bronze com padrões Delta
+      proof: Tabela nova com retenção; Bronze evolui.
+      requires: []
+      produces: *id001
+      tasks:
+      - id: T-20260925-sessao-e-bronze-com-padroes-delta
+        title: A sessão declara o que herdava, e a Bronze evolui por padrão
+        goal: Fazer criar_sessao declarar as práticas do KB e a retenção de tabela nova, e a Bronze evoluir de forma aditiva por padrão. Para rodar testes, o ÚNICO comando liberado ao agente é `docker compose -f infra/docker-compose.yml exec -T spark python3 -m pytest <arquivo> -k <cenarios>`.
+        done_condition: criar_sessao declara as cinco chaves; executar_leitura e publicar_bronze têm evolucao_aditiva=True por padrão; publicar_competencia segue False; os testes de tests/test_delta_padroes.py passam.
+        effort: S
+        profile: standard
+        execution_backend: any
+        required_tools: &id003
+        - git
+        - bash
+        - python3
+        - pytest
+        - docker
+        depends_on: []
+        touches_paths:
+        - src/medalhao/bronze.py
+        creates_paths:
+        - tests/test_delta_padroes.py
+        behavior:
+        - id: B-1
+          given: uma sessão criada por bronze.criar_sessao e tabelas Delta em tmp_path
+          when: a sessão é criada e a Bronze publica
+          then: criar_sessao declara, no builder E por spark.conf.set (getOrCreate reaproveita sessão), spark.databricks.delta.schema.autoMerge.enabled=false, spark.databricks.delta.retentionDurationCheck.enabled=true, spark.databricks.delta.replaceWhere.constraintCheck.enabled=true, spark.databricks.delta.properties.defaults.logRetentionDuration='interval 1825 days' e spark.databricks.delta.properties.defaults.deletedFileRetentionDuration='interval 1825 days', com a retenção numa constante nomeada RETENCAO_PADRAO; uma tabela Delta NOVA nasce com as duas propriedades; uma tabela já existente reentrada por createIfNotExists não ganha propriedade nem commit; executar_leitura e publicar_bronze passam a ter evolucao_aditiva=True por padrão — coluna nova entra —, e a guarda verificar_evolucao continua recusando troca de tipo e coluna removida mesmo por padrão; publicar_competencia MANTÉM evolucao_aditiva=False.
+        - id: B-2
+          given: o test_bronze.py e o test_performance.py selados
+          when: a tarefa termina
+          then: nenhum teste existente muda e todos passam — test_schema_evolucao_so_aditiva segue válido porque exercita publicar_competencia, que fica False; em tests/test_delta_padroes.py entram test_sessao_declara_as_tres_praticas, test_tabela_nova_nasce_com_retencao_de_cinco_anos, test_tabela_existente_reentrada_sem_commit, test_bronze_evolui_coluna_nova_por_padrao, test_bronze_troca_de_tipo_recusada_mesmo_por_padrao, test_bronze_evolucao_desligada_recusa e test_publicar_competencia_segue_desligado. Nenhum cenário usa skip, xfail ou importorskip; os testes gravam só em tmp_path, nunca no MinIO; nenhuma função para a sessão Spark da suíte.
+        evals:
+        - id: eval_1
+          description: A sessão e a retenção de tabela nova
+          bash: docker compose -f infra/docker-compose.yml exec -T spark sh -c 'for c in sessao_declara_as_tres_praticas tabela_nova_nasce_com_retencao_de_cinco_anos tabela_existente_reentrada_sem_commit; do python3 -m pytest --collect-only -q tests/test_delta_padroes.py -k "$c" 2>/dev/null | grep -q "::" || { echo "EVAL=CENARIO_AUSENTE_$c"; exit 1; }; done; python3 -m pytest -q tests/test_delta_padroes.py -k "sessao_declara_as_tres_praticas or tabela_nova_nasce_com_retencao_de_cinco_anos or tabela_existente_reentrada_sem_commit"'
+          verifies:
+          - B-1
+        - id: eval_2
+          description: A Bronze evolui por padrão, com a guarda
+          bash: docker compose -f infra/docker-compose.yml exec -T spark sh -c 'for c in bronze_evolui_coluna_nova_por_padrao bronze_troca_de_tipo_recusada_mesmo_por_padrao bronze_evolucao_desligada_recusa; do python3 -m pytest --collect-only -q tests/test_delta_padroes.py -k "$c" 2>/dev/null | grep -q "::" || { echo "EVAL=CENARIO_AUSENTE_$c"; exit 1; }; done; python3 -m pytest -q tests/test_delta_padroes.py -k "bronze_evolui_coluna_nova_por_padrao or bronze_troca_de_tipo_recusada_mesmo_por_padrao or bronze_evolucao_desligada_recusa"'
+          verifies:
+          - B-1
+        - id: eval_3
+          description: O que existia segue igual
+          bash: docker compose -f infra/docker-compose.yml exec -T spark sh -c 'for c in schema_evolucao_so_aditiva replacewhere_nao_toca_outra_competencia commit_carrega_a_forma; do python3 -m pytest --collect-only -q tests/test_bronze.py -k "$c" 2>/dev/null | grep -q "::" || { echo "EVAL=CENARIO_AUSENTE_$c"; exit 1; }; done; python3 -m pytest -q tests/test_bronze.py -k "schema_evolucao_so_aditiva or replacewhere_nao_toca_outra_competencia or commit_carrega_a_forma"'
+          verifies:
+          - B-2
+        anti_patterns:
+        - action: mudar o padrão de publicar_competencia
+          reason: ligaria a evolução em silêncio nos preparos e na especie
+          instead: só as funções de entrada
+        - action: ligar schema.autoMerge
+          reason: é mergeSchema sem guarda
+          instead: declarar false
+        - action: ALTER TABLE dentro de _garantir_tabela
+          reason: quebra reentrada sem commit
+          instead: propriedade padrão da sessão
+        do_not_touch:
+        - _raw
+        - contracts
+        - cvg/docs/adrs
+        - src/pda
+        - src/ontologia
+        - src/produtor
+        - infra
+        - tests/test_gold.py
+        - tests/test_gold_assuntos.py
+        - tests/test_testes_leves.py
+        - src/medalhao/silver.py
+        - src/medalhao/ingestao.py
+        - src/medalhao/gold.py
+        - src/medalhao/gold_assuntos.py
+        rollback: Reverter os caminhos tocados e remover os criados.
+        observability: sessões e tabelas sem as práticas declaradas
+- id: SEAM-SILVER-E-INGESTAO-EVOLUEM
+  name: Silver e ingestão evoluem por padrão
+  description: 'Boas práticas Delta: Silver e ingestão evoluem por padrão.'
+  evidence:
+  - E-ADR-0017
+  responsibility: Silver e ingestão evoluem por padrão
+  consumes:
+  - sessao declarada
+  produces: &id002
+  - silver evolui
+  owner: medalhao
+  independent_proof: Coluna nova entra; tipo trocado recusa.
+  decision_ids:
+  - ADR-0017-PRATICAS-DELTA
+  rejected_alternatives:
+  - alternative: mergeSchema livre
+    reason: troca de tipo passaria (Regra 5).
+  swimlane:
+    id: LANE-SILVER-E-INGESTAO-EVOLUEM
+    name: Silver e ingestão evoluem por padrão lane
+    owner: medalhao
+    legs:
+    - id: LEG-SILVER-E-INGESTAO-EVOLUEM
+      observable_state: Silver e ingestão evoluem por padrão
+      proof: Coluna nova entra; tipo trocado recusa.
+      requires:
+      - sessao declarada
+      produces: *id002
+      tasks:
+      - id: T-20260925-silver-e-ingestao-evoluem-por-padrao
+        title: A Silver e a ingestão evoluem por padrão
+        goal: Fazer a Silver e a ingestão evoluírem de forma aditiva por padrão, com a guarda. Para rodar testes, o ÚNICO comando liberado ao agente é `docker compose -f infra/docker-compose.yml exec -T spark python3 -m pytest <arquivo> -k <cenarios>`.
+        done_condition: executar_classificacao e executar_ingestao têm evolucao_aditiva=True por padrão; os testes de tests/test_delta_padroes_silver.py passam.
+        effort: M
+        profile: standard
+        execution_backend: any
+        required_tools: *id003
+        depends_on:
+        - T-20260925-sessao-e-bronze-com-padroes-delta
+        touches_paths:
+        - src/medalhao/silver.py
+        - src/medalhao/ingestao.py
+        creates_paths:
+        - tests/test_delta_padroes_silver.py
+        behavior:
+        - id: B-1
+          given: uma Bronze de fixture em tmp_path
+          when: a Silver (executar_classificacao) e a ingestão (executar_ingestao) publicam
+          then: 'as duas passam a ter evolucao_aditiva=True por padrão: coluna nova entra; troca de tipo e coluna removida continuam recusadas pela guarda verificar_evolucao; evolucao_aditiva=False explícito recusa coluna nova; a ingestão repassa o valor recebido à Bronze.'
+        - id: B-2
+          given: os testes selados de test_silver.py, test_ingestao.py e test_orquestracao.py
+          when: a tarefa termina
+          then: nenhum teste existente muda e todos passam; em tests/test_delta_padroes_silver.py entram test_silver_evolui_por_padrao, test_silver_troca_de_tipo_recusada, test_silver_evolucao_desligada_recusa, test_ingestao_evolui_por_padrao e test_ingestao_repassa_o_sinalizador. Nenhum cenário usa skip, xfail ou importorskip; os testes gravam só em tmp_path, nunca no MinIO; nenhuma função para a sessão Spark da suíte.
+        evals:
+        - id: eval_1
+          description: A Silver evolui por padrão
+          bash: docker compose -f infra/docker-compose.yml exec -T spark sh -c 'for c in silver_evolui_por_padrao silver_troca_de_tipo_recusada silver_evolucao_desligada_recusa; do python3 -m pytest --collect-only -q tests/test_delta_padroes_silver.py -k "$c" 2>/dev/null | grep -q "::" || { echo "EVAL=CENARIO_AUSENTE_$c"; exit 1; }; done; python3 -m pytest -q tests/test_delta_padroes_silver.py -k "silver_evolui_por_padrao or silver_troca_de_tipo_recusada or silver_evolucao_desligada_recusa"'
+          verifies:
+          - B-1
+        - id: eval_2
+          description: A ingestão evolui e repassa
+          bash: docker compose -f infra/docker-compose.yml exec -T spark sh -c 'for c in ingestao_evolui_por_padrao ingestao_repassa_o_sinalizador; do python3 -m pytest --collect-only -q tests/test_delta_padroes_silver.py -k "$c" 2>/dev/null | grep -q "::" || { echo "EVAL=CENARIO_AUSENTE_$c"; exit 1; }; done; python3 -m pytest -q tests/test_delta_padroes_silver.py -k "ingestao_evolui_por_padrao or ingestao_repassa_o_sinalizador"'
+          verifies:
+          - B-1
+        - id: eval_3
+          description: O que existia segue igual
+          bash: docker compose -f infra/docker-compose.yml exec -T spark sh -c 'for c in resolve_versao_uma_vez metadados_do_commit_dono_da_competencia reverte_so_a_competencia; do python3 -m pytest --collect-only -q tests/test_silver.py -k "$c" 2>/dev/null | grep -q "::" || { echo "EVAL=CENARIO_AUSENTE_$c"; exit 1; }; done; python3 -m pytest -q tests/test_silver.py -k "resolve_versao_uma_vez or metadados_do_commit_dono_da_competencia or reverte_so_a_competencia"'
+          verifies:
+          - B-2
+        anti_patterns:
+        - action: desligar a guarda verificar_evolucao
+          reason: troca de tipo passaria (Regra 5)
+          instead: manter antes do mergeSchema
+        - action: editar um teste existente
+          reason: acrescentar, não mudar
+          instead: arquivo novo
+        - action: mudar publicar_competencia
+          reason: fica False por decisão (ADR 0017)
+          instead: só as entradas
+        do_not_touch:
+        - _raw
+        - contracts
+        - cvg/docs/adrs
+        - src/pda
+        - src/ontologia
+        - src/produtor
+        - infra
+        - tests/test_gold.py
+        - tests/test_gold_assuntos.py
+        - tests/test_testes_leves.py
+        - src/medalhao/bronze.py
+        - src/medalhao/gold.py
+        - src/medalhao/gold_assuntos.py
+        - tests/test_delta_padroes.py
+        rollback: Reverter os caminhos tocados e remover os criados.
+        observability: cargas da Silver recusadas por coluna nova
+- id: SEAM-GOLD-EVOLUI
+  name: Gold evolui por padrão
+  description: 'Boas práticas Delta: Gold evolui por padrão.'
+  evidence:
+  - E-ADR-0017
+  responsibility: Gold evolui por padrão
+  consumes:
+  - silver evolui
+  produces: &id004
+  - gold evolui
+  owner: medalhao
+  independent_proof: Coluna nova entra sem sinalizador.
+  decision_ids:
+  - ADR-0017-PRATICAS-DELTA
+  rejected_alternatives:
+  - alternative: mergeSchema livre
+    reason: troca de tipo passaria (Regra 5).
+  swimlane:
+    id: LANE-GOLD-EVOLUI
+    name: Gold evolui por padrão lane
+    owner: medalhao
+    legs:
+    - id: LEG-GOLD-EVOLUI
+      observable_state: Gold evolui por padrão
+      proof: Coluna nova entra sem sinalizador.
+      requires:
+      - silver evolui
+      produces: *id004
+      tasks:
+      - id: T-20260925-gold-evolui-por-padrao
+        title: A Gold evolui por padrão
+        goal: Fazer a Gold principal evoluir de forma aditiva por padrão. Para rodar testes, o ÚNICO comando liberado ao agente é `docker compose -f infra/docker-compose.yml exec -T spark python3 -m pytest <arquivo> -k <cenarios>`.
+        done_condition: publicar, executar_gold e executar_gold_da_silver têm evolucao_aditiva=True por padrão; em tests/test_gold_nome_oficial.py muda só o teste nomeado e entra o novo; todos passam.
+        effort: S
+        profile: standard
+        execution_backend: any
+        required_tools: *id003
+        depends_on:
+        - T-20260925-silver-e-ingestao-evoluem-por-padrao
+        touches_paths:
+        - src/medalhao/gold.py
+        - tests/test_gold_nome_oficial.py
+        creates_paths: []
+        behavior:
+        - id: B-1
+          given: uma Gold de 4 colunas já publicada em tmp_path
+          when: a Gold publica com nome_oficial SEM passar evolucao_aditiva
+          then: 'publicar, executar_gold e executar_gold_da_silver têm evolucao_aditiva=True por padrão: a coluna nova entra e a outra competência fica intacta; com evolucao_aditiva=False explícito, recusa como antes; a guarda recusa troca de tipo.'
+        - id: B-2
+          given: o tests/test_gold_nome_oficial.py da receita D, que esperava recusa SEM o sinalizador
+          when: a tarefa atualiza os testes
+          then: 'EXATAMENTE isto, e nada mais: em test_tabela_de_quatro_colunas_evolui_aditiva, a asserção de recusa sem o sinalizador passa a usar evolucao_aditiva=False EXPLÍCITO; entra test_gold_evolui_por_padrao_sem_sinalizador; os demais test_* do arquivo ficam como estão; test_gold.py não é tocado. Nenhum cenário usa skip, xfail ou importorskip; os testes gravam só em tmp_path, nunca no MinIO; nenhuma função para a sessão Spark da suíte.'
+        evals:
+        - id: eval_1
+          description: A Gold evolui por padrão
+          bash: docker compose -f infra/docker-compose.yml exec -T spark sh -c 'for c in gold_evolui_por_padrao_sem_sinalizador tabela_de_quatro_colunas_evolui_aditiva; do python3 -m pytest --collect-only -q tests/test_gold_nome_oficial.py -k "$c" 2>/dev/null | grep -q "::" || { echo "EVAL=CENARIO_AUSENTE_$c"; exit 1; }; done; python3 -m pytest -q tests/test_gold_nome_oficial.py -k "gold_evolui_por_padrao_sem_sinalizador or tabela_de_quatro_colunas_evolui_aditiva"'
+          verifies:
+          - B-1
+          - B-2
+        - id: eval_2
+          description: O nome oficial segue igual
+          bash: docker compose -f infra/docker-compose.yml exec -T spark sh -c 'for c in nome_oficial_vem_da_silver_especie controles_iguais_com_e_sem_nome; do python3 -m pytest --collect-only -q tests/test_gold_nome_oficial.py -k "$c" 2>/dev/null | grep -q "::" || { echo "EVAL=CENARIO_AUSENTE_$c"; exit 1; }; done; python3 -m pytest -q tests/test_gold_nome_oficial.py -k "nome_oficial_vem_da_silver_especie or controles_iguais_com_e_sem_nome"'
+          verifies:
+          - B-2
+        - id: eval_3
+          description: A Gold existente segue igual
+          bash: docker compose -f infra/docker-compose.yml exec -T spark sh -c 'for c in commit_carrega_a_forma publica_em_um_unico_commit reconfere_multiconjunto_das_linhas; do python3 -m pytest --collect-only -q tests/test_gold.py -k "$c" 2>/dev/null | grep -q "::" || { echo "EVAL=CENARIO_AUSENTE_$c"; exit 1; }; done; python3 -m pytest -q tests/test_gold.py -k "commit_carrega_a_forma or publica_em_um_unico_commit or reconfere_multiconjunto_das_linhas"'
+          verifies:
+          - B-2
+        anti_patterns:
+        - action: tocar test_gold.py
+          reason: a guarda test_testes_leves protege os corpos
+          instead: só o arquivo do nome oficial
+        - action: apagar a asserção de recusa
+          reason: a recusa com False explícito continua sendo contrato
+          instead: trocar para False explícito
+        - action: desligar a guarda
+          reason: Regra 5
+          instead: manter verificar_evolucao
+        do_not_touch:
+        - _raw
+        - contracts
+        - cvg/docs/adrs
+        - src/pda
+        - src/ontologia
+        - src/produtor
+        - infra
+        - tests/test_gold.py
+        - tests/test_gold_assuntos.py
+        - tests/test_testes_leves.py
+        - src/medalhao/bronze.py
+        - src/medalhao/silver.py
+        - src/medalhao/ingestao.py
+        - src/medalhao/gold_assuntos.py
+        - tests/test_assuntos_nome_oficial.py
+        rollback: Reverter os caminhos tocados e remover os criados.
+        observability: Gold recusada por coluna nova
+- id: SEAM-ASSUNTOS-EVOLUEM
+  name: Assuntos evoluem por padrão
+  description: 'Boas práticas Delta: Assuntos evoluem por padrão.'
+  evidence:
+  - E-ADR-0017
+  responsibility: Assuntos evoluem por padrão
+  consumes:
+  - gold evolui
+  produces: &id005
+  - assuntos evoluem
+  owner: medalhao
+  independent_proof: fat evolui sem sinalizador.
+  decision_ids:
+  - ADR-0017-PRATICAS-DELTA
+  rejected_alternatives:
+  - alternative: mergeSchema livre
+    reason: troca de tipo passaria (Regra 5).
+  swimlane:
+    id: LANE-ASSUNTOS-EVOLUEM
+    name: Assuntos evoluem por padrão lane
+    owner: medalhao
+    legs:
+    - id: LEG-ASSUNTOS-EVOLUEM
+      observable_state: Assuntos evoluem por padrão
+      proof: fat evolui sem sinalizador.
+      requires:
+      - gold evolui
+      produces: *id005
+      tasks:
+      - id: T-20260925-assuntos-evoluem-por-padrao
+        title: Os assuntos evoluem por padrão
+        goal: Fazer a Gold por assuntos evoluir de forma aditiva por padrão. Para rodar testes, o ÚNICO comando liberado ao agente é `docker compose -f infra/docker-compose.yml exec -T spark python3 -m pytest <arquivo> -k <cenarios>`.
+        done_condition: _executar_gold_assuntos tem evolucao_aditiva=True por padrão; em tests/test_assuntos_nome_oficial.py muda só o teste nomeado e entra o novo; todos passam.
+        effort: S
+        profile: standard
+        execution_backend: any
+        required_tools: *id003
+        depends_on:
+        - T-20260925-gold-evolui-por-padrao
+        touches_paths:
+        - src/medalhao/gold_assuntos.py
+        - tests/test_assuntos_nome_oficial.py
+        creates_paths: []
+        behavior:
+        - id: B-1
+          given: uma fat_especie já publicada com o schema antigo em tmp_path
+          when: os assuntos publicam com nome_oficial SEM passar evolucao_aditiva
+          then: '_executar_gold_assuntos tem evolucao_aditiva=True por padrão: a coluna nova entra e a outra competência fica intacta; com evolucao_aditiva=False explícito, recusa como antes.'
+        - id: B-2
+          given: o tests/test_assuntos_nome_oficial.py da receita D
+          when: a tarefa atualiza os testes
+          then: 'EXATAMENTE isto: em test_fat_existente_evolui_e_outra_competencia_intacta, a asserção de recusa sem o sinalizador passa a usar evolucao_aditiva=False EXPLÍCITO; entra test_fat_evolui_por_padrao_sem_sinalizador; os demais test_* ficam como estão; test_gold_assuntos.py não é tocado. Nenhum cenário usa skip, xfail ou importorskip; os testes gravam só em tmp_path, nunca no MinIO; nenhuma função para a sessão Spark da suíte.'
+        evals:
+        - id: eval_1
+          description: A fat evolui por padrão
+          bash: docker compose -f infra/docker-compose.yml exec -T spark sh -c 'for c in fat_evolui_por_padrao_sem_sinalizador fat_existente_evolui_e_outra_competencia_intacta; do python3 -m pytest --collect-only -q tests/test_assuntos_nome_oficial.py -k "$c" 2>/dev/null | grep -q "::" || { echo "EVAL=CENARIO_AUSENTE_$c"; exit 1; }; done; python3 -m pytest -q tests/test_assuntos_nome_oficial.py -k "fat_evolui_por_padrao_sem_sinalizador or fat_existente_evolui_e_outra_competencia_intacta"'
+          verifies:
+          - B-1
+          - B-2
+        - id: eval_2
+          description: O nome da fat segue igual
+          bash: docker compose -f infra/docker-compose.yml exec -T spark sh -c 'for c in fat_nome_da_mesma_especie_da_gold fat_controles_iguais_com_e_sem_nome; do python3 -m pytest --collect-only -q tests/test_assuntos_nome_oficial.py -k "$c" 2>/dev/null | grep -q "::" || { echo "EVAL=CENARIO_AUSENTE_$c"; exit 1; }; done; python3 -m pytest -q tests/test_assuntos_nome_oficial.py -k "fat_nome_da_mesma_especie_da_gold or fat_controles_iguais_com_e_sem_nome"'
+          verifies:
+          - B-2
+        - id: eval_3
+          description: Os assuntos existentes seguem iguais
+          bash: docker compose -f infra/docker-compose.yml exec -T spark sh -c 'for c in fat_especie_fecha_com_a_ancora publica_com_replacewhere commit_nomeia_versoes_lidas; do python3 -m pytest --collect-only -q tests/test_gold_assuntos.py -k "$c" 2>/dev/null | grep -q "::" || { echo "EVAL=CENARIO_AUSENTE_$c"; exit 1; }; done; python3 -m pytest -q tests/test_gold_assuntos.py -k "fat_especie_fecha_com_a_ancora or publica_com_replacewhere or commit_nomeia_versoes_lidas"'
+          verifies:
+          - B-2
+        anti_patterns:
+        - action: tocar test_gold_assuntos.py
+          reason: a guarda protege os corpos
+          instead: só o arquivo do nome oficial
+        - action: apagar a asserção de recusa
+          reason: a recusa com False explícito é contrato
+          instead: False explícito
+        - action: overwriteSchema
+          reason: proibido (test_gold_assuntos.py:245)
+          instead: mergeSchema com a guarda
+        do_not_touch:
+        - _raw
+        - contracts
+        - cvg/docs/adrs
+        - src/pda
+        - src/ontologia
+        - src/produtor
+        - infra
+        - tests/test_gold.py
+        - tests/test_gold_assuntos.py
+        - tests/test_testes_leves.py
+        - src/medalhao/bronze.py
+        - src/medalhao/silver.py
+        - src/medalhao/ingestao.py
+        - src/medalhao/gold.py
+        - tests/test_gold_nome_oficial.py
+        rollback: Reverter os caminhos tocados e remover os criados.
+        observability: fat recusada por coluna nova
+- id: SEAM-MANUTENCAO
+  name: Manutenção de retenção e OPTIMIZE
+  description: 'Boas práticas Delta: Manutenção de retenção e OPTIMIZE.'
+  evidence:
+  - E-ADR-0017
+  responsibility: Manutenção de retenção e OPTIMIZE
+  consumes:
+  - assuntos evoluem
+  produces: &id006
+  - lago mantido
+  owner: medalhao
+  independent_proof: Multiconjunto igual antes e depois do OPTIMIZE.
+  decision_ids:
+  - ADR-0017-PRATICAS-DELTA
+  rejected_alternatives:
+  - alternative: mergeSchema livre
+    reason: troca de tipo passaria (Regra 5).
+  swimlane:
+    id: LANE-MANUTENCAO
+    name: Manutenção de retenção e OPTIMIZE lane
+    owner: medalhao
+    legs:
+    - id: LEG-MANUTENCAO
+      observable_state: Manutenção de retenção e OPTIMIZE
+      proof: Multiconjunto igual antes e depois do OPTIMIZE.
+      requires:
+      - assuntos evoluem
+      produces: *id006
+      tasks:
+      - id: T-20260925-manutencao-retencao-e-optimize
+        title: 'Manutenção: retenção nas tabelas publicadas e OPTIMIZE com prova'
+        goal: Dar às tabelas já publicadas a retenção de 5 anos e compactar ao fim de cada carga, provando que o dado não muda. Para rodar testes, o ÚNICO comando liberado ao agente é `docker compose -f infra/docker-compose.yml exec -T spark python3 -m pytest <arquivo> -k <cenarios>`.
+        done_condition: src/medalhao/manutencao.py tem garantir_retencao e otimizar; scripts/manter_lago.py aplica os dois numa lista fechada de tabelas; os testes de tests/test_manutencao.py passam.
+        effort: M
+        profile: standard
+        execution_backend: any
+        required_tools: *id003
+        depends_on:
+        - T-20260925-assuntos-evoluem-por-padrao
+        touches_paths: []
+        creates_paths:
+        - src/medalhao/manutencao.py
+        - tests/test_manutencao.py
+        - scripts/manter_lago.py
+        behavior:
+        - id: B-1
+          given: tabelas Delta em tmp_path, com e sem as propriedades de retenção
+          when: manutencao.garantir_retencao(spark, caminho) e manutencao.otimizar(spark, caminho) rodam
+          then: 'garantir_retencao aplica por ALTER TABLE SET TBLPROPERTIES as duas propriedades = ''interval 1825 days'' SÓ quando faltam — devolve ALTERADA — e, quando já presentes com esse valor, devolve JA_TINHA sem criar commit; otimizar resolve a versão atual V, roda OPTIMIZE (executeCompaction), resolve a versão nova W, e prova que o dado não mudou: o multiconjunto de V e de W é igual nos dois sentidos, e as métricas do commit dizem numOutputRows == numInputRows (quando houve compactação); devolve OTIMIZADA ou SEM_MUDANCA (nada a compactar), e DIVERGE sem esconder se o dado mudasse. O módulo NÃO tem VACUUM — VACUUM só sob pedido do dono (ADR 0017). scripts/manter_lago.py aplica os dois a uma LISTA FECHADA e nomeada das tabelas Delta do lago, por padrão só MEDE (lista o que faria) e só altera com --aplicar, imprimindo um token por tabela.'
+        - id: B-2
+          given: uma tabela Delta em tmp_path e o script
+          when: os testes rodam
+          then: 'entram em tests/test_manutencao.py test_retencao_aplicada_em_tabela_sem, test_retencao_ja_presente_sem_commit, test_optimize_nao_muda_o_dado, test_optimize_sem_nada_a_compactar, test_optimize_acusa_dado_mudado (a leitura da versão nova é substituída por uma com uma linha a mais), test_modulo_sem_vacuum (AST: nenhuma chamada vacuum) e test_script_mede_por_padrao_e_lista_e_fechada (o script sem --aplicar não cria commit; a lista é literal). Nenhum cenário usa skip, xfail ou importorskip; os testes gravam só em tmp_path, nunca no MinIO; nenhuma função para a sessão Spark da suíte.'
+        evals:
+        - id: eval_1
+          description: Retenção sem commit à toa
+          bash: docker compose -f infra/docker-compose.yml exec -T spark sh -c 'for c in retencao_aplicada_em_tabela_sem retencao_ja_presente_sem_commit; do python3 -m pytest --collect-only -q tests/test_manutencao.py -k "$c" 2>/dev/null | grep -q "::" || { echo "EVAL=CENARIO_AUSENTE_$c"; exit 1; }; done; python3 -m pytest -q tests/test_manutencao.py -k "retencao_aplicada_em_tabela_sem or retencao_ja_presente_sem_commit"'
+          verifies:
+          - B-1
+        - id: eval_2
+          description: OPTIMIZE com prova
+          bash: docker compose -f infra/docker-compose.yml exec -T spark sh -c 'for c in optimize_nao_muda_o_dado optimize_sem_nada_a_compactar optimize_acusa_dado_mudado; do python3 -m pytest --collect-only -q tests/test_manutencao.py -k "$c" 2>/dev/null | grep -q "::" || { echo "EVAL=CENARIO_AUSENTE_$c"; exit 1; }; done; python3 -m pytest -q tests/test_manutencao.py -k "optimize_nao_muda_o_dado or optimize_sem_nada_a_compactar or optimize_acusa_dado_mudado"'
+          verifies:
+          - B-1
+        - id: eval_3
+          description: Sem VACUUM, script que mede por padrão
+          bash: docker compose -f infra/docker-compose.yml exec -T spark sh -c 'for c in modulo_sem_vacuum script_mede_por_padrao_e_lista_e_fechada; do python3 -m pytest --collect-only -q tests/test_manutencao.py -k "$c" 2>/dev/null | grep -q "::" || { echo "EVAL=CENARIO_AUSENTE_$c"; exit 1; }; done; python3 -m pytest -q tests/test_manutencao.py -k "modulo_sem_vacuum or script_mede_por_padrao_e_lista_e_fechada"'
+          verifies:
+          - B-1
+          - B-2
+        anti_patterns:
+        - action: incluir VACUUM
+          reason: só sob pedido do dono (ADR 0017)
+          instead: OPTIMIZE e retenção
+        - action: chamar OPTIMIZE dentro de publicar
+          reason: testes conferem a versão exata depois de publicar
+          instead: manutenção separada, pós-carga
+        - action: lista de tabelas por varredura do bucket
+          reason: tocaria o que ninguém nomeou
+          instead: lista fechada
+        do_not_touch:
+        - _raw
+        - contracts
+        - cvg/docs/adrs
+        - src/pda
+        - src/ontologia
+        - src/produtor
+        - infra
+        - tests/test_gold.py
+        - tests/test_gold_assuntos.py
+        - tests/test_testes_leves.py
+        - src/medalhao/bronze.py
+        - src/medalhao/silver.py
+        - src/medalhao/ingestao.py
+        - src/medalhao/gold.py
+        - src/medalhao/gold_assuntos.py
+        - tests/test_gold_nome_oficial.py
+        - tests/test_assuntos_nome_oficial.py
+        - tests/test_delta_padroes.py
+        - tests/test_delta_padroes_silver.py
+        rollback: Reverter os caminhos tocados e remover os criados.
+        observability: tabelas sem retenção declarada
+steel_thread:
+- LEG-SESSAO-E-BRONZE
+- LEG-SILVER-E-INGESTAO-EVOLUEM
+- LEG-GOLD-EVOLUI
+- LEG-ASSUNTOS-EVOLUEM
+- LEG-MANUTENCAO
