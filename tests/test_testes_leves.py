@@ -27,12 +27,13 @@ MODULOS = ("tests/test_gold.py", "tests/test_gold_assuntos.py")
 
 # Cada função test_* do commit anterior (9f12b3b): impressão da AST (16 hex de sha256 do ast.dump) e
 # quantos ids o pytest coleta dela. O contêiner só monta tests/, sem git — por isso o baseline é gravado aqui.
+# commit_carrega_a_forma: nome_oficial na tupla — DEC-NOME-OFICIAL-NA-GOLD, 2026-09-25
 _ANTES_GOLD = """
 arredonda_uma_vez 175fa76a6c75d003 1|half_even_do_contrato 0509cc919af81456 1|nao_arredonda_por_campo 579ff04e0b7c4742 1
 traps_declaradas 6d1aa9405c484787 1|recusa_sob_procedencia_nao_vinculada 88b29099becd1c73 1
 ansi_declarado_estouro_nao_vira_nulo 949b6d1b7658ce29 1|cobertura_anexada_ao_pacote e467a2649c27e8b7 1
 publica_em_um_unico_commit ccd95826a776d652 1|interrompida_antes_do_commit_nao_publica 831d60e8a9071347 1
-reconfere_multiconjunto_das_linhas 572ef3a39028b25c 1|commit_carrega_a_forma a48ab419462c1eba 1
+reconfere_multiconjunto_das_linhas 572ef3a39028b25c 1|commit_carrega_a_forma 942ea6bcdf6c9ad3 1
 resolve_versao_uma_vez 4b5bf7fc71566819 1|schema_evolucao_so_aditiva 48a4c90b8fc56033 1|check_nao_negativo 292575a6142be9d2 1
 reconfere_no_preparo_antes_de_publicar 5786ec891eb775d1 1|reverte_so_a_competencia a11da0e2791acffd 1
 metadados_do_commit_dono_da_competencia 17fe424fc7bbc2c8 1|reconcilia_recalculando 1ec8edf359913b0e 1
