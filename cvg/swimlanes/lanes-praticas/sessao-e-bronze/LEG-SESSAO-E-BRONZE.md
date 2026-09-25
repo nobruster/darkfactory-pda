@@ -1,0 +1,131 @@
+> Projetado de `LEG-SESSAO-E-BRONZE.md` pelo Seamwise.
+> **Não edite aqui** — edite a recipe e rode `seamwise plan`.
+> origem sha256: `6b3e8e82dda293f429a7e5e909718cbaf01b369f4e52ed40af61017281b8806d`
+
+---
+
+---
+schema_version: 1
+kind: capability-leg
+claim: derived
+id: LEG-SESSAO-E-BRONZE
+seam_id: SEAM-SESSAO-E-BRONZE
+swimlane_id: LANE-SESSAO-E-BRONZE
+observable_state: Sessão e Bronze com padrões Delta
+proof: Tabela nova com retenção; Bronze evolui.
+requires: []
+produces:
+- sessao declarada
+tasks:
+- id: T-20260925-sessao-e-bronze-com-padroes-delta
+  title: A sessão declara o que herdava, e a Bronze evolui por padrão
+  goal: Fazer criar_sessao declarar as práticas do KB e a retenção de tabela nova, e a Bronze evoluir
+    de forma aditiva por padrão. Para rodar testes, o ÚNICO comando liberado ao agente é `docker compose
+    -f infra/docker-compose.yml exec -T spark python3 -m pytest <arquivo> -k <cenarios>`.
+  done_condition: criar_sessao declara as cinco chaves; executar_leitura e publicar_bronze têm evolucao_aditiva=True
+    por padrão; publicar_competencia segue False; os testes de tests/test_delta_padroes.py passam.
+  effort: S
+  profile: standard
+  execution_backend: any
+  required_tools:
+  - git
+  - bash
+  - python3
+  - pytest
+  - docker
+  depends_on: []
+  touches_paths:
+  - src/medalhao/bronze.py
+  creates_paths:
+  - tests/test_delta_padroes.py
+  behavior:
+  - id: B-1
+    given: uma sessão criada por bronze.criar_sessao e tabelas Delta em tmp_path
+    when: a sessão é criada e a Bronze publica
+    then: criar_sessao declara, no builder E por spark.conf.set (getOrCreate reaproveita sessão), spark.databricks.delta.schema.autoMerge.enabled=false,
+      spark.databricks.delta.retentionDurationCheck.enabled=true, spark.databricks.delta.replaceWhere.constraintCheck.enabled=true,
+      spark.databricks.delta.properties.defaults.logRetentionDuration='interval 1825 days' e spark.databricks.delta.properties.defaults.deletedFileRetentionDuration='interval
+      1825 days', com a retenção numa constante nomeada RETENCAO_PADRAO; uma tabela Delta NOVA nasce com
+      as duas propriedades; uma tabela já existente reentrada por createIfNotExists não ganha propriedade
+      nem commit; executar_leitura e publicar_bronze passam a ter evolucao_aditiva=True por padrão — coluna
+      nova entra —, e a guarda verificar_evolucao continua recusando troca de tipo e coluna removida mesmo
+      por padrão; publicar_competencia MANTÉM evolucao_aditiva=False.
+  - id: B-2
+    given: o test_bronze.py e o test_performance.py selados
+    when: a tarefa termina
+    then: nenhum teste existente muda e todos passam — test_schema_evolucao_so_aditiva segue válido porque
+      exercita publicar_competencia, que fica False; em tests/test_delta_padroes.py entram test_sessao_declara_as_tres_praticas,
+      test_tabela_nova_nasce_com_retencao_de_cinco_anos, test_tabela_existente_reentrada_sem_commit, test_bronze_evolui_coluna_nova_por_padrao,
+      test_bronze_troca_de_tipo_recusada_mesmo_por_padrao, test_bronze_coluna_removida_recusada, test_bronze_evolucao_desligada_recusa
+      e test_publicar_competencia_segue_desligado. Nenhum cenário usa skip, xfail ou importorskip; os
+      testes gravam só em tmp_path, nunca no MinIO; nenhuma função para a sessão Spark da suíte.
+  evals:
+  - id: eval_1
+    description: A sessão e a retenção de tabela nova
+    bash: docker compose -f infra/docker-compose.yml exec -T spark sh -c 'for c in sessao_declara_as_tres_praticas
+      tabela_nova_nasce_com_retencao_de_cinco_anos tabela_existente_reentrada_sem_commit; do python3 -m
+      pytest --collect-only -q tests/test_delta_padroes.py -k "$c" 2>/dev/null | grep -q "::" || { echo
+      "EVAL=CENARIO_AUSENTE_$c"; exit 1; }; done; python3 -m pytest -q tests/test_delta_padroes.py -k
+      "sessao_declara_as_tres_praticas or tabela_nova_nasce_com_retencao_de_cinco_anos or tabela_existente_reentrada_sem_commit"'
+    verifies:
+    - B-1
+  - id: eval_2
+    description: A Bronze evolui por padrão, com a guarda
+    bash: docker compose -f infra/docker-compose.yml exec -T spark sh -c 'for c in bronze_evolui_coluna_nova_por_padrao
+      bronze_troca_de_tipo_recusada_mesmo_por_padrao bronze_coluna_removida_recusada bronze_evolucao_desligada_recusa
+      publicar_competencia_segue_desligado; do python3 -m pytest --collect-only -q tests/test_delta_padroes.py
+      -k "$c" 2>/dev/null | grep -q "::" || { echo "EVAL=CENARIO_AUSENTE_$c"; exit 1; }; done; python3
+      -m pytest -q tests/test_delta_padroes.py -k "bronze_evolui_coluna_nova_por_padrao or bronze_troca_de_tipo_recusada_mesmo_por_padrao
+      or bronze_coluna_removida_recusada or bronze_evolucao_desligada_recusa or publicar_competencia_segue_desligado"'
+    verifies:
+    - B-1
+  - id: eval_3
+    description: O que existia segue igual
+    bash: docker compose -f infra/docker-compose.yml exec -T spark sh -c 'for c in schema_evolucao_so_aditiva
+      replacewhere_nao_toca_outra_competencia commit_carrega_a_forma; do python3 -m pytest --collect-only
+      -q tests/test_bronze.py -k "$c" 2>/dev/null | grep -q "::" || { echo "EVAL=CENARIO_AUSENTE_$c";
+      exit 1; }; done; python3 -m pytest -q tests/test_bronze.py -k "schema_evolucao_so_aditiva or replacewhere_nao_toca_outra_competencia
+      or commit_carrega_a_forma"'
+    verifies:
+    - B-2
+  anti_patterns:
+  - action: mudar o padrão de publicar_competencia
+    reason: ligaria a evolução em silêncio nos preparos e na especie
+    instead: só as funções de entrada
+  - action: ligar schema.autoMerge
+    reason: é mergeSchema sem guarda
+    instead: declarar false
+  - action: ALTER TABLE dentro de _garantir_tabela
+    reason: quebra reentrada sem commit
+    instead: propriedade padrão da sessão
+  do_not_touch:
+  - _raw
+  - contracts
+  - cvg/docs/adrs
+  - src/pda
+  - src/ontologia
+  - src/produtor
+  - infra
+  - tests/test_gold.py
+  - tests/test_gold_assuntos.py
+  - tests/test_testes_leves.py
+  - src/medalhao/silver.py
+  - src/medalhao/ingestao.py
+  - src/medalhao/gold.py
+  - src/medalhao/gold_assuntos.py
+  rollback: Reverter os caminhos tocados e remover os criados.
+  observability: sessões e tabelas sem as práticas declaradas
+source_seam_sha256: b3bdc8bc60b91c35ac285413ee01186324530ff78cc8b4c378679509ce727260
+---
+# Sessão e Bronze com padrões Delta
+
+## Observable proof
+
+Tabela nova com retenção; Bronze evolui.
+
+## Runnable leaves
+
+- `T-20260925-sessao-e-bronze-com-padroes-delta` — A sessão declara o que herdava, e a Bronze evolui por padrão: criar_sessao declara as cinco chaves; executar_leitura e publicar_bronze têm evolucao_aditiva=True por padrão; publicar_competencia segue False; os testes de tests/test_delta_padroes.py passam.
+
+The leg names a capability state, not an activity. Each leaf owns one coherent,
+independently provable done-condition.

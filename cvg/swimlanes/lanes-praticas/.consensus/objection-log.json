@@ -1,0 +1,240 @@
+{
+  "schema_version": "1.0",
+  "pass": "4-consensus",
+  "adversary": {
+    "engine_id": "codex",
+    "model": "codex",
+    "family": "openai",
+    "engine_version": "codex-cli 0.155.0",
+    "sandbox_mode": "read-only"
+  },
+  "author": {
+    "model": "claude",
+    "family": "anthropic"
+  },
+  "verdict": "REVISE",
+  "prompt_sha256": "3888b3c51165a19d48cb1b13ddfe39b893c575140ba39613c4a2a44ded9061f3",
+  "inputs": [
+    {
+      "path": "assuntos-evoluem/LEG-ASSUNTOS-EVOLUEM.md",
+      "sha256": "7c90f0b58cda961da596185ccf374858cb99356c812cc3e0d3730b603235541e"
+    },
+    {
+      "path": "assuntos-evoluem/_lane.md",
+      "sha256": "5d926635265a3c20f79a84e48efd555248c1ae5529cf754b49142a6c4ba402e1"
+    },
+    {
+      "path": "gold-evolui/LEG-GOLD-EVOLUI.md",
+      "sha256": "aab1b798c6004566d22644f6a43cd7cde8a7e5ce97e2afe168fd237043be0af4"
+    },
+    {
+      "path": "gold-evolui/_lane.md",
+      "sha256": "cb613c74828b556aab46e159a280f195684ec35ee280500b7f358bcca265dd04"
+    },
+    {
+      "path": "manutencao/LEG-MANUTENCAO.md",
+      "sha256": "0aa508e3edcf72400c43ee04bf13effaf5262ee4e16733544f3f859e310ecf1e"
+    },
+    {
+      "path": "manutencao/_lane.md",
+      "sha256": "da1b2716424c78e13eba24601a0bdb9c64df46d07ba0debef83997079227a110"
+    },
+    {
+      "path": "sessao-e-bronze/LEG-SESSAO-E-BRONZE.md",
+      "sha256": "4637e31311bea263fc263bcc47bead1551e7da4af2dd5ed959da0a45b376c676"
+    },
+    {
+      "path": "sessao-e-bronze/_lane.md",
+      "sha256": "24fd2033a9413091fddda6d1f50b2bcbd9de5363167fd33ac488f4f0985f8627"
+    },
+    {
+      "path": "silver-e-ingestao-evoluem/LEG-SILVER-E-INGESTAO-EVOLUEM.md",
+      "sha256": "3e3412a6e632264b2a1cf208d2345f289b73ff9a31a919d784c2367e80ee2317"
+    },
+    {
+      "path": "silver-e-ingestao-evoluem/_lane.md",
+      "sha256": "d988fc0e7751101b5fe8edc61750f665d2c5b218b20726957494c3dc9b7c6b15"
+    }
+  ],
+  "objections": [
+    {
+      "id": "C1",
+      "severity": "high",
+      "rank": 1,
+      "attack_class": "other",
+      "swimlane": "LANE-SESSAO-E-BRONZE",
+      "leg": "LEG-SESSAO-E-BRONZE",
+      "title": "Os evals violam o comando exclusivo autorizado pela pr\u00f3pria tarefa",
+      "location": {
+        "plan_file": "cvg/swimlanes/lanes-praticas/sessao-e-bronze/LEG-SESSAO-E-BRONZE.md",
+        "section": "tasks[0].goal \u2194 evals[eval_1..eval_3].bash"
+      },
+      "evidence": "O goal permite exclusivamente exec -T spark python3 -m pytest; os tr\u00eas evals executam exec -T spark sh -c, com loops, pipelines e coleta adicional.",
+      "body": "O executor n\u00e3o consegue cumprir simultaneamente a restri\u00e7\u00e3o literal e os evals prescritos. A mesma contradi\u00e7\u00e3o aparece independentemente nos outros quatro legs. Sem uma distin\u00e7\u00e3o expl\u00edcita entre autoriza\u00e7\u00e3o do agente e execu\u00e7\u00e3o pelo gate, a tarefa pode bloquear antes da valida\u00e7\u00e3o ou exigir descumprimento da pr\u00f3pria folha.",
+      "cites": [
+        "LEG-SESSAO-E-BRONZE.md: goal e evals",
+        "LEG-SILVER-E-INGESTAO-EVOLUEM.md: goal e evals",
+        "LEG-GOLD-EVOLUI.md: goal e evals",
+        "LEG-ASSUNTOS-EVOLUEM.md: goal e evals",
+        "LEG-MANUTENCAO.md: goal e evals"
+      ],
+      "resolution": {
+        "disposition": "ACCEPT",
+        "decided_by": "Bruno Nunes",
+        "decided_at": "2026-09-25T17:59:29Z",
+        "owner": "Bruno Nunes",
+        "risk_residual": "Refutado, como em todas as rodadas anteriores: a permissao de escopo minimo e do AGENTE; os evals sao executados pelo MOTOR, fora dela. Decidido pelo dono ao fechar o Pass 4 da receita E na R3, sem editar o plano."
+      }
+    },
+    {
+      "id": "C2",
+      "severity": "high",
+      "rank": 2,
+      "attack_class": "drift",
+      "swimlane": "LANE-MANUTENCAO",
+      "leg": "LEG-MANUTENCAO",
+      "title": "A execu\u00e7\u00e3o p\u00f3s-carga \u00e9 atribu\u00edda a uma regra operacional ausente do ADR",
+      "location": {
+        "plan_file": "cvg/swimlanes/lanes-praticas/manutencao/LEG-MANUTENCAO.md",
+        "section": "behavior[B-1], frase final; done_condition"
+      },
+      "evidence": "O plano diz: 'Quem o chama ao fim de cada carga \u00e9 o procedimento de publica\u00e7\u00e3o do dono (regra operacional do ADR 0017)'. O ADR 0017, Decision \u00a74, exige OPTIMIZE ao fim de cada carga, mas n\u00e3o registra essa atribui\u00e7\u00e3o nem identifica tal procedimento.",
+      "body": "A condi\u00e7\u00e3o de conclus\u00e3o comprova a exist\u00eancia de um script manual, cujo padr\u00e3o n\u00e3o altera nada. N\u00e3o comprova que cada carga provoca manuten\u00e7\u00e3o. A tarefa pode terminar verde sem que a obriga\u00e7\u00e3o do ADR seja executada. A atribui\u00e7\u00e3o ao dono \u00e9 uma hip\u00f3tese operacional apresentada como decis\u00e3o existente.",
+      "cites": [
+        "cvg/swimlanes/lanes-praticas/manutencao/LEG-MANUTENCAO.md: behavior[B-1] e done_condition",
+        "cvg/docs/adrs/0017-delta-practices-additive-evolution-by-default-five-year-retention-optimize-after-load.md: Decision \u00a74 e Consequences"
+      ],
+      "resolution": {
+        "disposition": "ACCEPT",
+        "decided_by": "Bruno Nunes",
+        "decided_at": "2026-09-25T17:59:29Z",
+        "owner": "Bruno Nunes",
+        "risk_residual": "Aceito como regra operacional do ADR 0017: o procedimento de publicacao roda scripts/manter_lago.py --aplicar ao fim de cada carga; neste fechamento a cadeia o roda em producao e mostra o resultado. Decidido pelo dono ao fechar o Pass 4 da receita E na R3, sem editar o plano."
+      }
+    },
+    {
+      "id": "C3",
+      "severity": "high",
+      "rank": 3,
+      "attack_class": "race",
+      "swimlane": "LANE-MANUTENCAO",
+      "leg": "LEG-MANUTENCAO",
+      "title": "Uma opera\u00e7\u00e3o OPTIMIZE no hist\u00f3rico n\u00e3o identifica seu executor",
+      "location": {
+        "plan_file": "cvg/swimlanes/lanes-praticas/manutencao/LEG-MANUTENCAO.md",
+        "section": "behavior[B-1], identifica\u00e7\u00e3o de W e escrita concorrente"
+      },
+      "evidence": "O plano identifica W quando existe exatamente um commit posterior a V com opera\u00e7\u00e3o OPTIMIZE; tamb\u00e9m exige NAO_MEDIDO para qualquer commit que n\u00e3o seja o pr\u00f3prio OPTIMIZE.",
+      "body": "Contraexemplo de interleaving: A l\u00ea V; B compacta e publica W; A executa uma compacta\u00e7\u00e3o sem commit; A encontra apenas W. A regra descrita atribui a A o commit de B e retorna OTIMIZADA, embora a regra de concorr\u00eancia exija NAO_MEDIDO. Comparar os multiconjuntos n\u00e3o distingue autoria. O plano n\u00e3o define evid\u00eancia que diferencie essas duas execu\u00e7\u00f5es.",
+      "cites": [
+        "cvg/swimlanes/lanes-praticas/manutencao/LEG-MANUTENCAO.md: behavior[B-1]",
+        "cvg/swimlanes/lanes-praticas/manutencao/LEG-MANUTENCAO.md: behavior[B-2], test_optimize_com_escrita_concorrente_nao_medido"
+      ],
+      "resolution": {
+        "disposition": "ACCEPT",
+        "decided_by": "Bruno Nunes",
+        "decided_at": "2026-09-25T17:59:29Z",
+        "owner": "Bruno Nunes",
+        "risk_residual": "Aceito como premissa declarada: uma manutencao por vez sobre o lago (um escritor), como as cargas; a prova de dado identico vale para o par V/W observado. Decidido pelo dono ao fechar o Pass 4 da receita E na R3, sem editar o plano."
+      }
+    },
+    {
+      "id": "C4",
+      "severity": "medium",
+      "rank": 4,
+      "attack_class": "unverified-assumption",
+      "swimlane": "LANE-ASSUNTOS-EVOLUEM",
+      "leg": "LEG-ASSUNTOS-EVOLUEM",
+      "title": "A prova de evolu\u00e7\u00e3o dos assuntos n\u00e3o exige os casos proibidos pelo ADR",
+      "location": {
+        "plan_file": "cvg/swimlanes/lanes-praticas/assuntos-evoluem/LEG-ASSUNTOS-EVOLUEM.md",
+        "section": "behavior[B-1..B-2] e evals"
+      },
+      "evidence": "B-1 exige adi\u00e7\u00e3o por padr\u00e3o e recusa com False expl\u00edcito. Os cen\u00e1rios prescritos n\u00e3o exigem rejeitar troca de tipo ou remo\u00e7\u00e3o de coluna no caminho de assuntos com o novo padr\u00e3o.",
+      "body": "O ADR 0017, Decision \u00a71, exige essas duas recusas em cada camada. Os cen\u00e1rios nomeados podem passar mesmo se a entrada de assuntos contornar a guarda quando a evolu\u00e7\u00e3o estiver habilitada. Proibir overwriteSchema n\u00e3o demonstra que verificar_evolucao precede mergeSchema. \u00c9 uma lacuna de prova do plano, n\u00e3o uma afirma\u00e7\u00e3o de defeito j\u00e1 observado no c\u00f3digo.",
+      "cites": [
+        "cvg/swimlanes/lanes-praticas/assuntos-evoluem/LEG-ASSUNTOS-EVOLUEM.md: behavior e evals",
+        "cvg/docs/adrs/0017-delta-practices-additive-evolution-by-default-five-year-retention-optimize-after-load.md: Decision \u00a71"
+      ],
+      "resolution": {
+        "disposition": "ACCEPT",
+        "decided_by": "Bruno Nunes",
+        "decided_at": "2026-09-25T17:59:29Z",
+        "owner": "Bruno Nunes",
+        "risk_residual": "Aceito, coberto por fora: depois dos loops a cadeia confere no codigo que a publicacao dos assuntos passa por bronze.publicar_competencia, onde verificar_evolucao roda antes do mergeSchema. Decidido pelo dono ao fechar o Pass 4 da receita E na R3, sem editar o plano."
+      }
+    },
+    {
+      "id": "C5",
+      "severity": "medium",
+      "rank": 5,
+      "attack_class": "unverified-assumption",
+      "swimlane": "LANE-GOLD-EVOLUI",
+      "leg": "LEG-GOLD-EVOLUI",
+      "title": "Uma chamada externa n\u00e3o comprova tr\u00eas valores padr\u00e3o independentes",
+      "location": {
+        "plan_file": "cvg/swimlanes/lanes-praticas/gold-evolui/LEG-GOLD-EVOLUI.md",
+        "section": "done_condition \u2194 behavior[B-2] e eval_1"
+      },
+      "evidence": "A conclus\u00e3o exige True por padr\u00e3o em publicar, executar_gold e executar_gold_da_silver. O novo teste obrigat\u00f3rio chama apenas executar_gold_da_silver sem o argumento.",
+      "body": "Uma implementa\u00e7\u00e3o pode mudar somente o padr\u00e3o da entrada externa e encaminhar True explicitamente \u00e0s fun\u00e7\u00f5es internas. O cen\u00e1rio prescrito passaria mesmo com publicar e executar_gold mantendo False nas chamadas diretas. O plano exige tr\u00eas contratos p\u00fablicos, mas n\u00e3o exige que a prova distinga esse contraexemplo.",
+      "cites": [
+        "cvg/swimlanes/lanes-praticas/gold-evolui/LEG-GOLD-EVOLUI.md: done_condition, behavior[B-1..B-2] e eval_1",
+        "cvg/docs/adrs/0017-delta-practices-additive-evolution-by-default-five-year-retention-optimize-after-load.md: Decision \u00a71"
+      ],
+      "resolution": {
+        "disposition": "ACCEPT",
+        "decided_by": "Bruno Nunes",
+        "decided_at": "2026-09-25T17:59:29Z",
+        "owner": "Bruno Nunes",
+        "risk_residual": "Aceito, coberto por fora: depois dos loops a cadeia confere pela assinatura real que cada uma das 8 entradas tem evolucao_aditiva=True por padrao e que publicar_competencia segue False. Decidido pelo dono ao fechar o Pass 4 da receita E na R3, sem editar o plano."
+      }
+    },
+    {
+      "id": "C6",
+      "severity": "medium",
+      "rank": 6,
+      "attack_class": "unverified-assumption",
+      "swimlane": "LANE-SILVER-E-INGESTAO-EVOLUEM",
+      "leg": "LEG-SILVER-E-INGESTAO-EVOLUEM",
+      "title": "A regress\u00e3o prometida para ingest\u00e3o e orquestra\u00e7\u00e3o n\u00e3o integra os evals",
+      "location": {
+        "plan_file": "cvg/swimlanes/lanes-praticas/silver-e-ingestao-evoluem/LEG-SILVER-E-INGESTAO-EVOLUEM.md",
+        "section": "behavior[B-2] \u2194 eval_3"
+      },
+      "evidence": "B-2 nomeia test_silver.py, test_ingestao.py e test_orquestracao.py e afirma que todos passam. eval_3 executa somente tr\u00eas seletores de test_silver.py; eval_1 e eval_2 executam o arquivo novo.",
+      "body": "Os evals podem ficar verdes enquanto testes existentes de ingest\u00e3o ou orquestra\u00e7\u00e3o falham ap\u00f3s a mudan\u00e7a do valor padr\u00e3o. A alega\u00e7\u00e3o de preserva\u00e7\u00e3o dessas interfaces fica sem a verifica\u00e7\u00e3o execut\u00e1vel prometida. N\u00e3o se demonstrou uma regress\u00e3o concreta; demonstrou-se que os evals n\u00e3o sustentam B-2.",
+      "cites": [
+        "cvg/swimlanes/lanes-praticas/silver-e-ingestao-evoluem/LEG-SILVER-E-INGESTAO-EVOLUEM.md: behavior[B-2] e evals[eval_1..eval_3]"
+      ],
+      "resolution": {
+        "disposition": "ACCEPT",
+        "decided_by": "Bruno Nunes",
+        "decided_at": "2026-09-25T17:59:29Z",
+        "owner": "Bruno Nunes",
+        "risk_residual": "Aceito, coberto por fora: a suite INTEIRA numa JVM so roda test_ingestao.py e test_orquestracao.py. Decidido pelo dono ao fechar o Pass 4 da receita E na R3, sem editar o plano."
+      }
+    }
+  ],
+  "cross_lane_interfaces": [],
+  "fork": {
+    "choice": "B",
+    "reason": "Declara\u00e7\u00e3o preexistente nos cinco arquivos _lane.md; n\u00e3o escolhida pelo advers\u00e1rio.",
+    "per_plan_declared": true
+  },
+  "open_questions": [
+    {
+      "q": "Qual decis\u00e3o ou procedimento vigente atribui ao dono a execu\u00e7\u00e3o da manuten\u00e7\u00e3o ap\u00f3s cada carga e demonstra o cumprimento do ADR 0017 \u00a74?",
+      "blocks_build": true
+    },
+    {
+      "q": "A restri\u00e7\u00e3o de comando tamb\u00e9m rege os evals despachados pelo gate? Os planos n\u00e3o estabelecem uma exce\u00e7\u00e3o.",
+      "blocks_build": true
+    },
+    {
+      "q": "Como distinguir o commit da compacta\u00e7\u00e3o desta execu\u00e7\u00e3o de um \u00fanico OPTIMIZE concorrente?",
+      "blocks_build": true
+    }
+  ],
+  "rounds_run": 1
+}
