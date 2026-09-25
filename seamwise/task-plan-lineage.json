@@ -1,0 +1,31 @@
+{
+  "contract": "SeamwiseTaskPlanLineage/v1",
+  "delivery_plan_sha256": "38165805ef6615752ae19897d4ad977a4edfcf15d697be426bba12e173bc4e9c",
+  "engine_version": "0.2.0",
+  "intent": {
+    "id": "DI-PDA-POSTGRES-VALIDADO",
+    "sha256": "fb3546361f2b45399c7b88a1db63854a69e4420364f71c45c0225fe9fb3290b7"
+  },
+  "review": {
+    "fixture": false,
+    "plan_sha256": "38165805ef6615752ae19897d4ad977a4edfcf15d697be426bba12e173bc4e9c",
+    "reviewed_at": "2026-09-25T03:23:54.219327+00:00",
+    "reviewer": "Bruno Nunes",
+    "sha256": "470e735443b04dfe72f22e5606331665ffa9ead3c6caf8b871236b2b4baf3ebb"
+  },
+  "task_plan": {
+    "contract": "TaskPlan/v1",
+    "digest": "a6cced89a1dd892e8df08890577a1fc105a503703a7f06aaf8da62e1c18593a2",
+    "path": "seamwise/task-plan.json"
+  },
+  "units": {
+    "T-20260925-postgres-validado-pela-gold": {
+      "intent": "DI-PDA-POSTGRES-VALIDADO",
+      "leg": "LEG-POSTGRES-VALIDADO",
+      "seam": "SEAM-POSTGRES-VALIDADO",
+      "source_sha256": "7c085bd01a17d003b0893831af9b90bd1622bd941b7d718afeb01e5023251617",
+      "swimlane": "LANE-POSTGRES-VALIDADO",
+      "unit_id": "T-20260925-postgres-validado-pela-gold"
+    }
+  }
+}

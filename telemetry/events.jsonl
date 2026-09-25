@@ -43,3 +43,6 @@
 {"attributes":{"source":{"name":"referencia-recipe.yaml","sha256":"7ebbcc529306ea990007bfd5eb5088a1b537fe3c600cc427e7f011cff5e31829"}},"authorization":false,"event":"seamwise.map","schema_version":1,"time":"2026-09-25T01:40:24.754792+00:00","token":"SEAM_MAP=READY"}
 {"attributes":{"lanes":6,"legs":6},"authorization":false,"event":"seamwise.plan","schema_version":1,"time":"2026-09-25T01:40:24.841996+00:00","token":"DELIVERY_PLAN=NEEDS_REVIEW"}
 {"attributes":{"fixture":false,"reviewer":"Bruno Nunes"},"authorization":false,"event":"seamwise.review","schema_version":1,"time":"2026-09-25T01:40:25.170803+00:00","token":"DELIVERY_PLAN=READY"}
+{"attributes":{"source":{"name":"postgres-validado-recipe.yaml","sha256":"b7ebcb205c69d9a5d031ad351541aaf1ac005eb852a0aa27ff2006900bc9c0a0"}},"authorization":false,"event":"seamwise.map","schema_version":1,"time":"2026-09-25T03:23:53.935018+00:00","token":"SEAM_MAP=READY"}
+{"attributes":{"lanes":1,"legs":1},"authorization":false,"event":"seamwise.plan","schema_version":1,"time":"2026-09-25T03:23:53.970920+00:00","token":"DELIVERY_PLAN=NEEDS_REVIEW"}
+{"attributes":{"fixture":false,"reviewer":"Bruno Nunes"},"authorization":false,"event":"seamwise.review","schema_version":1,"time":"2026-09-25T03:23:54.226231+00:00","token":"DELIVERY_PLAN=READY"}

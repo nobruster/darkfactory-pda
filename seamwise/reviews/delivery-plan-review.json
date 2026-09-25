@@ -1,0 +1,10 @@
+{
+  "disposition": "accepted",
+  "draft_sha256": "533bcf3add670b0ef591b1d550b4048c9be3d8a04303e33ea7ec059f8fbc9ffa",
+  "fixture": false,
+  "plan_sha256": "38165805ef6615752ae19897d4ad977a4edfcf15d697be426bba12e173bc4e9c",
+  "reason": "Pass 4 da receita B fechado na R3. Uma costura: Postgres pelos proprios arquivos, validado contra a Gold (ADR 0016).",
+  "reviewed_at": "2026-09-25T03:23:54.219327+00:00",
+  "reviewer": "Bruno Nunes",
+  "schema_version": 1
+}

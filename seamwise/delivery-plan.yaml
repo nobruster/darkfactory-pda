@@ -1,0 +1,22 @@
+schema_version: 1
+status: DELIVERY_PLAN=READY
+seam_map_sha256: 4118b5c16f9f2898b181ef34eb43012099a7df7732c69bdf3f352d2f6b66cf00
+swimlanes:
+- id: LANE-POSTGRES-VALIDADO
+  seam_id: SEAM-POSTGRES-VALIDADO
+  owner: medalhao
+  path: seamwise/swimlanes/LANE-POSTGRES-VALIDADO.md
+  sha256: eb2afa9a78adee9910ed157577ddbe58b1b31eb614bb090dbf5068626ae140e0
+legs:
+- id: LEG-POSTGRES-VALIDADO
+  seam_id: SEAM-POSTGRES-VALIDADO
+  swimlane_id: LANE-POSTGRES-VALIDADO
+  path: seamwise/legs/LEG-POSTGRES-VALIDADO.md
+  sha256: 7c085bd01a17d003b0893831af9b90bd1622bd941b7d718afeb01e5023251617
+steel_thread:
+- LEG-POSTGRES-VALIDADO
+objections: []
+contentions: []
+steel_thread_path: seamwise/steel-thread.md
+steel_thread_sha256: 3a14c5fdb2c6642fa466f663b59be7c40e08c492de332096a4197eaa8a54564c
+review_authority_sha256: 7facf3274c29c9fbe921bee2ed8989b8ef6ff2091082f39e3f60b976900c519d

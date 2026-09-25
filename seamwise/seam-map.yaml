@@ -1,0 +1,22 @@
+schema_version: 1
+status: SEAM_MAP=READY
+intent_id: DI-PDA-POSTGRES-VALIDADO
+source_recipe:
+  name: postgres-validado-recipe.yaml
+  sha256: b7ebcb205c69d9a5d031ad351541aaf1ac005eb852a0aa27ff2006900bc9c0a0
+intent_sha256: fb3546361f2b45399c7b88a1db63854a69e4420364f71c45c0225fe9fb3290b7
+system_map_sha256: 031563a263036292b2183d38681e963600722324d6ec3976e58323c821a4ed15
+evidence_sha256: 0b4da58026262a1067a95841f3ada3b3b2bb6d8b382c129a1bd49c0e5c688a3f
+decisions:
+- id: ADR-0016-POSTGRES-VALIDADO
+  path: seamwise/decisions/ADR-0016-POSTGRES-VALIDADO.md
+  status: accepted
+  sha256: c82451d9d3a569e59f0d9e95c4a95040d07b3365cb5c3a0ad141ffca29f6ba0a
+seams:
+- id: SEAM-POSTGRES-VALIDADO
+  path: seamwise/seams/SEAM-POSTGRES-VALIDADO.md
+  owner: medalhao
+  evidence:
+  - E-ADR-0016
+  swimlane_id: LANE-POSTGRES-VALIDADO
+  sha256: 58c6feac378ee17f8686796803af8223d157599092f19c05c3f7b1e413bf9eef
