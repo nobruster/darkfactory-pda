@@ -832,3 +832,68 @@ def test_objeto_com_underscore_a_mais_diverge(spark, tmp_path):
     r = _ler(spark, raiz)
     assert r.estado == bronze.DIVERGE
     assert "manifesto:_extra.parquet" in _nomes_das_diferencas(r)
+
+
+# ---------------------------------------------------------------- a Bronze nomeia o landing
+
+
+def _landing_do_commit(spark, tmp_path, raiz, id_execucao="exec-l", **kw):
+    r = _ler_e_gravar(spark, tmp_path, _contrato(), COMP, raiz, id_execucao, **kw)
+    assert r.estado == bronze.INTEGRO and r.gravacao is not None
+    _, dono, _ = bronze.ler_competencia_publicada(spark, str(tmp_path / "dest"), COMP)
+    return dono["landing"]
+
+
+def test_commit_nomeia_a_particao_do_landing(spark, tmp_path):
+    raiz = _lago(spark, tmp_path)
+    landing = _landing_do_commit(spark, tmp_path, raiz)
+    assert landing["particao"] == str(raiz / f"competencia={COMP}")
+    assert set(landing) >= {"particao", "objetos", "sha256_manifesto", "sha256_prova", "prova_ausente"}
+    assert landing["sha256_prova"] is None
+    assert landing["prova_ausente"] is True
+
+
+def test_manifesto_do_commit_confere_com_os_objetos(spark, tmp_path):
+    raiz = _lago(spark, tmp_path)
+    particao = raiz / f"competencia={COMP}"
+    (particao / "_SUCCESS").touch()
+    landing = _landing_do_commit(spark, tmp_path, raiz)
+    esperado = _manifesto_do_disco(particao)
+    assert esperado and landing["objetos"] == esperado
+    canonico = json.dumps(esperado, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
+    assert landing["sha256_manifesto"] == hashlib.sha256(canonico.encode("utf-8")).hexdigest()
+
+
+def test_prova_do_commit_e_a_lida(spark, tmp_path):
+    raiz = _lago(spark, tmp_path)
+    _vincular(raiz)
+    landing = _landing_do_commit(spark, tmp_path, raiz)
+    lida = (raiz / f"competencia={COMP}" / "_PROCEDENCIA.json").read_bytes()
+    assert landing["sha256_prova"] == hashlib.sha256(lida).hexdigest()
+    assert landing["prova_ausente"] is False
+
+
+def test_prova_lida_tambem_com_procedencia_passada(spark, tmp_path):
+    raiz = _lago(spark, tmp_path)
+    _vincular(raiz)
+    landing = _landing_do_commit(spark, tmp_path, raiz, procedencia={"hash_csv_sha256": HASH_CSV})
+    lida = (raiz / f"competencia={COMP}" / "_PROCEDENCIA.json").read_bytes()
+    assert landing["sha256_prova"] == hashlib.sha256(lida).hexdigest()
+    assert landing["prova_ausente"] is False
+
+
+def test_particao_mudou_no_meio_diverge(spark, tmp_path):
+    raiz = _lago(spark, tmp_path)
+    lido = _ler(spark, raiz)
+    assert lido.estado == bronze.INTEGRO
+    particao = raiz / f"competencia={COMP}"
+    origem = next(p for p in particao.glob("*.parquet"))
+    (particao / "part-extra.parquet").write_bytes(origem.read_bytes())
+    r = bronze.publicar_bronze(
+        spark, _contrato(), lido, destino=str(tmp_path / "dest"), preparo_raiz=str(tmp_path / "prep"),
+        id_execucao="exec-m",
+    )
+    assert r.estado == bronze.DIVERGE
+    assert "landing_mudou_no_meio" in _nomes_das_diferencas(r)
+    assert r.gravacao is None
+    assert not (tmp_path / "dest").exists()

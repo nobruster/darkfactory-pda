@@ -18,6 +18,7 @@ só para o que roda fora do motor, e é construído INTEIRO a partir do contrato
 
 from __future__ import annotations
 
+import hashlib
 import json
 import re
 import uuid
@@ -80,6 +81,7 @@ class BronzeConferido:
     fechamento: Optional[dict] = None
     motivo: str = ""
     gravacao: Optional[dict] = None
+    landing: Optional[dict] = None
     cache: Optional[DataFrame] = field(default=None, repr=False, compare=False)
 
     @property
@@ -251,7 +253,7 @@ def _sha256_e_tamanho(spark: SparkSession, uri: str) -> Tuple[str, int]:
     return bytes(resumo.digest()).hex(), int(fs.getFileStatus(caminho).getLen())
 
 
-def _ler_prova(spark: SparkSession, uri: str) -> dict:
+def _bytes_do_objeto(spark: SparkSession, uri: str) -> bytes:
     jvm = spark._jvm
     fs, caminho = _fs_e_caminho(spark, uri)
     saida = jvm.java.io.ByteArrayOutputStream()
@@ -260,8 +262,12 @@ def _ler_prova(spark: SparkSession, uri: str) -> dict:
         jvm.org.apache.hadoop.io.IOUtils.copyBytes(entrada, saida, 65536, False)
     finally:
         entrada.close()
+    return bytes(saida.toByteArray())
+
+
+def _ler_prova(spark: SparkSession, uri: str) -> dict:
     try:
-        prova = json.loads(bytes(saida.toByteArray()).decode("utf-8"))
+        prova = json.loads(_bytes_do_objeto(spark, uri).decode("utf-8"))
     except ValueError as exc:
         raise ProvaInvalida(f"{NOME_PROVA} não é JSON: {exc}") from exc
     if not isinstance(prova, dict):
@@ -289,6 +295,30 @@ def _manifesto_observado(
         sha, tamanho = _sha256_e_tamanho(spark, uri)
         observado[nome] = {"nome": nome, "tamanho": tamanho, "sha256": sha}
     return observado
+
+
+def _capturar_landing(spark: SparkSession, particao: str, ignorados: Tuple[str, ...]) -> dict:
+    """O que a partição do landing É agora: objetos de dado (nome, tamanho, sha256) e os bytes da prova.
+
+    Feito nos DOIS caminhos de `procedencia` — quem hasheia é a Bronze, nunca o chamador.
+    """
+    objetos = _listar_objetos(spark, particao)
+    lista = []
+    for uri, rel in objetos:
+        if _e_dado(rel, ignorados):
+            sha, tamanho = _sha256_e_tamanho(spark, uri)
+            lista.append({"nome": rel, "tamanho": tamanho, "sha256": sha})
+    lista.sort(key=lambda o: o["nome"])
+    canonico = json.dumps(lista, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
+    uri_prova = next((u for u, r in objetos if r == NOME_PROVA), None)
+    sha_prova = None if uri_prova is None else hashlib.sha256(_bytes_do_objeto(spark, uri_prova)).hexdigest()
+    return {
+        "particao": particao,
+        "objetos": lista,
+        "sha256_manifesto": hashlib.sha256(canonico.encode("utf-8")).hexdigest(),
+        "sha256_prova": sha_prova,
+        "prova_ausente": sha_prova is None,
+    }
 
 
 def _numero(valor: Any) -> Optional[Decimal]:
@@ -633,6 +663,7 @@ def _metadados_do_commit(r: BronzeConferido, id_execucao: str, versao_camada_ant
         "cobertura_referencial": None,
         "id_execucao": id_execucao,
         "versao_camada_anterior": versao_camada_anterior,
+        **({"landing": r.landing} if r.landing is not None else {}),
     }
 
 
@@ -668,11 +699,14 @@ def _medir(spark, contrato, competencia, raiz, procedencia) -> BronzeConferido:
         existe = any(r.startswith(f"{part.chave}={competencia}/") for _, r in objetos)
         return _nao_medido(competencia, "PARTICAO_VAZIA" if existe else "PARTICAO_AUSENTE")
 
+    prefixo = f"{part.chave}={competencia}/"
+    # ANTES de ler os dados: a listagem e a prova que a Bronze vai nomear no commit
+    landing = _capturar_landing(spark, f"{raiz.rstrip('/')}/{prefixo.rstrip('/')}", ignorados)
+
     motivo = _motivo_de_esquema(_ler_parquet(spark, arquivos).schema)
     if motivo:
         return _erro(competencia, motivo)
 
-    prefixo = f"{part.chave}={competencia}/"
     prova = None
     if procedencia is None and any(r == prefixo + NOME_PROVA for _, r in objetos):
         try:
@@ -687,7 +721,7 @@ def _medir(spark, contrato, competencia, raiz, procedencia) -> BronzeConferido:
     try:
         return _medir_persistido(
             spark, contrato, competencia, base, arquivos, particoes, dados, fora, objetos,
-            prefixo, prova, procedencia, ignorados,
+            prefixo, prova, procedencia, ignorados, landing,
         )
     except BaseException:
         base.unpersist()
@@ -696,7 +730,7 @@ def _medir(spark, contrato, competencia, raiz, procedencia) -> BronzeConferido:
 
 def _medir_persistido(
     spark, contrato, competencia, base, arquivos, particoes, dados, fora, objetos, prefixo, prova,
-    procedencia, ignorados,
+    procedencia, ignorados, landing=None,
 ) -> BronzeConferido:
     pol = contrato.politica_decimal
     controles, por_codigo = medir_controles(base, pol)
@@ -766,6 +800,7 @@ def _medir_persistido(
         defeitos=tuple(defeitos),
         particoes=contagens,
         fechamento=fechamento,
+        landing=landing,
         cache=base if estado == INTEGRO else None,
     )
 
@@ -869,6 +904,13 @@ def _gravar_e_reconferir(
     def _diverge(identidade: str, detalhe: dict) -> BronzeConferido:
         d = _diferenca("gravacao", identidade, "multiconjunto e controles iguais", json.dumps(detalhe, default=str))
         return replace(medido, estado=DIVERGE, diferencas=medido.diferencas + (d,), linhas=None)
+
+    if medido.landing is not None:
+        agora = _capturar_landing(
+            spark, medido.landing["particao"], tuple(contrato.particionamento.objetos_auxiliares_ignorados)
+        )
+        if agora != medido.landing:
+            return _diverge("landing_mudou_no_meio", {"lido": medido.landing, "agora": agora})
 
     _garantir_tabela(spark, preparo, pol)
     _gravar_preparo(spark, linhas, preparo, comp, meta)
