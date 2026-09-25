@@ -372,7 +372,7 @@ def _executar_gold_assuntos(
     kpis_destino: str = KPIS_PADRAO,
     preparo_raiz: str = PREPARO_PADRAO,
     id_execucao: Optional[str] = None,
-    evolucao_aditiva: bool = False,
+    evolucao_aditiva: bool = True,
 ) -> GoldAssuntos:
     """Monta, fecha com a âncora e só então publica fat_especie e kpis_nacionais."""
     from pda import contrato as contrato_mod

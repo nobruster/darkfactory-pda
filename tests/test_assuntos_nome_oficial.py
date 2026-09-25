@@ -164,7 +164,7 @@ def test_fat_existente_evolui_e_outra_competencia_intacta(spark, tmp_path):
     esp = str(tmp_path / "especie")
     _registrar_na_gold(spark, d, esp, _gravar_especie(spark, esp))
     with pytest.raises(bronze.EvolucaoRecusada):
-        _rodar(spark, tmp_path, d, contrato)
+        _rodar(spark, tmp_path, d, contrato, evolucao_aditiva=False)
     r = _rodar(spark, tmp_path, d, contrato, evolucao_aditiva=True)
     assert r.estado == ga.INTEGRO, (r.estado, r.motivo, r.diferencas)
 
@@ -175,3 +175,24 @@ def test_fat_existente_evolui_e_outra_competencia_intacta(spark, tmp_path):
     assert intacta.count() == antiga.count()
     assert intacta.where(F.col("nome_oficial").isNotNull()).count() == 0
     assert intacta.drop("nome_oficial").exceptAll(antiga).count() == 0
+
+
+def test_fat_evolui_por_padrao_sem_sinalizador(spark, tmp_path):
+    cen, d, contrato = _preparar(spark, tmp_path)
+    assert _rodar_em(spark, tmp_path, d, contrato, "pre").estado == ga.INTEGRO
+    antiga = _lido(spark, tmp_path / "pre" / "fat").drop("nome_oficial").withColumn("competencia", F.lit("2026-02"))
+    destino = str(tmp_path / "fat")
+    antiga.write.format("delta").partitionBy("competencia").save(destino)
+    assert "nome_oficial" not in spark.read.format("delta").load(destino).columns
+
+    esp = str(tmp_path / "especie")
+    _registrar_na_gold(spark, d, esp, _gravar_especie(spark, esp))
+    r = _rodar(spark, tmp_path, d, contrato)
+    assert r.estado == ga.INTEGRO, (r.estado, r.motivo, r.diferencas)
+
+    tabela = spark.read.format("delta").load(destino)
+    assert tuple(tabela.columns) == ga.FAT_COLUNAS
+    assert _nomes_publicados(spark, destino) == {c: f"Nome {c}" for c in CODIGOS}
+    intacta = tabela.where(F.col("competencia") == "2026-02")
+    assert intacta.count() == antiga.count()
+    assert intacta.where(F.col("nome_oficial").isNotNull()).count() == 0
