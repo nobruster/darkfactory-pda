@@ -1,0 +1,36 @@
+schema_version: 1
+status: SEAM_MAP=READY
+intent_id: DI-PDA-CORRIGE-PRODUTOR
+source_recipe:
+  name: corrige-produtor-recipe.yaml
+  sha256: 6628af5f7b88ce6dbe93458d2075df601e25aeff871020b137b9314a74fa180b
+intent_sha256: 75c4417e1d214d3b667ae04b1a77a3bfe665b94c26ec597be1f1c1c294bcf568
+system_map_sha256: 3f1ff0f44958b93f4bd9ea066a25a3d4239b185e1672b70c681a2e6a4e144aa8
+evidence_sha256: b24f1acce2da18a69f0156627622bd52a0d9b80c6a7aa3953eedd95802337ee4
+decisions:
+- id: DEC-CORRIGE-PRODUTOR
+  path: seamwise/decisions/DEC-CORRIGE-PRODUTOR.md
+  status: accepted
+  sha256: 1b8b64e453b4a647b293801a9f1537e1249306fb4a94605b84c451b288689a3c
+seams:
+- id: SEAM-GRAMATICA-DO-JUIZ
+  path: seamwise/seams/SEAM-GRAMATICA-DO-JUIZ.md
+  owner: medalhao
+  evidence:
+  - E-ANCORA-202601
+  swimlane_id: LANE-GRAMATICA-DO-JUIZ
+  sha256: 26dddb9e15cf26297a58b4421c19d8d8bd71063812694e399b7c1a4e07afda7c
+- id: SEAM-PRODUTOR-E-GRAVADOR-CORRIGEM
+  path: seamwise/seams/SEAM-PRODUTOR-E-GRAVADOR-CORRIGEM.md
+  owner: medalhao
+  evidence:
+  - E-ANCORA-202601
+  swimlane_id: LANE-PRODUTOR-E-GRAVADOR-CORRIGEM
+  sha256: c511062ad5e1f8f7382013b23c1de66b8a09eca0c806dff5b4e3b217df927d2d
+- id: SEAM-VINCULADOR-GRAMATICA
+  path: seamwise/seams/SEAM-VINCULADOR-GRAMATICA.md
+  owner: medalhao
+  evidence:
+  - E-ANCORA-202601
+  swimlane_id: LANE-VINCULADOR-GRAMATICA
+  sha256: 1379037b9d55a6c0c8824c5136efda03daf1dc42ba60bdfcd6cb6ff479fb5f40

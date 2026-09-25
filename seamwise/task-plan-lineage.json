@@ -1,0 +1,47 @@
+{
+  "contract": "SeamwiseTaskPlanLineage/v1",
+  "delivery_plan_sha256": "52b3f1224cb74cca372fb73ed0560646cb75496b16d8fe0467bdd4c31e9a3d9c",
+  "engine_version": "0.2.0",
+  "intent": {
+    "id": "DI-PDA-CORRIGE-PRODUTOR",
+    "sha256": "75c4417e1d214d3b667ae04b1a77a3bfe665b94c26ec597be1f1c1c294bcf568"
+  },
+  "review": {
+    "fixture": false,
+    "plan_sha256": "52b3f1224cb74cca372fb73ed0560646cb75496b16d8fe0467bdd4c31e9a3d9c",
+    "reviewed_at": "2026-09-25T00:25:43.753148+00:00",
+    "reviewer": "Bruno Nunes",
+    "sha256": "23dda46d23911706ff1b7b3126b31caebc132b373fcf4cb1e9d548cfc61d00de"
+  },
+  "task_plan": {
+    "contract": "TaskPlan/v1",
+    "digest": "fdff52e9ea06097472c630f9ab9e281cd780bbe0519ffda1f1d22bdae0a5a0c8",
+    "path": "seamwise/task-plan.json"
+  },
+  "units": {
+    "T-20260924-gramatica-do-juiz": {
+      "intent": "DI-PDA-CORRIGE-PRODUTOR",
+      "leg": "LEG-GRAMATICA-DO-JUIZ",
+      "seam": "SEAM-GRAMATICA-DO-JUIZ",
+      "source_sha256": "2c6bccb671ec74e856879e3933f6d96caac052c3164f671091bb15d6aad40855",
+      "swimlane": "LANE-GRAMATICA-DO-JUIZ",
+      "unit_id": "T-20260924-gramatica-do-juiz"
+    },
+    "T-20260924-produtor-e-gravador-corrigem": {
+      "intent": "DI-PDA-CORRIGE-PRODUTOR",
+      "leg": "LEG-PRODUTOR-E-GRAVADOR-CORRIGEM",
+      "seam": "SEAM-PRODUTOR-E-GRAVADOR-CORRIGEM",
+      "source_sha256": "5556d8ef5a76398f6b6fa047523fb8c3ad284eb9041d66c47ca5152f867cadea",
+      "swimlane": "LANE-PRODUTOR-E-GRAVADOR-CORRIGEM",
+      "unit_id": "T-20260924-produtor-e-gravador-corrigem"
+    },
+    "T-20260924-vinculador-gramatica": {
+      "intent": "DI-PDA-CORRIGE-PRODUTOR",
+      "leg": "LEG-VINCULADOR-GRAMATICA",
+      "seam": "SEAM-VINCULADOR-GRAMATICA",
+      "source_sha256": "ed11acaa74735b360aeadafcbb5f25fba688727e9ff34a490a0293aacfc7f476",
+      "swimlane": "LANE-VINCULADOR-GRAMATICA",
+      "unit_id": "T-20260924-vinculador-gramatica"
+    }
+  }
+}

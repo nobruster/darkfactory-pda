@@ -1,0 +1,10 @@
+{
+  "disposition": "accepted",
+  "draft_sha256": "48904a9af9613c394222d4ef74f9fa09c4390c2d5eaade7d97cfff010175011b",
+  "fixture": false,
+  "plan_sha256": "52b3f1224cb74cca372fb73ed0560646cb75496b16d8fe0467bdd4c31e9a3d9c",
+  "reason": "Pass 4 da correcao do produtor fechado na R3. Tres costuras: gramatica do juiz, produtor e gravador juntos, vinculador.",
+  "reviewed_at": "2026-09-25T00:25:43.753148+00:00",
+  "reviewer": "Bruno Nunes",
+  "schema_version": 1
+}

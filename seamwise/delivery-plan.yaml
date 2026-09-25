@@ -1,0 +1,44 @@
+schema_version: 1
+status: DELIVERY_PLAN=READY
+seam_map_sha256: 317be95d38f14dc76ee64bfaffbc6f68594798f8446744e89f905fd0b06eca6d
+swimlanes:
+- id: LANE-GRAMATICA-DO-JUIZ
+  seam_id: SEAM-GRAMATICA-DO-JUIZ
+  owner: medalhao
+  path: seamwise/swimlanes/LANE-GRAMATICA-DO-JUIZ.md
+  sha256: e4299aa555bbe6b0658e622087d2190c0570f12e6a46e5cf24042d5991f7e06b
+- id: LANE-PRODUTOR-E-GRAVADOR-CORRIGEM
+  seam_id: SEAM-PRODUTOR-E-GRAVADOR-CORRIGEM
+  owner: medalhao
+  path: seamwise/swimlanes/LANE-PRODUTOR-E-GRAVADOR-CORRIGEM.md
+  sha256: 802d4f068eb3e3c3018969abfd733db0ee790f39257c40fe5c07d4294a7ffdcd
+- id: LANE-VINCULADOR-GRAMATICA
+  seam_id: SEAM-VINCULADOR-GRAMATICA
+  owner: medalhao
+  path: seamwise/swimlanes/LANE-VINCULADOR-GRAMATICA.md
+  sha256: 38fbb50b4a93872781ab98bd31d50320c9c250bba59e440537abbcf8238c55ca
+legs:
+- id: LEG-GRAMATICA-DO-JUIZ
+  seam_id: SEAM-GRAMATICA-DO-JUIZ
+  swimlane_id: LANE-GRAMATICA-DO-JUIZ
+  path: seamwise/legs/LEG-GRAMATICA-DO-JUIZ.md
+  sha256: 2c6bccb671ec74e856879e3933f6d96caac052c3164f671091bb15d6aad40855
+- id: LEG-PRODUTOR-E-GRAVADOR-CORRIGEM
+  seam_id: SEAM-PRODUTOR-E-GRAVADOR-CORRIGEM
+  swimlane_id: LANE-PRODUTOR-E-GRAVADOR-CORRIGEM
+  path: seamwise/legs/LEG-PRODUTOR-E-GRAVADOR-CORRIGEM.md
+  sha256: 5556d8ef5a76398f6b6fa047523fb8c3ad284eb9041d66c47ca5152f867cadea
+- id: LEG-VINCULADOR-GRAMATICA
+  seam_id: SEAM-VINCULADOR-GRAMATICA
+  swimlane_id: LANE-VINCULADOR-GRAMATICA
+  path: seamwise/legs/LEG-VINCULADOR-GRAMATICA.md
+  sha256: ed11acaa74735b360aeadafcbb5f25fba688727e9ff34a490a0293aacfc7f476
+steel_thread:
+- LEG-GRAMATICA-DO-JUIZ
+- LEG-PRODUTOR-E-GRAVADOR-CORRIGEM
+- LEG-VINCULADOR-GRAMATICA
+objections: []
+contentions: []
+steel_thread_path: seamwise/steel-thread.md
+steel_thread_sha256: b2d3aac31debdffd17cae40d76e77abb28e047048292b63e82e2a9b9039c1f4a
+review_authority_sha256: 991aef5d679da9356ab15ec354ac81de91ffbd9a99f6a19b45899236956138e6
