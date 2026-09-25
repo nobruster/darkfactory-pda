@@ -28,10 +28,14 @@ execution_backend: any
 signed_off: true
 signed_off_by: nobru
 signed_off_at: 2026-09-25T16:52:10Z
-accepted: false
-accepted_by: (none)
-accepted_at: (none)
+accepted: true
+accepted_by: converge-loop
+accepted_at: 2026-09-25T16:58:24Z
 signed_off_sig: hmac-sha256-v3:85d3c104:77e5693b869145c9cb580406cebe10a272c21d20643d259a05071f919939e2e8
+accepted_tier: 1
+accepted_attempt_id: e71985fb-02d3-4398-b006-8ac0b00c131c
+accepted_authorization_ref: hmac-sha256-v3:85d3c104:77e5693b869145c9cb580406cebe10a272c21d20643d259a05071f919939e2e8
+acceptance_record_digest: sha256:de9a8d63d433b9303b5529453dd4d34687fa63b20fa1bb6ec85583c724b54cc9
 ---
 
 # A guarda dos testes selados registra a mudança autorizada na Gold
