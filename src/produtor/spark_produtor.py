@@ -29,10 +29,32 @@ import sys
 from decimal import Decimal, localcontext
 from pathlib import Path
 
-from pyspark.sql import SparkSession, functions as F
-from pyspark.sql.types import DecimalType, StringType, StructField, StructType
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+
+from pyspark.sql import SparkSession, functions as F  # noqa: E402
+from pyspark.sql.types import StringType, StructField, StructType  # noqa: E402
+
+from produtor import gramatica  # noqa: E402
 
 MOTOR = "spark"
+
+
+class ProdutorRecusado(Exception):
+    """O arquivo não pode virar envelope: espécie fora do padrão ou valor que
+    não cabe na precisão do contrato. `contagem` é None quando não se mediu."""
+
+    def __init__(self, motivo: str, contagem: int | None = None):
+        super().__init__(motivo, contagem)
+        self.motivo = motivo
+        self.contagem = contagem
+
+
+def fora_da_precisao(erro: BaseException) -> bool:
+    """Sob ANSI, valor VÁLIDO que não cabe em DecimalType(p, s) levanta em vez
+    de virar NULL — é assim que a precisão declarada se faz cumprir."""
+    texto = str(erro)
+    return ("NUMERIC_VALUE_OUT_OF_RANGE" in texto
+            or "cannot be represented as Decimal" in texto)
 
 # O contrato declara o encoding com o nome do Python — "latin-1" — porque
 # foi lá que a fonte foi medida. A JVM não conhece esse rótulo e levanta
@@ -68,7 +90,7 @@ def _sessao(nome: str) -> SparkSession:
     chave = os.environ.get("S3_ACCESS_KEY", "")
     segredo = os.environ.get("S3_SECRET_KEY", "")
 
-    b = SparkSession.builder.appName(nome)
+    b = SparkSession.builder.appName(nome).config("spark.sql.ansi.enabled", "true")
     if endpoint and chave and segredo:
         b = (
             b.config("spark.hadoop.fs.s3a.endpoint", endpoint)
@@ -99,23 +121,6 @@ def _schema_posicional(total_colunas: int) -> StructType:
     ])
 
 
-def _para_decimal(col, precisao: int, escala: int):
-    """Converte o formato brasileiro em Decimal exato, ou NULL.
-
-    `1.621,00` -> `1621.00`: tira o ponto de milhar, troca a vírgula por
-    ponto. A gramática é a mesma de `scripts/medir_gramatica.py`, que mediu
-    41.572.553 aceitos e 0 recusados — o que não casar vira NULL e conta
-    como linha inválida, nunca como zero.
-    """
-    limpo = F.trim(col)
-    so_valido = F.when(
-        limpo.rlike(r"^-?\d{1,3}(\.\d{3})*,\d{2}$"), limpo
-    ).otherwise(F.lit(None))
-    sem_milhar = F.regexp_replace(so_valido, r"\.", "")
-    com_ponto = F.regexp_replace(sem_milhar, ",", ".")
-    return com_ponto.cast(DecimalType(precisao, escala))
-
-
 def produzir(csv: Path, contrato, competencia: str) -> dict:
     layout = contrato.layout
     pol = contrato.politica_decimal
@@ -134,30 +139,44 @@ def produzir(csv: Path, contrato, competencia: str) -> dict:
             .csv(str(csv))
         )
 
-        df = bruto.withColumn(
-            "_valor",
-            _para_decimal(F.col(f"c{idx_valor}"), pol.precisao, pol.escala),
-        )
+        col_especie_bruta = F.col(f"c{idx_especie}")
+        try:
+            fora_do_padrao = bruto.filter(
+                ~gramatica.especie_valida(col_especie_bruta)).count()
+            if fora_do_padrao:
+                raise ProdutorRecusado("ESPECIE_FORA_DO_PADRAO", fora_do_padrao)
 
-        col_valor = F.col("_valor")
-        col_especie = F.trim(F.col(f"c{idx_especie}"))
+            df = bruto.withColumn(
+                "_valor",
+                gramatica.valor_decimal(
+                    F.col(f"c{idx_valor}"), pol.precisao, pol.escala),
+            )
+            col_valor = F.col("_valor")
+            # espécie válida = dois dígitos depois de aparar: eles são a chave
+            col_especie = F.regexp_extract(col_especie_bruta, r"(\d{2})", 1)
 
-        # Os cinco controles, numa passada. O valor já é Decimal pelo schema:
-        # nada de float em ponto nenhum (Regra 5).
-        agg = df.agg(
-            F.count(F.lit(1)).alias("count_linhas"),
-            F.sum(F.when(col_valor.isNull(), 1).otherwise(0)).alias("invalidas"),
-            F.sum(col_valor).alias("soma"),
-            F.min(col_valor).alias("minimo"),
-            F.max(col_valor).alias("maximo"),
-        ).collect()[0]
+            # Os cinco controles, numa passada. O valor já é Decimal pelo
+            # schema: nada de float em ponto nenhum (Regra 5).
+            agg = df.agg(
+                F.count(F.lit(1)).alias("count_linhas"),
+                F.sum(F.when(col_valor.isNull(), 1).otherwise(0)).alias("invalidas"),
+                F.sum(col_valor).alias("soma"),
+                F.min(col_valor).alias("minimo"),
+                F.max(col_valor).alias("maximo"),
+            ).collect()[0]
 
-        por_codigo = (
-            df.filter(col_valor.isNotNull())
-            .groupBy(col_especie.alias("codigo"))
-            .agg(F.sum(col_valor).alias("total"))
-            .collect()
-        )
+            por_codigo = (
+                df.filter(col_valor.isNotNull())
+                .groupBy(col_especie.alias("codigo"))
+                .agg(F.sum(col_valor).alias("total"))
+                .collect()
+            )
+        except ProdutorRecusado:
+            raise
+        except Exception as erro:  # noqa: BLE001
+            if fora_da_precisao(erro):
+                raise ProdutorRecusado("VALOR_FORA_DA_PRECISAO") from erro
+            raise
     finally:
         spark.stop()
 
@@ -211,7 +230,13 @@ def main() -> int:
         print("PRODUTOR=RECUSADO")
         return 1
 
-    env = produzir(csv, carregado, args.competencia)
+    try:
+        env = produzir(csv, carregado, args.competencia)
+    except ProdutorRecusado as recusa:
+        detalhe = "" if recusa.contagem is None else f" ({recusa.contagem:,} linhas)"
+        print(f"  arquivo recusado: {recusa.motivo}{detalhe}")
+        print("PRODUTOR=RECUSADO")
+        return 1
     c = env["controles"]
 
     # Regra 9 — "li e não havia nada" NÃO é produção. A primeira versão

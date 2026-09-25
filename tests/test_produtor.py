@@ -1,18 +1,14 @@
-"""Adoção do produtor Spark e do gravador do lago — descreve o que JÁ existe.
+"""Produtor Spark e gravador do lago, com a gramática do juiz.
 
-O landing de 2026-01 foi gravado por este código e fecha com a âncora. Aqui não
-se corrige nada (Regra 4): o comportamento atual fica FIXADO, e onde ele difere
-do juiz Python o achado é registrado para decisão do dono:
+A adoção fixou em teste o comportamento antigo e registrou quatro defeitos; a
+correção os resolveu:
 
-* DIVERGÊNCIA 1 — '1,5' (uma casa decimal): o produtor conta em
-  `linhas_invalidas`; o juiz Python o aceita.
-* DIVERGÊNCIA 2 — '-5,00' (negativo): o produtor aceita e soma; o juiz Python
-  o recusa (o contrato declara `nao_negativo`).
-* DEFEITO — código de espécie vazio: o valor entra nos cinco controles, mas
-  fica fora de `total_por_codigo`.
-* DEFEITO LATENTE — `gravar_lago` grava com append sem conferir se a partição
-  já existe: uma segunda carga da mesma competência duplica e o gate acusa
-  DIVERGE, mas os arquivos da primeira ficam.
+* '1,5' (uma casa decimal) vale 1.50, como no juiz Python.
+* '-5,00' (negativo) conta em `linhas_invalidas`, como no juiz Python.
+* espécie fora do padrão (vazia, `1A`, `001`) recusa o ARQUIVO inteiro.
+* o gravador recusa partição (ou rejeitos) já ocupada, sem sobrescrever nem
+  apagar, e guarda as linhas de valor inválido, com o texto bruto, num
+  diretório fora da tabela.
 
 `produzir` e `main` chamam `spark.stop()` e derrubariam a JVM compartilhada da
 suíte: rodam SÓ em processo filho, sem as variáveis S3_*, com toda saída em
@@ -66,27 +62,39 @@ LINHAS = [
     ("02", DESC_APOSENT, "10,25", "10.25"),
     ("02", DESC_APOSENT, "  1.234.567,89", "1234567.89"),
     ("04", "Auxilio Doenca", "0,00", "0.00"),
-    ("04", "Auxilio Doenca", "1,5", None),      # fora da gramática
-    ("05", "Amparo", "-5,00", "-5.00"),         # negativo: aceito hoje
+    ("04", "Auxilio Doenca", "1,5", "1.50"),    # uma casa: vale
+    ("05", "Amparo", "-5,00", None),            # negativo: inválido
     ("05", "Amparo", "abc", None),              # fora da gramática
-    ("", "Sem codigo", "7,00", "7.00"),         # código vazio
+]
+
+# Espécie fora do padrão: vazia, letra, três dígitos.
+LINHAS_ESPECIE_INVALIDA = [
+    ("01", DESC_PENSAO, "1,00", "1.00"),
+    ("", "Sem codigo", "2,00", "2.00"),
+    ("1A", "Letra", "3,00", "3.00"),
+    ("001", "Tres digitos", "4,00", "4.00"),
+]
+
+# Valor VÁLIDO pela gramática (13 dígitos inteiros) que não cabe em (14, 2).
+LINHAS_FORA_DA_PRECISAO = [
+    ("01", DESC_PENSAO, "1,00", "1.00"),
+    ("02", DESC_APOSENT, "1.234.567.890.123,00", None),
 ]
 
 # Calculados À MÃO a partir de LINHAS — nunca pelo código sob teste.
-#   válidos: 1518,00 + 2000,50 + 0,00 + 10,25 + 1234567,89 + 0,00 - 5,00 + 7,00
+#   válidos: 1518,00 + 2000,50 + 0,00 + 10,25 + 1234567,89 + 0,00 + 1,50
 ESPERADO = {
-    "count_linhas": Decimal("10"),
+    "count_linhas": Decimal("9"),
     "linhas_invalidas": Decimal("2"),
-    "sum_vl_liquido": Decimal("1238098.64"),
-    "min_vl_liquido": Decimal("-5.00"),
+    "sum_vl_liquido": Decimal("1238098.14"),
+    "min_vl_liquido": Decimal("0.00"),
     "max_vl_liquido": Decimal("1234567.89"),
 }
 ESPERADO_POR_CODIGO = {
     "01": Decimal("1518.00"),
     "03": Decimal("2000.50"),
     "02": Decimal("1234578.14"),
-    "04": Decimal("0.00"),
-    "05": Decimal("-5.00"),
+    "04": Decimal("1.50"),
 }
 
 CABECALHO = [
@@ -150,6 +158,8 @@ class _Leitor:
     def __init__(self, real, df):
         self._real, self._df = real, df
     def parquet(self, *a, **k):
+        if "rejeitos" in str(a[0]):
+            return self._real.parquet(*a, **k)
         return self._df
     def __getattr__(self, nome):
         return getattr(self._real, nome)
@@ -162,7 +172,8 @@ class _Sessao:
         return getattr(self._real, nome)
 
 def _sessao(nome):
-    real = SparkSession.builder.appName(nome).getOrCreate()
+    real = (SparkSession.builder.appName(nome)
+            .config("spark.sql.ansi.enabled", "true").getOrCreate())
     real.sparkContext.setLogLevel("WARN")
     if substituicao == "-":
         return real
@@ -177,6 +188,60 @@ def _sessao(nome):
     return _Sessao(real, df)
 
 gl._sessao = _sessao
+sys.argv = ["gravar_lago"] + resto
+raise SystemExit(gl.main())
+"""
+
+_FILHO_PRODUZIR_RECUSA = r"""
+import json, sys
+from pathlib import Path
+src, contrato, csv, competencia, saida = sys.argv[1:6]
+sys.path.insert(0, src)
+from pda import contrato as cm
+from produtor import spark_produtor as sp
+try:
+    sp.produzir(Path(csv), cm.carregar_contrato(contrato), competencia)
+    resultado = {"recusa": None}
+except sp.ProdutorRecusado as recusa:
+    resultado = {"recusa": [recusa.motivo, recusa.contagem]}
+Path(saida).write_text(json.dumps(resultado), encoding="utf-8")
+"""
+
+_FILHO_PRODUTOR_MAIN = r"""
+import sys
+src, *resto = sys.argv[1:]
+sys.path.insert(0, src)
+from produtor import spark_produtor as sp
+sys.argv = ["spark_produtor"] + resto
+raise SystemExit(sp.main())
+"""
+
+_FILHO_ANSI = r"""
+import sys
+src, quem = sys.argv[1:3]
+sys.path.insert(0, src)
+from produtor import gravar_lago as gl
+from produtor import spark_produtor as sp
+spark = (sp if quem == "produtor" else gl)._sessao("ansi")
+print(spark.conf.get("spark.sql.ansi.enabled"))
+"""
+
+_FILHO_REJEITOS_ADULTERADOS = r"""
+import sys
+src, _, *resto = sys.argv[1:]
+sys.path.insert(0, src)
+from pyspark.sql import SparkSession
+from produtor import gravar_lago as gl
+
+def _sessao(nome):
+    real = (SparkSession.builder.appName(nome)
+            .config("spark.sql.ansi.enabled", "true").getOrCreate())
+    real.sparkContext.setLogLevel("WARN")
+    return real
+
+gl._sessao = _sessao
+_real = gl._contar_rejeitos
+gl._contar_rejeitos = lambda spark, caminho: _real(spark, caminho) + 1
 sys.argv = ["gravar_lago"] + resto
 raise SystemExit(gl.main())
 """
@@ -239,26 +304,40 @@ def contratos(tmp_path_factory) -> dict:
     pasta = tmp_path_factory.mktemp("contratos")
     bruto = yaml.safe_load(CONTRATO.read_text(encoding="utf-8"))
     bruto["ancora"].update(
-        count_linhas=10, sum_vl_liquido="1238098.64", min_vl_liquido="-5.00",
+        count_linhas=9, sum_vl_liquido="1238098.14", min_vl_liquido="0.00",
         max_vl_liquido="1234567.89", linhas_invalidas=2,
     )
     ancorado = pasta / "ancorado.yaml"
     ancorado.write_text(yaml.safe_dump(bruto, allow_unicode=True, sort_keys=False),
                         encoding="utf-8")
+    # sem nenhuma linha inválida: dois valores válidos
+    bruto["ancora"].update(
+        count_linhas=2, sum_vl_liquido="3.00", min_vl_liquido="1.00",
+        max_vl_liquido="2.00", linhas_invalidas=0,
+    )
+    limpo = pasta / "limpo.yaml"
+    limpo.write_text(yaml.safe_dump(bruto, allow_unicode=True, sort_keys=False),
+                     encoding="utf-8")
     del bruto["ancora"]
     nao_medido = pasta / "nao-medido.yaml"
     nao_medido.write_text(yaml.safe_dump(bruto, allow_unicode=True, sort_keys=False),
                           encoding="utf-8")
     assert cm.carregar_contrato(nao_medido) == cm.NAO_MEDIDO
-    return {"ancorado": ancorado, "nao_medido": nao_medido}
+    return {"ancorado": ancorado, "nao_medido": nao_medido, "limpo": limpo}
+
+
+def _rejeitos_de(destino: Path) -> Path:
+    return destino.parent / f"{destino.name}-rejeitos"
 
 
 def _rodar_main(pasta: Path, csv: Path, contrato: Path, destino: Path, out: Path,
-                substituicao: Path | None = None):
+                substituicao: Path | None = None, filho: str = _FILHO_MAIN,
+                rejeitos: Path | None = None):
     return _filho(
-        _FILHO_MAIN,
+        filho,
         [SRC, substituicao or "-", csv, "--contrato", contrato,
-         "--competencia", COMPETENCIA, "--destino", destino, "--out", out],
+         "--competencia", COMPETENCIA, "--destino", destino,
+         "--rejeitos", rejeitos or _rejeitos_de(destino), "--out", out],
         pasta,
     )
 
@@ -285,23 +364,75 @@ def test_codigos_com_mesma_descricao_somam_separados(envelope):
     assert {k: _dec(v) for k, v in total.items()} == ESPERADO_POR_CODIGO
 
 
-def test_gramatica_atual_fixada(envelope):
+def test_gramatica_do_juiz(envelope):
     controles = envelope["controles"]
     total = envelope["total_por_codigo"]
-    # '1,5' e 'abc' são inválidas — e nunca viram zero
+    # '1,5' (uma casa) entra como 1.50; '-5,00' e 'abc' contam como inválidas
+    assert _dec(total["04"]) == Decimal("1.50")
     assert controles["linhas_invalidas"] == 2
-    assert _dec(total["04"]) == Decimal("0.00")   # só o 0,00 válido; o '1,5' fora
-    # '-5,00' é ACEITO e somado (o juiz Python o recusaria: divergência registrada)
-    assert _dec(controles["min_vl_liquido"]) == Decimal("-5.00")
-    assert _dec(total["05"]) == Decimal("-5.00")
+    assert "05" not in total
+    assert _dec(controles["min_vl_liquido"]) == Decimal("0.00")
+    # nada de nada sobra: o que entra nos códigos é tudo o que entra na soma
+    assert sum(_dec(v) for v in total.values()) == _dec(controles["sum_vl_liquido"])
+    # e as regexes locais saíram dos dois arquivos
+    for nome in ("spark_produtor.py", "gravar_lago.py"):
+        texto = (SRC / "produtor" / nome).read_text(encoding="utf-8")
+        assert "gramatica.valor_decimal" in texto or "gramatica.especie_valida" in texto
+        assert "rlike" not in texto, nome
+        assert "{1,3}" not in texto, nome
 
 
-def test_codigo_vazio_fora_do_total_fixado(envelope):
-    assert "" not in envelope["total_por_codigo"]
-    assert None not in envelope["total_por_codigo"]
-    # o 7,00 do código vazio ESTÁ nos controles, mas em nenhum código
-    assert _dec(envelope["controles"]["sum_vl_liquido"]) - sum(
-        _dec(v) for v in envelope["total_por_codigo"].values()) == Decimal("7.00")
+def test_especie_fora_do_padrao_recusa(tmp_path, contratos):
+    csv = _escrever_csv(tmp_path / "especie.csv", linhas=LINHAS_ESPECIE_INVALIDA)
+    saida = tmp_path / "recusa.json"
+    r = _filho(_FILHO_PRODUZIR_RECUSA, [SRC, CONTRATO, csv, COMPETENCIA, saida], tmp_path)
+    assert r.returncode == 0, r.stderr[-3000:]
+    # vazia, '1A' e '001': QUALQUER uma recusa, e todas são contadas
+    assert json.loads(saida.read_text(encoding="utf-8")) == {
+        "recusa": ["ESPECIE_FORA_DO_PADRAO", 3]}
+
+    envelope_recusado = tmp_path / "envelope.json"
+    r = _filho(_FILHO_PRODUTOR_MAIN,
+               [SRC, csv, "--contrato", CONTRATO, "--competencia", COMPETENCIA,
+                "--out", envelope_recusado], tmp_path)
+    assert "PRODUTOR=RECUSADO" in r.stdout, r.stdout[-2000:] + r.stderr[-2000:]
+    assert "ESPECIE_FORA_DO_PADRAO" in r.stdout
+    assert r.returncode == 1
+    assert not envelope_recusado.exists()
+
+
+def test_sessao_do_produtor_ansi(tmp_path):
+    env = _env_filho()
+    env.update(S3_ENDPOINT="http://127.0.0.1:1", S3_ACCESS_KEY="x", S3_SECRET_KEY="y")
+    for quem in ("produtor", "gravador"):
+        r = _filho(_FILHO_ANSI, [SRC, quem], tmp_path, env=env)
+        assert r.returncode == 0, r.stderr[-2000:]
+        assert r.stdout.strip().splitlines()[-1] == "true", quem
+
+
+def test_valor_fora_da_precisao_recusa(tmp_path, contratos):
+    csv = _escrever_csv(tmp_path / "precisao.csv", linhas=LINHAS_FORA_DA_PRECISAO)
+
+    saida = tmp_path / "recusa.json"
+    r = _filho(_FILHO_PRODUZIR_RECUSA, [SRC, CONTRATO, csv, COMPETENCIA, saida], tmp_path)
+    assert r.returncode == 0, r.stderr[-3000:]
+    assert json.loads(saida.read_text(encoding="utf-8"))["recusa"][0] == \
+        "VALOR_FORA_DA_PRECISAO"
+
+    envelope_recusado = tmp_path / "envelope.json"
+    r = _filho(_FILHO_PRODUTOR_MAIN,
+               [SRC, csv, "--contrato", CONTRATO, "--competencia", COMPETENCIA,
+                "--out", envelope_recusado], tmp_path)
+    assert "PRODUTOR=RECUSADO" in r.stdout, r.stdout[-2000:] + r.stderr[-2000:]
+    assert "VALOR_FORA_DA_PRECISAO" in r.stdout
+    assert not envelope_recusado.exists()
+
+    destino = tmp_path / "lago"
+    r = _rodar_main(tmp_path, csv, contratos["ancorado"], destino, tmp_path / "prova.json")
+    assert "LAGO=RECUSADO" in r.stdout, r.stdout[-2000:] + r.stderr[-2000:]
+    assert "VALOR_FORA_DA_PRECISAO" in r.stdout
+    assert r.returncode == 1
+    assert not destino.exists() and not _rejeitos_de(destino).exists()
 
 
 def test_sha256_e_motor_no_envelope(envelope, csv_fixture):
@@ -367,28 +498,115 @@ def _arquivos(raiz: Path) -> set:
     return {str(p.relative_to(raiz)) for p in raiz.rglob("*") if p.is_file()}
 
 
-def test_primeira_grava_segunda_diverge_sem_apagar(tmp_path, csv_fixture, contratos):
+def test_especie_fora_do_padrao_nao_grava(tmp_path, contratos):
+    csv = _escrever_csv(tmp_path / "especie.csv", linhas=LINHAS_ESPECIE_INVALIDA)
+    destino = tmp_path / "lago"
+    r = _rodar_main(tmp_path, csv, contratos["ancorado"], destino, tmp_path / "prova.json")
+    assert "LAGO=RECUSADO" in r.stdout, r.stdout[-2000:] + r.stderr[-2000:]
+    assert "ESPECIE_FORA_DO_PADRAO" in r.stdout
+    assert r.returncode == 1
+    assert not destino.exists() and not _rejeitos_de(destino).exists()
+    assert not (tmp_path / "prova.json").exists()
+
+
+def test_segunda_carga_recusada_sem_gravar(tmp_path, csv_fixture, contratos):
     destino = tmp_path / "lago"
     r1 = _rodar_main(tmp_path, csv_fixture, contratos["ancorado"], destino,
                      tmp_path / "prova1.json")
     assert "LAGO=GRAVADO" in r1.stdout, r1.stdout[-2000:] + r1.stderr[-2000:]
     assert r1.returncode == 0
     prova1 = json.loads((tmp_path / "prova1.json").read_text(encoding="utf-8"))
-    assert prova1["controles_lago"]["count_linhas"] == 10
+    assert prova1["controles_lago"]["count_linhas"] == 9
     assert prova1["fonte_bate_lago"] is True and prova1["lago_bate_ancora"] is True
     primeiros = _arquivos(destino)
-    assert primeiros
+    rejeitos_primeiros = _arquivos(_rejeitos_de(destino))
+    assert primeiros and rejeitos_primeiros
 
-    # defeito latente FIXADO: append sem conferir partição vazia
     r2 = _rodar_main(tmp_path, csv_fixture, contratos["ancorado"], destino,
                      tmp_path / "prova2.json")
-    assert "LAGO=DIVERGE" in r2.stdout, r2.stdout[-2000:] + r2.stderr[-2000:]
+    assert "LAGO=RECUSADO" in r2.stdout, r2.stdout[-2000:] + r2.stderr[-2000:]
+    assert "PARTICAO_JA_CARREGADA" in r2.stdout
     assert r2.returncode == 1
+    assert not (tmp_path / "prova2.json").exists()
+    # os objetos da primeira ficam os mesmos, em nome e em quantidade
+    assert _arquivos(destino) == primeiros
+    assert _arquivos(_rejeitos_de(destino)) == rejeitos_primeiros
+
+
+def test_residuo_de_rejeitos_recusa(tmp_path, csv_fixture, contratos):
+    destino = tmp_path / "lago"
+    residuo = _rejeitos_de(destino) / f"competencia={COMPETENCIA}" / "residuo.parquet"
+    residuo.parent.mkdir(parents=True)
+    residuo.write_bytes(b"resto de uma tentativa que falhou")
+
+    r = _rodar_main(tmp_path, csv_fixture, contratos["ancorado"], destino,
+                    tmp_path / "prova.json")
+    assert "LAGO=RECUSADO" in r.stdout, r.stdout[-2000:] + r.stderr[-2000:]
+    assert "REJEITOS_JA_OCUPADOS" in r.stdout
+    assert r.returncode == 1
+    assert not destino.exists()
+    assert _arquivos(_rejeitos_de(destino)) == {f"competencia={COMPETENCIA}/residuo.parquet"}
+    assert residuo.read_bytes() == b"resto de uma tentativa que falhou"
+
+
+def _rodar_gravado(tmp_path, csv_fixture, contratos) -> Path:
+    destino = tmp_path / "lago"
+    r = _rodar_main(tmp_path, csv_fixture, contratos["ancorado"], destino,
+                    tmp_path / "prova.json")
+    assert "LAGO=GRAVADO" in r.stdout, r.stdout[-2000:] + r.stderr[-2000:]
+    return destino
+
+
+def test_rejeitos_guardam_o_texto_bruto(spark, tmp_path, csv_fixture, contratos):
+    destino = _rodar_gravado(tmp_path, csv_fixture, contratos)
+    rejeitos = spark.read.parquet(str(_rejeitos_de(destino) / f"competencia={COMPETENCIA}"))
+    linhas = sorted(rejeitos.collect(), key=lambda l: l["c9"])
+    # as colunas do CSV COMO VIERAM, mais o motivo
+    assert rejeitos.columns == [f"c{i}" for i in range(14)] + ["motivo"]
+    assert [l["c9"] for l in linhas] == ["-5,00", "abc"]
+    assert [l["c12"] for l in linhas] == ["05", "05"]
+    assert [l["c13"] for l in linhas] == ["Amparo", "Amparo"]
+    assert {l["motivo"] for l in linhas} == {"VALOR_FORA_DA_GRAMATICA"}
+
+
+def test_rejeitos_fora_da_tabela(spark, tmp_path, csv_fixture, contratos):
+    destino = _rodar_gravado(tmp_path, csv_fixture, contratos)
+    rejeitos = _rejeitos_de(destino)
+    assert destino not in rejeitos.parents and rejeitos not in destino.parents
+    # a TABELA continua com todas as linhas, a inválida com vl_liquido NULL
+    tabela = spark.read.parquet(str(destino / f"competencia={COMPETENCIA}"))
+    assert tabela.columns == ["especie_codigo", "especie_descricao", "vl_liquido"]
+    assert tabela.count() == 9
+    assert tabela.filter("vl_liquido IS NULL").count() == 2
+    # e o padrão de --rejeitos é o irmão da tabela de hoje, nunca um filho dela
+    r = _filho(_FILHO_DEFAULTS, [SRC], tmp_path)
+    assert r.returncode == 0, r.stderr[-2000:]
+    padrao = json.loads(r.stdout.strip().splitlines()[-1])["rejeitos"]
+    assert padrao == "s3a://landing/pda/beneficios-emitidos-rejeitos"
+    assert not padrao.startswith(DESTINO_DE_HOJE + "/")
+
+
+def test_contagem_de_rejeitos_reconferida(tmp_path, csv_fixture, contratos):
+    destino = _rodar_gravado(tmp_path, csv_fixture, contratos)
+    prova = json.loads((tmp_path / "prova.json").read_text(encoding="utf-8"))
+    assert prova["rejeitos_fonte"] == prova["rejeitos_lago"] == 2
+    assert prova["rejeitos_fonte"] == prova["controles_fonte"]["linhas_invalidas"]
+
+    # a contagem relida diverge da fonte: DIVERGE, mesmo com a tabela igual
+    r = _rodar_main(tmp_path, csv_fixture, contratos["ancorado"], tmp_path / "lago2",
+                    tmp_path / "prova2.json", filho=_FILHO_REJEITOS_ADULTERADOS)
+    assert "LAGO=DIVERGE" in r.stdout, r.stdout[-2000:] + r.stderr[-2000:]
+    assert r.returncode == 1
     prova2 = json.loads((tmp_path / "prova2.json").read_text(encoding="utf-8"))
-    assert prova2["controles_fonte"]["count_linhas"] == 10
-    assert prova2["controles_lago"]["count_linhas"] == 20
-    assert _dec(prova2["controles_lago"]["sum_vl_liquido"]) == Decimal("2476197.28")
-    assert primeiros <= _arquivos(destino)
+    assert prova2["fonte_bate_lago"] is True and prova2["rejeitos_batem"] is False
+
+    # sem linha inválida, nenhum rejeito é criado
+    limpo = _escrever_csv(tmp_path / "limpo.csv", linhas=[
+        ("01", DESC_PENSAO, "1,00", "1.00"), ("02", DESC_APOSENT, "2,00", "2.00")])
+    destino3 = tmp_path / "lago3"
+    r = _rodar_main(tmp_path, limpo, contratos["limpo"], destino3, tmp_path / "prova3.json")
+    assert "LAGO=GRAVADO" in r.stdout, r.stdout[-2000:] + r.stderr[-2000:]
+    assert destino3.exists() and not _rejeitos_de(destino3).exists()
 
 
 def _valores() -> list:
@@ -416,7 +634,7 @@ def _alterar(controle: str) -> list:
     elif controle == "sum_vl_liquido":
         v[3] += Decimal("0.01")                          # 10,25 -> 10,26
     elif controle == "min_vl_liquido":
-        v[7] = Decimal("-6.00")                          # -5,00 -> -6,00
+        v[2] = Decimal("-1.00")                          # o 0,00 (outro 0,00 fica) -> -1,00
         v[3] += Decimal("1.00")                          # compensa a soma
     elif controle == "max_vl_liquido":
         v[4] += Decimal("0.01")                          # 1234567,89 -> ,90

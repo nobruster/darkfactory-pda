@@ -2,14 +2,22 @@
 
 O BRD nomeou `mode("overwrite")` como defeito: *"ela destrói a execução
 anterior; não há como responder meses depois o que foi publicado"*. Aqui a
-gravação é **incremental** (ADR 0011), particionada por competência, e cada
-execução acrescenta em vez de substituir.
+gravação é **incremental** (ADR 0011), particionada por competência — e uma
+partição já ocupada RECUSA a carga: nada é sobrescrito nem apagado, e a
+retomada depois de uma tentativa que falhou é decisão do dono. Premissa: um
+escritor por competência; se outra carga entrar entre a conferência e a
+escrita, a releitura acusa DIVERGE.
 
 A parte que importa não é gravar — é **provar**. Depois de escrever, este
 script RELÊ do lago e recalcula os cinco controles. Confiar na escrita
 seria o mesmo erro que o ADR 0001 rejeitou ao recusar derivar a âncora do
 Parquet: medir o que o pipeline produziu, não o que ele deveria ter
 produzido.
+
+A TABELA leva todas as linhas do CSV (a de valor inválido com vl_liquido
+NULL). Os rejeitos são uma CÓPIA a mais — as linhas de valor inválido, com as
+colunas brutas do CSV como vieram — num diretório FORA da tabela, para a
+Bronze não os ler como dado.
 
 Token: LAGO=GRAVADO|DIVERGE|RECUSADO|ERRO
 """
@@ -20,11 +28,19 @@ import sys
 from decimal import Decimal
 from pathlib import Path
 
-from pyspark.sql import SparkSession, functions as F
-from pyspark.sql.types import DecimalType, StringType, StructField, StructType
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+
+from pyspark.sql import SparkSession, functions as F  # noqa: E402
+from pyspark.sql.types import StringType, StructField, StructType  # noqa: E402
+
+from produtor import gramatica  # noqa: E402
+from produtor.spark_produtor import fora_da_precisao  # noqa: E402
 
 BUCKET = "landing"
 CAMINHO = f"s3a://{BUCKET}/pda/beneficios-emitidos"
+CAMINHO_REJEITOS = f"s3a://{BUCKET}/pda/beneficios-emitidos-rejeitos"
+
+MOTIVO_REJEITO = "VALOR_FORA_DA_GRAMATICA"
 
 _ENCODING_JVM = {
     "latin-1": "ISO-8859-1", "latin1": "ISO-8859-1",
@@ -39,6 +55,7 @@ def _sessao(nome: str) -> SparkSession:
 
     spark = (
         SparkSession.builder.appName(nome)
+        .config("spark.sql.ansi.enabled", "true")
         .config("spark.hadoop.fs.s3a.endpoint", endpoint)
         .config("spark.hadoop.fs.s3a.access.key", chave)
         .config("spark.hadoop.fs.s3a.secret.key", segredo)
@@ -54,20 +71,14 @@ def _sessao(nome: str) -> SparkSession:
     return spark
 
 
-def _ler_fonte(spark, csv: Path, contrato):
-    """Lê o CSV por posição, com a gramática brasileira — igual ao produtor."""
+def _ler_bruto(spark, csv: Path, contrato):
+    """O CSV por posição, tudo como texto — as colunas COMO VIERAM."""
     layout = contrato.layout
-    pol = contrato.politica_decimal
-    idx_valor = layout.posicoes["vl_liquido"]
-    idx_especie = layout.posicoes["especie"]
-    idx_descricao = layout.posicoes["descricao_especie"]
-
     schema = StructType([
         StructField(f"c{i}", StringType(), True)
         for i in range(layout.total_colunas)
     ])
-
-    bruto = (
+    return (
         spark.read.option("header", "true")
         .option("sep", layout.separador)
         .option("encoding", _ENCODING_JVM.get(
@@ -76,19 +87,33 @@ def _ler_fonte(spark, csv: Path, contrato):
         .csv(str(csv))
     )
 
-    limpo = F.trim(F.col(f"c{idx_valor}"))
-    valido = F.when(
-        limpo.rlike(r"^-?\d{1,3}(\.\d{3})*,\d{2}$"), limpo
-    ).otherwise(F.lit(None))
-    valor = F.regexp_replace(
-        F.regexp_replace(valido, r"\.", ""), ",", "."
-    ).cast(DecimalType(pol.precisao, pol.escala))
 
+def _valor(contrato):
+    """O valor pela gramática do juiz: Decimal, ou NULL se ela recusa."""
+    pol = contrato.politica_decimal
+    idx_valor = contrato.layout.posicoes["vl_liquido"]
+    return gramatica.valor_decimal(F.col(f"c{idx_valor}"), pol.precisao, pol.escala)
+
+
+def _especie_invalida(contrato):
+    idx_especie = contrato.layout.posicoes["especie"]
+    return ~gramatica.especie_valida(F.col(f"c{idx_especie}"))
+
+
+def _projetar(bruto, contrato):
+    layout = contrato.layout
+    idx_especie = layout.posicoes["especie"]
+    idx_descricao = layout.posicoes["descricao_especie"]
     return bruto.select(
         F.trim(F.col(f"c{idx_especie}")).alias("especie_codigo"),
         F.col(f"c{idx_descricao}").alias("especie_descricao"),
-        valor.alias("vl_liquido"),
+        _valor(contrato).alias("vl_liquido"),
     )
+
+
+def _ler_fonte(spark, csv: Path, contrato):
+    """Lê o CSV por posição, com a gramática do juiz — igual ao produtor."""
+    return _projetar(_ler_bruto(spark, csv, contrato), contrato)
 
 
 def _controles(df) -> dict:
@@ -110,6 +135,26 @@ def _controles(df) -> dict:
     }
 
 
+def _objetos_em(spark, caminho: str) -> int:
+    """Quantos objetos há sob o prefixo — qualquer um conta."""
+    sc = spark.sparkContext
+    p = sc._jvm.org.apache.hadoop.fs.Path(caminho)
+    fs = p.getFileSystem(sc._jsc.hadoopConfiguration())
+    if not fs.exists(p):
+        return 0
+    return len(fs.listStatus(p))
+
+
+def _contar_rejeitos(spark, caminho: str) -> int:
+    return spark.read.parquet(caminho).count()
+
+
+def _recusa(motivo: str) -> int:
+    print(f"  recusado: {motivo}")
+    print("LAGO=RECUSADO")
+    return 1
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("csv")
@@ -117,9 +162,9 @@ def main() -> int:
     ap.add_argument("--competencia", default="2026-01")
     ap.add_argument("--out", default="/tmp/prova-lago.json")
     ap.add_argument("--destino", default=CAMINHO)
+    ap.add_argument("--rejeitos", default=CAMINHO_REJEITOS)
     args = ap.parse_args()
 
-    sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
     from pda import contrato as cm
 
     csv = Path(args.csv)
@@ -134,11 +179,32 @@ def main() -> int:
         print("LAGO=RECUSADO")
         return 1
 
+    destino = f"{args.destino}/competencia={args.competencia}"
+    destino_rejeitos = f"{args.rejeitos}/competencia={args.competencia}"
+
     spark = _sessao(f"gravar-lago-{args.competencia}")
     try:
+        # Antes de qualquer leitura ou escrita: partição ocupada recusa, e o
+        # que já está lá é evidência — nada é sobrescrito nem apagado.
+        for caminho, motivo in ((destino, "PARTICAO_JA_CARREGADA"),
+                                (destino_rejeitos, "REJEITOS_JA_OCUPADOS")):
+            if _objetos_em(spark, caminho):
+                return _recusa(f"{motivo} — {caminho}")
+
         print("  lendo a fonte...", flush=True)
-        df = _ler_fonte(spark, csv, c).cache()
-        antes = _controles(df)
+        bruto = _ler_bruto(spark, csv, c)
+
+        fora_do_padrao = bruto.filter(_especie_invalida(c)).count()
+        if fora_do_padrao:
+            return _recusa(f"ESPECIE_FORA_DO_PADRAO — {fora_do_padrao:,} linhas")
+
+        df = _projetar(bruto, c).cache()
+        try:
+            antes = _controles(df)
+        except Exception as erro:  # noqa: BLE001
+            if fora_da_precisao(erro):
+                return _recusa("VALOR_FORA_DA_PRECISAO")
+            raise
         print(f"    {antes['count_linhas']:,} linhas · {antes['sum_vl_liquido']}")
 
         # Regra 9 — zero linhas não é gravação.
@@ -147,11 +213,17 @@ def main() -> int:
             print("LAGO=RECUSADO")
             return 1
 
-        destino = f"{args.destino}/competencia={args.competencia}"
+        invalidas = antes["linhas_invalidas"]
+        if invalidas:
+            print(f"  gravando {invalidas:,} rejeitos em {destino_rejeitos}", flush=True)
+            (bruto.filter(_valor(c).isNull())
+             .withColumn("motivo", F.lit(MOTIVO_REJEITO))
+             .write.mode("errorifexists").parquet(destino_rejeitos))
+
         print(f"  gravando em {destino}", flush=True)
         # append, NUNCA overwrite: o BRD nomeou o overwrite como defeito, e
-        # o ADR 0011 decidiu carga incremental. Uma competência regravada
-        # duplicaria — por isso o gate do acumulado existe.
+        # o ADR 0011 decidiu carga incremental. A partição já foi conferida
+        # vazia acima; se outra carga entrou depois, a releitura acusa.
         df.write.mode("append").parquet(destino)
 
         print("  RELENDO do lago para conferir...", flush=True)
@@ -160,6 +232,7 @@ def main() -> int:
         do_lago = spark.read.parquet(destino)
         depois = _controles(do_lago)
         print(f"    {depois['count_linhas']:,} linhas · {depois['sum_vl_liquido']}")
+        rejeitos_lidos = _contar_rejeitos(spark, destino_rejeitos) if invalidas else 0
     finally:
         spark.stop()
 
@@ -179,6 +252,11 @@ def main() -> int:
         print(f"  {k:<18} {str(antes[k]):>18} {str(depois[k]):>18}  "
               f"{'BATE' if ok else 'DIVERGE'}")
 
+    # Os rejeitos relidos têm de ser exatamente as linhas inválidas da fonte
+    rejeitos_ok = rejeitos_lidos == invalidas
+    print(f"  {'rejeitos':<18} {invalidas:>18} {rejeitos_lidos:>18}  "
+          f"{'BATE' if rejeitos_ok else 'DIVERGE'}")
+
     # E contra a âncora, que é a verdade de fora
     anc = c.ancora
     bate_ancora = (
@@ -189,9 +267,13 @@ def main() -> int:
     prova = {
         "competencia": args.competencia,
         "destino": destino,
+        "destino_rejeitos": destino_rejeitos if invalidas else None,
         "controles_fonte": antes,
         "controles_lago": depois,
+        "rejeitos_fonte": invalidas,
+        "rejeitos_lago": rejeitos_lidos,
         "fonte_bate_lago": todos,
+        "rejeitos_batem": rejeitos_ok,
         "lago_bate_ancora": bate_ancora,
     }
     Path(args.out).write_text(json.dumps(prova, indent=2, ensure_ascii=False),
@@ -200,7 +282,7 @@ def main() -> int:
     print()
     print(f"  lago == âncora? {bate_ancora}")
     print(f"  prova gravada em {args.out}")
-    if todos and bate_ancora:
+    if todos and rejeitos_ok and bate_ancora:
         print("LAGO=GRAVADO")
         return 0
     print("LAGO=DIVERGE")
