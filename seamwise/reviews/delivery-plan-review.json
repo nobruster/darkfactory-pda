@@ -1,0 +1,10 @@
+{
+  "disposition": "accepted",
+  "draft_sha256": "7dd939d7a3041d53e0c90b46aa2d4b03b96101c21beea041943eae3241e4bb33",
+  "fixture": false,
+  "plan_sha256": "07e7ff97bd5401f949b188fb8e818a489e80a3c1e76d1c670d2f4f12c4302045",
+  "reason": "Pass 4 da receita E fechado na R3. Cinco costuras: boas praticas Delta em todas as camadas (ADR 0017).",
+  "reviewed_at": "2026-09-25T18:00:43.336502+00:00",
+  "reviewer": "Bruno Nunes",
+  "schema_version": 1
+}

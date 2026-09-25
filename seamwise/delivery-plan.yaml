@@ -1,0 +1,66 @@
+schema_version: 1
+status: DELIVERY_PLAN=READY
+seam_map_sha256: 9c4c4dcc0d85cd2b1ff69057740b2b668a5c4c1197cfcc08e62bf882b05fa65e
+swimlanes:
+- id: LANE-SESSAO-E-BRONZE
+  seam_id: SEAM-SESSAO-E-BRONZE
+  owner: medalhao
+  path: seamwise/swimlanes/LANE-SESSAO-E-BRONZE.md
+  sha256: 56ee4f16bf7c9ddbfc70b49d8287d5df0294fe497dc4b1c976cfc91f0386656c
+- id: LANE-SILVER-E-INGESTAO-EVOLUEM
+  seam_id: SEAM-SILVER-E-INGESTAO-EVOLUEM
+  owner: medalhao
+  path: seamwise/swimlanes/LANE-SILVER-E-INGESTAO-EVOLUEM.md
+  sha256: 66217226f432d055e2abc1e0b8c82ae2339d65abde968295145e7a61c776c8ac
+- id: LANE-GOLD-EVOLUI
+  seam_id: SEAM-GOLD-EVOLUI
+  owner: medalhao
+  path: seamwise/swimlanes/LANE-GOLD-EVOLUI.md
+  sha256: 5f50482cda9930719980226d5b3d9a3e77660133d39673e21fb6001c57c6266c
+- id: LANE-ASSUNTOS-EVOLUEM
+  seam_id: SEAM-ASSUNTOS-EVOLUEM
+  owner: medalhao
+  path: seamwise/swimlanes/LANE-ASSUNTOS-EVOLUEM.md
+  sha256: 4b845e694fc855640947072e86c53b048b7e21602f851a5428c24d70aabbd849
+- id: LANE-MANUTENCAO
+  seam_id: SEAM-MANUTENCAO
+  owner: medalhao
+  path: seamwise/swimlanes/LANE-MANUTENCAO.md
+  sha256: 9a9e03f6d3393e2ccffaa567bc5a24c4d1a5db5583fcef0ef51fdb054adb0bec
+legs:
+- id: LEG-SESSAO-E-BRONZE
+  seam_id: SEAM-SESSAO-E-BRONZE
+  swimlane_id: LANE-SESSAO-E-BRONZE
+  path: seamwise/legs/LEG-SESSAO-E-BRONZE.md
+  sha256: 6b3e8e82dda293f429a7e5e909718cbaf01b369f4e52ed40af61017281b8806d
+- id: LEG-SILVER-E-INGESTAO-EVOLUEM
+  seam_id: SEAM-SILVER-E-INGESTAO-EVOLUEM
+  swimlane_id: LANE-SILVER-E-INGESTAO-EVOLUEM
+  path: seamwise/legs/LEG-SILVER-E-INGESTAO-EVOLUEM.md
+  sha256: d6255fee48f5e6f6fe0ea953526ad29ea1aa81a34ca0eab54f7b184e05367039
+- id: LEG-GOLD-EVOLUI
+  seam_id: SEAM-GOLD-EVOLUI
+  swimlane_id: LANE-GOLD-EVOLUI
+  path: seamwise/legs/LEG-GOLD-EVOLUI.md
+  sha256: f0efbad6a2639b2c9a0bb76243585c27ba7f2a7583331ec1925ac1dec9e8f32d
+- id: LEG-ASSUNTOS-EVOLUEM
+  seam_id: SEAM-ASSUNTOS-EVOLUEM
+  swimlane_id: LANE-ASSUNTOS-EVOLUEM
+  path: seamwise/legs/LEG-ASSUNTOS-EVOLUEM.md
+  sha256: a69ee49b156550a7a1291cf6ead1105eaafa1b84eccaf473ce1d01e5b12cd185
+- id: LEG-MANUTENCAO
+  seam_id: SEAM-MANUTENCAO
+  swimlane_id: LANE-MANUTENCAO
+  path: seamwise/legs/LEG-MANUTENCAO.md
+  sha256: 35617a8f1bcf51df16d25156acc28d50a0159e480beb61342969f70f2381a205
+steel_thread:
+- LEG-SESSAO-E-BRONZE
+- LEG-SILVER-E-INGESTAO-EVOLUEM
+- LEG-GOLD-EVOLUI
+- LEG-ASSUNTOS-EVOLUEM
+- LEG-MANUTENCAO
+objections: []
+contentions: []
+steel_thread_path: seamwise/steel-thread.md
+steel_thread_sha256: 4e1ce1996e1ac0fa8e228611f55db5be59d49804f943c9708d09e615d31ef8e8
+review_authority_sha256: 149899f955d7b5853ac8f86c4a767fd2dbf11bc6dfc8bd21f9df12b741bfb875

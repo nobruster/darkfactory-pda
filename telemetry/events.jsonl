@@ -52,3 +52,6 @@
 {"attributes":{"source":{"name":"guarda-nome-recipe.yaml","sha256":"4861ccf599935f34d393d0cf4159f77df931d6fcdb86c0897320e099adbd8bd6"}},"authorization":false,"event":"seamwise.map","schema_version":1,"time":"2026-09-25T16:50:50.478619+00:00","token":"SEAM_MAP=READY"}
 {"attributes":{"lanes":1,"legs":1},"authorization":false,"event":"seamwise.plan","schema_version":1,"time":"2026-09-25T16:50:50.653006+00:00","token":"DELIVERY_PLAN=NEEDS_REVIEW"}
 {"attributes":{"fixture":false,"reviewer":"Bruno Nunes"},"authorization":false,"event":"seamwise.review","schema_version":1,"time":"2026-09-25T16:50:51.046568+00:00","token":"DELIVERY_PLAN=READY"}
+{"attributes":{"source":{"name":"praticas-delta-recipe.yaml","sha256":"2e1e753b61781119bcbf53f00ba9eb99fc7d2921433ad44f6ec8aec5ebcfa21b"}},"authorization":false,"event":"seamwise.map","schema_version":1,"time":"2026-09-25T18:00:42.960308+00:00","token":"SEAM_MAP=READY"}
+{"attributes":{"lanes":5,"legs":5},"authorization":false,"event":"seamwise.plan","schema_version":1,"time":"2026-09-25T18:00:43.030802+00:00","token":"DELIVERY_PLAN=NEEDS_REVIEW"}
+{"attributes":{"fixture":false,"reviewer":"Bruno Nunes"},"authorization":false,"event":"seamwise.review","schema_version":1,"time":"2026-09-25T18:00:43.360401+00:00","token":"DELIVERY_PLAN=READY"}

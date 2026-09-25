@@ -1,0 +1,50 @@
+schema_version: 1
+status: SEAM_MAP=READY
+intent_id: DI-PDA-PRATICAS-DELTA
+source_recipe:
+  name: praticas-delta-recipe.yaml
+  sha256: 2e1e753b61781119bcbf53f00ba9eb99fc7d2921433ad44f6ec8aec5ebcfa21b
+intent_sha256: 0a2efe7cda7754baa1372f7bd6fbc86e66cace5d652b1a854854b76d2924fb54
+system_map_sha256: e236ef1a34af5edec21aa898ceac22671179084924682acad37535d6eee1e330
+evidence_sha256: 03cb4049583be79e05d5660853efbcebcdd5802c45e70c0eaa2938c1e8906a1a
+decisions:
+- id: ADR-0017-PRATICAS-DELTA
+  path: seamwise/decisions/ADR-0017-PRATICAS-DELTA.md
+  status: accepted
+  sha256: 2c3896d7020e5b307e9f64059a33a0682bdf4649dbbae76b5c2ed526fc991d92
+seams:
+- id: SEAM-SESSAO-E-BRONZE
+  path: seamwise/seams/SEAM-SESSAO-E-BRONZE.md
+  owner: medalhao
+  evidence:
+  - E-ADR-0017
+  swimlane_id: LANE-SESSAO-E-BRONZE
+  sha256: b3bdc8bc60b91c35ac285413ee01186324530ff78cc8b4c378679509ce727260
+- id: SEAM-SILVER-E-INGESTAO-EVOLUEM
+  path: seamwise/seams/SEAM-SILVER-E-INGESTAO-EVOLUEM.md
+  owner: medalhao
+  evidence:
+  - E-ADR-0017
+  swimlane_id: LANE-SILVER-E-INGESTAO-EVOLUEM
+  sha256: 2e3fc27055ae967912baed21688a5ea769173298719056c196c509d6f18645ed
+- id: SEAM-GOLD-EVOLUI
+  path: seamwise/seams/SEAM-GOLD-EVOLUI.md
+  owner: medalhao
+  evidence:
+  - E-ADR-0017
+  swimlane_id: LANE-GOLD-EVOLUI
+  sha256: be19c48095fe422331a058d79a30fdc1d43debe6651f5e4065714640ed5f9f35
+- id: SEAM-ASSUNTOS-EVOLUEM
+  path: seamwise/seams/SEAM-ASSUNTOS-EVOLUEM.md
+  owner: medalhao
+  evidence:
+  - E-ADR-0017
+  swimlane_id: LANE-ASSUNTOS-EVOLUEM
+  sha256: e86b2434e3a9d9550e5a9abce5920b8634515c96f0f4a3e389fdf4a72a7be733
+- id: SEAM-MANUTENCAO
+  path: seamwise/seams/SEAM-MANUTENCAO.md
+  owner: medalhao
+  evidence:
+  - E-ADR-0017
+  swimlane_id: LANE-MANUTENCAO
+  sha256: 72c3d45641dff2422f57a50ae07891d3f37c1312bf93926e3f06a4882cce1374
