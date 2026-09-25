@@ -28,10 +28,14 @@ execution_backend: any
 signed_off: true
 signed_off_by: nobru
 signed_off_at: 2026-09-25T01:42:08Z
-accepted: false
-accepted_by: (none)
-accepted_at: (none)
+accepted: true
+accepted_by: converge-loop
+accepted_at: 2026-09-25T02:55:14Z
 signed_off_sig: hmac-sha256-v3:85d3c104:a09351c06d471be25f550c124dc448d484e9ee08805233d9f1ce9ad984a140d6
+accepted_tier: 1
+accepted_attempt_id: 3ed1703f-353e-453f-99ad-3752fcd36330
+accepted_authorization_ref: hmac-sha256-v3:85d3c104:a09351c06d471be25f550c124dc448d484e9ee08805233d9f1ce9ad984a140d6
+acceptance_record_digest: sha256:91b214a84f19b1534212c16048af8add4c20f72d6dfb59679ddec13da3a1ba37
 ---
 
 # A referência na Gold, lida da Silver
