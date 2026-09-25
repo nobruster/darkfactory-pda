@@ -93,15 +93,15 @@ seams:
         - id: B-1
           given: uma partição do landing com objetos Parquet e _PROCEDENCIA.json, em tmp_path
           when: a Bronze lê, confere e publica a competência
-          then: 'os metadados do commit ganham a chave ''landing'' com: ''particao'' (o caminho EXATO da partição lida), ''objetos'' (nome e tamanho de cada objeto de dado lido, em ordem de nome), ''sha256_manifesto'' (sha256 do JSON canônico — chaves ordenadas, sem espaços — da lista ''objetos'') e ''sha256_prova'' (sha256 dos bytes da _PROCEDENCIA.json lida); nenhuma chave que já existia muda de nome ou de valor, e os DADOS publicados são os mesmos de antes, linha a linha.'
+          then: 'os metadados do commit ganham a chave ''landing'' com: ''particao'' (o caminho EXATO da partição lida), ''objetos'' (nome e tamanho, pelo FileStatus, de cada objeto de dado lido, em ordem de nome), ''sha256_manifesto'' (sha256 do JSON canônico — chaves ordenadas, sem espaços — da lista ''objetos'') e ''sha256_prova'' (sha256 dos BYTES da _PROCEDENCIA.json da partição). A Bronze LÊ os bytes da prova para o hash nos DOIS caminhos — com procedencia= passada pelo chamador (o de produção: ingestao e gold passam) e sem ela —; sem _PROCEDENCIA.json na partição, ''sha256_prova'' é null e ''prova_ausente'' é true, nunca um valor inventado. Pode acrescentar campo com default em BronzeConferido e guardar os bytes em _ler_prova, tudo em bronze.py. Nenhuma chave que já existia muda de nome ou de valor, e os DADOS publicados são os mesmos, linha a linha.'
         - id: B-2
           given: o tests/test_bronze.py selado
           when: a tarefa acrescenta os testes
-          then: todos os test_* existentes ficam como estão e passam; entram só test_commit_nomeia_a_particao_do_landing, test_manifesto_do_commit_confere_com_os_objetos e test_prova_do_commit_e_a_lida — este lê os bytes da _PROCEDENCIA.json e compara o sha256. Nenhum cenário usa skip, xfail ou importorskip; os testes gravam só em tmp_path, nunca no MinIO; a sessão Spark do teste é de escopo de módulo e nenhuma função a para.
+          then: todos os test_* existentes ficam como estão e passam; entram só test_commit_nomeia_a_particao_do_landing, test_manifesto_do_commit_confere_com_os_objetos, test_prova_do_commit_e_a_lida — este lê os bytes da _PROCEDENCIA.json e compara o sha256 — e test_prova_lida_tambem_com_procedencia_passada; os testes novos usam a fixture spark que o arquivo já tem. Nenhum cenário usa skip, xfail ou importorskip; os testes GRAVAM só em tmp_path, nunca no MinIO — LER o MinIO ou /dados/_raw é permitido onde o cenário pede, e MinIO indisponível FALHA o teste; a sessão Spark do teste é uma fixture de módulo ou sessão, e nenhuma função a para.
         evals:
         - id: eval_1
           description: A partição e o manifesto no commit
-          bash: docker compose -f infra/docker-compose.yml exec -T spark sh -c 'for c in commit_nomeia_a_particao_do_landing manifesto_do_commit_confere_com_os_objetos prova_do_commit_e_a_lida; do python3 -m pytest --collect-only -q tests/test_bronze.py -k "$c" 2>/dev/null | grep -q "::" || { echo "EVAL=CENARIO_AUSENTE_$c"; exit 1; }; done; python3 -m pytest -q tests/test_bronze.py -k "commit_nomeia_a_particao_do_landing or manifesto_do_commit_confere_com_os_objetos or prova_do_commit_e_a_lida"'
+          bash: docker compose -f infra/docker-compose.yml exec -T spark sh -c 'for c in commit_nomeia_a_particao_do_landing manifesto_do_commit_confere_com_os_objetos prova_do_commit_e_a_lida prova_lida_tambem_com_procedencia_passada; do python3 -m pytest --collect-only -q tests/test_bronze.py -k "$c" 2>/dev/null | grep -q "::" || { echo "EVAL=CENARIO_AUSENTE_$c"; exit 1; }; done; python3 -m pytest -q tests/test_bronze.py -k "commit_nomeia_a_particao_do_landing or manifesto_do_commit_confere_com_os_objetos or prova_do_commit_e_a_lida or prova_lida_tambem_com_procedencia_passada"'
           verifies:
           - B-1
         - id: eval_2
@@ -184,11 +184,11 @@ seams:
         - id: B-1
           given: os arquivos dicionario-especies-beneficio.xlsx e glossario-beneficios-emitidos.xlsx num diretório de origem com CHECKSUMS.txt, e um destino
           when: landing_referencia.gravar(spark, origem, destino, arquivos) roda
-          then: 'para cada arquivo: confere o sha256 dos bytes contra a linha do CHECKSUMS.txt (formato ''<sha256>  _raw/<arquivo>'', casada pelo NOME), e só então copia os bytes, SEM alterar nenhum, para <destino>/<nome sem extensão>/sha256=<sha256>/<arquivo> pelo FileSystem do Hadoop, grava ao lado a _PROCEDENCIA.json com arquivo, sha256, tamanho, origem e instante, relê os bytes gravados e confere o sha256; devolve GRAVADO por arquivo. O padrão do destino é s3a://landing/pda/referencia e o da origem é /dados/_raw. Uma segunda execução com os mesmos bytes devolve INTEGRO sem regravar nada.'
+          then: 'para cada arquivo: confere o sha256 dos bytes contra a linha do CHECKSUMS.txt (formato ''<sha256>  _raw/<arquivo>'', casada pelo NOME), e só então copia os bytes, SEM alterar nenhum, para <destino>/<nome sem extensão>/sha256=<sha256>/<arquivo> pelo FileSystem do Hadoop, grava ao lado a _PROCEDENCIA.json com arquivo, sha256, tamanho, origem e instante, relê os bytes gravados e confere o sha256; devolve GRAVADO por arquivo. O padrão do destino é s3a://landing/pda/referencia e o da origem é /dados/_raw. Uma segunda execução devolve INTEGRO sem regravar nada SÓ se os bytes E a _PROCEDENCIA.json existem e conferem entre si (sha256 e tamanho).'
         - id: B-2
           given: uma origem ou um destino que não conferem
           when: landing_referencia.gravar roda
-          then: sha256 divergente do CHECKSUMS.txt ou arquivo ausente devolvem NAO_MEDIDO sem gravar nada; um objeto já existente no caminho com bytes diferentes devolve DIVERGE e NÃO é sobrescrito; os arquivos aceitos são só os dois nomeados — outro nome recusa. Nenhum cenário usa skip, xfail ou importorskip; os testes gravam só em tmp_path, nunca no MinIO; a sessão Spark do teste é de escopo de módulo e nenhuma função a para.
+          then: sha256 divergente do CHECKSUMS.txt ou arquivo ausente devolvem NAO_MEDIDO sem gravar nada; no destino, objeto com bytes diferentes, bytes sem _PROCEDENCIA.json (tentativa interrompida) ou prova com sha256 ou tamanho divergente devolvem DIVERGE e NADA é sobrescrito nem apagado — a retomada é decisão do dono; os arquivos aceitos são só os dois nomeados — outro nome recusa. Nenhum cenário usa skip, xfail ou importorskip; os testes GRAVAM só em tmp_path, nunca no MinIO — LER o MinIO ou /dados/_raw é permitido onde o cenário pede, e MinIO indisponível FALHA o teste; a sessão Spark do teste é uma fixture de módulo ou sessão, e nenhuma função a para.
         evals:
         - id: eval_1
           description: Bytes como vieram, com prova
@@ -197,7 +197,7 @@ seams:
           - B-1
         - id: eval_2
           description: Idempotente e sem sobrescrever
-          bash: docker compose -f infra/docker-compose.yml exec -T spark sh -c 'for c in segunda_execucao_integro_sem_regravar objeto_divergente_nao_sobrescreve; do python3 -m pytest --collect-only -q tests/test_landing_referencia.py -k "$c" 2>/dev/null | grep -q "::" || { echo "EVAL=CENARIO_AUSENTE_$c"; exit 1; }; done; python3 -m pytest -q tests/test_landing_referencia.py -k "segunda_execucao_integro_sem_regravar or objeto_divergente_nao_sobrescreve"'
+          bash: docker compose -f infra/docker-compose.yml exec -T spark sh -c 'for c in segunda_execucao_integro_sem_regravar objeto_divergente_nao_sobrescreve bytes_sem_prova_diverge; do python3 -m pytest --collect-only -q tests/test_landing_referencia.py -k "$c" 2>/dev/null | grep -q "::" || { echo "EVAL=CENARIO_AUSENTE_$c"; exit 1; }; done; python3 -m pytest -q tests/test_landing_referencia.py -k "segunda_execucao_integro_sem_regravar or objeto_divergente_nao_sobrescreve or bytes_sem_prova_diverge"'
           verifies:
           - B-1
           - B-2
@@ -278,15 +278,15 @@ seams:
         - id: B-1
           given: o landing de referência gravado por landing_referencia em tmp_path
           when: bronze_referencia.publicar(spark, landing, destino, arquivo, sha256) roda
-          then: 'lê os bytes da partição sha256=<sha256> DO LANDING, confere que o sha256 dos bytes lidos é o da _PROCEDENCIA.json e o do nome da partição, lê a planilha só com a biblioteca padrão (zipfile e xml — pode usar medalhao.ontologia.ler_xlsx sobre os bytes) e grava em Delta, por replaceWhere de sha256_arquivo, uma linha por linha da planilha COMO VEIO: linha (o número na planilha), coluna_a e coluna_b em texto sem trim, arquivo e sha256_arquivo — o cabeçalho e as linhas vazias entram também, porque a Bronze não filtra; o dicionário vai para <destino>/dicionario_especies e o glossário para <destino>/glossario, padrão s3a://bronze/pda/referencia; o commit leva em userMetadata a partição do landing lida, o sha256 da prova, o id_execucao e o número de linhas; depois relê a versão do PRÓPRIO commit e confere o multiconjunto nos dois sentidos.'
+          then: 'lê os bytes da partição sha256=<sha256> DO LANDING, confere que o sha256 dos bytes lidos é o da _PROCEDENCIA.json e o do nome da partição, e lê a planilha com um parser PRÓPRIO deste módulo, só com a biblioteca padrão (zipfile sobre io.BytesIO e xml) — NÃO medalhao.ontologia.ler_xlsx, que descarta linhas sem valor e não devolve o número da linha (medido: o dicionário tem 69 elementos <row>, 2 sem valor; o glossário 24, 10 sem valor). O arquivo tem de ter EXATAMENTE uma planilha, senão recusa. Grava em Delta, por replaceWhere de sha256_arquivo, um registro por elemento <row> COMO VEIO: linha = o número do atributo r do <row> (nunca uma contagem), coluna_a e coluna_b em texto sem trim (célula ausente é nula), arquivo e sha256_arquivo — o cabeçalho e os <row> sem valor entram também, porque a Bronze não filtra; uma linha que o XML não traz não é inventada; o dicionário vai para <destino>/dicionario_especies e o glossário para <destino>/glossario, padrão s3a://bronze/pda/referencia; o commit leva em userMetadata a partição do landing lida, o sha256 da prova, o id_execucao e o número de linhas; depois relê a versão do PRÓPRIO commit e confere o multiconjunto nos dois sentidos.'
         - id: B-2
           given: uma prova divergente, uma planilha sem linhas, ou um pedido que leria _raw
           when: bronze_referencia.publicar roda
-          then: sha256 dos bytes diferente da prova ou do nome da partição recusa SEM gravar; planilha sem nenhuma linha devolve NAO_MEDIDO; o módulo não tem caminho para /dados/_raw — um teste confere pelo AST do módulo que ele não referencia _raw. Nenhum cenário usa skip, xfail ou importorskip; os testes gravam só em tmp_path, nunca no MinIO; a sessão Spark do teste é de escopo de módulo e nenhuma função a para.
+          then: sha256 dos bytes diferente da prova ou do nome da partição recusa SEM gravar; planilha sem nenhuma linha devolve NAO_MEDIDO; o módulo não tem caminho para /dados/_raw — um teste confere pelo AST do módulo que ele não referencia _raw. Nenhum cenário usa skip, xfail ou importorskip; os testes GRAVAM só em tmp_path, nunca no MinIO — LER o MinIO ou /dados/_raw é permitido onde o cenário pede, e MinIO indisponível FALHA o teste; a sessão Spark do teste é uma fixture de módulo ou sessão, e nenhuma função a para.
         evals:
         - id: eval_1
           description: Linhas como vieram, lidas do landing
-          bash: docker compose -f infra/docker-compose.yml exec -T spark sh -c 'for c in linhas_como_vieram cabecalho_e_vazias_entram linhagem_do_landing_no_commit; do python3 -m pytest --collect-only -q tests/test_bronze_referencia.py -k "$c" 2>/dev/null | grep -q "::" || { echo "EVAL=CENARIO_AUSENTE_$c"; exit 1; }; done; python3 -m pytest -q tests/test_bronze_referencia.py -k "linhas_como_vieram or cabecalho_e_vazias_entram or linhagem_do_landing_no_commit"'
+          bash: docker compose -f infra/docker-compose.yml exec -T spark sh -c 'for c in linhas_como_vieram cabecalho_e_vazias_entram numero_da_linha_e_o_do_xml linhagem_do_landing_no_commit; do python3 -m pytest --collect-only -q tests/test_bronze_referencia.py -k "$c" 2>/dev/null | grep -q "::" || { echo "EVAL=CENARIO_AUSENTE_$c"; exit 1; }; done; python3 -m pytest -q tests/test_bronze_referencia.py -k "linhas_como_vieram or cabecalho_e_vazias_entram or numero_da_linha_e_o_do_xml or linhagem_do_landing_no_commit"'
           verifies:
           - B-1
         - id: eval_2
@@ -296,7 +296,7 @@ seams:
           - B-1
         - id: eval_3
           description: Recusas e nada de _raw
-          bash: docker compose -f infra/docker-compose.yml exec -T spark sh -c 'for c in prova_divergente_nao_grava planilha_vazia_nao_medido modulo_nao_le_raw; do python3 -m pytest --collect-only -q tests/test_bronze_referencia.py -k "$c" 2>/dev/null | grep -q "::" || { echo "EVAL=CENARIO_AUSENTE_$c"; exit 1; }; done; python3 -m pytest -q tests/test_bronze_referencia.py -k "prova_divergente_nao_grava or planilha_vazia_nao_medido or modulo_nao_le_raw"'
+          bash: docker compose -f infra/docker-compose.yml exec -T spark sh -c 'for c in prova_divergente_nao_grava planilha_vazia_nao_medido mais_de_uma_planilha_recusa modulo_nao_le_raw; do python3 -m pytest --collect-only -q tests/test_bronze_referencia.py -k "$c" 2>/dev/null | grep -q "::" || { echo "EVAL=CENARIO_AUSENTE_$c"; exit 1; }; done; python3 -m pytest -q tests/test_bronze_referencia.py -k "prova_divergente_nao_grava or planilha_vazia_nao_medido or mais_de_uma_planilha_recusa or modulo_nao_le_raw"'
           verifies:
           - B-2
         anti_patterns:
@@ -372,11 +372,11 @@ seams:
         - id: B-1
           given: a Bronze do glossário publicada por bronze_referencia em tmp_path
           when: glossario.publicar(spark, bronze, destino, sha256) roda
-          then: 'lê a Bronze numa versão fixada no início, conforma: descarta a linha de cabeçalho (coluna_a ''Nome'') e as vazias, CONTANDO os descartes, tira espaços das pontas de termo e descrição, e grava em Delta, padrão s3a://silver/pda/glossario, uma linha por termo — termo, descricao, sha256_arquivo —, por replaceWhere de sha256_arquivo; o commit leva a versão da Bronze lida, o sha256 e os descartes; relê o próprio commit e confere. Sobre a referência real, são 13 termos.'
+          then: 'lê a Bronze numa versão fixada no início e SELECIONA sha256_arquivo igual ao pedido ANTES de conformar — sha256 pedido ausente na versão lida devolve NAO_MEDIDO —; conforma: descarta a linha de cabeçalho (coluna_a ''Nome'') e as vazias, CONTANDO os descartes, tira espaços das pontas de termo e descrição, e grava em Delta, padrão s3a://silver/pda/glossario, uma linha por termo — termo, descricao, sha256_arquivo —, por replaceWhere de sha256_arquivo; o commit leva a versão da Bronze lida, o sha256 e os descartes; relê o próprio commit e confere. Sobre a referência real, são 13 termos.'
         - id: B-2
           given: uma Bronze com termo repetido, termo vazio com descrição, ou nenhum termo
           when: glossario.publicar roda
-          then: recusa SEM gravar termo repetido e termo vazio; nenhum termo devolve NAO_MEDIDO. Nenhum cenário usa skip, xfail ou importorskip; os testes gravam só em tmp_path, nunca no MinIO; a sessão Spark do teste é de escopo de módulo e nenhuma função a para.
+          then: recusa SEM gravar termo repetido e termo vazio; nenhum termo devolve NAO_MEDIDO. Nenhum cenário usa skip, xfail ou importorskip; os testes GRAVAM só em tmp_path, nunca no MinIO — LER o MinIO ou /dados/_raw é permitido onde o cenário pede, e MinIO indisponível FALHA o teste; a sessão Spark do teste é uma fixture de módulo ou sessão, e nenhuma função a para.
         evals:
         - id: eval_1
           description: Conformado com linhagem
@@ -466,12 +466,12 @@ seams:
         behavior:
         - id: B-1
           given: a Bronze do dicionário publicada por bronze_referencia e uma Silver de benefícios
-          when: especie.publicar_especie_da_bronze(spark, bronze_dicionario, sha256, silver, destino, competencia, grupos) roda, com grupos vindos de contrato.grupos_especie
-          then: lê a Bronze do dicionário e a Silver cada uma numa versão fixada no início; conforma os nomes a partir da Bronze — linha com coluna_a numérica vira código de 2 dígitos e coluna_b é o nome oficial COMO VEIO; o cabeçalho e as vazias são descartados E CONTADOS —; grava com o MESMO schema e as mesmas regras da especie atual (descricao_fonte como veio, texto_fonte_confere_prefixo, replaceWhere da competência, reconferência do próprio commit); o commit leva a versão da Silver, a versão da Bronze do dicionário, o sha256 do arquivo e os descartes. Nenhuma função existente de especie.py muda de comportamento.
+          when: especie.publicar_especie_da_bronze(spark, bronze_dicionario, sha256, sha256_aprovado, silver, destino, competencia, grupos) roda, com grupos vindos de contrato.grupos_especie e sha256_aprovado vindo da fonte aprovada na ontologia versionada
+          then: se sha256 difere de sha256_aprovado, recusa SEM ler nem gravar, com o motivo DICIONARIO_NAO_APROVADO — um dicionário novo do INSS só entra depois de o dono aprová-lo, como o ADR 0014 já exigia; lê a Bronze do dicionário e a Silver cada uma numa versão fixada no início, SELECIONA sha256_arquivo igual ao pedido antes de conformar (ausente devolve NAO_MEDIDO); conforma os nomes a partir da Bronze — linha com coluna_a numérica vira código de 2 dígitos e coluna_b é o nome oficial COMO VEIO; o cabeçalho e as vazias são descartados E CONTADOS —; grava com o MESMO schema e as mesmas regras da especie atual (descricao_fonte como veio, texto_fonte_confere_prefixo, replaceWhere da competência, reconferência do próprio commit); o commit leva a versão da Silver, a versão da Bronze do dicionário, o sha256 do arquivo e os descartes. Nenhuma função existente de especie.py muda de comportamento.
         - id: B-2
           given: o tests/test_especie.py selado
           when: a tarefa acrescenta os testes
-          then: todos os test_* existentes ficam como estão e passam; entram só test_especie_da_bronze_nomes_da_bronze, test_especie_da_bronze_linhagem_das_duas_camadas, test_especie_da_bronze_conta_descartes, test_especie_da_bronze_codigo_fora_recusa e test_especie_da_bronze_ponta_a_ponta_real — este grava, em tmp_path, o landing e a Bronze de referência a partir de /dados/_raw pelos módulos das tarefas anteriores e exige, sobre a Silver real de 2026-01, 65 linhas, 65 nomes distintos e 43 com o prefixo conferindo. Nenhum cenário usa skip, xfail ou importorskip; os testes gravam só em tmp_path, nunca no MinIO; a sessão Spark do teste é de escopo de módulo e nenhuma função a para.
+          then: todos os test_* existentes ficam como estão e passam; entram só test_especie_da_bronze_nomes_da_bronze, test_especie_da_bronze_linhagem_das_duas_camadas, test_especie_da_bronze_conta_descartes, test_especie_da_bronze_codigo_fora_recusa, test_especie_da_bronze_dicionario_nao_aprovado_recusa e test_especie_da_bronze_ponta_a_ponta_real — este grava, em tmp_path, o landing e a Bronze de referência a partir de /dados/_raw pelos módulos das tarefas anteriores e exige, sobre a Silver real de 2026-01, 65 linhas, 65 nomes distintos e 43 com o prefixo conferindo. Nenhum cenário usa skip, xfail ou importorskip; os testes GRAVAM só em tmp_path, nunca no MinIO — LER o MinIO ou /dados/_raw é permitido onde o cenário pede, e MinIO indisponível FALHA o teste; a sessão Spark do teste é uma fixture de módulo ou sessão, e nenhuma função a para.
         evals:
         - id: eval_1
           description: Nomes da Bronze, com linhagem
@@ -480,7 +480,7 @@ seams:
           - B-1
         - id: eval_2
           description: Ponta a ponta e recusa
-          bash: docker compose -f infra/docker-compose.yml exec -T spark sh -c 'for c in especie_da_bronze_ponta_a_ponta_real especie_da_bronze_codigo_fora_recusa; do python3 -m pytest --collect-only -q tests/test_especie.py -k "$c" 2>/dev/null | grep -q "::" || { echo "EVAL=CENARIO_AUSENTE_$c"; exit 1; }; done; python3 -m pytest -q tests/test_especie.py -k "especie_da_bronze_ponta_a_ponta_real or especie_da_bronze_codigo_fora_recusa"'
+          bash: docker compose -f infra/docker-compose.yml exec -T spark sh -c 'for c in especie_da_bronze_ponta_a_ponta_real especie_da_bronze_codigo_fora_recusa especie_da_bronze_dicionario_nao_aprovado_recusa; do python3 -m pytest --collect-only -q tests/test_especie.py -k "$c" 2>/dev/null | grep -q "::" || { echo "EVAL=CENARIO_AUSENTE_$c"; exit 1; }; done; python3 -m pytest -q tests/test_especie.py -k "especie_da_bronze_ponta_a_ponta_real or especie_da_bronze_codigo_fora_recusa or especie_da_bronze_dicionario_nao_aprovado_recusa"'
           verifies:
           - B-1
           - B-2
@@ -561,12 +561,12 @@ seams:
         behavior:
         - id: B-1
           given: a Silver especie (publicada da Bronze) e a Silver glossario, em tmp_path
-          when: gold_referencia.publicar(spark, silver_especie, silver_glossario, destino, competencia) roda
-          then: 'lê as duas tabelas Silver cada uma numa versão fixada no início e publica em Delta, padrão s3a://gold/pda/referencia: dim_especie — codigo, nome_oficial, grupo, descricao_fonte, texto_fonte_confere_prefixo, competencia, uma linha por código, por replaceWhere da competência — e dim_termo — termo, descricao, sha256_arquivo; cada commit leva as versões das tabelas Silver lidas e o id_execucao; relê o próprio commit e confere o multiconjunto contra a Silver lida.'
+          when: gold_referencia.publicar(spark, silver_especie, silver_glossario, destino, competencia, sha256_glossario) roda
+          then: 'lê as duas tabelas Silver cada uma numa versão fixada no início e publica em Delta, padrão s3a://gold/pda/referencia: dim_especie — codigo, nome_oficial, grupo, descricao_fonte, texto_fonte_confere_prefixo, competencia, uma linha por código — com replaceWhere da COMPETÊNCIA, que deixa as outras intactas; e dim_termo — termo, descricao, sha256_arquivo — só do sha256_glossario pedido, SELECIONADO na Silver antes de publicar, com replaceWhere de sha256_arquivo, que deixa as outras versões do glossário intactas; nunca append, nunca overwrite da tabela inteira; cada commit leva as versões das tabelas Silver lidas e o id_execucao; relê o próprio commit e confere o multiconjunto contra a seleção da Silver lida.'
         - id: B-2
           given: uma Silver especie vazia na competência, ou divergente da releitura
           when: gold_referencia.publicar roda
-          then: Silver vazia na competência devolve NAO_MEDIDO sem gravar; reconferência divergente devolve DIVERGE; o módulo lê só a Silver — um teste confere pelo AST que ele não referencia bronze, landing nem _raw. Nenhum cenário usa skip, xfail ou importorskip; os testes gravam só em tmp_path, nunca no MinIO; a sessão Spark do teste é de escopo de módulo e nenhuma função a para.
+          then: Silver vazia na competência devolve NAO_MEDIDO sem gravar; reconferência divergente devolve DIVERGE; o módulo lê só a Silver — um teste confere pelo AST que ele não referencia bronze, landing nem _raw. Nenhum cenário usa skip, xfail ou importorskip; os testes GRAVAM só em tmp_path, nunca no MinIO — LER o MinIO ou /dados/_raw é permitido onde o cenário pede, e MinIO indisponível FALHA o teste; a sessão Spark do teste é uma fixture de módulo ou sessão, e nenhuma função a para.
         evals:
         - id: eval_1
           description: A Gold serve o que a Silver conformou
@@ -575,7 +575,7 @@ seams:
           - B-1
         - id: eval_2
           description: Reconferência e outra competência
-          bash: docker compose -f infra/docker-compose.yml exec -T spark sh -c 'for c in reconfere_o_proprio_commit outra_competencia_intacta; do python3 -m pytest --collect-only -q tests/test_gold_referencia.py -k "$c" 2>/dev/null | grep -q "::" || { echo "EVAL=CENARIO_AUSENTE_$c"; exit 1; }; done; python3 -m pytest -q tests/test_gold_referencia.py -k "reconfere_o_proprio_commit or outra_competencia_intacta"'
+          bash: docker compose -f infra/docker-compose.yml exec -T spark sh -c 'for c in reconfere_o_proprio_commit outra_competencia_intacta outra_versao_do_glossario_intacta; do python3 -m pytest --collect-only -q tests/test_gold_referencia.py -k "$c" 2>/dev/null | grep -q "::" || { echo "EVAL=CENARIO_AUSENTE_$c"; exit 1; }; done; python3 -m pytest -q tests/test_gold_referencia.py -k "reconfere_o_proprio_commit or outra_competencia_intacta or outra_versao_do_glossario_intacta"'
           verifies:
           - B-1
         - id: eval_3
