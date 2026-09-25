@@ -43,6 +43,7 @@ FAT_COLUNAS = (
     "especie_codigo", "especie_descricao", "grupo_especie", "competencia",
     "qtd_beneficios", "vl_total", "vl_minimo", "vl_maximo", "qtd_vl_zero", "vl_medio",
     "vl_mediano_aprox", "vl_p90_aprox", "rank_no_grupo", "pct_qtd_nacional", "pct_vl_nacional",
+    "nome_oficial",
 )
 KPIS_COLUNAS = (
     "competencia", "total_beneficios", "vl_total", "vl_medio", "vl_minimo", "vl_maximo",
@@ -71,6 +72,7 @@ class GoldAssuntos:
     kpis_nacionais: Optional[DataFrame] = None
     versao_silver: Optional[int] = None
     versao_gold_principal: Optional[int] = None
+    silver_especie: Optional[dict] = None  # {caminho, versao} da Silver especie que deu o nome; None = sem nome
     gravacao: Optional[dict] = None
 
 
@@ -93,8 +95,14 @@ def _dividir(numerador, denominador, escala: int):
     return F.bround(alto, escala)
 
 
-def montar_fat_especie(linhas: DataFrame, grupos: DataFrame, competencia: str, politica) -> DataFrame:
-    """Um ÚNICO groupBy por especie_codigo; grão (especie_codigo, competencia)."""
+def montar_fat_especie(
+    linhas: DataFrame, grupos: DataFrame, competencia: str, politica, nomes: Optional[DataFrame] = None
+) -> DataFrame:
+    """Um ÚNICO groupBy por especie_codigo; grão (especie_codigo, competencia).
+
+    O nome oficial entra num left join DEPOIS de tudo montado — antes, multiplicaria linhas e
+    mexeria nos controles. Sem `nomes`, a coluna existe e é nula em toda linha.
+    """
     acc = _tipo(politica)
     vl = F.col("vl_liquido").cast(acc)
     base = (
@@ -120,7 +128,7 @@ def montar_fat_especie(linhas: DataFrame, grupos: DataFrame, competencia: str, p
     total_qtd = F.sum("qtd_beneficios").over(nacional)
     total_vl = F.sum("vl_total").over(nacional)
     pct = DecimalType(9, ESCALA_PERCENTUAL)
-    return (
+    fat = (
         base.withColumn("rank_no_grupo", F.row_number().over(no_grupo).cast("int"))
         .withColumn(
             "pct_qtd_nacional",
@@ -134,8 +142,12 @@ def montar_fat_especie(linhas: DataFrame, grupos: DataFrame, competencia: str, p
             .otherwise(F.bround(F.col("vl_total").cast(DecimalType(38, 18)) * 100 / total_vl, ESCALA_PERCENTUAL))
             .cast(pct),
         )
-        .select(*FAT_COLUNAS)
     )
+    if nomes is None:
+        fat = fat.withColumn("nome_oficial", F.lit(None).cast(StringType()))
+    else:
+        fat = fat.join(nomes.select("especie_codigo", "nome_oficial"), "especie_codigo", "left")
+    return fat.select(*FAT_COLUNAS)
 
 
 def montar_kpis_nacionais(fat: DataFrame, linhas: DataFrame, competencia: str, politica) -> DataFrame:
@@ -287,8 +299,24 @@ def _conferir_tabela(spark: SparkSession, caminho: str, versao: int, esperado: D
     return so_esperado == 0 and so_lido == 0, {"versao": versao, "so_no_esperado": so_esperado, "so_no_lido": so_lido}
 
 
+def _ler_nomes_da_especie(spark: SparkSession, especie: dict, competencia: str) -> DataFrame:
+    """Silver especie NO caminho e NA versão que a Gold principal registrou — nunca um padrão."""
+    return (
+        _ler_versao(spark, especie["caminho"], int(especie["versao"]))
+        .where(F.col("competencia") == competencia)
+        .select("especie_codigo", "nome_oficial")
+    )
+
+
 def _metadados(r: GoldAssuntos, tabela: str, id_execucao: str) -> dict:
+    if tabela != "fat_especie":
+        nome = {}
+    elif r.silver_especie:
+        nome = {"silver_especie": r.silver_especie}
+    else:
+        nome = {"nome_oficial": NAO_MEDIDO, "motivo_nome_oficial": "SEM_SILVER_ESPECIE"}
     return {
+        **nome,
         "estado": INTEGRO,
         "competencia": r.competencia,
         "tabela": tabela,
@@ -368,11 +396,24 @@ def _executar_gold_assuntos(
         linhas, estado, motivo = _ler_silver_nomeada(spark, silver_destino, competencia, versao_silver)
         if linhas is None:
             return _falha(r, estado, motivo)
+        especie = dono.get("silver_especie")
+        nomes = None
+        if especie:
+            especie = {"caminho": especie["caminho"], "versao": int(especie["versao"])}
+            r = replace(r, silver_especie=especie)
+            nomes = _ler_nomes_da_especie(spark, especie, competencia)
         pol = contrato.politica_decimal
         grupos = _mapa_de_grupos(spark, contrato.grupos_especie)
         id_execucao = id_execucao or uuid.uuid4().hex
-        fat = montar_fat_especie(linhas, grupos, competencia, pol).persist()
+        fat = montar_fat_especie(linhas, grupos, competencia, pol, nomes).persist()
         persistidos.append(fat)
+        if nomes is not None:
+            sem_nome = sorted(
+                x[0] for x in fat.where(F.col("nome_oficial").isNull()).select("especie_codigo").collect()
+            )
+            if sem_nome:
+                d = _diferenca("nome_oficial", "NOME_OFICIAL_AUSENTE", "nome na Silver especie", sem_nome)
+                return _falha(r, DIVERGE, "DIVERGE", [d])
         kpis = montar_kpis_nacionais(fat, linhas, competencia, pol)
         preparo = f"{preparo_raiz.rstrip('/')}/execucao={id_execucao}"
         destinos = (("fat_especie", f"{preparo}/fat_especie", fat, ("especie_codigo", "competencia"), MONETARIAS_FAT),
