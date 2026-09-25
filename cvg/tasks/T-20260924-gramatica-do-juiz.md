@@ -28,10 +28,14 @@ execution_backend: any
 signed_off: true
 signed_off_by: nobru
 signed_off_at: 2026-09-25T00:25:45Z
-accepted: false
-accepted_by: (none)
-accepted_at: (none)
+accepted: true
+accepted_by: converge-loop
+accepted_at: 2026-09-25T00:30:37Z
 signed_off_sig: hmac-sha256-v3:85d3c104:eee2340a292332d457e11f3286fa107ec03ec22a365640f0bb70e67dd04afdb3
+accepted_tier: 1
+accepted_attempt_id: b1f3db41-2d57-43bc-8ef1-84bbca473bc3
+accepted_authorization_ref: hmac-sha256-v3:85d3c104:eee2340a292332d457e11f3286fa107ec03ec22a365640f0bb70e67dd04afdb3
+acceptance_record_digest: sha256:ed735da3885f5a2d96ab05902ab60d089f02017fa42498343048fefde7e53a59
 ---
 
 # A gramática do juiz, uma só, para os módulos Spark
