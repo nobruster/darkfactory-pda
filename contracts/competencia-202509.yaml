@@ -1,0 +1,199 @@
+# Contrato da competência 2025-09 — INSS, benefícios emitidos.
+#
+# TODO valor aqui foi MEDIDO no arquivo inteiro (41.376.846 linhas), nunca amostrado:
+#   scripts/medir_ancora.py  -> evidence/_totais-202509.json   (independente do pipeline)
+#   ~/medir_contrato.py      -> mesma âncora, gramática do juiz, cardinalidade e colapsos
+#   hashes conferidos contra _raw/CHECKSUMS.txt; W1=OK (arquivos 444, _raw 555)
+#   particionamento.valores_medidos: partições da landing no momento da aprovação
+#
+# Layout de 14 colunas (igual a 2026-01). 2025-08 e anteriores têm 13 e NÃO
+# servem com este contrato.
+#
+# Aprovado pelo dono em 2026-09-25.
+# ⚠ Editar qualquer número aqui para um gate passar é a Regra 3.
+competencia: '2025-09'
+ancora:
+  count_linhas: 41376846
+  sum_vl_liquido: '73485964937.46'
+  min_vl_liquido: '0.00'
+  max_vl_liquido: '112176.24'
+  linhas_invalidas: 0
+  aprovado_por: Bruno Nunes
+  aprovado_em: '2026-09-25'
+procedencia:
+  fonte: _raw/D.SDA.PDA.003.EMI.202509.csv
+  hash_zip_sha256: 374d738e79a65979b1539ca3b119007851a0bf26730dd764b6ffdec833e8e69f
+  hash_csv_sha256: 192dfdfedf5abd32d6d807f44d96f7bd56c4f588a6c29fe37352d7c0c0c82ae8
+  publicado_em: 2025-09
+politica_decimal:
+  modo: HALF_EVEN
+  granularidade: total
+  precisao: 14
+  escala: 2
+  escala_maxima_intermediarios: 3
+  nao_negativo: true
+  emax: 999999
+  emin: -999999
+  aprovado_por: Bruno Nunes
+  aprovado_em: '2026-09-25'
+particionamento:
+  chave: competencia
+  caminho: s3a://landing/pda/beneficios-emitidos
+  formato: parquet
+  objetos_auxiliares_ignorados:
+  - _SUCCESS
+  valores_medidos:
+  - '2026-01'
+  - 'fatia-teste'
+  aprovado_por: Bruno Nunes
+  aprovado_em: '2026-09-25'
+layout:
+  total_colunas: 14
+  separador: ;
+  encoding: latin-1
+  posicoes:
+    especie: 12
+    descricao_especie: 13
+    vl_liquido: 9
+cardinalidade:
+  codigos_distintos: 65
+  descricoes_distintas: 52
+  colapsos: 11
+  codigos_colapsados: 24
+defeitos_conhecidos:
+- tipo: IDENTIDADE_COLAPSADA
+  descricao: 11 descricoes cobrem 24 codigos — medido na competencia inteira
+  quantidade: 11
+  classificacao: CONFIRMED_SOURCE_DEFECT
+  aprovador: Bruno Nunes
+  aprovado_em: '2026-09-25'
+mapa_colapsos:
+  aprovado_por: Bruno Nunes
+  aprovado_em: '2026-09-25'
+  grupos:
+  - descricao: 'Pensão por Morte de '
+    codigos:
+    - '01'
+    - '03'
+    - '23'
+    - '59'
+  - descricao: Pensão por Morte Aci
+    codigos:
+    - '02'
+    - '93'
+  - descricao: Aposentadoria por In
+    codigos:
+    - '04'
+    - '83'
+  - descricao: Aposent. Invalidez A
+    codigos:
+    - '05'
+    - '92'
+  - descricao: Aposent. Invalidez E
+    codigos:
+    - '06'
+    - '51'
+  - descricao: Pensão por Morte Ex-
+    codigos:
+    - '29'
+    - '84'
+  - descricao: Renda Mensal Vitalíc
+    codigos:
+    - '30'
+    - '40'
+  - descricao: Aposentadoria Invali
+    codigos:
+    - '32'
+    - '33'
+  - descricao: Aposentadoria Especi
+    codigos:
+    - '44'
+    - '46'
+  - descricao: Aposent. Tempo Servi
+    codigos:
+    - '45'
+    - '72'
+  - descricao: Abono Permanencia em
+    codigos:
+    - '47'
+    - '48'
+grupos_especie:
+  regra: palavra inicial da descricao da especie; mesma descricao, mesmo grupo
+  grupos:
+  - grupo: Pensao
+    codigos:
+    - '01'
+    - '02'
+    - '03'
+    - '21'
+    - '22'
+    - '23'
+    - '26'
+    - '27'
+    - '28'
+    - '29'
+    - '54'
+    - '55'
+    - '56'
+    - '59'
+    - '84'
+    - '85'
+    - '86'
+    - '89'
+    - '93'
+    - '96'
+  - grupo: Aposentadoria
+    codigos:
+    - '04'
+    - '05'
+    - '06'
+    - '07'
+    - '08'
+    - '32'
+    - '33'
+    - '34'
+    - '37'
+    - '38'
+    - '41'
+    - '42'
+    - '43'
+    - '44'
+    - '45'
+    - '46'
+    - '49'
+    - '51'
+    - '57'
+    - '58'
+    - '72'
+    - '82'
+    - '83'
+    - '92'
+  - grupo: Auxilio
+    codigos:
+    - '10'
+    - '13'
+    - '16'
+    - '18'
+    - '25'
+    - '31'
+    - '36'
+    - '80'
+    - '91'
+    - '94'
+    - '95'
+  - grupo: Amparo_BPC
+    codigos:
+    - '11'
+    - '12'
+    - '87'
+    - '88'
+  - grupo: Outros
+    codigos:
+    - '30'
+    - '40'
+    - '47'
+    - '48'
+    - '60'
+    - '79'
+  aprovado_por: Bruno Nunes
+  aprovado_em: '2026-09-25'
