@@ -1,0 +1,169 @@
+{
+  "schema_version": "1.0",
+  "pass": "4-consensus",
+  "adversary": {
+    "engine_id": "codex",
+    "model": "codex",
+    "family": "openai",
+    "engine_version": "codex-cli 0.155.0",
+    "sandbox_mode": "read-only"
+  },
+  "author": {
+    "model": "claude",
+    "family": "anthropic"
+  },
+  "verdict": "REVISE",
+  "prompt_sha256": "eb2f6c7bf5155e5820e12d4da33bb707d3a33ce010fac8b8c976d188442863e6",
+  "inputs": [
+    {
+      "path": "postgres-validado/LEG-POSTGRES-VALIDADO.md",
+      "sha256": "19861b7e59e59138966f608cb492815016e21d1b85eb32c780981590c8cf76cd"
+    },
+    {
+      "path": "postgres-validado/_lane.md",
+      "sha256": "0b23a926083f07531788a02ae9115f052af266bfc02b76dd617ee39949335d38"
+    }
+  ],
+  "objections": [
+    {
+      "id": "C1",
+      "severity": "high",
+      "rank": 1,
+      "attack_class": "unverified-assumption",
+      "swimlane": "LANE-POSTGRES-VALIDADO",
+      "leg": "LEG-POSTGRES-VALIDADO",
+      "location": {
+        "plan_file": "cvg/swimlanes/lanes-pgv/postgres-validado/LEG-POSTGRES-VALIDADO.md",
+        "section": "B-1, linhas 61\u201364; B-2, linhas 71\u201372; anti_patterns"
+      },
+      "title": "O certificado pode sobreviver \u00e0 carga que certificou",
+      "body": "O plano afirma que o registro \u00fanico certifica a carga vis\u00edvel, mas mant\u00e9m projetar_ontologia dispon\u00edvel e intacta. N\u00e3o define o que acontece na sequ\u00eancia projetar_validado \u2192 projetar_ontologia no mesmo schema. Se o caminho antigo substituir as seis tabelas e preservar validacao_gold, outra carga ficar\u00e1 vis\u00edvel sob um certificado anterior. \u00c9 uma hip\u00f3tese de integra\u00e7\u00e3o ainda n\u00e3o refutada: o teste de segunda carga exige somente a repeti\u00e7\u00e3o do caminho novo.",
+      "evidence": "B-1: 'o seu \u00fanico registro certifica a carga vis\u00edvel'; B-2: 'A projetar_ontologia, o DDL das seis tabelas existentes [...] ficam como est\u00e3o'.",
+      "cites": [
+        "cvg/docs/adrs/0016-the-postgres-loads-its-own-files-and-is-validated-against-the-gold.md \u00a7 Decision",
+        "cvg/docs/adrs/0016-the-postgres-loads-its-own-files-and-is-validated-against-the-gold.md \u00a7 Consequences"
+      ],
+      "resolution": {
+        "disposition": "ACCEPT",
+        "decided_by": "Bruno Nunes",
+        "decided_at": "2026-09-25T03:23:00Z",
+        "owner": "Bruno Nunes",
+        "risk_residual": "Aceito, com regra operacional: a producao usa so projetar_validado; projetar_ontologia sai na receita C (limpeza), por lista nomeada. Decidido pelo dono ao fechar o Pass 4 da receita B na R3, sem editar o plano."
+      }
+    },
+    {
+      "id": "C2",
+      "severity": "high",
+      "rank": 2,
+      "attack_class": "drift",
+      "swimlane": "LANE-POSTGRES-VALIDADO",
+      "leg": "LEG-POSTGRES-VALIDADO",
+      "location": {
+        "plan_file": "cvg/swimlanes/lanes-pgv/postgres-validado/LEG-POSTGRES-VALIDADO.md",
+        "section": "B-2, linha 72; eval_3, linhas 104\u2013110"
+      },
+      "title": "O eval n\u00e3o prova a preserva\u00e7\u00e3o de todos os testes existentes",
+      "body": "B-2 exige que todos os test_* existentes continuem passando, mas eval_3 seleciona apenas tr\u00eas express\u00f5es. Ficam fora, entre outros, test_grava_sha256_da_ontologia, test_chave_primaria_em_cada_tabela, test_chaves_estrangeiras_valem, test_divergencia_desfaz_e_preserva_carga_anterior e os testes de recusa de schema. Os evals podem passar apesar de uma regress\u00e3o nessas garantias, inclusive por altera\u00e7\u00f5es em auxiliares compartilhados no arquivo permitido.",
+      "evidence": "B-2: 'todos os test_* existentes ficam como est\u00e3o e passam'; eval_3: -k 'projeta_e_reconfere or falha_no_meio_preserva_carga_anterior or sem_credencial_no_codigo'. Os demais cen\u00e1rios foram identificados em tests/test_projecao_postgres.py.",
+      "cites": [
+        "cvg/swimlanes/lanes-pgv/postgres-validado/LEG-POSTGRES-VALIDADO.md \u00a7 B-2",
+        "cvg/swimlanes/lanes-pgv/postgres-validado/LEG-POSTGRES-VALIDADO.md \u00a7 eval_3",
+        "tests/test_projecao_postgres.py"
+      ],
+      "resolution": {
+        "disposition": "ACCEPT",
+        "decided_by": "Bruno Nunes",
+        "decided_at": "2026-09-25T03:23:00Z",
+        "owner": "Bruno Nunes",
+        "risk_residual": "Aceito, coberto por fora: AST dos test_* de test_projecao_postgres.py contra o commit anterior ao loop (nenhum existente muda ou sai) e a suite INTEIRA numa JVM so. Decidido pelo dono ao fechar o Pass 4 da receita B na R3, sem editar o plano."
+      }
+    },
+    {
+      "id": "C3",
+      "severity": "medium",
+      "rank": 3,
+      "attack_class": "drift",
+      "swimlane": "LANE-POSTGRES-VALIDADO",
+      "leg": "LEG-POSTGRES-VALIDADO",
+      "location": {
+        "plan_file": "cvg/swimlanes/lanes-pgv/postgres-validado/LEG-POSTGRES-VALIDADO.md",
+        "section": "goal, linhas 23\u201325; eval_1, eval_2 e eval_3"
+      },
+      "title": "Os tr\u00eas evals contradizem o comando exclusivo autorizado",
+      "body": "O goal permite exclusivamente exec -T spark python3 -m pytest. Todos os evals executam exec -T spark sh -c, com loops, pipelines e grep. Um executor que aplique literalmente a restri\u00e7\u00e3o recusar\u00e1 os pr\u00f3prios evals; um executor que os rode precisar\u00e1 assumir uma exce\u00e7\u00e3o que o plano n\u00e3o declara. A ambiguidade bloqueia uma execu\u00e7\u00e3o demonstravelmente conforme ao plano.",
+      "evidence": "goal: 'o \u00daNICO comando liberado ao agente'; eval_1, eval_2 e eval_3 come\u00e7am com 'docker compose -f infra/docker-compose.yml exec -T spark sh -c'.",
+      "cites": [
+        "cvg/swimlanes/lanes-pgv/postgres-validado/LEG-POSTGRES-VALIDADO.md \u00a7 goal",
+        "cvg/swimlanes/lanes-pgv/postgres-validado/LEG-POSTGRES-VALIDADO.md \u00a7 evals"
+      ],
+      "resolution": {
+        "disposition": "ACCEPT",
+        "decided_by": "Bruno Nunes",
+        "decided_at": "2026-09-25T03:23:00Z",
+        "owner": "Bruno Nunes",
+        "risk_residual": "Refutado, como em todas as rodadas anteriores: a permissao de escopo minimo e do AGENTE; os evals sao executados pelo MOTOR, fora dela. Decidido pelo dono ao fechar o Pass 4 da receita B na R3, sem editar o plano."
+      }
+    },
+    {
+      "id": "C4",
+      "severity": "medium",
+      "rank": 4,
+      "attack_class": "observability",
+      "swimlane": "LANE-POSTGRES-VALIDADO",
+      "leg": "LEG-POSTGRES-VALIDADO",
+      "location": {
+        "plan_file": "cvg/swimlanes/lanes-pgv/postgres-validado/LEG-POSTGRES-VALIDADO.md",
+        "section": "B-1: par\u00e2metros raw/gold e defini\u00e7\u00e3o de validacao_gold, linhas 45\u201364"
+      },
+      "title": "As vers\u00f5es registradas n\u00e3o identificam a Gold quando o caminho varia",
+      "body": "gold \u00e9 par\u00e2metro, com um caminho apenas padr\u00e3o. O certificado registra os n\u00fameros das vers\u00f5es, mas n\u00e3o identifica as tabelas ou o caminho conferido. Duas ra\u00edzes Gold podem possuir dimens\u00f5es com os mesmos n\u00fameros de vers\u00e3o. Depois de uma carga com gold alternativo, o registro descrito n\u00e3o permite distinguir qual delas foi validada. A promessa de registrar as vers\u00f5es efetivamente conferidas fica incompleta para a interface parametriz\u00e1vel.",
+      "evidence": "Assinatura: 'projetar_validado(..., raw, gold)'; certificado: '(id, competencia, versao_dim_especie, versao_dim_termo, conferido_em)'.",
+      "cites": [
+        "cvg/docs/adrs/0016-the-postgres-loads-its-own-files-and-is-validated-against-the-gold.md \u00a7 Decision",
+        "cvg/swimlanes/lanes-pgv/postgres-validado/LEG-POSTGRES-VALIDADO.md \u00a7 B-1"
+      ],
+      "resolution": {
+        "disposition": "ACCEPT",
+        "decided_by": "Bruno Nunes",
+        "decided_at": "2026-09-25T03:23:00Z",
+        "owner": "Bruno Nunes",
+        "risk_residual": "Aceito como residuo: a producao usa o caminho padrao da Gold; registrar o caminho no certificado fica para a receita C. Decidido pelo dono ao fechar o Pass 4 da receita B na R3, sem editar o plano."
+      }
+    },
+    {
+      "id": "C5",
+      "severity": "medium",
+      "rank": 5,
+      "attack_class": "unverified-assumption",
+      "swimlane": "LANE-POSTGRES-VALIDADO",
+      "leg": "LEG-POSTGRES-VALIDADO",
+      "location": {
+        "plan_file": "cvg/swimlanes/lanes-pgv/postgres-validado/LEG-POSTGRES-VALIDADO.md",
+        "section": "B-1, linhas 54\u201356; B-2, linha 76; eval_1"
+      },
+      "title": "Registrar uma vers\u00e3o n\u00e3o prova que a leitura ficou presa a ela",
+      "body": "O comportamento exige resolver V uma vez e ler com versionAsOf, mas o cen\u00e1rio nomeado exige apenas registrar vers\u00f5es. Com Gold est\u00e1vel, uma implementa\u00e7\u00e3o que consulte V, leia latest e registre V pode passar. Se houver publica\u00e7\u00e3o entre a resolu\u00e7\u00e3o e a leitura, o certificado poder\u00e1 atribuir a V dados de V+1. O plano n\u00e3o explicita que o teste deve distinguir essas implementa\u00e7\u00f5es. A obje\u00e7\u00e3o trata da vers\u00e3o de cada dimens\u00e3o separadamente; n\u00e3o exige pareamento por id_execucao, rejeitado pelo ADR 0016.",
+      "evidence": "B-1: 'resolve UMA vez a vers\u00e3o V [...] l\u00ea cada uma NA sua vers\u00e3o V (versionAsOf)'; \u00fanico cen\u00e1rio explicitamente dedicado: 'test_validado_registra_versoes_da_gold'.",
+      "cites": [
+        "cvg/docs/adrs/0016-the-postgres-loads-its-own-files-and-is-validated-against-the-gold.md \u00a7 Decision",
+        "cvg/docs/adrs/0016-the-postgres-loads-its-own-files-and-is-validated-against-the-gold.md \u00a7 Rejected reading",
+        "cvg/swimlanes/lanes-pgv/postgres-validado/LEG-POSTGRES-VALIDADO.md \u00a7 B-1 e B-2"
+      ],
+      "resolution": {
+        "disposition": "ACCEPT",
+        "decided_by": "Bruno Nunes",
+        "decided_at": "2026-09-25T03:23:00Z",
+        "owner": "Bruno Nunes",
+        "risk_residual": "Aceito, coberto por fora: depois do loop a cadeia confere no codigo entregue que a Gold e lida com versionAsOf na versao registrada. Decidido pelo dono ao fechar o Pass 4 da receita B na R3, sem editar o plano."
+      }
+    }
+  ],
+  "cross_lane_interfaces": [],
+  "fork": {
+    "choice": "B",
+    "reason": "Transcri\u00e7\u00e3o do FORK j\u00e1 declarado em _lane.md; nenhuma escolha feita pelo advers\u00e1rio.",
+    "per_plan_declared": true
+  },
+  "open_questions": [],
+  "rounds_run": 1
+}

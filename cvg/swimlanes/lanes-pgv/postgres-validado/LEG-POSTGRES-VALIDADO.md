@@ -1,0 +1,148 @@
+> Projetado de `LEG-POSTGRES-VALIDADO.md` pelo Seamwise.
+> **Não edite aqui** — edite a recipe e rode `seamwise plan`.
+> origem sha256: `7c085bd01a17d003b0893831af9b90bd1622bd941b7d718afeb01e5023251617`
+
+---
+
+---
+schema_version: 1
+kind: capability-leg
+claim: derived
+id: LEG-POSTGRES-VALIDADO
+seam_id: SEAM-POSTGRES-VALIDADO
+swimlane_id: LANE-POSTGRES-VALIDADO
+observable_state: Postgres validado pela Gold
+proof: Comparação linha a linha dentro da transação.
+requires: []
+produces:
+- postgres validado
+tasks:
+- id: T-20260925-postgres-validado-pela-gold
+  title: O Postgres carrega os próprios arquivos e é validado contra a Gold
+  goal: Fazer a projeção do Postgres ser um caminho independente — lê os .xlsx do INSS — que só publica
+    o que concorda, linha a linha, com a Gold da referência. Para rodar testes, o ÚNICO comando liberado
+    ao agente é `docker compose -f infra/docker-compose.yml exec -T spark python3 -m pytest <arquivo>
+    -k <cenarios>`.
+  done_condition: src/medalhao/projecao_postgres.py tem projetar_validado; a projetar_ontologia existente
+    e seus testes ficam intactos; os testes novos de tests/test_projecao_postgres.py passam, incluindo
+    o real contra a Gold de produção.
+  effort: S
+  profile: standard
+  execution_backend: any
+  required_tools:
+  - git
+  - bash
+  - python3
+  - pytest
+  - docker
+  depends_on: []
+  touches_paths:
+  - src/medalhao/projecao_postgres.py
+  - tests/test_projecao_postgres.py
+  creates_paths: []
+  behavior:
+  - id: B-1
+    given: os dois .xlsx do INSS num diretório (padrão /dados/_raw) com CHECKSUMS.txt, a ontologia versionada
+      com o sha256 aprovado de cada um, o contrato, e a Gold da referência (padrão s3a://gold/pda/referencia,
+      dim_especie e dim_termo)
+    when: projetar_validado(spark, ontologia, contrato, schema, competencia, raw, gold) roda
+    then: 'lê os bytes de cada .xlsx UMA vez para a memória e usa ESSES bytes para as duas coisas — o
+      sha256, conferido contra o APROVADO na ontologia e contra o CHECKSUMS.txt (recusa sem conectar se
+      divergir), e o parser, sobre io.BytesIO —; o parser é medalhao.ontologia.ler_xlsx — o da ontologia,
+      NÃO o da Bronze, para o caminho ser independente —; monta fonte, termo, coluna (da ontologia), grupo
+      e especie (grupo do contrato) e carrega numa ÚNICA transação, como a projetar_ontologia; AINDA DENTRO
+      dela, antes do commit: resolve UMA vez a versão V de cada dimensão da Gold — dim_especie e dim_termo
+      —, lê cada uma NA sua versão V (versionAsOf) com o SEU filtro: dim_especie por competencia (ela
+      não tem coluna de sha256) e dim_termo por sha256_arquivo igual ao sha256 aprovado do glossário (ela
+      não tem competencia); RELÊ as tabelas especie e termo do Postgres pela conexão da própria transação
+      — o que foi gravado, não a estrutura Python —, e compara como MULTICONJUNTO nos dois sentidos, com
+      multiplicidade: especie (codigo, nome, grupo) × dim_especie (codigo, nome_oficial, grupo) e termo
+      (nome, descricao) × dim_termo (termo, descricao) — qualquer linha a mais, a menos ou repetida de
+      um lado diverge; iguais, grava a tabela validacao_gold (id, competencia, versao_dim_especie, versao_dim_termo,
+      conferido_em; chave primária em id), com as versões V EXATAS que foram lidas — como a tabela carga,
+      ela é SUBSTITUÍDA a cada carga, com id 1, e o seu único registro certifica a carga visível; uma
+      segunda carga no mesmo schema funciona e troca o registro —, e faz commit, devolvendo PROJETADA
+      com as contagens e essas versões.'
+  - id: B-2
+    given: uma Gold que diverge da carga, uma Gold vazia, ou um arquivo com sha256 não aprovado
+    when: projetar_validado roda
+    then: Gold divergente numa única linha desfaz a transação, devolve DIVERGENTE nomeando a dimensão
+      e a carga anterior segue sendo a visível; Gold sem linhas da competência ou sem o sha256 do glossário
+      devolve NAO_MEDIDO sem commit; sha256 não aprovado recusa sem conectar. A projetar_ontologia, o
+      DDL das seis tabelas existentes e todos os test_* existentes ficam como estão e passam; entram só
+      test_validado_carrega_os_proprios_arquivos, test_validado_confere_contra_a_gold, test_validado_gold_divergente_desfaz,
+      test_validado_glossario_divergente_desfaz (defeito injetado SÓ na dim_termo), test_validado_segunda_carga_troca_a_validacao,
+      test_validado_linha_repetida_na_gold_diverge, test_validado_compara_o_que_foi_gravado, test_validado_gold_vazia_nao_medido,
+      test_validado_sha256_nao_aprovado_recusa, test_validado_registra_versoes_da_gold e test_validado_real_contra_a_gold_de_producao
+      — este lê os .xlsx reais e a Gold de produção e carrega num schema 'teste_'. Nenhum cenário usa
+      skip, xfail ou importorskip; o teste GRAVA só em schemas 'teste_' do Postgres, apagados no finalizer,
+      e em tmp_path — nunca no MinIO; LER o MinIO e /dados/_raw é permitido; Postgres ou MinIO indisponível
+      FALHA o teste.
+  evals:
+  - id: eval_1
+    description: Próprios arquivos, validado contra a Gold
+    bash: docker compose -f infra/docker-compose.yml exec -T spark sh -c 'for c in validado_carrega_os_proprios_arquivos
+      validado_confere_contra_a_gold validado_registra_versoes_da_gold validado_real_contra_a_gold_de_producao;
+      do python3 -m pytest --collect-only -q tests/test_projecao_postgres.py -k "$c" 2>/dev/null | grep
+      -q "::" || { echo "EVAL=CENARIO_AUSENTE_$c"; exit 1; }; done; python3 -m pytest -q tests/test_projecao_postgres.py
+      -k "validado_carrega_os_proprios_arquivos or validado_confere_contra_a_gold or validado_registra_versoes_da_gold
+      or validado_real_contra_a_gold_de_producao"'
+    verifies:
+    - B-1
+  - id: eval_2
+    description: Divergência e ausência não publicam
+    bash: docker compose -f infra/docker-compose.yml exec -T spark sh -c 'for c in validado_gold_divergente_desfaz
+      validado_glossario_divergente_desfaz validado_segunda_carga_troca_a_validacao validado_linha_repetida_na_gold_diverge
+      validado_compara_o_que_foi_gravado validado_gold_vazia_nao_medido validado_sha256_nao_aprovado_recusa;
+      do python3 -m pytest --collect-only -q tests/test_projecao_postgres.py -k "$c" 2>/dev/null | grep
+      -q "::" || { echo "EVAL=CENARIO_AUSENTE_$c"; exit 1; }; done; python3 -m pytest -q tests/test_projecao_postgres.py
+      -k "validado_gold_divergente_desfaz or validado_glossario_divergente_desfaz or validado_segunda_carga_troca_a_validacao
+      or validado_linha_repetida_na_gold_diverge or validado_compara_o_que_foi_gravado or validado_gold_vazia_nao_medido
+      or validado_sha256_nao_aprovado_recusa"'
+    verifies:
+    - B-2
+  - id: eval_3
+    description: A projeção antiga intacta
+    bash: docker compose -f infra/docker-compose.yml exec -T spark sh -c 'for c in projeta_e_reconfere
+      falha_no_meio_preserva_carga_anterior sem_credencial_no_codigo; do python3 -m pytest --collect-only
+      -q tests/test_projecao_postgres.py -k "$c" 2>/dev/null | grep -q "::" || { echo "EVAL=CENARIO_AUSENTE_$c";
+      exit 1; }; done; python3 -m pytest -q tests/test_projecao_postgres.py -k "projeta_e_reconfere or
+      falha_no_meio_preserva_carga_anterior or sem_credencial_no_codigo"'
+    verifies:
+    - B-2
+  anti_patterns:
+  - action: carregar o Postgres a partir da Gold
+    reason: copiaria a Gold e concordaria até com o erro (ADR 0016)
+    instead: carregar pelos próprios arquivos e comparar com a Gold
+  - action: usar o parser da Bronze de referência
+    reason: os dois caminhos deixariam de ser independentes
+    instead: medalhao.ontologia.ler_xlsx
+  - action: mudar projetar_ontologia, o DDL existente ou um teste existente
+    reason: acrescentar, não mudar
+    instead: função e tabela novas
+  do_not_touch:
+  - _raw
+  - contracts
+  - cvg/docs/adrs
+  - src/pda
+  - src/ontologia
+  - infra
+  - src/medalhao/ontologia.py
+  - src/medalhao/gold_referencia.py
+  - src/medalhao/especie.py
+  rollback: Reverter src/medalhao/projecao_postgres.py e tests/test_projecao_postgres.py.
+  observability: cargas do Postgres divergentes da Gold
+source_seam_sha256: 58c6feac378ee17f8686796803af8223d157599092f19c05c3f7b1e413bf9eef
+---
+# Postgres validado pela Gold
+
+## Observable proof
+
+Comparação linha a linha dentro da transação.
+
+## Runnable leaves
+
+- `T-20260925-postgres-validado-pela-gold` — O Postgres carrega os próprios arquivos e é validado contra a Gold: src/medalhao/projecao_postgres.py tem projetar_validado; a projetar_ontologia existente e seus testes ficam intactos; os testes novos de tests/test_projecao_postgres.py passam, incluindo o real contra a Gold de produção.
+
+The leg names a capability state, not an activity. Each leaf owns one coherent,
+independently provable done-condition.
